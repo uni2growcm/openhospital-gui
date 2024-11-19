@@ -66,9 +66,10 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
-			MessageBundle.getMessage("angal.exa.default.col").toUpperCase()
+			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(),
+			MessageBundle.getMessage("angal.exa.for.col").toUpperCase()
 	};
-	private int[] pColumnWidth = { 60, 330, 160, 60, 200 };
+	private int[] pColumnWidth = { 60, 330, 160, 60, 200, 100 };
 	private Exam exam;
 
 	private DefaultTableModel model ;
@@ -149,6 +150,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			table.getColumnModel().getColumn(2).setMinWidth(pColumnWidth[2]);
 			table.getColumnModel().getColumn(3).setMinWidth(pColumnWidth[3]);
 			table.getColumnModel().getColumn(4).setMinWidth(pColumnWidth[4]);
+			table.getColumnModel().getColumn(5).setMinWidth(pColumnWidth[5]);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().addListSelectionListener(selectionEvent -> {
 				if (!selectionEvent.getValueIsAdjusting()) {
@@ -302,6 +304,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				return exam.getProcedure();
 			} else if (c == 4) {
 				return exam.getDefaultResult();
+			} else if (c == 5) {
+				return exam.getExamFor();
 			}
 			return null;
 		}
