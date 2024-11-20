@@ -314,19 +314,21 @@ public class ExamEdit extends JDialog {
 	
 	
 	private JComboBox<String> getExamForComboBox() {
-		if (examForComboBox == null) {
-			examForComboBox = new JComboBox<>();
-			if (insert) {
-				examForComboBox.addItem("no");
-				examForComboBox.addItem("prenatal");
-				examForComboBox.addItem("postnatal");
-				examForComboBox.addItem("both");
-			} else {
-				examForComboBox.addItem(String.valueOf(exam.getExamFor()));
-				
-			}
-		}
-		return examForComboBox;
+	    if (examForComboBox == null) {
+	        examForComboBox = new JComboBox<>();
+
+	        String[] options = {"no", "prenatal", "postnatal", "both"};
+
+	        for (String option : options) {
+	            examForComboBox.addItem(option);
+	        }
+
+	        if (!insert) {
+	            String currentExamFor = String.valueOf(exam.getExamFor());
+	            examForComboBox.setSelectedItem(currentExamFor);
+	        }
+	    }
+	    return examForComboBox;
 	}
 	
 	

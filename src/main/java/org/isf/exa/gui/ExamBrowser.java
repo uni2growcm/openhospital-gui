@@ -204,7 +204,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					OHServiceExceptionUtil.showMessages(e1);
 				}
 				if (deleted) {
-					reloadTable();
+					reloadTableFilter();
 				}
 			}
 		});
@@ -364,7 +364,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	
 	@Override
 	public void examUpdated(AWTEvent e) {
-		reloadTable();
+		reloadTableFilter();
 		if (table.getRowCount() > 0 && selectedrow > -1) {
 			table.setRowSelectionInterval(selectedrow, selectedrow);
 		}
@@ -372,7 +372,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	@Override
 	public void examInserted(AWTEvent e) {
-		reloadTable();
+		reloadTableFilter();
 		if (table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
 		}
