@@ -23,6 +23,7 @@ package org.isf.exa.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.EventListener;
@@ -106,6 +107,7 @@ public class ExamEdit extends JDialog {
 	private JComboBox<String> procComboBox;
 	private VoLimitedTextField defTextField;
 	private JComboBox<ExamType> examTypeComboBox;
+	private JComboBox<String> examForComboBox;
 	private Exam exam;
 	private boolean insert;
 	
@@ -163,6 +165,9 @@ public class ExamEdit extends JDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
+	
+	
+	
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.exa.type") + ':');
@@ -170,9 +175,12 @@ public class ExamEdit extends JDialog {
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
 			JLabel procLabel = new JLabel(MessageBundle.getMessage("angal.exa.procedure") + ':');
 			JLabel defLabel = new JLabel(MessageBundle.getMessage("angal.exa.default") + ':');
+			JLabel examForLabel = new JLabel(MessageBundle.getMessage("angal.exa.for.col") + ':');
 			dataPanel = new JPanel(new SpringLayout());
 			dataPanel.add(typeLabel);
 			dataPanel.add(getExamTypeComboBox());
+			dataPanel.add(examForLabel);
+			dataPanel.add(getExamForComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -181,10 +189,12 @@ public class ExamEdit extends JDialog {
 			dataPanel.add(getProcComboBox());
 			dataPanel.add(defLabel);
 			dataPanel.add(getDefTextField());
-			SpringUtilities.makeCompactGrid(dataPanel, 5, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
+
+	
 
 	/**
 	 * This method initializes buttonPanel	
@@ -228,13 +238,15 @@ public class ExamEdit extends JDialog {
 					MessageDialog.error(null, "angal.exa.pleaseinsertcodeoranddescription");
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
+					String examFor = examForComboBox.getSelectedItem().toString();
+					//String examFor =  examForComboBox.getSelectedItem() != null ?  examForComboBox.getSelectedItem().toString() : "no";
 
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
-
 					exam.setCode(codeTextField.getText().toUpperCase());
 					exam.setDefaultResult(defTextField.getText().toUpperCase());
 					exam.setProcedure(procedure);
+					exam.setExamFor(examFor);
 
 					boolean inError = false;
 					if (insert) {
@@ -300,6 +312,24 @@ public class ExamEdit extends JDialog {
 		return defTextField;
 	}
 	
+	
+	private JComboBox<String> getExamForComboBox() {
+		if (examForComboBox == null) {
+			examForComboBox = new JComboBox<>();
+			if (insert) {
+				examForComboBox.addItem("no");
+				examForComboBox.addItem("prenatal");
+				examForComboBox.addItem("postnatal");
+				examForComboBox.addItem("both");
+			} else {
+				examForComboBox.addItem(String.valueOf(exam.getExamFor()));
+				
+			}
+		}
+		return examForComboBox;
+	}
+	
+	
 	private JTextField getCodeTextField() {
 		if (codeTextField == null) {
                         codeTextField = new VoLimitedTextField(10);
@@ -325,6 +355,8 @@ public class ExamEdit extends JDialog {
 		}
 		return procComboBox;
 	}
+	
+	
 	
 	/**
 	 * This method initializes examTypeComboBox

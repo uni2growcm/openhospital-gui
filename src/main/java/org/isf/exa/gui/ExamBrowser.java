@@ -60,16 +60,20 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	private int selectedrow;
 	private JComboBox<ExamType> examTypeFilter;
+	private JComboBox<String> examForFilter;
 	private List<Exam> examList;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.exa.for.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(),
-			MessageBundle.getMessage("angal.exa.for.col").toUpperCase()
+			
+			
+			
 	};
-	private int[] pColumnWidth = { 60, 330, 160, 60, 200, 100 };
+	private int[] pColumnWidth = { 60, 230, 70, 230, 60, 150};
 	private Exam exam;
 
 	private DefaultTableModel model ;
@@ -108,6 +112,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.for.col")));
+			buttonPanel.add(getJComboBoxExamFor());
 			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selecttype")));
 			buttonPanel.add(getJComboBoxExamType());
 			buttonPanel.add(getJButtonNew());
@@ -117,6 +123,21 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			buttonPanel.add(getJButtonClose());
 		}
 		return buttonPanel;
+	}
+	
+	
+	private JComboBox<String> getJComboBoxExamFor() {
+		if (examForFilter == null) {
+			examForFilter = new JComboBox<>();
+			examForFilter.addItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
+			examForFilter.addItem("no");
+			examForFilter.addItem("prenatal");
+			examForFilter.addItem("postnatal");
+			examForFilter.addItem("both");
+			
+			examForFilter.addActionListener(actionEvent -> reloadTableFilter());
+		}
+		return examForFilter;
 	}
 
 	private JComboBox<ExamType> getJComboBoxExamType() {
@@ -135,7 +156,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					examTypeFilter.addItem(elem);
 				}
 			}
-			examTypeFilter.addActionListener(actionEvent -> reloadTable());
+			examTypeFilter.addActionListener(actionEvent -> reloadTableFilter());
 		}
 		return examTypeFilter;
 	}
@@ -196,7 +217,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jButtonNew.addActionListener(actionEvent -> {
-				exam = new Exam("", "", new ExamType("", ""), 0, "");
+				exam = new Exam("", "", new ExamType("", ""), 0, "","");
 				ExamEdit newrecord = new ExamEdit(myFrame, exam, true);
 				newrecord.addExamListener(this);
 				newrecord.setVisible(true);
@@ -263,6 +284,26 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
+		
+		
+		public ExamBrowsingModel(String e, String t) {
+			try {
+				if(e== null && t!= null) {
+					examList = examBrowsingManager.getExamsByTypeDescription(t);
+				}
+				else if (e != null && t == null) {
+					examList = examBrowsingManager.getExamsByExamForDescription(e);
+				}else {
+					examList = examBrowsingManager.getExamsByExamForAndTypeDescription(e, t);
+				}
+				
+			} catch (OHServiceException err) {
+				examList = null;
+				OHServiceExceptionUtil.showMessages(err);
+			}
+		}
+		
+		
 		public ExamBrowsingModel() {
 			try {
 				examList = examBrowsingManager.getExams();
@@ -297,15 +338,20 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 0) {
 				return exam.getCode();
 			} else if (c == 1) {
+				
 				return exam.getExamtype().getDescription();
+				
 			} else if (c == 2) {
-				return exam.getDescription();
-			} else if (c == 3) {
-				return exam.getProcedure();
-			} else if (c == 4) {
-				return exam.getDefaultResult();
-			} else if (c == 5) {
 				return exam.getExamFor();
+				
+			} else if (c == 3) {
+				return exam.getDescription();
+				
+			} else if (c == 4) {
+				return exam.getProcedure();
+				
+			} else if (c == 5) {
+				return exam.getDefaultResult();
 			}
 			return null;
 		}
@@ -334,10 +380,27 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	private void reloadTable() {
 		String pSelection = examTypeFilter.getSelectedItem().toString();
+		
 		if (pSelection.compareTo(STR_ALL) == 0) {
 			model = new ExamBrowsingModel();
 		} else {
 			model = new ExamBrowsingModel(pSelection);
+		}
+		model.fireTableDataChanged();
+		table.updateUI();
+	}
+	
+	private void reloadTableFilter() {
+		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
+		String pSelectExamFor = examForFilter.getSelectedItem().toString();
+		if (pSelectExamFor.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+			model = new ExamBrowsingModel();
+		} else if (pSelectExamFor.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+			model = new ExamBrowsingModel(pSelectExamFor, null);
+		} else if (pSelectExamFor.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+			model = new ExamBrowsingModel(null, pSelectExamType);
+		}else if (pSelectExamType.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+			model = new ExamBrowsingModel(pSelectExamFor, pSelectExamType);
 		}
 		model.fireTableDataChanged();
 		table.updateUI();
