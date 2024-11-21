@@ -135,7 +135,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.postnatal.txt"));
 			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.both.txt"));
 
-			examTargetFilter.addActionListener(actionEvent -> reloadTableFilter());
+			examTargetFilter.addActionListener(actionEvent -> reloadTable());
 		}
 		return examTargetFilter;
 	}
@@ -156,7 +156,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					examTypeFilter.addItem(elem);
 				}
 			}
-			examTypeFilter.addActionListener(actionEvent -> reloadTableFilter());
+			examTypeFilter.addActionListener(actionEvent -> reloadTable());
 		}
 		return examTypeFilter;
 	}
@@ -204,7 +204,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					OHServiceExceptionUtil.showMessages(e1);
 				}
 				if (deleted) {
-					reloadTableFilter();
+					reloadTable();
 				}
 			}
 		});
@@ -364,7 +364,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	
 	@Override
 	public void examUpdated(AWTEvent e) {
-		reloadTableFilter();
+		reloadTable();
 		if (table.getRowCount() > 0 && selectedrow > -1) {
 			table.setRowSelectionInterval(selectedrow, selectedrow);
 		}
@@ -372,25 +372,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	@Override
 	public void examInserted(AWTEvent e) {
-		reloadTableFilter();
+		reloadTable();
 		if (table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
 		}
 	}
 
 	private void reloadTable() {
-		String pSelection = examTypeFilter.getSelectedItem().toString();
-		
-		if (pSelection.compareTo(STR_ALL) == 0) {
-			model = new ExamBrowsingModel();
-		} else {
-			model = new ExamBrowsingModel(pSelection);
-		}
-		model.fireTableDataChanged();
-		table.updateUI();
-	}
-	
-	private void reloadTableFilter() {
 		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
 		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString();
 		if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
@@ -405,5 +393,6 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
+	
 
 }
