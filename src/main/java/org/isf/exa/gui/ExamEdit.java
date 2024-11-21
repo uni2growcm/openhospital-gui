@@ -107,7 +107,7 @@ public class ExamEdit extends JDialog {
 	private JComboBox<String> procComboBox;
 	private VoLimitedTextField defTextField;
 	private JComboBox<ExamType> examTypeComboBox;
-	private JComboBox<String> examForComboBox;
+	private JComboBox<String> examTargetComboBox;
 	private Exam exam;
 	private boolean insert;
 	
@@ -166,8 +166,6 @@ public class ExamEdit extends JDialog {
 	 * @return javax.swing.JPanel	
 	 */
 	
-	
-	
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.exa.type") + ':');
@@ -175,12 +173,12 @@ public class ExamEdit extends JDialog {
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
 			JLabel procLabel = new JLabel(MessageBundle.getMessage("angal.exa.procedure") + ':');
 			JLabel defLabel = new JLabel(MessageBundle.getMessage("angal.exa.default") + ':');
-			JLabel examForLabel = new JLabel(MessageBundle.getMessage("angal.exa.for.col") + ':');
+			JLabel examTargetLabel = new JLabel(MessageBundle.getMessage("angal.exa.selectexamtarget") + ':');
 			dataPanel = new JPanel(new SpringLayout());
 			dataPanel.add(typeLabel);
 			dataPanel.add(getExamTypeComboBox());
-			dataPanel.add(examForLabel);
-			dataPanel.add(getExamForComboBox());
+			dataPanel.add(examTargetLabel);
+			dataPanel.add(getExamTargetComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -193,8 +191,6 @@ public class ExamEdit extends JDialog {
 		}
 		return dataPanel;
 	}
-
-	
 
 	/**
 	 * This method initializes buttonPanel	
@@ -238,15 +234,14 @@ public class ExamEdit extends JDialog {
 					MessageDialog.error(null, "angal.exa.pleaseinsertcodeoranddescription");
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
-					String examFor = examForComboBox.getSelectedItem().toString();
-					//String examFor =  examForComboBox.getSelectedItem() != null ?  examForComboBox.getSelectedItem().toString() : "no";
-
+					String examTarget = examTargetComboBox.getSelectedItem().toString();
+					
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
 					exam.setCode(codeTextField.getText().toUpperCase());
 					exam.setDefaultResult(defTextField.getText().toUpperCase());
 					exam.setProcedure(procedure);
-					exam.setExamFor(examFor);
+					exam.setExamTarget(examTarget);
 
 					boolean inError = false;
 					if (insert) {
@@ -313,22 +308,26 @@ public class ExamEdit extends JDialog {
 	}
 	
 	
-	private JComboBox<String> getExamForComboBox() {
-	    if (examForComboBox == null) {
-	        examForComboBox = new JComboBox<>();
+	private JComboBox<String> getExamTargetComboBox() {
+	    if (examTargetComboBox == null) {
+	        examTargetComboBox = new JComboBox<>();
 
-	        String[] options = {"no", "prenatal", "postnatal", "both"};
+	        String[] options = {
+	        		MessageBundle.getMessage("angal.exa.examtarget.no.txt"),
+	        		MessageBundle.getMessage("angal.exa.examtarget.prenatal.txt"),
+	        		MessageBundle.getMessage("angal.exa.examtarget.postnatal.txt"), 
+	        		MessageBundle.getMessage("angal.exa.examtarget.both.txt")};
 
 	        for (String option : options) {
-	            examForComboBox.addItem(option);
+	            examTargetComboBox.addItem(option);
 	        }
 
 	        if (!insert) {
-	            String currentExamFor = String.valueOf(exam.getExamFor());
-	            examForComboBox.setSelectedItem(currentExamFor);
+	            String currentExamTarget = String.valueOf(exam.getExamTarget());
+	            examTargetComboBox.setSelectedItem(currentExamTarget);
 	        }
 	    }
-	    return examForComboBox;
+	    return examTargetComboBox;
 	}
 	
 	
@@ -357,8 +356,6 @@ public class ExamEdit extends JDialog {
 		}
 		return procComboBox;
 	}
-	
-	
 	
 	/**
 	 * This method initializes examTypeComboBox

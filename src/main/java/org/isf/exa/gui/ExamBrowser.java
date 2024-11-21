@@ -60,12 +60,12 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	private int selectedrow;
 	private JComboBox<ExamType> examTypeFilter;
-	private JComboBox<String> examForFilter;
+	private JComboBox<String> examTargetFilter;
 	private List<Exam> examList;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.exa.for.col").toUpperCase(),
+			MessageBundle.getMessage("angal.exa.examtarget.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(),
@@ -112,8 +112,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.for.col")));
-			buttonPanel.add(getJComboBoxExamFor());
+			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selectexamtarget")));
+			buttonPanel.add(getJComboBoxExamTarget());
 			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selecttype")));
 			buttonPanel.add(getJComboBoxExamType());
 			buttonPanel.add(getJButtonNew());
@@ -126,18 +126,18 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	}
 	
 	
-	private JComboBox<String> getJComboBoxExamFor() {
-		if (examForFilter == null) {
-			examForFilter = new JComboBox<>();
-			examForFilter.addItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
-			examForFilter.addItem("no");
-			examForFilter.addItem("prenatal");
-			examForFilter.addItem("postnatal");
-			examForFilter.addItem("both");
-			
-			examForFilter.addActionListener(actionEvent -> reloadTableFilter());
+	private JComboBox<String> getJComboBoxExamTarget() {
+		if (examTargetFilter == null) {
+			examTargetFilter = new JComboBox<>();
+			examTargetFilter.addItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
+			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.no.txt"));
+			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.prenatal.txt"));
+			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.postnatal.txt"));
+			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.both.txt"));
+
+			examTargetFilter.addActionListener(actionEvent -> reloadTableFilter());
 		}
-		return examForFilter;
+		return examTargetFilter;
 	}
 
 	private JComboBox<ExamType> getJComboBoxExamType() {
@@ -286,15 +286,15 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		}
 		
 		
-		public ExamBrowsingModel(String e, String t) {
+		public ExamBrowsingModel(String target, String type) {
 			try {
-				if(e== null && t!= null) {
-					examList = examBrowsingManager.getExamsByTypeDescription(t);
+				if(target== null && type!= null) {
+					examList = examBrowsingManager.getExamsByTypeDescription(type);
 				}
-				else if (e != null && t == null) {
-					examList = examBrowsingManager.getExamsByExamForDescription(e);
+				else if (target != null && type == null) {
+					examList = examBrowsingManager.getByTarget(target);
 				}else {
-					examList = examBrowsingManager.getExamsByExamForAndTypeDescription(e, t);
+					examList = examBrowsingManager.getByTargetAndType(target, type);
 				}
 				
 			} catch (OHServiceException err) {
@@ -342,7 +342,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				return exam.getExamtype().getDescription();
 				
 			} else if (c == 2) {
-				return exam.getExamFor();
+				return exam.getExamTarget();
 				
 			} else if (c == 3) {
 				return exam.getDescription();
@@ -392,15 +392,15 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	
 	private void reloadTableFilter() {
 		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
-		String pSelectExamFor = examForFilter.getSelectedItem().toString();
-		if (pSelectExamFor.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString();
+		if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
 			model = new ExamBrowsingModel();
-		} else if (pSelectExamFor.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
-			model = new ExamBrowsingModel(pSelectExamFor, null);
-		} else if (pSelectExamFor.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+		} else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+			model = new ExamBrowsingModel(pSelectExamTarget, null);
+		} else if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			model = new ExamBrowsingModel(null, pSelectExamType);
-		}else if (pSelectExamType.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
-			model = new ExamBrowsingModel(pSelectExamFor, pSelectExamType);
+		}else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+			model = new ExamBrowsingModel(pSelectExamTarget, pSelectExamType);
 		}
 		model.fireTableDataChanged();
 		table.updateUI();
