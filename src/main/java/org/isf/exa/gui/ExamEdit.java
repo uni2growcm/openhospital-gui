@@ -235,7 +235,7 @@ public class ExamEdit extends JDialog {
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
 					String examTargetString = examTargetComboBox.getSelectedItem().toString();
-					ExamTarget examTarget = ExamTarget.valueOf(examTargetString.toUpperCase());
+					ExamTarget examTarget = ExamTarget.valueOf(examTargetString);
 					
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
