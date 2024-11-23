@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -39,9 +39,9 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
-
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamTarget;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -234,14 +234,15 @@ public class ExamEdit extends JDialog {
 					MessageDialog.error(null, "angal.exa.pleaseinsertcodeoranddescription");
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
-					String examTarget = examTargetComboBox.getSelectedItem().toString();
+					String examTargetString = examTargetComboBox.getSelectedItem().toString();
+					ExamTarget examTarget = ExamTarget.valueOf(examTargetString.toUpperCase());
 					
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
 					exam.setCode(codeTextField.getText().toUpperCase());
 					exam.setDefaultResult(defTextField.getText().toUpperCase());
 					exam.setProcedure(procedure);
-					exam.setExamTarget(examTarget);
+					exam.setTarget(examTarget);
 
 					boolean inError = false;
 					if (insert) {
@@ -307,29 +308,21 @@ public class ExamEdit extends JDialog {
 		return defTextField;
 	}
 	
-	
 	private JComboBox<String> getExamTargetComboBox() {
 	    if (examTargetComboBox == null) {
 	        examTargetComboBox = new JComboBox<>();
-
-	        String[] options = {
-	        		MessageBundle.getMessage("angal.exa.examtarget.no.txt"),
-	        		MessageBundle.getMessage("angal.exa.examtarget.prenatal.txt"),
-	        		MessageBundle.getMessage("angal.exa.examtarget.postnatal.txt"), 
-	        		MessageBundle.getMessage("angal.exa.examtarget.both.txt")};
-
-	        for (String option : options) {
-	            examTargetComboBox.addItem(option);
-	        }
+  
+	        for (ExamTarget target : ExamTarget.values()) {
+	        	examTargetComboBox.addItem(MessageBundle.getMessage("angal.exa.examtarget." + target.toString() + ".txt"));
+		    }
 
 	        if (!insert) {
-	            String currentExamTarget = String.valueOf(exam.getExamTarget());
+	            String currentExamTarget = String.valueOf(exam.getTarget());
 	            examTargetComboBox.setSelectedItem(currentExamTarget);
 	        }
 	    }
 	    return examTargetComboBox;
 	}
-	
 	
 	private JTextField getCodeTextField() {
 		if (codeTextField == null) {

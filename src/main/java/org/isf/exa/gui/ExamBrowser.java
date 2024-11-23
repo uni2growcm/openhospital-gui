@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -26,7 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -38,10 +37,10 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
-
 import org.isf.exa.gui.ExamEdit.ExamListener;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamTarget;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -68,10 +67,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			MessageBundle.getMessage("angal.exa.examtarget.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
-			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(),
-			
-			
-			
+			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(),		
 	};
 	private int[] pColumnWidth = { 60, 230, 70, 230, 60, 150};
 	private Exam exam;
@@ -125,16 +121,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		return buttonPanel;
 	}
 	
-	
 	private JComboBox<String> getJComboBoxExamTarget() {
 		if (examTargetFilter == null) {
 			examTargetFilter = new JComboBox<>();
 			examTargetFilter.addItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
-			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.no.txt"));
-			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.prenatal.txt"));
-			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.postnatal.txt"));
-			examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget.both.txt"));
-
+			for (ExamTarget target : ExamTarget.values()) {
+				 examTargetFilter.addItem(MessageBundle.getMessage("angal.exa.examtarget." + target.toString() + ".txt"));
+		    }
 			examTargetFilter.addActionListener(actionEvent -> reloadTable());
 		}
 		return examTargetFilter;
@@ -217,7 +210,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jButtonNew.addActionListener(actionEvent -> {
-				exam = new Exam("", "", new ExamType("", ""), 0, "","");
+				exam = new Exam("", "", new ExamType("", ""), 0, "");
 				ExamEdit newrecord = new ExamEdit(myFrame, exam, true);
 				newrecord.addExamListener(this);
 				newrecord.setVisible(true);
@@ -285,8 +278,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			}
 		}
 		
-		
-		public ExamBrowsingModel(String target, String type) {
+		public ExamBrowsingModel(ExamTarget target, String type) {
 			try {
 				if(target== null && type!= null) {
 					examList = examBrowsingManager.getExamsByTypeDescription(type);
@@ -302,7 +294,6 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				OHServiceExceptionUtil.showMessages(err);
 			}
 		}
-		
 		
 		public ExamBrowsingModel() {
 			try {
@@ -342,7 +333,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				return exam.getExamtype().getDescription();
 				
 			} else if (c == 2) {
-				return exam.getExamTarget();
+				return exam.getTarget();
 				
 			} else if (c == 3) {
 				return exam.getDescription();
@@ -384,15 +375,15 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
 			model = new ExamBrowsingModel();
 		} else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
-			model = new ExamBrowsingModel(pSelectExamTarget, null);
+			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
+			model = new ExamBrowsingModel(target, null);
 		} else if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			model = new ExamBrowsingModel(null, pSelectExamType);
 		}else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
-			model = new ExamBrowsingModel(pSelectExamTarget, pSelectExamType);
+			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
+			model = new ExamBrowsingModel(target, pSelectExamType);
 		}
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
-	
-
 }
