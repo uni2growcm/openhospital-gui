@@ -26,9 +26,11 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -39,6 +41,8 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
+
+import org.apache.poi.hpsf.Array;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamTarget;
@@ -56,22 +60,75 @@ import org.isf.utils.layout.SpringUtilities;
  */
 public class ExamEdit extends JDialog {
 
+	static class ExamTargetItem {
+		private final ExamTarget item;
+
+		public ExamTargetItem(ExamTarget item) {
+			this.item = item;
+		}
+
+		public ExamTarget getItem() {
+			return item;
+		}
+
+		static ExamTargetItem from(ExamTarget item) {
+			return new ExamTargetItem(item);
+		}
+
+		static ExamTargetItem from(String value) {
+			ExamTarget item = null;
+			if (value == null || value.isBlank()) {
+				item = ExamTarget.no;
+			}
+
+			char first = value.charAt(0);
+
+			item = switch (first) {
+			case '1' -> ExamTarget.no;
+			case '2' -> ExamTarget.prenatal;
+			case '3' -> ExamTarget.postnatal;
+			case '4' -> ExamTarget.both;
+			default -> ExamTarget.no;
+			};
+
+			return ExamTargetItem.from(item);
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			return item == null ? other == null : item.equals(other);
+		}
+
+		@Override
+		public String toString() {
+			String prefix = switch (item) {
+			case no -> "1 - ";
+			case prenatal -> "2 - ";
+			case postnatal -> "3 - ";
+			case both -> "4 - ";
+			default -> "1 - ";
+			};
+			return prefix + MessageBundle.getMessage("angal.exa.examtarget." + item.toString() + ".txt");
+		}
+	}
+
 	private static final long serialVersionUID = 1L;
 
 	private EventListenerList examListeners = new EventListenerList();
 
-    public interface ExamListener extends EventListener {
-        void examUpdated(AWTEvent e);
-        void examInserted(AWTEvent e);
-    }
+	public interface ExamListener extends EventListener {
+		void examUpdated(AWTEvent e);
 
-    public void addExamListener(ExamListener l) {
-    	examListeners.add(ExamListener.class, l);
-    }
+		void examInserted(AWTEvent e);
+	}
 
-    public void removeExamListener(ExamListener listener) {
-    	examListeners.remove(ExamListener.class, listener);
-    }
+	public void addExamListener(ExamListener l) {
+		examListeners.add(ExamListener.class, l);
+	}
+
+	public void removeExamListener(ExamListener listener) {
+		examListeners.remove(ExamListener.class, listener);
+	}
 
 	private void fireExamInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
@@ -96,7 +153,7 @@ public class ExamEdit extends JDialog {
 			((ExamListener) listener).examUpdated(event);
 		}
 	}
-    
+
 	private JPanel jContentPane;
 	private JPanel dataPanel;
 	private JPanel buttonPanel;
@@ -110,17 +167,18 @@ public class ExamEdit extends JDialog {
 	private JComboBox<String> examTargetComboBox;
 	private Exam exam;
 	private boolean insert;
-	
-	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
-    
+
+	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext()
+			.getBean(ExamBrowsingManager.class);
+
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
-     * because we need to update them
+	 * because we need to update them
 	 */
 	public ExamEdit(JFrame owner, Exam old, boolean inserting) {
 		super(owner, true);
 		insert = inserting;
-		exam = old;        // exam will be used for every operation
+		exam = old; // exam will be used for every operation
 		initialize();
 	}
 
@@ -128,14 +186,15 @@ public class ExamEdit extends JDialog {
 	 * This method initializes this
 	 */
 	private void initialize() {
-		
+
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screensize = kit.getScreenSize();
-        final int pfrmBase = 20;
-        final int pfrmWidth = 7;
-        final int pfrmHeight = 8;
-        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2, 
-                screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
+		final int pfrmBase = 20;
+		final int pfrmWidth = 7;
+		final int pfrmHeight = 8;
+		this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase) / 2,
+				(screensize.height - screensize.height * pfrmHeight / pfrmBase) / 2,
+				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.exa.newexam.title"));
@@ -161,11 +220,11 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes dataPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes dataPanel
+	 * 
+	 * @return javax.swing.JPanel
 	 */
-	
+
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.exa.type") + ':');
@@ -193,9 +252,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes buttonPanel
+	 * 
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
@@ -207,9 +266,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes cancelButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes cancelButton
+	 * 
+	 * @return javax.swing.JButton
 	 */
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
@@ -221,9 +280,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes okButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes okButton
+	 * 
+	 * @return javax.swing.JButton
 	 */
 	private JButton getOkButton() {
 		if (okButton == null) {
@@ -235,8 +294,8 @@ public class ExamEdit extends JDialog {
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
 					String examTargetString = examTargetComboBox.getSelectedItem().toString();
-					ExamTarget examTarget = ExamTarget.valueOf(examTargetString);
-					
+					ExamTarget examTarget = ExamTargetItem.from(examTargetString).item;
+
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
 					exam.setCode(codeTextField.getText().toUpperCase());
@@ -281,56 +340,56 @@ public class ExamEdit extends JDialog {
 		}
 		return okButton;
 	}
-	 
+
 	/**
-	 * This method initializes descriptionTextField	
-	 * 	
-	 * @return javax.swing.JTextField	
+	 * This method initializes descriptionTextField
+	 * 
+	 * @return javax.swing.JTextField
 	 */
 	private JTextField getDescriptionTextField() {
 		if (descriptionTextField == null) {
-			//changed size from 50 to 100
+			// changed size from 50 to 100
 			descriptionTextField = new VoLimitedTextField(100);
 			if (!insert) {
-			descriptionTextField.setText(exam.getDescription());
+				descriptionTextField.setText(exam.getDescription());
 			}
 		}
 		return descriptionTextField;
 	}
-	
+
 	private JTextField getDefTextField() {
 		if (defTextField == null) {
-				defTextField = new VoLimitedTextField(50);
-				if (!insert) {
+			defTextField = new VoLimitedTextField(50);
+			if (!insert) {
 				defTextField.setText(exam.getDefaultResult());
 			}
 		}
 		return defTextField;
 	}
-	
-	private JComboBox<String> getExamTargetComboBox() {
-	    if (examTargetComboBox == null) {
-	        examTargetComboBox = new JComboBox<>();
-  
-	        for (ExamTarget target : ExamTarget.values()) {
-	        	examTargetComboBox.addItem(MessageBundle.getMessage("angal.exa.examtarget." + target.toString() + ".txt"));
-		    }
 
-	        if (!insert) {
-	            String currentExamTarget = String.valueOf(exam.getTarget());
-	            examTargetComboBox.setSelectedItem(currentExamTarget);
-	        }
-	    }
-	    return examTargetComboBox;
+	private JComboBox<String> getExamTargetComboBox() {
+		if (examTargetComboBox == null) {
+			String[] items = { ExamTargetItem.from(ExamTarget.no).toString(),
+					ExamTargetItem.from(ExamTarget.prenatal).toString(),
+					ExamTargetItem.from(ExamTarget.postnatal).toString(),
+					ExamTargetItem.from(ExamTarget.both).toString() };
+
+			examTargetComboBox = new JComboBox<>(items);
+
+			if (!insert) {
+				examTargetComboBox.setSelectedItem(ExamTargetItem.from(exam.getTarget()));
+			}
+		}
+		return examTargetComboBox;
 	}
-	
+
 	private JTextField getCodeTextField() {
 		if (codeTextField == null) {
-                        codeTextField = new VoLimitedTextField(10);
-                    if (!insert) {
-                        codeTextField.setText(exam.getCode());
-                        codeTextField.setEnabled(false);
-                    }
+			codeTextField = new VoLimitedTextField(10);
+			if (!insert) {
+				codeTextField.setText(exam.getCode());
+				codeTextField.setEnabled(false);
+			}
 		}
 		return codeTextField;
 	}
@@ -349,11 +408,11 @@ public class ExamEdit extends JDialog {
 		}
 		return procComboBox;
 	}
-	
+
 	/**
 	 * This method initializes examTypeComboBox
-	 * 	
-	 * @return javax.swing.JComboBox	
+	 * 
+	 * @return javax.swing.JComboBox
 	 */
 	private JComboBox<ExamType> getExamTypeComboBox() {
 		if (examTypeComboBox == null) {

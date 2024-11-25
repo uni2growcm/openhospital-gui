@@ -333,7 +333,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				return exam.getExamtype().getDescription();
 				
 			} else if (c == 2) {
-				return exam.getTarget();
+				return MessageBundle.getMessage("angal.exa.examtarget." + exam.getTarget().toString() + ".txt");
 				
 			} else if (c == 3) {
 				return exam.getDescription();
