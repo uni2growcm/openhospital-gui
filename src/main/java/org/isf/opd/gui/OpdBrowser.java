@@ -1228,4 +1228,20 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		public void keyReleased(KeyEvent e) {}
 	}
 
+/*	public void initialiseCombo(JComboBox pagesCombo, int total_rows){
+		int j = 0;
+		pagesCombo.removeAllItems();
+		for(int i=0; i< total_rows/PAGE_SIZE; i++){
+			j = i+1;
+			pagesCombo.addItem(j);
+		}
+		if(j * PAGE_SIZE < total_rows){
+			pagesCombo.addItem(j+1);
+			under.setText("/" + (total_rows/PAGE_SIZE + 1 + " Pages"));
+		}else{
+			under.setText("/" + total_rows/PAGE_SIZE + " Pages");
+		}
+*/
+	}
+
 } 
