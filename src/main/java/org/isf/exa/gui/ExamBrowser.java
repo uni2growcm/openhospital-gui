@@ -281,15 +281,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		
 		public ExamBrowsingModel(ExamTarget target, String type) {
 			try {
-				if(target== null && type!= null) {
+				if(target == null && type != null) {
 					examList = examBrowsingManager.getExamsByTypeDescription(type);
-				}
-				else if (target != null && type == null) {
+				} else if (target != null && type == null) {
 					examList = examBrowsingManager.getByTarget(target);
-				}else {
+				} else {
 					examList = examBrowsingManager.getByTargetAndType(target, type);
 				}
-				
 			} catch (OHServiceException err) {
 				examList = null;
 				OHServiceExceptionUtil.showMessages(err);
@@ -380,7 +378,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			model = new ExamBrowsingModel(target, null);
 		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			model = new ExamBrowsingModel(null, pSelectExamType);
-		}else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
 			model = new ExamBrowsingModel(target, pSelectExamType);
 		}
