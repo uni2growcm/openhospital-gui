@@ -168,8 +168,7 @@ public class ExamEdit extends JDialog {
 	private Exam exam;
 	private boolean insert;
 
-	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext()
-			.getBean(ExamBrowsingManager.class);
+	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
@@ -232,7 +231,7 @@ public class ExamEdit extends JDialog {
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
 			JLabel procLabel = new JLabel(MessageBundle.getMessage("angal.exa.procedure") + ':');
 			JLabel defLabel = new JLabel(MessageBundle.getMessage("angal.exa.default") + ':');
-			JLabel examTargetLabel = new JLabel(MessageBundle.getMessage("angal.exa.selectexamtarget") + ':');
+			JLabel examTargetLabel = new JLabel(MessageBundle.getMessage("angal.exa.examtarget.label") + ':');
 			dataPanel = new JPanel(new SpringLayout());
 			dataPanel.add(typeLabel);
 			dataPanel.add(getExamTypeComboBox());
@@ -376,8 +375,8 @@ public class ExamEdit extends JDialog {
 
 			examTargetComboBox = new JComboBox<>(items);
 
-			if (!insert) {
-				examTargetComboBox.setSelectedItem(ExamTargetItem.from(exam.getTarget()));
+			if (!insert && exam != null) {
+				examTargetComboBox.setSelectedItem(ExamTargetItem.from(exam.getTarget()).toString());
 			}
 		}
 		return examTargetComboBox;

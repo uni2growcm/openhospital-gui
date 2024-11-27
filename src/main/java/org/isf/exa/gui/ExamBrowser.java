@@ -38,6 +38,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import org.isf.exa.gui.ExamEdit.ExamListener;
+import org.isf.exa.gui.ExamEdit.ExamTargetItem;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamTarget;
@@ -108,7 +109,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selectexamtarget")));
+			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.examtarget.label")));
 			buttonPanel.add(getJComboBoxExamTarget());
 			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selecttype")));
 			buttonPanel.add(getJComboBoxExamType());
@@ -371,15 +372,15 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	private void reloadTable() {
 		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
-		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString();
-		if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString().toLowerCase();
+		if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) == 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
 			model = new ExamBrowsingModel();
-		} else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
+		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 &&  pSelectExamType.compareTo(STR_ALL) == 0  ) {
 			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
 			model = new ExamBrowsingModel(target, null);
-		} else if (pSelectExamTarget.compareTo(STR_ALL) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) == 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			model = new ExamBrowsingModel(null, pSelectExamType);
-		}else if (pSelectExamTarget.compareTo(STR_ALL) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
+		}else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 &&  pSelectExamType.compareTo(STR_ALL) != 0  ) {
 			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
 			model = new ExamBrowsingModel(target, pSelectExamType);
 		}
