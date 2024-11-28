@@ -445,10 +445,10 @@ public class MedicalEdit extends JDialog {
 	 */
 	private VoLimitedTextField getConditioningTextField() {
 		if (conditioningTextField == null) {
-				conditioningTextField = new VoLimitedTextField(5);
-				if (medical != null && medical.getConditioning() != null ) {
-					conditioningTextField.setText(medical.getConditioning());
-				}
+			conditioningTextField = new VoLimitedTextField(5);
+			if (medical != null && medical.getConditioning() != null ) {
+				conditioningTextField.setText(medical.getConditioning());
+			}
 		}
 		return conditioningTextField;
 	}
@@ -463,7 +463,7 @@ public class MedicalEdit extends JDialog {
 			dosingTextField = new VoLimitedTextField(5);
 			if (medical != null && medical.getDosing() != null ) {
 				dosingTextField.setText(medical.getDosing());
-				}
+			}
 		}
 		return dosingTextField;
 	}	
