@@ -316,6 +316,7 @@ public class ExamEdit extends JDialog {
 						try {
 							examBrowsingManager.newExam(exam);
 							fireExamInserted();
+							dispose();
 						} catch (OHServiceException e1) {
 							OHServiceExceptionUtil.showMessages(e1);
 							inError = true;
