@@ -125,14 +125,11 @@ public class MedicalEdit extends JDialog {
 	private Medical medical;
 	private boolean insert;
 
-	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext()
-			.getBean(MedicalTypeBrowserManager.class);
-	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext()
-			.getBean(MedicalBrowsingManager.class);
+	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
+	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
 
 	/**
-	 * This is the default constructor; we pass the arraylist and the selectedrow
-	 * because we need to update them
+	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
 	 */
 	public MedicalEdit(Medical old, boolean inserting, JFrame owner) {
 		super();
@@ -300,8 +297,7 @@ public class MedicalEdit extends JDialog {
 
 										if (ok == JOptionPane.OK_OPTION) {
 											try {
-												Medical insertedMedical = medicalBrowsingManager.newMedical(newMedical,
-														true);
+												Medical insertedMedical = medicalBrowsingManager.newMedical(newMedical, true);
 												if (insertedMedical != null) {
 													result = true;
 												}
@@ -343,8 +339,7 @@ public class MedicalEdit extends JDialog {
 
 										if (ok == JOptionPane.OK_OPTION) {
 											try {
-												Medical updatedMedical = medicalBrowsingManager
-														.updateMedical(oldMedical, true);
+												Medical updatedMedical = medicalBrowsingManager.updateMedical(oldMedical, true);
 												if (updatedMedical != null) {
 													result = true;
 												}
@@ -385,10 +380,8 @@ public class MedicalEdit extends JDialog {
 
 				private int manageSimilarFoundWarning(OHExceptionMessage error) {
 					/*
-					 * Already shown by OHServiceExceptionUtil int messageType =
-					 * error.getLevel().getSwingSeverity();
-					 * JOptionPane.showMessageDialog(MedicalEdit.this, error.getMessage(),
-					 * error.getTitle(), messageType);
+					 * Already shown by OHServiceExceptionUtil int messageType = error.getLevel().getSwingSeverity();
+					 * JOptionPane.showMessageDialog(MedicalEdit.this, error.getMessage(), error.getTitle(), messageType);
 					 */
 					return MessageDialog.yesNoCancel(MedicalEdit.this, "angal.common.doyouwanttoproceed.msg");
 				}
