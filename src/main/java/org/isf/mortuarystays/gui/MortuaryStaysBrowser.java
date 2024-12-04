@@ -291,7 +291,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
 
         public MortuaryStaysBrowserModel() {
             try {
-                mortuaryStaysList = mortuaryStaysManager.getAll();
+                mortuaryStaysList = mortuaryStaysManager.getAll(false);
             } catch (OHServiceException e) {
                 OHServiceExceptionUtil.showMessages(e);
             }
