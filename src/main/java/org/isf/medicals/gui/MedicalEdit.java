@@ -71,6 +71,7 @@ public class MedicalEdit extends JDialog {
 	public interface MedicalListener extends EventListener {
 
 		void medicalUpdated(AWTEvent e);
+
 		void medicalInserted(Medical medical);
 	}
 
@@ -124,11 +125,14 @@ public class MedicalEdit extends JDialog {
 	private Medical medical;
 	private boolean insert;
 
-	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
-	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
+	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext()
+			.getBean(MedicalTypeBrowserManager.class);
+	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext()
+			.getBean(MedicalBrowsingManager.class);
 
 	/**
-	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
+	 * This is the default constructor; we pass the arraylist and the selectedrow
+	 * because we need to update them
 	 */
 	public MedicalEdit(Medical old, boolean inserting, JFrame owner) {
 		super();
@@ -296,7 +300,8 @@ public class MedicalEdit extends JDialog {
 
 										if (ok == JOptionPane.OK_OPTION) {
 											try {
-												Medical insertedMedical = medicalBrowsingManager.newMedical(newMedical, true);
+												Medical insertedMedical = medicalBrowsingManager.newMedical(newMedical,
+														true);
 												if (insertedMedical != null) {
 													result = true;
 												}
@@ -338,7 +343,8 @@ public class MedicalEdit extends JDialog {
 
 										if (ok == JOptionPane.OK_OPTION) {
 											try {
-												Medical updatedMedical = medicalBrowsingManager.updateMedical(oldMedical, true);
+												Medical updatedMedical = medicalBrowsingManager
+														.updateMedical(oldMedical, true);
 												if (updatedMedical != null) {
 													result = true;
 												}
@@ -379,8 +385,10 @@ public class MedicalEdit extends JDialog {
 
 				private int manageSimilarFoundWarning(OHExceptionMessage error) {
 					/*
-					 * Already shown by OHServiceExceptionUtil int messageType = error.getLevel().getSwingSeverity();
-					 * JOptionPane.showMessageDialog(MedicalEdit.this, error.getMessage(), error.getTitle(), messageType);
+					 * Already shown by OHServiceExceptionUtil int messageType =
+					 * error.getLevel().getSwingSeverity();
+					 * JOptionPane.showMessageDialog(MedicalEdit.this, error.getMessage(),
+					 * error.getTitle(), messageType);
 					 */
 					return MessageDialog.yesNoCancel(MedicalEdit.this, "angal.common.doyouwanttoproceed.msg");
 				}
@@ -422,7 +430,7 @@ public class MedicalEdit extends JDialog {
 		}
 		return codeTextField;
 	}
-	
+
 	/**
 	 * This method initializes shapeTextField
 	 * 
@@ -431,13 +439,13 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField getShapeTextField() {
 		if (shapeTextField == null) {
 			shapeTextField = new VoLimitedTextField(10);
-			if (medical != null && medical.getShape() != null ) {
+			if (medical != null && medical.getShape() != null) {
 				shapeTextField.setText(medical.getShape());
 			}
 		}
 		return shapeTextField;
 	}
-	
+
 	/**
 	 * This method initializes conditioningTextField
 	 * 
@@ -446,13 +454,13 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField getConditioningTextField() {
 		if (conditioningTextField == null) {
 			conditioningTextField = new VoLimitedTextField(10);
-			if (medical != null && medical.getConditioning() != null ) {
+			if (medical != null && medical.getConditioning() != null) {
 				conditioningTextField.setText(medical.getConditioning());
 			}
 		}
 		return conditioningTextField;
 	}
-	
+
 	/**
 	 * This method initializes dosingTextField
 	 * 
@@ -461,13 +469,13 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField getDosingTextField() {
 		if (dosingTextField == null) {
 			dosingTextField = new VoLimitedTextField(50);
-			if (medical != null && medical.getDosing() != null ) {
+			if (medical != null && medical.getDosing() != null) {
 				dosingTextField.setText(medical.getDosing());
 			}
 		}
 		return dosingTextField;
-	}	
-	
+	}
+
 	private JTextField getMinQtiField() {
 		if (minQtiField == null) {
 			if (insert) {
