@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.List;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -38,6 +39,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+
 import org.isf.exa.gui.ExamEdit.ExamListener;
 import org.isf.exa.gui.ExamEdit.ExamTargetItem;
 import org.isf.exa.manager.ExamBrowsingManager;
@@ -63,16 +65,18 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JComboBox<ExamType> examTypeFilter;
 	private JComboBox<String> examTargetFilter;
 	private List<Exam> examList;
-	private String[] pColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
+	private String[] pColumns = {
+			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.examtarget.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
-			MessageBundle.getMessage("angal.exa.default.col").toUpperCase(), };
-	private int[] pColumnWidth = { 60, 230, 70, 230, 60, 150 };
+			MessageBundle.getMessage("angal.exa.default.col").toUpperCase()
+	};
+	private int[] pColumnWidth = {60, 230, 70, 230, 60, 150};
 	private Exam exam;
 
-	private DefaultTableModel model;
+	private DefaultTableModel model ;
 	private JTable table;
 	private final JFrame myFrame;
 	private JButton jButtonNew;
@@ -81,8 +85,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JButton jButtonShow;
 	private JPanel jContentPanel;
 	private JPanel buttonPanel;
-	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext()
-			.getBean(ExamBrowsingManager.class);
+	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 
 	public ExamBrowser() {
 		myFrame = this;
@@ -104,6 +107,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		}
 		return jContentPanel;
 	}
+
 
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
@@ -188,8 +192,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			}
 			selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
 			Exam examToDelete = (Exam) model.getValueAt(selectedrow, -1);
-			int answer = MessageDialog.yesNo(null, "angal.exa.deleteexam.fmt.msg", examToDelete.getCode(),
-					examToDelete.getDescription());
+			int answer = MessageDialog.yesNo(null, "angal.exa.deleteexam.fmt.msg", examToDelete.getCode(), examToDelete.getDescription());
 			if (answer == JOptionPane.YES_OPTION) {
 				boolean deleted = false;
 				try {
@@ -216,7 +219,6 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				ExamEdit newrecord = new ExamEdit(myFrame, exam, true);
 				newrecord.addExamListener(this);
 				newrecord.setVisible(true);
-
 			});
 		}
 		return jButtonNew;
@@ -304,7 +306,6 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
-
 		@Override
 		public int getRowCount() {
 			if (examList == null) {
@@ -331,18 +332,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 0) {
 				return exam.getCode();
 			} else if (c == 1) {
-
 				return exam.getExamtype().getDescription();
-
 			} else if (c == 2) {
 				return MessageBundle.getMessage("angal.exa.examtarget." + exam.getTarget().toString() + ".txt");
-
 			} else if (c == 3) {
 				return exam.getDescription();
-
 			} else if (c == 4) {
 				return exam.getProcedure();
-
 			} else if (c == 5) {
 				return exam.getDefaultResult();
 			}
@@ -365,8 +361,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 	@Override
 	public void examInserted(AWTEvent e) {
-		examTypeFilter
-				.setSelectedItem(new ExamType("", MessageBundle.getMessage("angal.common.all.txt").toUpperCase()));
+		examTypeFilter.setSelectedItem(new ExamType("", MessageBundle.getMessage("angal.common.all.txt").toUpperCase()));
 		examTargetFilter.setSelectedItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
 		reloadTable();
 		examList.add(0, exam);
@@ -393,4 +388,5 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
+
 }

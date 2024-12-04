@@ -116,19 +116,18 @@ public class ExamEdit extends JDialog {
 
 	private EventListenerList examListeners = new EventListenerList();
 
-	public interface ExamListener extends EventListener {
-		void examUpdated(AWTEvent e);
+    public interface ExamListener extends EventListener {
+        void examUpdated(AWTEvent e);
+        void examInserted(AWTEvent e);
+    }
 
-		void examInserted(AWTEvent e);
-	}
+    public void addExamListener(ExamListener l) {
+    	examListeners.add(ExamListener.class, l);
+    }
 
-	public void addExamListener(ExamListener l) {
-		examListeners.add(ExamListener.class, l);
-	}
-
-	public void removeExamListener(ExamListener listener) {
-		examListeners.remove(ExamListener.class, listener);
-	}
+    public void removeExamListener(ExamListener listener) {
+    	examListeners.remove(ExamListener.class, listener);
+    }
 
 	private void fireExamInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
@@ -172,12 +171,12 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
-	 * because we need to update them
+     * because we need to update them
 	 */
 	public ExamEdit(JFrame owner, Exam old, boolean inserting) {
 		super(owner, true);
 		insert = inserting;
-		exam = old; // exam will be used for every operation
+		exam = old;        // exam will be used for every operation
 		initialize();
 	}
 
@@ -188,12 +187,11 @@ public class ExamEdit extends JDialog {
 
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screensize = kit.getScreenSize();
-		final int pfrmBase = 20;
-		final int pfrmWidth = 7;
-		final int pfrmHeight = 8;
-		this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase) / 2,
-				(screensize.height - screensize.height * pfrmHeight / pfrmBase) / 2,
-				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
+        final int pfrmBase = 20;
+        final int pfrmWidth = 7;
+        final int pfrmHeight = 8;
+        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
+                screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.exa.newexam.title"));
@@ -220,10 +218,9 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes dataPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
-
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.exa.type") + ':');
@@ -252,7 +249,7 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes buttonPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getButtonPanel() {
@@ -266,7 +263,7 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes cancelButton
-	 * 
+	 *
 	 * @return javax.swing.JButton
 	 */
 	private JButton getCancelButton() {
@@ -280,7 +277,7 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes okButton
-	 * 
+	 *
 	 * @return javax.swing.JButton
 	 */
 	private JButton getOkButton() {
@@ -297,6 +294,7 @@ public class ExamEdit extends JDialog {
 
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
+
 					exam.setCode(codeTextField.getText().toUpperCase());
 					exam.setDefaultResult(defTextField.getText().toUpperCase());
 					exam.setProcedure(procedure);
@@ -316,7 +314,6 @@ public class ExamEdit extends JDialog {
 						try {
 							examBrowsingManager.newExam(exam);
 							fireExamInserted();
-							dispose();
 						} catch (OHServiceException e1) {
 							OHServiceExceptionUtil.showMessages(e1);
 							inError = true;
@@ -343,15 +340,15 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes descriptionTextField
-	 * 
+	 *
 	 * @return javax.swing.JTextField
 	 */
 	private JTextField getDescriptionTextField() {
 		if (descriptionTextField == null) {
-			// changed size from 50 to 100
+			//changed size from 50 to 100
 			descriptionTextField = new VoLimitedTextField(100);
 			if (!insert) {
-				descriptionTextField.setText(exam.getDescription());
+			descriptionTextField.setText(exam.getDescription());
 			}
 		}
 		return descriptionTextField;
@@ -359,8 +356,8 @@ public class ExamEdit extends JDialog {
 
 	private JTextField getDefTextField() {
 		if (defTextField == null) {
-			defTextField = new VoLimitedTextField(50);
-			if (!insert) {
+				defTextField = new VoLimitedTextField(50);
+				if (!insert) {
 				defTextField.setText(exam.getDefaultResult());
 			}
 		}
@@ -385,11 +382,11 @@ public class ExamEdit extends JDialog {
 
 	private JTextField getCodeTextField() {
 		if (codeTextField == null) {
-			codeTextField = new VoLimitedTextField(10);
-			if (!insert) {
-				codeTextField.setText(exam.getCode());
-				codeTextField.setEnabled(false);
-			}
+                        codeTextField = new VoLimitedTextField(10);
+                    if (!insert) {
+                        codeTextField.setText(exam.getCode());
+                        codeTextField.setEnabled(false);
+                    }
 		}
 		return codeTextField;
 	}
@@ -411,7 +408,7 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes examTypeComboBox
-	 * 
+	 *
 	 * @return javax.swing.JComboBox
 	 */
 	private JComboBox<ExamType> getExamTypeComboBox() {
