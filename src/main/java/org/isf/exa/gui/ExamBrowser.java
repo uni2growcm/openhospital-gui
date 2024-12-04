@@ -108,7 +108,6 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		return jContentPanel;
 	}
 
-
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
