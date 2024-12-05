@@ -281,7 +281,6 @@ public class MortuaryStaysEdit extends JDialog {
         if (okButton == null) {
             okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
             okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
-
             okButton.addActionListener(actionEvent -> {
                 if (insert){
                     code = codeTextField.getText().trim();
@@ -289,12 +288,10 @@ public class MortuaryStaysEdit extends JDialog {
                         MessageDialog.error(this, "angal.common.pleaseinsertacode.msg");
                         return;
                     }
-
                     if (code.length() > 11) {
                         MessageDialog.error(this, "angal.common.thecodeistoolongmax1char.msg");
                         return;
                     }
-
                     try {
                         if (mortuaryStayManager.isCodePresent(code)) {
                             MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
@@ -304,7 +301,6 @@ public class MortuaryStaysEdit extends JDialog {
                         OHServiceExceptionUtil.showMessages(e);
                     }
                 }
-
                 name = nameTextField.getText().trim();
                 if (name.isEmpty()){
                     MessageDialog.error(this, "angal.common.pleaseinsertavalidname.msg");

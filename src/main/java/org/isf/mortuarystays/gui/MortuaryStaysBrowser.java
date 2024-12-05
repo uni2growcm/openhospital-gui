@@ -22,9 +22,6 @@
 package org.isf.mortuarystays.gui;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -46,10 +43,10 @@ import org.isf.mortuarystays.model.MortuaryStay;
 import org.isf.mortuarystays.gui.MortuaryStaysEdit.MortuaryStaysListener;
 
 /**
- * This class shows a list of wards.
+ * This class shows a list of mortuarystays.
  * It is possible to edit-insert-delete records
  *
- * @author Rick
+ * @author Bill
  *
  */
 public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysListener {
@@ -123,7 +120,6 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
         this.setBounds(pfrmBordX,pfrmBordY,screensize.width / pfrmBase * pfrmWidth,screensize.height / pfrmBase * pfrmHeight);
         this.setContentPane(getJContentPane());
         this.setLocationRelativeTo(this);
-
     }
 
     /**
@@ -295,7 +291,6 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
             } catch (OHServiceException e) {
                 OHServiceExceptionUtil.showMessages(e);
             }
-
         }
 
         @Override
@@ -339,6 +334,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
         public Class<?> getColumnClass(int columnIndex) {
             return pColumnClass[columnIndex];
         }
+
         @Override
         public boolean isCellEditable(int arg0, int arg1) {
             return false;
