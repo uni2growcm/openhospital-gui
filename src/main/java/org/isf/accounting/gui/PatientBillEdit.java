@@ -1233,13 +1233,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setIcon(new ImageIcon("rsc/icons/save_button.png"));
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
-				boolean isGuarantorEnabled = GeneralData.ALLOWBILLGUARANTOR;
-
-				if (!isGuarantorEnabled && balance.doubleValue() > 0) {
-					JOptionPane.showMessageDialog(this, MessageBundle.getMessage("angal.billbrowser.billmustbepaidbefore.save.msg"),
-									MessageBundle.getMessage("angal.common.error"), JOptionPane.ERROR_MESSAGE);
-					return;
-				}
 				/*
 				 * we check again for underlying data changes
 				 */

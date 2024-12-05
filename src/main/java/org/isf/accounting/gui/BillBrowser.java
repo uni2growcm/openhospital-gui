@@ -111,55 +111,53 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	@Override
 	public void billInserted(AWTEvent event) {
-		if (patientParent != null) {
-			User selectedGuarantor = (User) jComboBoxGuarantor.getSelectedItem();
-			if (selectedGuarantor == null) {
-				try {
-					updateDataSet(dateFrom, dateTo, patientParent);
-				} catch (OHServiceException ohServiceException) {
-					LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-				}
-			} else {
-				try {
-					updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
-				} catch (OHServiceException ohServiceException) {
-					LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-				}
-			}
-
-		} else {
-			User selectedGuarantor = (User) jComboBoxGuarantor.getSelectedItem();
-			if (selectedGuarantor == null) {
-				updateDataSet(dateFrom, dateTo);
-			} else {
-				try {
-					updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
-				} catch (OHServiceException ohServiceException) {
-					LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-				}
-			}
-		}
-		updateTables();
-		updateTotals();
-		if (event != null) {
-			Bill billInserted = (Bill) event.getSource();
-			if (billInserted != null) {
-				int insertedId = billInserted.getId();
-				IntStream.range(0, jTableBills.getRowCount()).forEach(i -> {
-					Bill aBill = (Bill) jTableBills.getModel().getValueAt(i, -1);
-					if (aBill.getId() == insertedId) {
-						jTableBills.getSelectionModel().setSelectionInterval(i, i);
-					}
-				});
-			}
-			if (!isSingleUser && MainMenu.checkUserGrants("cashiersfilter")) {
-				if (!users.contains(user)) {
-					users.add(user);
-					jComboUsers.addItem(user);
-				}
-				jComboUsers.setSelectedItem(user);
-			}
-		}
+	    User selectedGuarantor = (User) getJComboBoxGuarantor().getSelectedItem(); // Utilise getJComboBoxGuarantor() pour garantir l'initialisation
+	    if (patientParent != null) {
+	        if (selectedGuarantor == null) {
+	            try {
+	                updateDataSet(dateFrom, dateTo, patientParent);
+	            } catch (OHServiceException ohServiceException) {
+	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+	            }
+	        } else {
+	            try {
+	                updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+	            } catch (OHServiceException ohServiceException) {
+	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+	            }
+	        }
+	    } else {
+	        if (selectedGuarantor == null) {
+	            updateDataSet(dateFrom, dateTo);
+	        } else {
+	            try {
+	                updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+	            } catch (OHServiceException ohServiceException) {
+	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+	            }
+	        }
+	    }
+	    updateTables();
+	    updateTotals();
+	    if (event != null) {
+	        Bill billInserted = (Bill) event.getSource();
+	        if (billInserted != null) {
+	            int insertedId = billInserted.getId();
+	            IntStream.range(0, jTableBills.getRowCount()).forEach(i -> {
+	                Bill aBill = (Bill) jTableBills.getModel().getValueAt(i, -1);
+	                if (aBill.getId() == insertedId) {
+	                    jTableBills.getSelectionModel().setSelectionInterval(i, i);
+	                }
+	            });
+	        }
+	        if (!isSingleUser && MainMenu.checkUserGrants("cashiersfilter")) {
+	            if (!users.contains(user)) {
+	                users.add(user);
+	                jComboUsers.addItem(user);
+	            }
+	            jComboUsers.setSelectedItem(user);
+	        }
+	    }
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -718,6 +716,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		}
 		billFromPayments = billBrowserManager.getBillsWithGuarantor(paymentsPeriod, guarantor);
 	}
+	
 	private JButton getJButtonNew() {
 		if (jButtonNew == null) {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.billbrowser.newbill.btn"));
