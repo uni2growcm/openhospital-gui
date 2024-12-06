@@ -618,7 +618,7 @@ public class MovStockBrowser extends ModalJFrame {
 		medicalTypeBox.addItem(TEXT_ALL);
 
 		try {
-			medical = medicalTypeBrowserManager.getAllActiveMedicalType();
+			medical = medicalTypeBrowserManager.getMedicalType();
 
 			for (MedicalType aMedicalType : medical) {
 				medicalTypeBox.addItem(aMedicalType);

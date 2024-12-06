@@ -54,10 +54,9 @@ public class MedicalTypeBrowser extends ModalJFrame implements MedicalTypeListen
 	private List<MedicalType> pMedicalType;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.deleted.label").toUpperCase()
+			MessageBundle.getMessage("angal.common.description.txt").toUpperCase()
 	};
-	private final int[] pColumnWidth = { 20, 200, 20 };
+	private int[] pColumnWidth = {80, 200};
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
 	private JButton jNewButton;
@@ -199,7 +198,6 @@ public class MedicalTypeBrowser extends ModalJFrame implements MedicalTypeListen
 			jTable = new JTable(model);
 			jTable.getColumnModel().getColumn(0).setMinWidth(pColumnWidth[0]);
 			jTable.getColumnModel().getColumn(1).setMinWidth(pColumnWidth[1]);
-			jTable.getColumnModel().getColumn(2).setMinWidth(pColumnWidth[2]);
 		}
 		return jTable;
 	}
@@ -245,8 +243,6 @@ public class MedicalTypeBrowser extends ModalJFrame implements MedicalTypeListen
 				return medType.getCode();
 			} else if (c == 1) {
 				return medType.getDescription();
-			} else if (c == 2) {
-				return medType.getDeleted() == 'Y';
 			}
 			return null;
 		}
@@ -256,10 +252,6 @@ public class MedicalTypeBrowser extends ModalJFrame implements MedicalTypeListen
 			return false;
 		}
 		
-		@Override
-		public Class getColumnClass(int column) {
-			return (column == 2) ? Boolean.class : String.class;
-		}
 	}
 
 	@Override

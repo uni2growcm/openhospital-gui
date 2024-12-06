@@ -595,7 +595,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			pbox.addItem(STR_ALL);
 			List<MedicalType> type;
 			try {
-				type = medicalTypeManager.getAllActiveMedicalType();
+				type = medicalTypeManager.getMedicalType();
 				for (MedicalType elem : type) {
 					pbox.addItem(elem);
 				}
