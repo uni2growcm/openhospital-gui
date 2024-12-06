@@ -42,6 +42,7 @@ jobs:
             FORK_REPO=${GITHUB_ACTOR}/openhospital-core
           else
             echo "Using informatici/openhospital-core."
+            FORK_REPO="informatici/openhospital-core"
           fi
           
           # Export FORK_REPO and BRANCH_NAME to GITHUB_ENV for the next step
