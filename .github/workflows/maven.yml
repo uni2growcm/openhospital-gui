@@ -34,7 +34,7 @@ jobs:
             # For pushes to the main repository, default to the main core repo
             FORK_REPO="informatici/openhospital-core"
           else
-             # For pull requests or other pushes, use the contributor fork if applicable
+            # For pull requests or other pushes, use the contributor fork if applicable
             if [[ -n "$GITHUB_HEAD_REPOSITORY" ]]; then
               FORK_REPO="$GITHUB_HEAD_REPOSITORY"
             else
@@ -42,6 +42,7 @@ jobs:
               FORK_REPO="${GITHUB_ACTOR}/openhospital-core"
               CHECK_BRANCH_URL="https://github.com/$FORK_REPO/tree/$BRANCH_NAME"
               echo "Checking branch existence with: curl -s -o /dev/null -w \"%{http_code}\" $CHECK_BRANCH_URL"
+          
               if curl -s -o /dev/null -w "%{http_code}" "$CHECK_BRANCH_URL" | grep -q "200"; then
                 echo "Branch $BRANCH_NAME exists in $FORK_REPO."
               else

@@ -125,14 +125,14 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jContentPane
      *
-     * @return javax.swing.JPanel
+     * @return JPanel
      */
     private JPanel getJContentPane() {
         if (jContentPane == null) {
             jContentPane = new JPanel();
             jContentPane.setLayout(new BorderLayout());
-            jContentPane.add(getJButtonPanel(), java.awt.BorderLayout.SOUTH);
-            jContentPane.add(getJScrollPane(), java.awt.BorderLayout.CENTER);
+            jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+            jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
         }
         return jContentPane;
     }
@@ -140,7 +140,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jButtonPanel
      *
-     * @return javax.swing.JPanel
+     * @return JPanel
      */
     private JPanel getJButtonPanel() {
         if (jButtonPanel == null) {
@@ -156,12 +156,12 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jEditButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getJEditButton() {
         if (jEditButton == null) {
             jEditButton = new JButton();
-            jEditButton.setText(MessageBundle.getMessage("angal.common.edit"));
+            jEditButton.setText(MessageBundle.getMessage("angal.common.edit.btn"));
             jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
             jEditButton.addActionListener(actionEvent -> {
                     if (table.getSelectedRow() < 0) {
@@ -182,7 +182,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jNewButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getJNewButton() {
         if (jNewButton == null) {
@@ -202,7 +202,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jDeleteButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getJDeleteButton() {
         if (jDeleteButton == null) {
@@ -238,7 +238,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jCloseButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getJCloseButton() {
         if (jCloseButton == null) {
@@ -253,7 +253,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes jScrollPane
      *
-     * @return javax.swing.JScrollPane
+     * @return JScrollPane
      */
     private JScrollPane getJScrollPane() {
         if (jScrollPane == null) {
@@ -266,7 +266,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
     /**
      * This method initializes table
      *
-     * @return javax.swing.JTable
+     * @return JTable
      */
     private JTable getJTable() {
         if (table == null) {

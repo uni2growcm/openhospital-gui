@@ -99,8 +99,8 @@ public class MedicalTypeBrowserEdit extends JDialog {
 	private JCheckBox deletedCheckbox;
 	private VoLimitedTextField codeTextField;
 	private String lastdescription;
-	private MedicalType medicalType;
 	private char isLastDeleted;
+	private MedicalType medicalType;
 	private boolean insert;
 	private JPanel jDataPanel;
 	private MedicalTypeBrowserManager medicalTypeBrowserManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
@@ -151,7 +151,7 @@ public class MedicalTypeBrowserEdit extends JDialog {
 	/**
 	 * This method initializes dataPanel	
 	 * 	
-	 * @return javax.swing.JPanel	
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {

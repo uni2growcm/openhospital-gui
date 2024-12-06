@@ -140,7 +140,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes jContentPane
      *
-     * @return javax.swing.JPanel
+     * @return JPanel
      */
     private JPanel getJContentPane() {
         if (jContentPane == null) {
@@ -156,7 +156,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes dataPanel
      *
-     * @return javax.swing.JPanel
+     * @return JPanel
      */
     private JPanel getDataPanel() {
         if (dataPanel == null) {
@@ -247,7 +247,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes buttonPanel
      *
-     * @return javax.swing.JPanel
+     * @return JPanel
      */
     private JPanel getButtonPanel() {
         if (buttonPanel == null) {
@@ -261,7 +261,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes cancelButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getCancelButton() {
         if (cancelButton == null) {
@@ -275,14 +275,14 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes okButton
      *
-     * @return javax.swing.JButton
+     * @return JButton
      */
     private JButton getOkButton() {
         if (okButton == null) {
             okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
             okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
             okButton.addActionListener(actionEvent -> {
-                if (insert){
+                if (insert) {
                     code = codeTextField.getText().trim();
                     if (code.isEmpty()) {
                         MessageDialog.error(this, "angal.common.pleaseinsertacode.msg");
@@ -302,7 +302,7 @@ public class MortuaryStaysEdit extends JDialog {
                     }
                 }
                 name = nameTextField.getText().trim();
-                if (name.isEmpty()){
+                if (name.isEmpty()) {
                     MessageDialog.error(this, "angal.common.pleaseinsertavalidname.msg");
                     return;
                 }
@@ -331,7 +331,7 @@ public class MortuaryStaysEdit extends JDialog {
                     MessageDialog.error(this, "angal.mortuarystays.insertavalidmaxdnumber.msg");
                     return;
                 }
-                if (minD >= maxD){
+                if (minD >= maxD) {
                     MessageDialog.error(this, "angal.mortuarystays.insertcoherencemaxminvalues.msg");
                     return;
                 }
@@ -382,7 +382,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes nameTextField
      *
-     * @return javax.swing.JTextField
+     * @return JTextField
      */
     private JTextField getNameTextField() {
         if (nameTextField == null) {
@@ -397,7 +397,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes descriptionTextField
      *
-     * @return javax.swing.JTextField
+     * @return JTextField
      */
     private JTextField getDescriptionTextField() {
         if (descriptionTextField == null) {
@@ -412,7 +412,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes codeTextField
      *
-     * @return javax.swing.JTextField
+     * @return JTextField
      */
     private JTextField getCodeTextField() {
         if (codeTextField == null) {
@@ -428,7 +428,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes telTextField
      *
-     * @return javax.swing.JTextField
+     * @return JTextField
      */
     private JTextField getMinDTextField() {
         if (minDTextField == null) {
@@ -443,7 +443,7 @@ public class MortuaryStaysEdit extends JDialog {
     /**
      * This method initializes faxTextField
      *
-     * @return javax.swing.JTextField
+     * @return JTextField
      */
     private JTextField getMaxDTextField() {
         if (maxDTextField == null) {
