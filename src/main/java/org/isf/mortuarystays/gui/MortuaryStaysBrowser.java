@@ -218,7 +218,7 @@ public class MortuaryStaysBrowser extends ModalJFrame implements MortuaryStaysLi
                     try {
                         if (answer == JOptionPane.YES_OPTION) {
                             MortuaryStay mortuaryStayDeleted = mortuaryStaysManager.delete(mortuaryStays);
-                            if(mortuaryStayDeleted != null) {
+                            if (mortuaryStayDeleted != null) {
                                 mortuaryStaysList.remove(table.getSelectedRow());
                                 model.fireTableDataChanged();
                                 table.updateUI();
