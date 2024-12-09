@@ -148,7 +148,7 @@ public class MovStockBrowser extends ModalJFrame {
 	private int pages = 0;
 	private int currentPage = 0;
 	private int totalMoves = 0;
-	private final int PAGE_SIZE = 36;
+	private final int PAGE_SIZE = 100;
 	private BigDecimal totalAmount;
 	private MovBrowserModel model;
 	private List<Movement> allMoves;
@@ -532,12 +532,20 @@ public class MovStockBrowser extends ModalJFrame {
 		return stockLedgerButton;
 	}
 
-	private JPanel getTablesPanel() {
+	private JPanel getTablesPanel() throws OHServiceException {
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
 		tablePanel.add(getTable(), BorderLayout.CENTER);
-		tablePanel.add(getTableTotal(), BorderLayout.SOUTH);
+		tablePanel.add(getSubTablePanel(), BorderLayout.SOUTH);
 		return tablePanel;
+	}
+
+	private JPanel getSubTablePanel() throws OHServiceException {
+		JPanel subTablePanel = new JPanel();
+		subTablePanel.setLayout(new BorderLayout());
+		subTablePanel.add(getTableTotal(), BorderLayout.CENTER);
+		subTablePanel.add(getPaginatePanel(), BorderLayout.SOUTH);
+		return subTablePanel;
 	}
 
 	private JScrollPane getTable() {
@@ -1149,7 +1157,9 @@ public class MovStockBrowser extends ModalJFrame {
 							lotPrepFrom.getDateStartOfDay(),
 							lotPrepTo.getDateStartOfDay(),
 							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay()).size();
+							lotDueTo.getDateStartOfDay(),
+							0,
+							PAGE_SIZE).size();
 					} catch (OHServiceException e) {
 						throw new RuntimeException(e);
 					}
@@ -1173,7 +1183,9 @@ public class MovStockBrowser extends ModalJFrame {
 							null,
 							null,
 							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay()).size();
+							lotDueTo.getDateStartOfDay(),
+							0,
+							PAGE_SIZE).size();
 					} catch (OHServiceException e) {
 						throw new RuntimeException(e);
 					}
@@ -1451,7 +1463,7 @@ public class MovStockBrowser extends ModalJFrame {
 			try {
 				moves = movBrowserManager.getMovements(medicalCode, medicalType, ward,
 					movType, movFrom, movTo, lotPrepFrom, lotPrepTo,
-					lotDueFrom, lotDueTo, currentPage, PAGE_SIZE);
+					lotDueFrom, lotDueTo, 0, PAGE_SIZE);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
