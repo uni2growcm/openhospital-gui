@@ -27,29 +27,34 @@ public class ExamTargetItem {
 			char first = value.charAt(0);
 
 			item = switch (first) {
-			case '1' -> ExamTarget.no;
-			case '2' -> ExamTarget.prenatal;
-			case '3' -> ExamTarget.postnatal;
-			case '4' -> ExamTarget.both;
-			default -> ExamTarget.no;
+				case '1' -> ExamTarget.no;
+				case '2' -> ExamTarget.prenatal;
+				case '3' -> ExamTarget.postnatal;
+				case '4' -> ExamTarget.both;
+				default -> ExamTarget.no;
 			};
 
 			return ExamTargetItem.from(item);
 		}
+		
 		@Override
 		public boolean equals(Object other) {
-			return item == null ? other == null : item.equals(other);
+		    if (other == null || getClass() != other.getClass()) {
+		       return false;
+		    }
+		    return item.equals(((ExamTargetItem)other).item);
 		}
-
+		
 		@Override
 		public String toString() {
 			String prefix = switch (item) {
-			case no -> "1 - ";
-			case prenatal -> "2 - ";
-			case postnatal -> "3 - ";
-			case both -> "4 - ";
-			default -> "1 - ";
+			    case no -> "1 - ";
+			    case prenatal -> "2 - ";
+			    case postnatal -> "3 - ";
+			    case both -> "4 - ";
+			    default -> "1 - ";
 			};
+			
 			return prefix + MessageBundle.getMessage("angal.exa.examtarget." + item.toString() + ".txt");
 		}
 	}
