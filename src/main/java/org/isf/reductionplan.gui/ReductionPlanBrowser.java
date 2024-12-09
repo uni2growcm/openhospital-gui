@@ -122,7 +122,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		return panel;
 	}
 
-	/**
+	/**vn
 	 * This method initializes jNewButton
 	 * @return javax.swing.JButton
 	 */
