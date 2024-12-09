@@ -379,24 +379,22 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
 		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString().toLowerCase();
-		 if (pSelectExamTarget != null && pSelectExamTarget.equals(allText)) {
-			 
-			 if (pSelectExamType.compareTo(STR_ALL) == 0) {
+		
+		 if (pSelectExamTarget.toLowerCase().compareTo(STR_ALL.toLowerCase()) == 0 && pSelectExamType.compareTo(STR_ALL) == 0){
 					model = new ExamBrowsingModel();
-				}else{
+		 }
+		 else if(pSelectExamTarget.toLowerCase().compareTo(STR_ALL.toLowerCase()) == 0 && pSelectExamType.compareTo(STR_ALL) != 0){
 					model = new ExamBrowsingModel(null, pSelectExamType);
-				} 
-		  }else {
-			  if (pSelectExamType.compareTo(STR_ALL) == 0) {
+		 }
+		 else if (pSelectExamTarget.toLowerCase().compareTo(STR_ALL.toLowerCase()) != 0 && pSelectExamType.compareTo(STR_ALL) == 0) {
 				  ExamTarget target = ExamTargetItem.from(pSelectExamTarget).item;
 				  model = new ExamBrowsingModel(target, null);
-			  } else{
+		 }
+		 else if (pSelectExamTarget.toLowerCase().compareTo(STR_ALL.toLowerCase()) != 0 && pSelectExamType.compareTo(STR_ALL) != 0){
 				  ExamTarget target = ExamTargetItem.from(pSelectExamTarget).item;
 				  model = new ExamBrowsingModel(target, pSelectExamType);
-		      }
 		 }
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
-
 }
