@@ -35,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
-import org.isf.reductionplan.manager.ReductionPlanManager ;
+import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -122,8 +122,8 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		return panel;
 	}
 
-	/**vn
-	 * This method initializes jNewButton
+	/**
+	 * vn This method initializes jNewButton
 	 * @return javax.swing.JButton
 	 */
 	private JButton getNewButton() {
@@ -218,5 +218,4 @@ public class ReductionPlanBrowser extends ModalJFrame {
 			return false;
 		}
 	}
-
 }
