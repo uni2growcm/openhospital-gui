@@ -142,8 +142,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	    }
 	    return examTargetFilter;
 	}
-
-
+	
 	private JComboBox<ExamType> getJComboBoxExamType() {
 		if (examTypeFilter == null) {
 			examTypeFilter = new JComboBox<>();
