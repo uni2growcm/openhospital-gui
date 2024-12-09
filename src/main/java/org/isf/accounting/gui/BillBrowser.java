@@ -121,7 +121,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	            }
 	        } else {
 	            try {
-	                updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+	                updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
 	            } catch (OHServiceException ohServiceException) {
 	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
 	            }
@@ -131,7 +131,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	            updateDataSet(dateFrom, dateTo);
 	        } else {
 	            try {
-	                updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+	                updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
 	            } catch (OHServiceException ohServiceException) {
 	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
 	            }
@@ -706,15 +706,15 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		billFromPayments = billBrowserManager.getBills(paymentsPeriod);
 	}
 
-	private void updateDataSetWithGuarantor(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient, User guarantor) throws OHServiceException {
+	private void updateDataSetByGuarantor(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient, User guarantor) throws OHServiceException {
 		if (patient != null) {
-			billPeriod = billBrowserManager.getBillsWithPatientAndGuarantor(dateFrom, dateTo, patient, guarantor);
-			paymentsPeriod = billBrowserManager.getPaymentsWithPatientGuarantor(dateFrom, dateTo, patient, guarantor);
+			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, patient, guarantor);
+			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, patient, guarantor);
 		} else {
-			billPeriod = billBrowserManager.getBillsWithPatientAndGuarantor(dateFrom, dateTo, null, guarantor);
-			paymentsPeriod = billBrowserManager.getPaymentsWithPatientGuarantor(dateFrom, dateTo, null, guarantor);
+			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
+			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
 		}
-		billFromPayments = billBrowserManager.getBillsWithGuarantor(paymentsPeriod, guarantor);
+		billFromPayments = billBrowserManager.getBillsByGuarantor(paymentsPeriod, guarantor);
 	}
 	
 	private JButton getJButtonNew() {
@@ -853,7 +853,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				User selectedGuarantor = (User) jComboBoxGuarantor.getSelectedItem();
 				try {
 					if (selectedGuarantor != null) {
-						updateDataSetWithGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+						updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
 					} else if (patientParent == null) {
 						updateDataSet(dateFrom, dateTo);
 					} else {
