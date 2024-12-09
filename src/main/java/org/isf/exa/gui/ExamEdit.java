@@ -23,14 +23,11 @@ package org.isf.exa.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -42,7 +39,6 @@ import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
 
-import org.apache.poi.hpsf.Array;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamTarget;
@@ -59,59 +55,7 @@ import org.isf.utils.layout.SpringUtilities;
  * ExamEdit - add/edit an exam
  */
 public class ExamEdit extends JDialog {
-
-	static class ExamTargetItem {
-		private final ExamTarget item;
-
-		public ExamTargetItem(ExamTarget item) {
-			this.item = item;
-		}
-
-		public ExamTarget getItem() {
-			return item;
-		}
-
-		static ExamTargetItem from(ExamTarget item) {
-			return new ExamTargetItem(item);
-		}
-
-		static ExamTargetItem from(String value) {
-			ExamTarget item = null;
-			if (value == null || value.isBlank()) {
-				item = ExamTarget.no;
-			}
-
-			char first = value.charAt(0);
-
-			item = switch (first) {
-			case '1' -> ExamTarget.no;
-			case '2' -> ExamTarget.prenatal;
-			case '3' -> ExamTarget.postnatal;
-			case '4' -> ExamTarget.both;
-			default -> ExamTarget.no;
-			};
-
-			return ExamTargetItem.from(item);
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			return item == null ? other == null : item.equals(other);
-		}
-
-		@Override
-		public String toString() {
-			String prefix = switch (item) {
-			case no -> "1 - ";
-			case prenatal -> "2 - ";
-			case postnatal -> "3 - ";
-			case both -> "4 - ";
-			default -> "1 - ";
-			};
-			return prefix + MessageBundle.getMessage("angal.exa.examtarget." + item.toString() + ".txt");
-		}
-	}
-
+	
 	private static final long serialVersionUID = 1L;
 
 	private EventListenerList examListeners = new EventListenerList();

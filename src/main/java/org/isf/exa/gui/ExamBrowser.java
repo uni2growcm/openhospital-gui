@@ -41,7 +41,6 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.exa.gui.ExamEdit.ExamListener;
-import org.isf.exa.gui.ExamEdit.ExamTargetItem;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamTarget;
@@ -57,7 +56,7 @@ import org.isf.utils.jobjects.ModalJFrame;
  * ExamBrowser - list all exams. Let the user select an exam to edit
  */
 public class ExamBrowser extends ModalJFrame implements ExamListener {
-
+	
 	private static final long serialVersionUID = 1L;
 	private static final String STR_ALL = MessageBundle.getMessage("angal.common.all.txt").toUpperCase();
 
@@ -86,6 +85,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JPanel jContentPanel;
 	private JPanel buttonPanel;
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private String allText = MessageBundle.getMessage("angal.common.all.txt").toUpperCase();
 
 	public ExamBrowser() {
 		myFrame = this;
@@ -124,18 +124,26 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		return buttonPanel;
 	}
 
-	private JComboBox<String> getJComboBoxExamTarget() {
-		if (examTargetFilter == null) {
-			examTargetFilter = new JComboBox<>();
-			examTargetFilter.addItem(MessageBundle.getMessage("angal.common.all.txt").toUpperCase());
-			for (ExamTarget target : ExamTarget.values()) {
-				examTargetFilter
-						.addItem(MessageBundle.getMessage("angal.exa.examtarget." + target.toString() + ".txt"));
-			}
-			examTargetFilter.addActionListener(actionEvent -> reloadTable());
-		}
-		return examTargetFilter;
+	private JComboBox<String> getJComboBoxExamTarget(){
+	    if (examTargetFilter == null) {
+	        
+	        String[] originalItems = {
+	            ExamTargetItem.from(ExamTarget.no).toString(),
+	            ExamTargetItem.from(ExamTarget.prenatal).toString(),
+	            ExamTargetItem.from(ExamTarget.postnatal).toString(),
+	            ExamTargetItem.from(ExamTarget.both).toString()
+	        };
+	        
+	        String[] items = new String[originalItems.length + 1];
+	        items[0] = allText; 
+	        System.arraycopy(originalItems, 0, items, 1, originalItems.length);
+
+	        examTargetFilter = new JComboBox<>(items);
+	        examTargetFilter.addActionListener(actionEvent -> reloadTable());
+	    }
+	    return examTargetFilter;
 	}
+
 
 	private JComboBox<ExamType> getJComboBoxExamType() {
 		if (examTypeFilter == null) {
@@ -373,17 +381,22 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		String pSelectExamType = examTypeFilter.getSelectedItem().toString();
 		String pSelectExamTarget = examTargetFilter.getSelectedItem().toString().toLowerCase();
-		if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) == 0 && pSelectExamType.compareTo(STR_ALL) == 0) {
-			model = new ExamBrowsingModel();
-		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 && pSelectExamType.compareTo(STR_ALL) == 0) {
-			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
-			model = new ExamBrowsingModel(target, null);
-		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) == 0 && pSelectExamType.compareTo(STR_ALL) != 0) {
-			model = new ExamBrowsingModel(null, pSelectExamType);
-		} else if (pSelectExamTarget.compareTo(STR_ALL.toLowerCase()) != 0 && pSelectExamType.compareTo(STR_ALL) != 0) {
-			ExamTarget target = ExamTarget.valueOf(pSelectExamTarget);
-			model = new ExamBrowsingModel(target, pSelectExamType);
-		}
+		 if (pSelectExamTarget != null && pSelectExamTarget.equals(allText)) {
+			 
+			 if (pSelectExamType.compareTo(STR_ALL) == 0) {
+					model = new ExamBrowsingModel();
+				}else{
+					model = new ExamBrowsingModel(null, pSelectExamType);
+				} 
+		  }else {
+			  if (pSelectExamType.compareTo(STR_ALL) == 0) {
+				  ExamTarget target = ExamTargetItem.from(pSelectExamTarget).item;
+				  model = new ExamBrowsingModel(target, null);
+			  } else{
+				  ExamTarget target = ExamTargetItem.from(pSelectExamTarget).item;
+				  model = new ExamBrowsingModel(target, pSelectExamType);
+		      }
+		 }
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
