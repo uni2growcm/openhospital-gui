@@ -35,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
-import org.isf.reductionplan.manager.ReductionplanManager;
+import org.isf.reductionplan.manager.ReductionPlanManager ;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -54,7 +54,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 					MessageBundle.getMessage("angal.reductionplan.otherrate.col")
 	};
 	private final int[] pColumnwidth = { 80, 200, 90, 90, 90, 100 };
-	private final ReductionplanManager reductionplanBrowserManager = Context.getApplicationContext().getBean(ReductionplanManager.class);
+	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	List<ReductionPlan> reductionplansList;
 	private JPanel contentPane;
 	private JTable table;
@@ -176,7 +176,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		private static final long serialVersionUID = 1L;
 
 		public ReductionPlanModel() throws OHServiceException {
-			reductionplansList = reductionplanBrowserManager.getAll();
+			reductionplansList = reductionPlanManager.getAll();
 		}
 
 		public int getRowCount() {
