@@ -214,7 +214,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		}
 
 		@Override
-		public boolean isCellEditable(int arg0, int arg1) {
+		public boolean isCellEditable(int row, int col) {
 			return false;
 		}
 	}
