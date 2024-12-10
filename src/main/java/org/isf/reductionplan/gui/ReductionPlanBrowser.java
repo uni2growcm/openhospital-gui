@@ -53,7 +53,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 					MessageBundle.getMessage("angal.reductionplan.operate.col"),
 					MessageBundle.getMessage("angal.reductionplan.otherrate.col")
 	};
-	private final int[] pColumnwidth = { 80, 200, 90, 90, 90, 100 };
+	private final int[] columnsWidth = { 80, 200, 90, 90, 90, 100 };
 	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	List<ReductionPlan> reductionplansList;
 	private JPanel contentPane;
