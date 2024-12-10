@@ -266,7 +266,7 @@ public class MovStockBrowser extends ModalJFrame {
 		if (nextButton == null) {
 			nextButton = new JButton(">");
 			nextButton.setEnabled(currentPage < pages -1 && pages != 1);
-			nextButton.addActionListener(ActionEvent -> {
+			nextButton.addActionListener(actionEvent -> {
 				Integer medicalSelected = null;
 				String medicalTypeSelected = null;
 				String movementTypeSelected = null;
@@ -305,8 +305,8 @@ public class MovStockBrowser extends ModalJFrame {
 						movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(), null, null,
 						lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay()
 					).size();
-				} catch (OHServiceException ex) {
-					throw new RuntimeException(ex);
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
 				}
 
 				pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
@@ -317,8 +317,8 @@ public class MovStockBrowser extends ModalJFrame {
 						moves = movBrowserManager.getMovements(medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
 							movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(),
 							null, null, lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay(), currentPage, PAGE_SIZE);
-					} catch (OHServiceException ex) {
-						throw new RuntimeException(ex);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
 					}
 
 					pagesCombo.setSelectedItem(currentPage + 1);
@@ -343,7 +343,7 @@ public class MovStockBrowser extends ModalJFrame {
 		if (prevButton == null) {
 			prevButton = new JButton("<");
 			prevButton.setEnabled(currentPage > 0);
-			prevButton.addActionListener(ActionEvent -> {
+			prevButton.addActionListener(actionEvent -> {
 				Integer medicalSelected = null;
 				String medicalTypeSelected = null;
 				String movementTypeSelected = null;
@@ -420,7 +420,7 @@ public class MovStockBrowser extends ModalJFrame {
 			for (int i = 0; i <= pages; i++) {
 				pagesCombo.addItem(i + 1);
 			}
-			pagesCombo.addActionListener(ActionEvent -> {
+			pagesCombo.addActionListener(actionEvent -> {
 				if (pagesCombo.getItemCount() != 0) {
 					currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
 
@@ -462,8 +462,8 @@ public class MovStockBrowser extends ModalJFrame {
 						moves = movBrowserManager.getMovements(medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
 							movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(),
 							null, null, lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay(), currentPage, PAGE_SIZE);
-					} catch (OHServiceException ex) {
-						throw new RuntimeException(ex);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
 					}
 
 					if (moves != null) {
