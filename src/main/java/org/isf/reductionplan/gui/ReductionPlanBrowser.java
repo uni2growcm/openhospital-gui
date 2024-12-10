@@ -150,7 +150,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	 * This method initializes jDeleteButton
 	 * @return javax.swing.JButton
 	 */
-	private JButton getDeteleButton() {
+	private JButton getDeleteButton() {
 		if (jDeteleButton == null) {
 			jDeteleButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
 			jDeteleButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
