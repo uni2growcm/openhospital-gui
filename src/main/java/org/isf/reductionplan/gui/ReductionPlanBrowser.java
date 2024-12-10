@@ -44,32 +44,29 @@ import org.isf.utils.jobjects.ModalJFrame;
 public class ReductionPlanBrowser extends ModalJFrame {
 
 	private static final long serialVersionUID = 1L;
-	private final JFrame myFrame;
-	private final String[] pbiColumn = new String[] {
-					MessageBundle.getMessage("angal.common.code.txt"),
-					MessageBundle.getMessage("angal.common.description.txt"),
-					MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
-					MessageBundle.getMessage("angal.reductionplan.examrate.col"),
-					MessageBundle.getMessage("angal.reductionplan.operate.col"),
-					MessageBundle.getMessage("angal.reductionplan.otherrate.col")
+
+	private JPanel contentPane;
+	private JButton jNewButton;
+	private JButton jEditButton;
+	private JButton jDeleteButton;
+	private JButton jCloseButton;
+	private String[] pbiColumn = new String[] {
+			MessageBundle.getMessage("angal.common.code.txt"),
+			MessageBundle.getMessage("angal.common.description.txt"),
+			MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
+			MessageBundle.getMessage("angal.reductionplan.examrate.col"),
+			MessageBundle.getMessage("angal.reductionplan.operate.col"),
+			MessageBundle.getMessage("angal.reductionplan.otherrate.col")
 	};
 	private final int[] columnsWidth = { 80, 200, 90, 90, 90, 100 };
 	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	List<ReductionPlan> reductionplansList;
-	private JPanel contentPane;
-	private JTable table;
-	private JScrollPane scrollPane;
-	private JButton jNewButton;
-	private JButton jEditButton;
-	private JButton jDeteleButton;
-	private JButton jCloseButton;
 
 	/**
 	 * This is the default constructor
 	 */
 	public ReductionPlanBrowser() {
 		super();
-		myFrame = this;
 		initialize();
 	}
 
@@ -87,20 +84,19 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	 * This method initializes jContentPane
 	 * @return javax.swing.JPanel
 	 */
-
 	private JPanel getJContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
 			contentPane.setLayout(new BorderLayout());
-			scrollPane = new JScrollPane();
-			table = new JTable();
+			JTable table = new JTable();
+			JScrollPane scrollPane = new JScrollPane();
 			try {
 				table.setModel(new ReductionPlanModel());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 			for (int i = 0; i < pbiColumn.length; i++) {
-				table.getColumnModel().getColumn(i).setMinWidth(pColumnwidth[i]);
+				table.getColumnModel().getColumn(i).setMinWidth(columnsWidth[i]);
 			}
 			scrollPane.setViewportView(table);
 			contentPane.add(scrollPane, BorderLayout.CENTER);
@@ -117,7 +113,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		JPanel panel = new JPanel();
 		panel.add(getNewButton());
 		panel.add(getEditButton());
-		panel.add(getDeteleButton());
+		panel.add(getDeleteButton());
 		panel.add(getCloseButton());
 		return panel;
 	}
@@ -151,11 +147,11 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	 * @return javax.swing.JButton
 	 */
 	private JButton getDeleteButton() {
-		if (jDeteleButton == null) {
-			jDeteleButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
-			jDeteleButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
+		if (jDeleteButton == null) {
+			jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
+			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
 		}
-		return jDeteleButton;
+		return jDeleteButton;
 	}
 
 	/**
