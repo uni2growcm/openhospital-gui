@@ -61,7 +61,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	private JScrollPane scrollPane;
 	private JButton jNewButton;
 	private JButton jEditButton;
-	private JButton jDeteleButton;
+	private JButton jDeleteButton;
 	private JButton jCloseButton;
 
 	/**
