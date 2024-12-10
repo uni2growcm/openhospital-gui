@@ -142,13 +142,14 @@ public class MovStockBrowser extends ModalJFrame {
 	private GoodDateChooser lotDueFrom;
 	private GoodDateChooser lotDueTo;
 	private JLabel underLabel;
+	private JLabel totalMovementsLabel;
 	private JTable movTable;
 	private JTable jTableTotal;
 	private int totalQti;
 	private int pages = 0;
 	private int currentPage = 0;
 	private int totalMoves = 0;
-	private final int PAGE_SIZE = 100;
+	private final int PAGE_SIZE = 10;
 	private BigDecimal totalAmount;
 	private MovBrowserModel model;
 	private List<Movement> allMoves;
@@ -240,6 +241,7 @@ public class MovStockBrowser extends ModalJFrame {
 		paginatePanel.add(getPagesCombo());
 		paginatePanel.add(getUnderLabel());
 		paginatePanel.add(getNextButton());
+		paginatePanel.add(getTotalMovementsLabel());
 		return paginatePanel;
 	}
 
@@ -486,6 +488,14 @@ public class MovStockBrowser extends ModalJFrame {
 			underLabel.setPreferredSize(new Dimension(60, 30));
 		}
 		return underLabel;
+	}
+
+	private JLabel getTotalMovementsLabel() throws OHServiceException {
+		if (totalMovementsLabel == null) {
+			totalMovementsLabel = new JLabel("" + totalMoves);
+			totalMovementsLabel.setPreferredSize(new Dimension(60, 30));
+		}
+		return totalMovementsLabel;
 	}
 
 	private JButton getStockCardButton() {
@@ -1145,7 +1155,9 @@ public class MovStockBrowser extends ModalJFrame {
 						lotPrepFrom.getDateStartOfDay(),
 						lotPrepTo.getDateStartOfDay(),
 						lotDueFrom.getDateStartOfDay(),
-						lotDueTo.getDateStartOfDay());
+						lotDueTo.getDateStartOfDay(),
+						currentPage,
+						PAGE_SIZE);
 					try {
 						totalMoves = movBrowserManager.getMovements(
 							medicalSelected,
@@ -1157,9 +1169,7 @@ public class MovStockBrowser extends ModalJFrame {
 							lotPrepFrom.getDateStartOfDay(),
 							lotPrepTo.getDateStartOfDay(),
 							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay(),
-							0,
-							PAGE_SIZE).size();
+							lotDueTo.getDateStartOfDay()).size();
 					} catch (OHServiceException e) {
 						throw new RuntimeException(e);
 					}
@@ -1171,7 +1181,9 @@ public class MovStockBrowser extends ModalJFrame {
 						null,
 						null,
 						lotDueFrom.getDateStartOfDay(),
-						lotDueTo.getDateStartOfDay());
+						lotDueTo.getDateStartOfDay(),
+						currentPage,
+						PAGE_SIZE);
 					try {
 						totalMoves = movBrowserManager.getMovements(
 							medicalSelected,
@@ -1183,14 +1195,13 @@ public class MovStockBrowser extends ModalJFrame {
 							null,
 							null,
 							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay(),
-							0,
-							PAGE_SIZE).size();
+							lotDueTo.getDateStartOfDay()).size();
 					} catch (OHServiceException e) {
 						throw new RuntimeException(e);
 					}
 				}
 
+				totalMovementsLabel.setText("" + totalMoves);
 				pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
 				underLabel.setText("/ " + pages + " pages");
 				currentPage = 0;
@@ -1350,6 +1361,12 @@ public class MovStockBrowser extends ModalJFrame {
 					}
 				}
 				ExcelExporter xlsExport = new ExcelExporter();
+				movTable.setModel(new MovBrowserModel(null, null, null, null, movDateFrom.getDateStartOfDay(),
+					movDateTo.getDateStartOfDay(),
+					lotPrepFrom.getDateStartOfDay(),
+					lotPrepTo.getDateStartOfDay(),
+					lotDueFrom.getDateStartOfDay(),
+					lotDueTo.getDateStartOfDay()));
 				try {
 					if (exportFile.getName().endsWith(".xlsx")) {
 						xlsExport.exportTableToExcel(movTable, exportFile);
@@ -1459,11 +1476,24 @@ public class MovStockBrowser extends ModalJFrame {
 		}
 
 		public MovBrowserModel(Integer medicalCode, String medicalType, String ward, String movType, LocalDateTime movFrom, LocalDateTime movTo,
+			LocalDateTime lotPrepFrom, LocalDateTime lotPrepTo, LocalDateTime lotDueFrom, LocalDateTime lotDueTo, int currentPage, int pageSize) {
+			try {
+				moves = movBrowserManager.getMovements(medicalCode, medicalType, ward,
+					movType, movFrom, movTo, lotPrepFrom, lotPrepTo,
+					lotDueFrom, lotDueTo, currentPage, PAGE_SIZE);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+
+			updateTotals();
+		}
+
+		public MovBrowserModel(Integer medicalCode, String medicalType, String ward, String movType, LocalDateTime movFrom, LocalDateTime movTo,
 			LocalDateTime lotPrepFrom, LocalDateTime lotPrepTo, LocalDateTime lotDueFrom, LocalDateTime lotDueTo) {
 			try {
 				moves = movBrowserManager.getMovements(medicalCode, medicalType, ward,
 					movType, movFrom, movTo, lotPrepFrom, lotPrepTo,
-					lotDueFrom, lotDueTo, 0, PAGE_SIZE);
+					lotDueFrom, lotDueTo);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
