@@ -133,7 +133,7 @@ public class MovStockBrowser extends ModalJFrame {
 	private JComboBox medicalBox;
 	private JComboBox medicalTypeBox;
 	private JComboBox movementTypeBox;
-	private JComboBox pagesCombo;
+	private JComboBox<Integer> pagesCombo;
 	private JComboBox wardBox;
 	private GoodDateChooser movDateFrom;
 	private GoodDateChooser movDateTo;
@@ -264,77 +264,160 @@ public class MovStockBrowser extends ModalJFrame {
 		return buttonPanel;
 	}
 
+	private void applyFilter(int currentPage) {
+		Integer medicalSelected = null;
+		String medicalTypeSelected = null;
+		String movementTypeSelected = null;
+		String wardSelected = null;
+		boolean dateOk = true;
+
+		LocalDateTime movFrom = movDateFrom.getDateStartOfDay();
+		LocalDateTime movTo = movDateTo.getDateStartOfDay();
+		if ((movFrom == null) || (movTo == null)) {
+			if (!((movFrom == null) && (movTo == null))) {
+				MessageDialog.error(null, "angal.medicalstock.chooseavalidmovementdate.msg");
+				dateOk = false;
+			}
+		} else if (movFrom.isAfter(movTo)) {
+			MessageDialog.error(null, "angal.medicalstock.movementdatefromcannotbelaterthanmovementdateto");
+			dateOk = false;
+		}
+
+		if (!isAutomaticLot()) {
+			LocalDateTime prepFrom = lotPrepFrom.getDateStartOfDay();
+			LocalDateTime prepTo = lotPrepTo.getDateStartOfDay();
+			if ((prepFrom == null) || (prepTo == null)) {
+				if (!((prepFrom == null) && (prepTo == null))) {
+					MessageDialog.error(null, "angal.medicalstock.chooseavalidpreparationdate");
+					dateOk = false;
+				}
+			} else if (prepFrom.isAfter(prepTo)) {
+				MessageDialog.error(null, "angal.medicalstock.preparationdatefromcannotbelaterpreparationdateto");
+				dateOk = false;
+			}
+		}
+
+		LocalDateTime dueFrom = lotDueFrom.getDateStartOfDay();
+		LocalDateTime dueTo = lotDueTo.getDateStartOfDay();
+		if ((dueFrom == null) || (dueTo == null)) {
+			if (!((dueFrom == null) && (dueTo == null))) {
+				MessageDialog.error(null, "angal.medicalstock.chooseavalidduedate.msg");
+				dateOk = false;
+			}
+		} else if (dueFrom.isAfter(dueTo)) {
+			MessageDialog.error(null, "angal.medicalstock.duedatefromcannotbelaterthanduedateto");
+			dateOk = false;
+		}
+
+		if (dateOk) {
+			if (medicalBox.isEnabled()) {
+				if (!(medicalBox.getSelectedItem() instanceof String)) {
+					medicalSelected = ((Medical) medicalBox
+						.getSelectedItem()).getCode();
+				}
+			} else {
+				if (!(medicalTypeBox.getSelectedItem() instanceof String)) {
+					medicalTypeSelected = ((MedicalType) medicalTypeBox
+						.getSelectedItem()).getCode();
+				}
+			}
+			if (!(movementTypeBox.getSelectedItem() instanceof String)) {
+				movementTypeSelected = ((MovementType) movementTypeBox
+					.getSelectedItem()).getCode();
+			} else {
+				movementTypeSelected = (String) movementTypeBox.getSelectedItem();
+				if (movementTypeSelected.equals(TEXT_ALL)) {
+					movementTypeSelected = null;
+				} else if (movementTypeSelected.equals(TEXT_ALLCHARGES)) {
+					movementTypeSelected = "+";
+				} else if (movementTypeSelected.equals(TEXT_ALLDISCHARGES)) {
+					movementTypeSelected = "-";
+				}
+			}
+			if (!(wardBox.getSelectedItem() instanceof String)) {
+				wardSelected = ((Ward) wardBox.getSelectedItem())
+					.getCode();
+			}
+			if (!isAutomaticLot()) {
+				model = new MovBrowserModel(medicalSelected,
+					medicalTypeSelected, wardSelected, movementTypeSelected,
+					movDateFrom.getDateStartOfDay(),
+					movDateTo.getDateStartOfDay(),
+					lotPrepFrom.getDateStartOfDay(),
+					lotPrepTo.getDateStartOfDay(),
+					lotDueFrom.getDateStartOfDay(),
+					lotDueTo.getDateStartOfDay(),
+					currentPage,
+					PAGE_SIZE);
+				try {
+					totalMoves = movBrowserManager.getMovements(
+						medicalSelected,
+						medicalTypeSelected,
+						wardSelected,
+						movementTypeSelected,
+						movDateFrom.getDateStartOfDay(),
+						movDateTo.getDateStartOfDay(),
+						lotPrepFrom.getDateStartOfDay(),
+						lotPrepTo.getDateStartOfDay(),
+						lotDueFrom.getDateStartOfDay(),
+						lotDueTo.getDateStartOfDay()).size();
+				} catch (OHServiceException e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				model = new MovBrowserModel(medicalSelected,
+					medicalTypeSelected, wardSelected, movementTypeSelected,
+					movDateFrom.getDateStartOfDay(),
+					movDateTo.getDateStartOfDay(),
+					null,
+					null,
+					lotDueFrom.getDateStartOfDay(),
+					lotDueTo.getDateStartOfDay(),
+					currentPage,
+					PAGE_SIZE);
+				try {
+					totalMoves = movBrowserManager.getMovements(
+						medicalSelected,
+						medicalTypeSelected,
+						wardSelected,
+						movementTypeSelected,
+						movDateFrom.getDateStartOfDay(),
+						movDateTo.getDateStartOfDay(),
+						null,
+						null,
+						lotDueFrom.getDateStartOfDay(),
+						lotDueTo.getDateStartOfDay()).size();
+				} catch (OHServiceException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			totalMovementsLabel.setText(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") + ": " + totalMoves);
+			pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
+			underLabel.setText("/ " + pages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+
+			for (int i = 0; i < pages; i++) {
+				pagesCombo.addItem(i + 1);
+			}
+			if (moves != null) {
+				model.fireTableDataChanged();
+				movTable.updateUI();
+			}
+			updateTotals();
+
+			nextButton.setEnabled(currentPage < pages -1 && pages != 1);
+			prevButton.setEnabled(currentPage > 0);
+		}
+	}
+
 	private JButton getNextButton() {
 		if (nextButton == null) {
 			nextButton = new JButton(">");
 			nextButton.setEnabled(currentPage < pages -1 && pages != 1);
 			nextButton.addActionListener(actionEvent -> {
-				Integer medicalSelected = null;
-				String medicalTypeSelected = null;
-				String movementTypeSelected = null;
-				String wardSelected = null;
-
-				if (medicalBox.isEnabled() && !(medicalBox.getSelectedItem() instanceof String)) {
-					medicalSelected = ((Medical) medicalBox
-						.getSelectedItem()).getCode();
-				} else {
-					if (!(medicalTypeBox.getSelectedItem() instanceof String)) {
-						medicalTypeSelected = ((MedicalType) medicalTypeBox
-							.getSelectedItem()).getCode();
-					}
-				}
-				if (!(movementTypeBox.getSelectedItem() instanceof String)) {
-					movementTypeSelected = ((MovementType) movementTypeBox
-						.getSelectedItem()).getCode();
-				} else {
-					movementTypeSelected = (String) movementTypeBox.getSelectedItem();
-					if (movementTypeSelected.equals(TEXT_ALL)) {
-						movementTypeSelected = null;
-					} else if (movementTypeSelected.equals(TEXT_ALLCHARGES)) {
-						movementTypeSelected = "+";
-					} else if (movementTypeSelected.equals(TEXT_ALLDISCHARGES)) {
-						movementTypeSelected = "-";
-					}
-				}
-				if (!(wardBox.getSelectedItem() instanceof String)) {
-					wardSelected = ((Ward) wardBox.getSelectedItem())
-						.getCode();
-				}
-
-				try {
-					totalMoves = movBrowserManager.getMovements(
-						medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
-						movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(), null, null,
-						lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay()
-					).size();
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-
-				pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
-				underLabel.setText("/ " + pages + MessageBundle.getMessage("angal.common.pages.text"));
 				if (currentPage < pages -1) {
 					currentPage++;
-					try {
-						moves = movBrowserManager.getMovements(medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
-							movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(),
-							null, null, lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay(), currentPage, PAGE_SIZE);
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-					}
-
 					pagesCombo.setSelectedItem(currentPage + 1);
-
-					if (moves != null) {
-						model.fireTableDataChanged();
-						movTable.updateUI();
-					}
-					updateTotals();
-				}
-
-				prevButton.setEnabled(currentPage > 0);
-				if (currentPage >= pages - 1) {
-					nextButton.setEnabled(false);
 				}
 			});
 		}
@@ -346,71 +429,11 @@ public class MovStockBrowser extends ModalJFrame {
 			prevButton = new JButton("<");
 			prevButton.setEnabled(currentPage > 0);
 			prevButton.addActionListener(actionEvent -> {
-				Integer medicalSelected = null;
-				String medicalTypeSelected = null;
-				String movementTypeSelected = null;
-				String wardSelected = null;
-
-				if (medicalBox.isEnabled() && !(medicalBox.getSelectedItem() instanceof String)) {
-					medicalSelected = ((Medical) medicalBox
-						.getSelectedItem()).getCode();
-				} else {
-					if (!(medicalTypeBox.getSelectedItem() instanceof String)) {
-						medicalTypeSelected = ((MedicalType) medicalTypeBox
-							.getSelectedItem()).getCode();
-					}
-				}
-				if (!(movementTypeBox.getSelectedItem() instanceof String)) {
-					movementTypeSelected = ((MovementType) movementTypeBox
-						.getSelectedItem()).getCode();
-				} else {
-					movementTypeSelected = (String) movementTypeBox.getSelectedItem();
-					if (movementTypeSelected.equals(TEXT_ALL)) {
-						movementTypeSelected = null;
-					} else if (movementTypeSelected.equals(TEXT_ALLCHARGES)) {
-						movementTypeSelected = "+";
-					} else if (movementTypeSelected.equals(TEXT_ALLDISCHARGES)) {
-						movementTypeSelected = "-";
-					}
-				}
-				if (!(wardBox.getSelectedItem() instanceof String)) {
-					wardSelected = ((Ward) wardBox.getSelectedItem())
-						.getCode();
-				}
-
-				try {
-					totalMoves = movBrowserManager.getMovements(
-						medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
-						movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(), null, null,
-						lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay()
-					).size();
-				} catch (OHServiceException ex) {
-					throw new RuntimeException(ex);
-				}
-
-				pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
-				underLabel.setText("/ " + pages + " pages");
 				if (currentPage > 0) {
 					currentPage--;
-					try {
-						moves = movBrowserManager.getMovements(medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
-							movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(),
-							null, null, lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay(), currentPage, PAGE_SIZE);
-					} catch (OHServiceException ex) {
-						throw new RuntimeException(ex);
-					}
 					pagesCombo.setSelectedItem(currentPage + 1);
-					if (moves != null) {
-						model.fireTableDataChanged();
-						movTable.updateUI();
-					}
-					updateTotals();
 				}
-
-				nextButton.setEnabled(currentPage < pages -1 && pages != 1);
-				prevButton.setEnabled(currentPage > 0);
 			});
-
 		}
 		return prevButton;
 	}
@@ -418,64 +441,16 @@ public class MovStockBrowser extends ModalJFrame {
 	private JComboBox<Integer> getPagesCombo() {
 		if (pagesCombo == null) {
 			pagesCombo = new JComboBox<>();
-			pagesCombo.setSize(new Dimension(150, 25));
+			pagesCombo.setPreferredSize(new Dimension(100, 25));
 			for (int i = 0; i <= pages; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 			pagesCombo.addActionListener(actionEvent -> {
 				if (pagesCombo.getItemCount() != 0) {
-					currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
-
-					Integer medicalSelected = null;
-					String medicalTypeSelected = null;
-					String movementTypeSelected = null;
-					String wardSelected = null;
-
-					if (medicalBox.isEnabled()) {
-						if (!(medicalBox.getSelectedItem() instanceof String)) {
-							medicalSelected = ((Medical) medicalBox
-								.getSelectedItem()).getCode();
-						}
-					} else {
-						if (!(medicalTypeBox.getSelectedItem() instanceof String)) {
-							medicalTypeSelected = ((MedicalType) medicalTypeBox
-								.getSelectedItem()).getCode();
-						}
+					if (pagesCombo.getSelectedItem() != null) {
+						currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
+						applyFilter(currentPage);
 					}
-					if (!(movementTypeBox.getSelectedItem() instanceof String)) {
-						movementTypeSelected = ((MovementType) movementTypeBox
-							.getSelectedItem()).getCode();
-					} else {
-						movementTypeSelected = (String) movementTypeBox.getSelectedItem();
-						if (movementTypeSelected.equals(TEXT_ALL)) {
-							movementTypeSelected = null;
-						} else if (movementTypeSelected.equals(TEXT_ALLCHARGES)) {
-							movementTypeSelected = "+";
-						} else if (movementTypeSelected.equals(TEXT_ALLDISCHARGES)) {
-							movementTypeSelected = "-";
-						}
-					}
-					if (!(wardBox.getSelectedItem() instanceof String)) {
-						wardSelected = ((Ward) wardBox.getSelectedItem())
-							.getCode();
-					}
-
-					try {
-						moves = movBrowserManager.getMovements(medicalSelected, medicalTypeSelected, wardSelected, movementTypeSelected,
-							movDateFrom.getDateStartOfDay(), movDateTo.getDateEndOfDay(),
-							null, null, lotDueFrom.getDateStartOfDay(), lotDueTo.getDateStartOfDay(), currentPage, PAGE_SIZE);
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-					}
-
-					if (moves != null) {
-						model.fireTableDataChanged();
-						movTable.updateUI();
-					}
-					updateTotals();
-
-					nextButton.setEnabled(currentPage < pages - 1 && pages != 1);
-					prevButton.setEnabled(currentPage > 0);
 				}
 			});
 		}
@@ -484,7 +459,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private JLabel getUnderLabel() throws OHServiceException {
 		if (underLabel == null) {
-			underLabel = new JLabel("/ " + (pages + 1) + " pages");
+			underLabel = new JLabel("/ " + (pages + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			underLabel.setPreferredSize(new Dimension(60, 30));
 		}
 		return underLabel;
@@ -492,8 +467,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private JLabel getTotalMovementsLabel() throws OHServiceException {
 		if (totalMovementsLabel == null) {
-			totalMovementsLabel = new JLabel("" + totalMoves);
-			totalMovementsLabel.setPreferredSize(new Dimension(60, 30));
+			totalMovementsLabel = new JLabel(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") +": "+ totalMoves);
 		}
 		return totalMovementsLabel;
 	}
@@ -1074,148 +1048,7 @@ public class MovStockBrowser extends ModalJFrame {
 		filterButton = new JButton(MessageBundle.getMessage("angal.common.filter.btn"));
 		filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
 		filterButton.addActionListener(actionEvent -> {
-			Integer medicalSelected = null;
-			String medicalTypeSelected = null;
-			String movementTypeSelected = null;
-			String wardSelected = null;
-			boolean dateOk = true;
-
-			LocalDateTime movFrom = movDateFrom.getDateStartOfDay();
-			LocalDateTime movTo = movDateTo.getDateStartOfDay();
-			if ((movFrom == null) || (movTo == null)) {
-				if (!((movFrom == null) && (movTo == null))) {
-					MessageDialog.error(null, "angal.medicalstock.chooseavalidmovementdate.msg");
-					dateOk = false;
-				}
-			} else if (movFrom.isAfter(movTo)) {
-				MessageDialog.error(null, "angal.medicalstock.movementdatefromcannotbelaterthanmovementdateto");
-				dateOk = false;
-			}
-
-			if (!isAutomaticLot()) {
-				LocalDateTime prepFrom = lotPrepFrom.getDateStartOfDay();
-				LocalDateTime prepTo = lotPrepTo.getDateStartOfDay();
-				if ((prepFrom == null) || (prepTo == null)) {
-					if (!((prepFrom == null) && (prepTo == null))) {
-						MessageDialog.error(null, "angal.medicalstock.chooseavalidpreparationdate");
-						dateOk = false;
-					}
-				} else if (prepFrom.isAfter(prepTo)) {
-					MessageDialog.error(null, "angal.medicalstock.preparationdatefromcannotbelaterpreparationdateto");
-					dateOk = false;
-				}
-			}
-
-			LocalDateTime dueFrom = lotDueFrom.getDateStartOfDay();
-			LocalDateTime dueTo = lotDueTo.getDateStartOfDay();
-			if ((dueFrom == null) || (dueTo == null)) {
-				if (!((dueFrom == null) && (dueTo == null))) {
-					MessageDialog.error(null, "angal.medicalstock.chooseavalidduedate.msg");
-					dateOk = false;
-				}
-			} else if (dueFrom.isAfter(dueTo)) {
-				MessageDialog.error(null, "angal.medicalstock.duedatefromcannotbelaterthanduedateto");
-				dateOk = false;
-			}
-
-			if (dateOk) {
-				if (medicalBox.isEnabled()) {
-					if (!(medicalBox.getSelectedItem() instanceof String)) {
-						medicalSelected = ((Medical) medicalBox
-							.getSelectedItem()).getCode();
-					}
-				} else {
-					if (!(medicalTypeBox.getSelectedItem() instanceof String)) {
-						medicalTypeSelected = ((MedicalType) medicalTypeBox
-							.getSelectedItem()).getCode();
-					}
-				}
-				if (!(movementTypeBox.getSelectedItem() instanceof String)) {
-					movementTypeSelected = ((MovementType) movementTypeBox
-						.getSelectedItem()).getCode();
-				} else {
-					movementTypeSelected = (String) movementTypeBox.getSelectedItem();
-					if (movementTypeSelected.equals(TEXT_ALL)) {
-						movementTypeSelected = null;
-					} else if (movementTypeSelected.equals(TEXT_ALLCHARGES)) {
-						movementTypeSelected = "+";
-					} else if (movementTypeSelected.equals(TEXT_ALLDISCHARGES)) {
-						movementTypeSelected = "-";
-					}
-				}
-				if (!(wardBox.getSelectedItem() instanceof String)) {
-					wardSelected = ((Ward) wardBox.getSelectedItem())
-						.getCode();
-				}
-				if (!isAutomaticLot()) {
-					model = new MovBrowserModel(medicalSelected,
-						medicalTypeSelected, wardSelected, movementTypeSelected,
-						movDateFrom.getDateStartOfDay(),
-						movDateTo.getDateStartOfDay(),
-						lotPrepFrom.getDateStartOfDay(),
-						lotPrepTo.getDateStartOfDay(),
-						lotDueFrom.getDateStartOfDay(),
-						lotDueTo.getDateStartOfDay(),
-						currentPage,
-						PAGE_SIZE);
-					try {
-						totalMoves = movBrowserManager.getMovements(
-							medicalSelected,
-							medicalTypeSelected,
-							wardSelected,
-							movementTypeSelected,
-							movDateFrom.getDateStartOfDay(),
-							movDateTo.getDateStartOfDay(),
-							lotPrepFrom.getDateStartOfDay(),
-							lotPrepTo.getDateStartOfDay(),
-							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay()).size();
-					} catch (OHServiceException e) {
-						throw new RuntimeException(e);
-					}
-				} else {
-					model = new MovBrowserModel(medicalSelected,
-						medicalTypeSelected, wardSelected, movementTypeSelected,
-						movDateFrom.getDateStartOfDay(),
-						movDateTo.getDateStartOfDay(),
-						null,
-						null,
-						lotDueFrom.getDateStartOfDay(),
-						lotDueTo.getDateStartOfDay(),
-						currentPage,
-						PAGE_SIZE);
-					try {
-						totalMoves = movBrowserManager.getMovements(
-							medicalSelected,
-							medicalTypeSelected,
-							wardSelected,
-							movementTypeSelected,
-							movDateFrom.getDateStartOfDay(),
-							movDateTo.getDateStartOfDay(),
-							null,
-							null,
-							lotDueFrom.getDateStartOfDay(),
-							lotDueTo.getDateStartOfDay()).size();
-					} catch (OHServiceException e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				totalMovementsLabel.setText("" + totalMoves);
-				pages = (int) Math.ceil((double) totalMoves / PAGE_SIZE);
-				underLabel.setText("/ " + pages + " pages");
-				currentPage = 0;
-				nextButton.setEnabled(currentPage < pages && pages != 1);
-				pagesCombo.removeAllItems();
-				for (int i = 0; i < pages; i++) {
-					pagesCombo.addItem(i + 1);
-				}
-				if (moves != null) {
-					model.fireTableDataChanged();
-					movTable.updateUI();
-				}
-				updateTotals();
-			}
+			applyFilter(currentPage);
 		});
 		return filterButton;
 	}
@@ -1361,7 +1194,8 @@ public class MovStockBrowser extends ModalJFrame {
 					}
 				}
 				ExcelExporter xlsExport = new ExcelExporter();
-				movTable.setModel(new MovBrowserModel(null, null, null, null, movDateFrom.getDateStartOfDay(),
+				JTable movTableCopy = new JTable(movTable.getModel());
+				movTableCopy.setModel(new MovBrowserModel(null, null, null, null, movDateFrom.getDateStartOfDay(),
 					movDateTo.getDateStartOfDay(),
 					lotPrepFrom.getDateStartOfDay(),
 					lotPrepTo.getDateStartOfDay(),
@@ -1369,9 +1203,9 @@ public class MovStockBrowser extends ModalJFrame {
 					lotDueTo.getDateStartOfDay()));
 				try {
 					if (exportFile.getName().endsWith(".xlsx")) {
-						xlsExport.exportTableToExcel(movTable, exportFile);
+						xlsExport.exportTableToExcel(movTableCopy, exportFile);
 					} else {
-						xlsExport.exportTableToExcelOLD(movTable, exportFile);
+						xlsExport.exportTableToExcelOLD(movTableCopy, exportFile);
 					}
 				} catch (IOException exc) {
 					JOptionPane.showMessageDialog(this,
