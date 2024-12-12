@@ -150,7 +150,7 @@ public class MovStockBrowser extends ModalJFrame {
 	private int pages = 0;
 	private int currentPage = 0;
 	private long totalMovements = 0;
-	private final int PAGE_SIZE = 10;
+	private final int PAGE_SIZE = 100;
 	private BigDecimal totalAmount;
 	private MovBrowserModel model;
 	private List<Movement> allMoves;
