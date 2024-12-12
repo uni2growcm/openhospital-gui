@@ -147,13 +147,12 @@ public class MovStockBrowser extends ModalJFrame {
 	private JTable movTable;
 	private JTable jTableTotal;
 	private int totalQti;
-	private int pages = 0;
-	private int currentPage = 0;
-	private long totalMovements = 0;
-	private final int PAGE_SIZE = 100;
+	private int TOTAL_PAGES = 0;
+	private int CURRENT_PAGE = 0;
+	private long TOTAL_MOVEMENTS = 0;
+	private final int PAGE_SIZE = 10;
 	private BigDecimal totalAmount;
 	private MovBrowserModel model;
-	private List<Movement> allMoves;
 	private List<Movement> movements = new ArrayList<>();
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.medicalstock.refno.col").toUpperCase(),
@@ -222,7 +221,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private JPanel getContentpane() throws OHServiceException {
 		JPanel contentPane = new JPanel(new BorderLayout());
-		contentPane.add(getPaginatePanel(), BorderLayout.NORTH);
+		contentPane.add(getPaginationPanel(), BorderLayout.NORTH);
 		contentPane.add(getFilterPanel(), BorderLayout.WEST);
 		contentPane.add(getTablesPanel(), BorderLayout.CENTER);
 		contentPane.add(getButtonPanel(), BorderLayout.SOUTH);
@@ -237,7 +236,7 @@ public class MovStockBrowser extends ModalJFrame {
 		return GeneralData.AUTOMATICLOT_IN;
 	}
 
-	private JPanel getPaginatePanel() throws OHServiceException {
+	private JPanel getPaginationPanel() throws OHServiceException {
 		JPanel paginatePanel = new JPanel(new WrapLayout());
 		paginatePanel.add(getPrevButton());
 		paginatePanel.add(getPagesCombo());
@@ -271,10 +270,6 @@ public class MovStockBrowser extends ModalJFrame {
 		String medicalTypeSelected = null;
 		String movementTypeSelected;
 		String wardSelected = null;
-		LocalDateTime movFrom = movDateFrom.getDateStartOfDay();
-		LocalDateTime movTo = movDateTo.getDateStartOfDay();
-		LocalDateTime prepFrom = lotPrepFrom.getDateStartOfDay();
-		LocalDateTime prepTo = lotPrepTo.getDateStartOfDay();
 
 		if (medicalBox.isEnabled()) {
 			if (!(medicalBox.getSelectedItem() instanceof String)) {
@@ -319,23 +314,6 @@ public class MovStockBrowser extends ModalJFrame {
 				currentPage,
 				PAGE_SIZE
 			);
-
-			try {
-				totalMovements = movBrowserManager.countTotalMovements(
-					medicalSelected,
-					medicalTypeSelected,
-					wardSelected,
-					movementTypeSelected,
-					movDateFrom.getDateStartOfDay(),
-					movDateTo.getDateStartOfDay(),
-					lotPrepFrom.getDateStartOfDay(),
-					lotPrepTo.getDateStartOfDay(),
-					lotDueFrom.getDateStartOfDay(),
-					lotDueTo.getDateStartOfDay()
-				);
-			} catch (OHServiceException e) {
-				throw new RuntimeException(e);
-			}
 		} else {
 			model = new MovBrowserModel(medicalSelected,
 				medicalTypeSelected, wardSelected, movementTypeSelected,
@@ -348,48 +326,25 @@ public class MovStockBrowser extends ModalJFrame {
 				currentPage,
 				PAGE_SIZE
 			);
-
-			try {
-				totalMovements = movBrowserManager.countTotalMovements(
-					medicalSelected,
-					medicalTypeSelected,
-					wardSelected,
-					movementTypeSelected,
-					movDateFrom.getDateStartOfDay(),
-					movDateTo.getDateStartOfDay(),
-					null,
-					null,
-					lotDueFrom.getDateStartOfDay(),
-					lotDueTo.getDateStartOfDay()
-				);
-			} catch (OHServiceException e) {
-				throw new RuntimeException(e);
-			}
 		}
-
-		totalMovementsLabel.setText(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") + ": " + totalMovements);
-		pages = (int) Math.ceil((double) totalMovements / PAGE_SIZE);
-		underLabel.setText("/ " + pages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 
 		if (movements != null) {
 			model.fireTableDataChanged();
 			movTable.updateUI();
 		}
 
-		updateTotals();
-
-		nextButton.setEnabled(currentPage < pages -1 && pages != 1);
+		nextButton.setEnabled(currentPage < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
 		prevButton.setEnabled(currentPage > 0);
 	}
 
 	private JButton getNextButton() {
 		if (nextButton == null) {
 			nextButton = new JButton(">");
-			nextButton.setEnabled(currentPage < pages -1 && pages != 1);
+			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
 			nextButton.addActionListener(actionEvent -> {
-				if (currentPage < pages -1) {
-					currentPage++;
-					pagesCombo.setSelectedItem(currentPage + 1);
+				if (CURRENT_PAGE < TOTAL_PAGES -1) {
+					CURRENT_PAGE++;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
 				}
 			});
 		}
@@ -399,11 +354,11 @@ public class MovStockBrowser extends ModalJFrame {
 	private JButton getPrevButton() {
 		if (prevButton == null) {
 			prevButton = new JButton("<");
-			prevButton.setEnabled(currentPage > 0);
+			prevButton.setEnabled(CURRENT_PAGE > 0);
 			prevButton.addActionListener(actionEvent -> {
-				if (currentPage > 0) {
-					currentPage--;
-					pagesCombo.setSelectedItem(currentPage + 1);
+				if (CURRENT_PAGE > 0) {
+					CURRENT_PAGE--;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
 				}
 			});
 		}
@@ -414,14 +369,14 @@ public class MovStockBrowser extends ModalJFrame {
 		if (pagesCombo == null) {
 			pagesCombo = new JComboBox<>();
 			pagesCombo.setPreferredSize(new Dimension(100, 25));
-			for (int i = 0; i <= pages; i++) {
+			for (int i = 0; i <= TOTAL_PAGES; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 			pagesCombo.addActionListener(actionEvent -> {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
-						currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(currentPage);
+						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+						applyFilter(CURRENT_PAGE);
 					}
 				}
 			});
@@ -431,7 +386,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private JLabel getUnderLabel() throws OHServiceException {
 		if (underLabel == null) {
-			underLabel = new JLabel("/ " + (pages + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel = new JLabel("/ " + (TOTAL_PAGES + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			underLabel.setPreferredSize(new Dimension(60, 30));
 		}
 		return underLabel;
@@ -439,7 +394,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private JLabel getTotalMovementsLabel() throws OHServiceException {
 		if (totalMovementsLabel == null) {
-			totalMovementsLabel = new JLabel(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") +": "+ totalMovements);
+			totalMovementsLabel = new JLabel(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") +": "+ TOTAL_MOVEMENTS);
 		}
 		return totalMovementsLabel;
 	}
@@ -499,7 +454,7 @@ public class MovStockBrowser extends ModalJFrame {
 		JPanel subTablePanel = new JPanel();
 		subTablePanel.setLayout(new BorderLayout());
 		subTablePanel.add(getTableTotal(), BorderLayout.CENTER);
-		subTablePanel.add(getPaginatePanel(), BorderLayout.SOUTH);
+		subTablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
 		return subTablePanel;
 	}
 
@@ -1100,7 +1055,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 			if (!isAutomaticLot()) {
 				try {
-					totalMovements = movBrowserManager.countTotalMovements(
+					TOTAL_MOVEMENTS = movBrowserManager.countTotalMovements(
 						medicalSelected,
 						medicalTypeSelected,
 						wardSelected,
@@ -1117,7 +1072,7 @@ public class MovStockBrowser extends ModalJFrame {
 				}
 			} else {
 				try {
-					totalMovements = movBrowserManager.countTotalMovements(
+					TOTAL_MOVEMENTS = movBrowserManager.countTotalMovements(
 						medicalSelected,
 						medicalTypeSelected,
 						wardSelected,
@@ -1134,13 +1089,13 @@ public class MovStockBrowser extends ModalJFrame {
 				}
 			}
 
-			totalMovementsLabel.setText(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") + ": " + totalMovements);
-			pages = (int) Math.ceil((double) totalMovements / PAGE_SIZE);
-			underLabel.setText("/ " + pages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			currentPage = 0;
+			totalMovementsLabel.setText(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") + ": " + TOTAL_MOVEMENTS);
+			TOTAL_PAGES = (int) Math.ceil((double) TOTAL_MOVEMENTS / PAGE_SIZE);
+			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			CURRENT_PAGE = 0;
 
 			pagesCombo.removeAllItems();
-			for (int i = 0; i < pages; i++) {
+			for (int i = 0; i < TOTAL_PAGES; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 
@@ -1153,8 +1108,8 @@ public class MovStockBrowser extends ModalJFrame {
 
 			updateTotals();
 
-			nextButton.setEnabled(currentPage < pages -1 && pages != 1);
-			prevButton.setEnabled(currentPage > 0);
+			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+			prevButton.setEnabled(CURRENT_PAGE > 0);
 
 		});
 		return filterButton;
