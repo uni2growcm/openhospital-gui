@@ -333,6 +333,8 @@ public class MovStockBrowser extends ModalJFrame {
 			movTable.updateUI();
 		}
 
+		updateTotals();
+
 		nextButton.setEnabled(currentPage < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
 		prevButton.setEnabled(currentPage > 0);
 	}
