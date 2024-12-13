@@ -177,8 +177,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	JButton next = new JButton(">");
 	JButton previous = new JButton("<");
 	JComboBox pagesCombo = new JComboBox();
+	JLabel totalOpdsLabel = new JLabel();
     JLabel under = new JLabel("/ 0 Page");
-	private static int PAGE_SIZE = 30;
+	private static int PAGE_SIZE = 10;
 	private int START_INDEX = 0;
 	private int TOTAL_ROWS;
 
@@ -257,6 +258,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
         navigation.add(pagesCombo);
         navigation.add(under);
         navigation.add(next);
+		navigation.add(totalOpdsLabel);
         jButtonPanel.add(navigation, null);
         previous.setEnabled(false);
         next.setEnabled(false);
@@ -272,7 +274,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
 			jButtonPanel = new JPanel();
-			
 			if (MainMenu.checkUserGrants("btnopdnew")) {
 				jButtonPanel.add(getJNewButton(), null);
 			}
@@ -1251,11 +1252,13 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 			}
 			model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user, START_INDEX, PAGE_SIZE);
-			TOTAL_ROWS = pSurM.size();
+			try {
+				TOTAL_ROWS = opdBrowserManager.countAllOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+			} catch (OHServiceException e) {
+				throw new RuntimeException(e);
+			};
 		}
 		model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user, START_INDEX, PAGE_SIZE);
-		System.out.println("Total rows: " + TOTAL_ROWS);
-		System.out.println("Rows fetched by model: " + pSur.size());
 	}
 	
 	private char getGender() {
@@ -1313,7 +1316,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
 					rowCounter.setText(rowCounterText + pSur.size());
 				} else {
-					MessageDialog.info(OpdBrowser.this, MessageBundle.getMessage("angal.common.nodatatoshow.msg"));
+					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 				}
 			}
 		}
@@ -1334,7 +1337,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					code = Integer.parseInt(codeHint);
 				} catch (NumberFormatException e1) {
-					MessageDialog.error(OpdBrowser.this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseinsertavalidnumber.msg");
 					return;
 				}
 				opdCodeFilter.setText("");
@@ -1343,7 +1346,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
 				rowCounter.setText(rowCounterText + pSur.size());
 				if (pSur.isEmpty()) {
-					MessageDialog.info(OpdBrowser.this, MessageBundle.getMessage("angal.common.nodatatoshow.msg"));
+					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 				}
 			}
 		}
@@ -1364,7 +1367,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					code = Integer.parseInt(codeHint);
 				} catch (NumberFormatException e1) {
-					MessageDialog.error(OpdBrowser.this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseinsertavalidnumber.msg");
 					return;
 				}
 				opdCodeFilter.setText("");
@@ -1374,7 +1377,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
 					rowCounter.setText(rowCounterText + pSur.size());
 					if (pSur.isEmpty()) {
-						MessageDialog.info(OpdBrowser.this, MessageBundle.getMessage("angal.common.nodatatoshow.msg"));
+						MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 					}
 				} catch (OHServiceException ohServiceException) {
 					MessageDialog.showExceptions(ohServiceException);
