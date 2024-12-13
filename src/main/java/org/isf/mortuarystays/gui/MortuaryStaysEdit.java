@@ -331,7 +331,7 @@ public class MortuaryStaysEdit extends JDialog {
                     MessageDialog.error(this, "angal.mortuarystays.insertavalidmaxdnumber.msg");
                     return;
                 }
-                if (minD >= maxD) {
+                if (minD > maxD) {
                     MessageDialog.error(this, "angal.mortuarystays.insertcoherencemaxminvalues.msg");
                     return;
                 }
