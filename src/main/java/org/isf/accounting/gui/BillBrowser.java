@@ -112,31 +112,23 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	@Override
 	public void billInserted(AWTEvent event) {
 	    User selectedGuarantor = (User) getJComboBoxGuarantor().getSelectedItem(); // Utilise getJComboBoxGuarantor() pour garantir l'initialisation
-	    if (patientParent != null) {
-	        if (selectedGuarantor == null) {
-	            try {
+	    try {
+	        if(patientParent != null) {
+	            if(selectedGuarantor == null) {
 	                updateDataSet(dateFrom, dateTo, patientParent);
-	            } catch (OHServiceException ohServiceException) {
-	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+	            } else {
+	                updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
 	            }
 	        } else {
-	            try {
+	            if(selectedGuarantor == null) {
+	                updateDataSet(dateFrom, dateTo);
+	            } else {
 	                updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
-	            } catch (OHServiceException ohServiceException) {
-	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
 	            }
 	        }
-	    } else {
-	        if (selectedGuarantor == null) {
-	            updateDataSet(dateFrom, dateTo);
-	        } else {
-	            try {
-	                updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
-	            } catch (OHServiceException ohServiceException) {
-	                LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-	            }
-	        }
-	    }
+		} catch (OHServiceException ohServiceException) {
+		     LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+		}
 	    updateTables();
 	    updateTotals();
 	    if (event != null) {
