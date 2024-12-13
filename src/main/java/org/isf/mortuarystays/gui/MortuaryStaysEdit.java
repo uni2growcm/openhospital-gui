@@ -347,9 +347,7 @@ public class MortuaryStaysEdit extends JDialog {
                 if (insert) { // inserting
                     try {
                         savedMortuaryStay = mortuaryStayManager.add(mortuaryStay);
-                        if (savedMortuaryStay != null) {
-                            result = true;
-                        }
+                        result = (savedMortuaryStay != null);
                     } catch (OHServiceException ex) {
                         OHServiceExceptionUtil.showMessages(ex);
                     }
@@ -359,9 +357,7 @@ public class MortuaryStaysEdit extends JDialog {
                 } else {
                     try { // updating
                         savedMortuaryStay = mortuaryStayManager.update(mortuaryStay);
-                        if (savedMortuaryStay != null) {
-                            result = true;
-                        }
+                        result = (savedMortuaryStay != null);
                     } catch (OHServiceException e) {
                         OHServiceExceptionUtil.showMessages(e);
                     }
