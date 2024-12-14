@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -50,7 +49,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	private JButton jEditButton;
 	private JButton jDeleteButton;
 	private JButton jCloseButton;
-	private String[] pbiColumn = new String[] {
+	private String[] pColumns = new String[] {
 			MessageBundle.getMessage("angal.common.code.txt"),
 			MessageBundle.getMessage("angal.common.description.txt"),
 			MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
@@ -95,7 +94,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
-			for (int i = 0; i < pbiColumn.length; i++) {
+			for (int i = 0; i < pColumns.length; i++) {
 				table.getColumnModel().getColumn(i).setMinWidth(columnsWidth[i]);
 			}
 			scrollPane.setViewportView(table);
@@ -119,7 +118,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	}
 
 	/**
-	 * vn This method initializes jNewButton
+	 * This method initializes jNewButton
 	 * @return javax.swing.JButton
 	 */
 	private JButton getNewButton() {
@@ -183,11 +182,11 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		}
 
 		public String getColumnName(int c) {
-			return pbiColumn[c];
+			return pColumns[c];
 		}
 
 		public int getColumnCount() {
-			return pbiColumn.length;
+			return pColumns.length;
 		}
 
 		public Object getValueAt(int r, int c) {
