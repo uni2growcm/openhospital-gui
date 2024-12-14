@@ -176,10 +176,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		}
 
 		public int getRowCount() {
-			if (reductionplansList == null) {
-				return 0;
-			}
-			return reductionplansList.size();
+			return reductionplansList == null ? 0 : reductionplansList.size();
 		}
 
 		public String getColumnName(int c) {
