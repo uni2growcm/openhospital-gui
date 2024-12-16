@@ -57,7 +57,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 			MessageBundle.getMessage("angal.reductionplan.operate.col"),
 			MessageBundle.getMessage("angal.reductionplan.otherrate.col")
 	};
-	private final int[] columnsWidth = { 80, 200, 90, 90, 90, 100 };
+	private final int[] columnsWidth = { 80, 200, 90, 90, 90, 90 };
 	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	List<ReductionPlan> reductionplansList;
 
@@ -72,7 +72,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	private void initialize() {
 		setTitle(MessageBundle.getMessage("angal.reductionplan.reductionplanbrowser.title"));
 		setContentPane(getJContentPane());
-		setMinimumSize(new Dimension(650, 400));
+		setMinimumSize(new Dimension(800,400));
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
