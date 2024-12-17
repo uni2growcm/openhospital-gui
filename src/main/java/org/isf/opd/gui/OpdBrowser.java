@@ -1271,7 +1271,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				for (int i = 0; i < TOTAL_PAGES; i++) {
 					pagesCombo.addItem(i + 1);
 				}
-
+				
 				pagesCombo.setSelectedItem(1);
 
 				if (pSur != null) {
