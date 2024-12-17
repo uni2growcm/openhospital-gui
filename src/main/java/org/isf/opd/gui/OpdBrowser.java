@@ -253,7 +253,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	 */
 	private JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
-			jButtonPanel = new JPanel();
+			jButtonPanel = new JPanel(new WrapLayout());
 			if (MainMenu.checkUserGrants("btnopdnew")) {
 				jButtonPanel.add(getJNewButton(), null);
 			}
@@ -288,13 +288,20 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (jContainPanel == null) {
 			jContainPanel = new JPanel();
 			jContainPanel.setLayout(new BorderLayout());
-			jContainPanel.add(getPaginationPanel(), BorderLayout.NORTH);
 			jContainPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 			jContainPanel.add(getJSelectionPanel(), BorderLayout.WEST);
-			jContainPanel.add(new JScrollPane(getJTable()),	BorderLayout.CENTER);
+			jContainPanel.add(new JScrollPane(getTablesPanel()),	BorderLayout.CENTER);
 			validate();
 		}
 		return jContainPanel;
+	}
+
+	private JPanel getTablesPanel() throws OHServiceException {
+		JPanel tablePanel = new JPanel();
+		tablePanel.setLayout(new BorderLayout());
+		tablePanel.add(new JScrollPane(getJTable()), BorderLayout.CENTER);
+		tablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		return tablePanel;
 	}
 
 	private JPanel getPaginationPanel() throws OHServiceException {
@@ -348,17 +355,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			ageFrom = ageTo;
 			return;
 		}
-/*
-		if (TimeTools.getDaysBetweenDates(dateFromDate, dateToDate, true) >= 360) {
-			int ok = JOptionPane.showConfirmDialog(this,
-					MessageBundle.getMessage("angal.common.thiscouldretrievealargeamountofdataproceed.msg"),
-					MessageBundle.getMessage("angal.messagedialog.question.title"),
-					JOptionPane.OK_CANCEL_OPTION);
-			if (ok != JOptionPane.OK_OPTION) {
-				return;
-			}
-		}
-*/
+
 		opdCodeFilter.setText("");
 		progYearFilter.setText("");
 		patientCodeFilter.setText("");
@@ -446,7 +443,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JLabel getUnderLabel() throws OHServiceException {
 		if (underLabel == null) {
 			underLabel = new JLabel("/ " + (TOTAL_PAGES + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			underLabel.setPreferredSize(new Dimension(60, 30));
+			underLabel.setPreferredSize(new Dimension(70, 30));
 		}
 		return underLabel;
 	}
@@ -1100,7 +1097,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 
 	class OpdBrowsingModel extends DefaultTableModel {
-		int total_opds;
 
 		private static final long serialVersionUID = -9129145534999353730L;
 
@@ -1259,18 +1255,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					ageFrom = ageTo;
 					return;
 				}
-
-				/*
-				if (TimeTools.getDaysBetweenDates(dateFromDate, dateToDate, true) >= 360) {
-					int ok = JOptionPane.showConfirmDialog(this,
-							MessageBundle.getMessage("angal.common.thiscouldretrievealargeamountofdataproceed.msg"),
-							MessageBundle.getMessage("angal.messagedialog.question.title"),
-							JOptionPane.OK_CANCEL_OPTION);
-					if (ok != JOptionPane.OK_OPTION) {
-						return;
-					}
-
-				}*/
 
 				try {
 					TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
