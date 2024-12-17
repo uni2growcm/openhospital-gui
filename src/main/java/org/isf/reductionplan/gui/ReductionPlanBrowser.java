@@ -72,7 +72,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	private void initialize() {
 		setTitle(MessageBundle.getMessage("angal.reductionplan.reductionplanbrowser.title"));
 		setContentPane(getJContentPane());
-		setMinimumSize(new Dimension(800,400));
+		setMinimumSize(new Dimension(900,400));
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
