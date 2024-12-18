@@ -94,7 +94,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
-			for (int i = 0; i < pColumns.length; i++) {
+			for (int i = 0; i < columnHeaders.length; i++) {
 				table.getColumnModel().getColumn(i).setMinWidth(columnsWidth[i]);
 			}
 			scrollPane.setViewportView(table);
@@ -179,11 +179,11 @@ public class ReductionPlanBrowser extends ModalJFrame {
 		}
 
 		public String getColumnName(int c) {
-			return pColumns[c];
+			return columnHeaders[c];
 		}
 
 		public int getColumnCount() {
-			return pColumns.length;
+			return columnHeaders.length;
 		}
 
 		public Object getValueAt(int r, int c) {
