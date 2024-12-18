@@ -49,7 +49,7 @@ public class ReductionPlanBrowser extends ModalJFrame {
 	private JButton jEditButton;
 	private JButton jDeleteButton;
 	private JButton jCloseButton;
-	private String[] pColumns = new String[] {
+	private final String[] columnHeaders = new String[] {
 			MessageBundle.getMessage("angal.common.code.txt"),
 			MessageBundle.getMessage("angal.common.description.txt"),
 			MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
