@@ -244,6 +244,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		editrecord.addSurgeryListener(this);
 		editrecord.showAsModal(myFrame);
 		setLocationRelativeTo(null);
+		FilterAction();
 	}
 
 	/**
@@ -276,6 +277,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		this.setContentPane(getJContainPanel());
 		this.setMinimumSize(new Dimension(400 + getJTableWidth(), 700));
 		rowCounter.setText(rowCounterText + pSur.size());
+		FilterAction();
 		validate();
 	}
 
@@ -360,7 +362,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		progYearFilter.setText("");
 		patientCodeFilter.setText("");
 
-		// Initialize the model with the applied filters
 		model = new OpdBrowsingModel(
 				wardSelected,
 				diseaseTypeSelected,
@@ -391,7 +392,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		pagesCombo.setSelectedItem(currentPage + 1);
 	}
-
 
 	private JButton getNextButton() {
 		if (nextButton == null) {
@@ -1215,82 +1215,85 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jTable.setRowSelectionInterval(0, 0);
 		}
 		rowCounter.setText(rowCounterText + pSur.size());
+		FilterAction();
 	}
 	
 	private JButton getFilterButton() {
 		if (filterButton == null) {
 			filterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
             filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.search.btn.key"));
-			filterButton.addActionListener(actionEvent -> {
-				String diseasetype = ((DiseaseType)jDiseaseTypeBox.getSelectedItem()).getCode();
-				if (diseasetype.equals(allDiseaseType.getCode())) {
-					diseasetype = null;
-				}
-				String disease = ((Disease)jDiseaseBox.getSelectedItem()).getCode();
-				if (disease.equals(allDisease.getCode())) {
-					disease = null;
-				}
-				Ward ward = null;
-				try {
-					ward = (Ward) jWardBox.getSelectedItem();
-				} catch (ClassCastException e) {
-					// AllWards selected
-				}
-
-				char sex = getGender();
-				char newPatient = getPatientAttendance();
-				String user = getUser();
-
-				LocalDate dateFromDate = dateFrom.getDate();
-				LocalDate dateToDate = dateTo.getDate();
-
-				if (dateFromDate.isAfter(dateToDate)) {
-					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
-					return;
-				}
-
-				if (ageFrom > ageTo) {
-					MessageDialog.error(this, "angal.opd.agefrommustbelowerthanageto.msg");
-					jAgeFromTextField.setText(ageTo.toString());
-					ageFrom = ageTo;
-					return;
-				}
-
-				try {
-					TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-				} catch (OHServiceException ohServiceException) {
-					MessageDialog.showExceptions(ohServiceException);
-				}
-
-				totalOpdsLabel.setText(MessageBundle.getMessage("angal.opd.totalopd.txt") + ": " + TOTAL_OPDS);
-				TOTAL_PAGES = (int) Math.ceil((double) TOTAL_OPDS / PAGE_SIZE);
-				underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-				CURRENT_PAGE = 0;
-
-				pagesCombo.removeAllItems();
-				for (int i = 0; i < TOTAL_PAGES; i++) {
-					pagesCombo.addItem(i + 1);
-				}
-				
-				pagesCombo.setSelectedItem(1);
-
-				if (pSur != null) {
-					model.fireTableDataChanged();
-					jTable.updateUI();
-				}
-
-				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
-				prevButton.setEnabled(CURRENT_PAGE > 0);
-				opdCodeFilter.setText("");
-				progYearFilter.setText("");
-				patientCodeFilter.setText("");
-				model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user, CURRENT_PAGE, PAGE_SIZE);
-				model.fireTableDataChanged();
-				jTable.updateUI();
-				rowCounter.setText(rowCounterText + pSur.size());
-			});
+			filterButton.addActionListener(actionEvent -> FilterAction() );
 		}
 		return filterButton;
+	}
+
+	private void FilterAction(){
+		String diseasetype = ((DiseaseType)jDiseaseTypeBox.getSelectedItem()).getCode();
+		if (diseasetype.equals(allDiseaseType.getCode())) {
+			diseasetype = null;
+		}
+		String disease = ((Disease)jDiseaseBox.getSelectedItem()).getCode();
+		if (disease.equals(allDisease.getCode())) {
+			disease = null;
+		}
+		Ward ward = null;
+		try {
+			ward = (Ward) jWardBox.getSelectedItem();
+		} catch (ClassCastException e) {
+			// AllWards selected
+		}
+
+		char sex = getGender();
+		char newPatient = getPatientAttendance();
+		String user = getUser();
+
+		LocalDate dateFromDate = dateFrom.getDate();
+		LocalDate dateToDate = dateTo.getDate();
+
+		if (dateFromDate.isAfter(dateToDate)) {
+			MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+			return;
+		}
+
+		if (ageFrom > ageTo) {
+			MessageDialog.error(this, "angal.opd.agefrommustbelowerthanageto.msg");
+			jAgeFromTextField.setText(ageTo.toString());
+			ageFrom = ageTo;
+			return;
+		}
+
+		try {
+			TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+		}
+
+		totalOpdsLabel.setText(MessageBundle.getMessage("angal.opd.totalopd.txt") + ": " + TOTAL_OPDS);
+		TOTAL_PAGES = (int) Math.ceil((double) TOTAL_OPDS / PAGE_SIZE);
+		underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		CURRENT_PAGE = 0;
+
+		pagesCombo.removeAllItems();
+		for (int i = 0; i < TOTAL_PAGES; i++) {
+			pagesCombo.addItem(i + 1);
+		}
+
+		pagesCombo.setSelectedItem(1);
+
+		if (pSur != null) {
+			model.fireTableDataChanged();
+			jTable.updateUI();
+		}
+
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
+		opdCodeFilter.setText("");
+		progYearFilter.setText("");
+		patientCodeFilter.setText("");
+		model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user, CURRENT_PAGE, PAGE_SIZE);
+		model.fireTableDataChanged();
+		jTable.updateUI();
+		rowCounter.setText(rowCounterText + pSur.size());
 	}
 
 	private char getGender() {
