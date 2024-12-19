@@ -82,6 +82,7 @@ import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
+import org.isf.menu.model.User;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.manager.PatientBrowserManager;
@@ -265,6 +266,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonCustom;
 	private JButton jButtonPickPatient;
 	private JButton jButtonTrashPatient;
+	private JComboBox<User> jComboBoxGuarantor;
+	private JLabel jLabelGuarantor;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -330,6 +333,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -341,6 +345,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private String user = UserBrowsingManager.getCurrentUser();
 
+	public boolean hasBillGuarantor() {
+		return GeneralData.ALLOWBILLGUARANTOR;
+	}
+	
 	/**
 	 * new bill from {@link MainMenu}
 	 */
@@ -805,12 +813,41 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jCalendarDate;
 	}
 
+	private JLabel getJLabelGuarantor() {
+		if (jLabelGuarantor == null) {
+			jLabelGuarantor = new JLabel(MessageBundle.getMessage("angal.newbill.selectguarantor.label"));
+		}
+		return jLabelGuarantor;
+	}
+	
 	private JLabel getJLabelDate() {
 		if (jLabelDate == null) {
 			jLabelDate = new JLabel(MessageBundle.getMessage("angal.common.date.txt"));
 			jLabelDate.setPreferredSize(LABELS_DIMENSION);
 		}
 		return jLabelDate;
+	}
+	
+	private JComboBox<User> getJComboBoxGuarantor() {
+		if (jComboBoxGuarantor == null) {
+			jComboBoxGuarantor = new JComboBox<>();
+			try {
+				List<User> users = userBrowserManager.getUser();
+				jComboBoxGuarantor.addItem(null);
+				for (User user : users) {
+					jComboBoxGuarantor.addItem(user);
+				}
+
+				if (thisBill != null) {
+					jComboBoxGuarantor.setSelectedItem(thisBill.getGuarantor());
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
+			jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
+		}
+		return jComboBoxGuarantor;
 	}
 
 	private JPanel getJPanelDate() {
@@ -821,6 +858,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelDate.add(getJCalendarDate());
 			jPanelDate.add(getJButtonPickPatient());
 			jPanelDate.add(getJButtonTrashPatient());
+			if (hasBillGuarantor()) {
+				jPanelDate.add(getJLabelGuarantor());
+				jPanelDate.add(getJComboBoxGuarantor());
+			}
+			
 			if (!GeneralData.getGeneralData().getSINGLEUSER()) {
 				jPanelDate.add(getJLabelUser());
 			}
@@ -1178,6 +1220,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonBalance.setEnabled(false);
 		}
 	}
+	
+	public boolean checkIfGuarantorFunctionalityEnabled() {
+		return GeneralData.ALLOWBILLGUARANTOR; 
+	}
 
 	private JButton getJButtonSave() {
 		if (jButtonSave == null) {
@@ -1187,7 +1233,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setIcon(new ImageIcon("rsc/icons/save_button.png"));
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
-
 				/*
 				 * we check again for underlying data changes
 				 */
@@ -1214,7 +1259,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-
+					if (hasBillGuarantor()) {
+						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
+						if (guarantor != null) {
+							newBill.setGuarantor(guarantor);
+						}
+					}
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
 						thisBill.setId(newBill.getId());
@@ -1241,6 +1291,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
+					if (hasBillGuarantor()) {
+						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
+						if (guarantor != null) {
+							updateBill.setGuarantor(guarantor);
+						}
+					}
 
 					try {
 						billBrowserManager.updateBill(updateBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
@@ -1843,6 +1899,15 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	public class BillTableModel implements TableModel {
 
 		public BillTableModel() {
+		}
+		
+		private String billGuarantor;
+
+		public String getBillGuarantor() {
+			return billGuarantor;
+		}
+		public void setBillGuarantor(String billGuarantor) {
+			this.billGuarantor = billGuarantor;
 		}
 
 		@Override
