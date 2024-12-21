@@ -177,9 +177,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JComboBox<Integer> pagesCombo;
 
 	private int TOTAL_PAGES = 0;
-	private int CURRENT_PAGE = 0;
+	private int CURRENT_PAGE = 1;
 	private long TOTAL_OPDS = 0;
-	private final int PAGE_SIZE = 100;
+	private final int PAGE_SIZE = 1;
 
 	private JTable getJTable() {
 		if (jTable == null) {
@@ -1408,7 +1408,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
 				try {
-					pSur = opdBrowserManager.getOpdList(code);
+					pSur = opdBrowserManager.getOpdList(code, CURRENT_PAGE, PAGE_SIZE);
 					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
 					rowCounter.setText(rowCounterText + pSur.size());
 					if (pSur.isEmpty()) {
