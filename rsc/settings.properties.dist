@@ -2,18 +2,18 @@
 # This file contains Open Hospital settings
 ###########################################
 # external settings
-MODE=CLIENT
+MODE=OH_MODE
 DEMODATA=off
 
 # experimental settings
 APISERVER=off
 
 # internal settings, modules, directories
-LANGUAGE=en
-SINGLEUSER=no
+LANGUAGE=OH_LANGUAGE
+SINGLEUSER=YES_OR_NO
 DEBUG=no
-DOC_DIR=../doc
-PATIENTPHOTOSTORAGE=data/photo
+DOC_DIR=OH_DOC_DIR
+PATIENTPHOTOSTORAGE=PHOTO_DIR
 INTERNALVIEWER=yes
 SMSENABLED=no
 VIDEOMODULEENABLED=yes
