@@ -247,7 +247,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		editrecord.addSurgeryListener(this);
 		editrecord.showAsModal(myFrame);
 		setLocationRelativeTo(null);
-		filterAction();
 	}
 
 	/**
@@ -280,7 +279,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		this.setContentPane(getJContainPanel());
 		this.setMinimumSize(new Dimension(400 + getJTableWidth(), 700));
 		rowCounter.setText(rowCounterText + opds.size());
-		//filterAction();
 		validate();
 	}
 
@@ -1254,6 +1252,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jTable.setRowSelectionInterval(0, 0);
 		}
 		rowCounter.setText(rowCounterText + opds.size());
+		SEARCH_FILTER = true;
 		filterAction();
 	}
 	
@@ -1286,17 +1285,17 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				// AllWards selected
 			}
 
-			char sex = getGender();
-			char newPatient = getPatientAttendance();
-			String user = getUser();
+				char sex = getGender();
+				char newPatient = getPatientAttendance();
+				String user = getUser();
 
-			LocalDate dateFromDate = dateFrom.getDate();
-			LocalDate dateToDate = dateTo.getDate();
+				LocalDate dateFromDate = dateFrom.getDate();
+				LocalDate dateToDate = dateTo.getDate();
 
-			if (dateFromDate.isAfter(dateToDate)) {
-				MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
-				return;
-			}
+				if (dateFromDate.isAfter(dateToDate)) {
+					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+					return;
+				}
 
 			if (ageFrom > ageTo) {
 				MessageDialog.error(this, "angal.opd.agefrommustbelowerthanageto.msg");
@@ -1484,4 +1483,5 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		@Override
 		public void keyReleased(KeyEvent e) {}
 	}
-} 
+
+}
