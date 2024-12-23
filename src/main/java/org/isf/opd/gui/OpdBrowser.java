@@ -181,7 +181,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private int TOTAL_PAGES = 0;
 	private int CURRENT_PAGE = 0;
 	private long TOTAL_OPDS = 0;
-	private final int PAGE_SIZE = 2;
+	private final int PAGE_SIZE = 100;
 	boolean SEARCH_FILTER;
 
 	private JTable getJTable() {
@@ -1131,7 +1131,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		private static final long serialVersionUID = -9129145534999353730L;
 
 		public OpdBrowsingModel(Ward ward, String diseaseTypeCode, String diseaseCode, LocalDate dateFrom, LocalDate dateTo, int ageFrom, int ageTo,
-								char sex, char newPatient, String user, int currentPage, int pageSize) {
+				char sex, char newPatient, String user, int currentPage, int pageSize) {
 			try {
 				opds = opdBrowserManager.getOpd(ward, diseaseTypeCode, diseaseCode, dateFrom, dateTo, ageFrom, ageTo, sex, newPatient, user, currentPage, pageSize);
 			} catch (OHServiceException ohServiceException) {
