@@ -157,7 +157,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
     private long TOTAL_OPDS = 0;
     private final int PAGE_SIZE = 100;
     boolean SEARCH_FILTER;
-    boolean INSERT_OPD;
 
     private JTable getJTable() {
         if (jTable == null) {
@@ -1157,7 +1156,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
         @Override
         public Object getValueAt(int r, int c) {
-            Opd opd = opds.get(opds.size() - r - 1);
+            Opd opd = opds.get(r);
             Patient pat = opd.getPatient();
             int i = 0;
             if (c == -1) {
@@ -1220,10 +1219,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
     @Override
     public void surgeryInserted(AWTEvent e, Opd opd) {
-        opds.add(opds.size(), opd);
-        ((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
         SEARCH_FILTER = true;
-        INSERT_OPD = true;
         filterAction();
         if (jTable.getRowCount() > 0) {
             jTable.setRowSelectionInterval(0, 0);
@@ -1283,33 +1279,25 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
             progYearFilter.setText("");
             patientCodeFilter.setText("");
 
-            if (INSERT_OPD) {
-                try {
-                    TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-                } catch (OHServiceException ohServiceException) {
-                    MessageDialog.showExceptions(ohServiceException);
-                }
-            }else {
-                model = new OpdBrowsingModel(
-                        ward,
-                        diseasetype,
-                        disease,
-                        dateFromDate,
-                        dateToDate,
-                        ageFrom,
-                        ageTo,
-                        sex,
-                        newPatient,
-                        user,
-                        CURRENT_PAGE,
-                        PAGE_SIZE
-                );
+            model = new OpdBrowsingModel(
+                    ward,
+                    diseasetype,
+                    disease,
+                    dateFromDate,
+                    dateToDate,
+                    ageFrom,
+                    ageTo,
+                    sex,
+                    newPatient,
+                    user,
+                    CURRENT_PAGE,
+                    PAGE_SIZE
+            );
 
-                try {
-                    TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-                } catch (OHServiceException ohServiceException) {
-                    MessageDialog.showExceptions(ohServiceException);
-                }
+            try {
+                TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+            } catch (OHServiceException ohServiceException) {
+                MessageDialog.showExceptions(ohServiceException);
             }
         } else {
             if (!progYearFilter.getText().isEmpty()) {
