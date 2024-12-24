@@ -1246,14 +1246,15 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	@Override
 	public void surgeryInserted(AWTEvent e, Opd opd) {
+		SEARCH_FILTER = true;
+		filterAction();
 		opds.add(opds.size(), opd);
 		((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
 		if (jTable.getRowCount() > 0) {
 			jTable.setRowSelectionInterval(0, 0);
 		}
 		rowCounter.setText(rowCounterText + opds.size());
-		SEARCH_FILTER = true;
-		filterAction();
+
 	}
 	
 	private JButton getFilterButton() {
