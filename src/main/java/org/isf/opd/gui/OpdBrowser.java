@@ -1402,7 +1402,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					code = Integer.parseInt(codeHint);
 				} catch (NumberFormatException e1) {
-					MessageDialog.error(OpdBrowser.this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseinsertavalidnumber.msg");
 					return;
 				}
 				progYearFilter.setText("");
@@ -1416,7 +1416,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
 					rowCounter.setText(rowCounterText + opds.size());
 				} else {
-					MessageDialog.info(OpdBrowser.this, MessageBundle.getMessage("angal.common.nodatatoshow.msg"));
+					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 				}
 			}
 		}
@@ -1437,7 +1437,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					code = Integer.parseInt(codeHint);
 				} catch (NumberFormatException e1) {
-					MessageDialog.error(OpdBrowser.this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseinsertavalidnumber.msg");
 					return;
 				}
 				opdCodeFilter.setText("");
@@ -1467,7 +1467,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					code = Integer.parseInt(codeHint);
 				} catch (NumberFormatException e1) {
-					MessageDialog.error(OpdBrowser.this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseinsertavalidnumber.msg");
 					return;
 				}
 				opdCodeFilter.setText("");
