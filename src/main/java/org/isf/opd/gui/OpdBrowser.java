@@ -369,12 +369,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
                     MessageDialog.showExceptions(ohServiceException);
                 }
             }
-
-//            if (!opdCodeFilter.getText().isEmpty()) {
-//                progYearFilter.setText("");
-//                patientCodeFilter.setText("");
-//                TOTAL_OPDS = 1;
-//            }
         }
 
         model.fireTableDataChanged();
@@ -1225,8 +1219,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
     @Override
     public void surgeryInserted(AWTEvent e, Opd opd) {
-        //opds.add(opds.size(), opd);
-        //((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
         SEARCH_FILTER = true;
         filterAction();
         if (jTable.getRowCount() > 0) {
@@ -1286,6 +1278,21 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
             opdCodeFilter.setText("");
             progYearFilter.setText("");
             patientCodeFilter.setText("");
+
+            model = new OpdBrowsingModel(
+                    ward,
+                    diseasetype,
+                    disease,
+                    dateFromDate,
+                    dateToDate,
+                    ageFrom,
+                    ageTo,
+                    sex,
+                    newPatient,
+                    user,
+                    CURRENT_PAGE,
+                    PAGE_SIZE
+            );
 
             try {
                 TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
