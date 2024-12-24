@@ -1472,5 +1472,4 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
         public void keyReleased(KeyEvent e) {
         }
     }
-
 }
