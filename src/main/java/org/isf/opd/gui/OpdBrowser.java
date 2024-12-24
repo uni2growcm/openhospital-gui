@@ -157,6 +157,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
     private long TOTAL_OPDS = 0;
     private final int PAGE_SIZE = 100;
     boolean SEARCH_FILTER;
+    boolean INSERT_OPD;
 
     private JTable getJTable() {
         if (jTable == null) {
@@ -443,7 +444,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
     private JLabel getTotalOpdsLabel() throws OHServiceException {
         if (totalOpdsLabel == null) {
-            totalOpdsLabel = new JLabel(MessageBundle.getMessage("angal.opd.totalopd.txt") + ": " + TOTAL_OPDS);
+            totalOpdsLabel = new JLabel(MessageBundle.getMessage("angal.opd.totalopd.label") + ": " + TOTAL_OPDS);
         }
         return totalOpdsLabel;
     }
@@ -1219,7 +1220,10 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
     @Override
     public void surgeryInserted(AWTEvent e, Opd opd) {
+        opds.add(opds.size(), opd);
+        ((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
         SEARCH_FILTER = true;
+        INSERT_OPD = true;
         filterAction();
         if (jTable.getRowCount() > 0) {
             jTable.setRowSelectionInterval(0, 0);
@@ -1279,25 +1283,33 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
             progYearFilter.setText("");
             patientCodeFilter.setText("");
 
-            model = new OpdBrowsingModel(
-                    ward,
-                    diseasetype,
-                    disease,
-                    dateFromDate,
-                    dateToDate,
-                    ageFrom,
-                    ageTo,
-                    sex,
-                    newPatient,
-                    user,
-                    CURRENT_PAGE,
-                    PAGE_SIZE
-            );
+            if (INSERT_OPD) {
+                try {
+                    TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+                } catch (OHServiceException ohServiceException) {
+                    MessageDialog.showExceptions(ohServiceException);
+                }
+            }else {
+                model = new OpdBrowsingModel(
+                        ward,
+                        diseasetype,
+                        disease,
+                        dateFromDate,
+                        dateToDate,
+                        ageFrom,
+                        ageTo,
+                        sex,
+                        newPatient,
+                        user,
+                        CURRENT_PAGE,
+                        PAGE_SIZE
+                );
 
-            try {
-                TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-            } catch (OHServiceException ohServiceException) {
-                MessageDialog.showExceptions(ohServiceException);
+                try {
+                    TOTAL_OPDS = opdBrowserManager.countTotalOpds(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+                } catch (OHServiceException ohServiceException) {
+                    MessageDialog.showExceptions(ohServiceException);
+                }
             }
         } else {
             if (!progYearFilter.getText().isEmpty()) {
@@ -1324,7 +1336,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
             }
         }
 
-        totalOpdsLabel.setText(MessageBundle.getMessage("angal.opd.totalopd.txt") + ": " + TOTAL_OPDS);
+        totalOpdsLabel.setText(MessageBundle.getMessage("angal.opd.totalopd.label") + ": " + TOTAL_OPDS);
         TOTAL_PAGES = (int) Math.ceil((double) TOTAL_OPDS / PAGE_SIZE);
         underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
         CURRENT_PAGE = 0;
