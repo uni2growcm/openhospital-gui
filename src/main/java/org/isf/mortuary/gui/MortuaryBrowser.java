@@ -6,41 +6,43 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 
 import org.isf.generaldata.MessageBundle;
-import org.isf.medicals.model.Medical;
-import org.isf.medicalstock.model.Lot;
-import org.isf.medicalstock.model.Movement;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.MortuaryBrowserManager;
 import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.model.Mortuary;
 import org.isf.patient.model.Patient;
-import org.isf.supplier.model.Supplier;
 import org.isf.utils.exception.OHException;
+import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
-import org.isf.utils.time.TimeTools;
+import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 
 public class MortuaryBrowser extends ModalJFrame {
 
+	private static long TOTAL_PAGES;
+	private static int CURRENT_PAGE = 0;
+	private static long TOTAL_MOVEMENTS;
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
 	private JButton jNewButton;
@@ -48,13 +50,19 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JButton jDeleteButton;
 	private JButton jCertificateButton;
 	private JButton jMortuaryStayButton;
+	private JButton filterButton;
 	private JButton jRapportButton;
 	private JButton jCloseButton;
-	private JTextField patientTextfield;
-	private JTextField searchTextfield;
 	private JButton pickPatientButton;
 	private JButton removePatientButton;
 	private JButton searchButton;
+	private JRadioButton inputRadioButton;
+	private JRadioButton outputRadioButton;
+	private JPanel inOutPanel;
+	private JComboBox<String> provenanceCombo;
+	private JComboBox<String> deathReasonCombo;
+	private JTextField patientTextfield;
+	private JTextField searchTextfield;
 	private JLabel rowCounter;
 	private MortuaryBrowserModel model;
 	private JTable movTable;
@@ -74,6 +82,9 @@ public class MortuaryBrowser extends ModalJFrame {
 		MessageBundle.getMessage("angal.mortuary.outdate.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.deathreason.col").toUpperCase(),
 	};
+	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
+	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
+	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
 	private int[] columnAlignment = { SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER,
 		SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT
 	};
@@ -83,20 +94,25 @@ public class MortuaryBrowser extends ModalJFrame {
 	private final JFrame myFrame;
 
 	private MortuaryBrowserManager mortuaryBrowserManager = Context.getApplicationContext().getBean(MortuaryBrowserManager.class);
-	/**
-	 * This method initializes
-	 */
-	public MortuaryBrowser() throws OHException {
+	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+	private GoodDateChooser dateFrom;
+	private GoodDateChooser dateTo;
+	private JButton prevButton;
+	private JButton nextButton;
+	private JComboBox<Integer> pagesCombo;
+	private JLabel underLabel;
+	private JLabel totalMortuaryLabel;
+	public MortuaryBrowser() throws OHException, OHServiceException {
 		super();
 		myFrame = this;
 		initialize();
 		setLocationRelativeTo(null);
 	}
 
-	private void initialize() throws OHException {
+	private void initialize() throws OHException, OHServiceException {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.browser.title"));
 		this.setContentPane(getJContainPanel());
-		this.setMinimumSize(new Dimension(800 + getJTableWidth(), 700));//rowCounter.setText(rowCounterText + pSur.size());
+		this.setMinimumSize(new Dimension(700 + getJTableWidth(), 700));//rowCounter.setText(rowCounterText + pSur.size());
 		validate();
 	}
 
@@ -105,7 +121,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJContainPanel() throws OHException {
+	private JPanel getJContainPanel() throws OHException, OHServiceException {
 		if (jContainPanel == null) {
 			jContainPanel = new JPanel();
 			jContainPanel.setLayout(new BorderLayout());
@@ -117,18 +133,20 @@ public class MortuaryBrowser extends ModalJFrame {
 		return jContainPanel;
 	}
 
-	private JPanel getJSelectionPanel() {
-		JPanel jSelectionPanel = new JPanel(); //the outer panel get maximum height (as per WEST from outer container)
-		jSelectionPanel.add(getJSelectionContentPanel()); //the inner panel can use any layout
+	private JPanel getJSelectionPanel() throws OHServiceException {
+		JPanel jSelectionPanel = new JPanel();
+		jSelectionPanel.add(getJSelectionContentPanel());
 		return jSelectionPanel;
 	}
 
-	private JPanel getJSelectionContentPanel() {
+	private JPanel getJSelectionContentPanel() throws OHServiceException {
 		JPanel jSelectionContentPanel = new JPanel();
+		jSelectionContentPanel.setLayout(new BoxLayout(jSelectionContentPanel, BoxLayout.Y_AXIS));
 		jSelectionContentPanel.add(getSearchPatientPanel());
-	//	jSelectionContentPanel.add(getOtherFiltersPanel());
-	//	jSelectionContentPanel.add(getButtonsPanel());
-		///SpringUtilities.makeCompactGrid(jSelectionContentPanel, 1, 1, 5, 5, 5, 5);
+		jSelectionContentPanel.add(getProvenancePanel());
+		jSelectionContentPanel.add(getInOutPanel());
+		jSelectionContentPanel.add(getDeathReasonPanel());
+		jSelectionContentPanel.add(getFilterButtonPanel());
 		return jSelectionContentPanel;
 	}
 
@@ -158,6 +176,106 @@ public class MortuaryBrowser extends ModalJFrame {
 			removePatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.removeapatient.tooltip"));
 		}
 		return removePatientButton;
+	}
+
+	private JPanel getProvenancePanel() throws OHServiceException {
+		JPanel provenancePanel = new JPanel();
+		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.provenance.border")));
+		provenancePanel.add(getProvenanceCombo());
+		return provenancePanel;
+	}
+
+	private JComboBox<String> getProvenanceCombo() throws OHServiceException {
+		if(provenanceCombo == null) {
+			provenanceCombo = new JComboBox<String>();
+			provenanceCombo.setPreferredSize(new Dimension(200, 24));
+		}
+		List<Ward> wards = wardBrowserManager.getWards();
+		provenanceCombo.addItem(TEXT_ALL);
+		for(Ward ward : wards) {
+			provenanceCombo.addItem(ward.getDescription());
+		}
+		return provenanceCombo;
+	}
+
+	private JPanel getInOutPanel() {
+		JPanel InOutPanel = new JPanel();
+		InOutPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.inout.border")));
+		InOutPanel.setLayout(new BoxLayout(InOutPanel, BoxLayout.Y_AXIS));
+		InOutPanel.add(getEnteredPanel());
+		InOutPanel.add(getDateFromPanel());
+		InOutPanel.add(getDateToPanel());
+		return InOutPanel;
+	}
+
+	private JPanel getEnteredPanel() {
+		if(inOutPanel == null) {
+			inOutPanel = new JPanel();
+			inputRadioButton = new JRadioButton();
+			outputRadioButton = new JRadioButton();
+			JLabel inputLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.input.txt"));
+			JLabel outputLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.output.txt"));
+			inputRadioButton.setSelected(true);
+			inOutPanel.add(inputRadioButton);
+			inOutPanel.add(inputLabel);
+			inOutPanel.add(outputRadioButton);
+			inOutPanel.add(outputLabel);
+		}
+		return inOutPanel;
+ 	}
+
+	private JPanel getDateFromPanel() {
+		JPanel dateFromPanel = new JPanel();
+		dateFromPanel.setLayout(new BorderLayout());
+		JLabel dateFromLabel = new JLabel(FROM_LABEL);
+		dateFrom = new GoodDateChooser();
+		dateFromPanel.add(dateFromLabel, BorderLayout.WEST);
+		dateFromPanel.add(dateFrom, BorderLayout.EAST);
+		return dateFromPanel;
+	}
+
+	private JPanel getDateToPanel() {
+		JPanel dateToPanel = new JPanel();
+		dateToPanel.setLayout(new BorderLayout());
+		JLabel dateToLabel = new JLabel(TO_LABEL);
+		dateTo = new GoodDateChooser();
+		dateToPanel.add(dateToLabel,BorderLayout.WEST);
+		dateToPanel.add(dateTo, BorderLayout.EAST);
+		return dateToPanel;
+	}
+
+	private JPanel getDeathReasonPanel() throws OHServiceException {
+		JPanel provenancePanel = new JPanel();
+		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathreason.border")));
+		provenancePanel.add(getDeathReasonCombo());
+		return provenancePanel;
+	}
+
+	private JComboBox<String> getDeathReasonCombo() throws OHServiceException {
+		if(deathReasonCombo == null) {
+			deathReasonCombo = new JComboBox<String>();
+			deathReasonCombo.setPreferredSize(new Dimension(200, 24));
+		}
+		List<Ward> wards = wardBrowserManager.getWards();
+		deathReasonCombo.addItem(TEXT_ALL);
+		for(Ward ward : wards) {
+			deathReasonCombo.addItem(ward.getDescription());
+		}
+		return deathReasonCombo;
+	}
+
+	private JPanel getFilterButtonPanel() {
+		JPanel jFilterButtonPanel = new JPanel();
+		jFilterButtonPanel.add(getFilterButton());
+		return jFilterButtonPanel;
+	}
+
+	private JButton getFilterButton() {
+		if(filterButton == null)  {
+			filterButton = new JButton(MessageBundle.getMessage("angal.common.filter.btn"));
+			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
+		}
+		return filterButton;
 	}
 
 	private JPanel getJButtonPanel() {
@@ -235,12 +353,12 @@ public class MortuaryBrowser extends ModalJFrame {
 		return jCloseButton;
 	}
 
-	private JPanel getTablePanel() throws OHException {
+	private JPanel getTablePanel() throws OHException, OHServiceException {
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
 		tablePanel.add(getSearchPanel(), BorderLayout.NORTH);
 		tablePanel.add(getTable(), BorderLayout.CENTER);
-		//tablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		tablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
 		return tablePanel;
 	}
 
@@ -284,14 +402,84 @@ public class MortuaryBrowser extends ModalJFrame {
 				movTable.getColumnModel().getColumn(i).setWidth(0);
 			}
 		}
-
-		//TableColumn costColumn = movTable.getColumnModel().getColumn(8);
-		//costColumn.setCellRenderer(new DecimalFormatRenderer());
-
-		//TableColumn totalColumn = movTable.getColumnModel().getColumn(12);
-		//totalColumn.setCellRenderer(new DecimalFormatRenderer());
-
 		return movTable;
+	}
+
+	private JPanel getPaginationPanel() throws OHServiceException {
+		JPanel jPaginationPanel = new JPanel();
+		jPaginationPanel.add(getPrevButton());
+		jPaginationPanel.add(getPagesCombo());
+		jPaginationPanel.add(getUnderLabel());
+		jPaginationPanel.add(getNextButton());
+		jPaginationPanel.add(getTotalMortuaryLabel());
+		return jPaginationPanel;
+	}
+
+	private JButton getPrevButton() {
+		if (prevButton == null) {
+			prevButton = new JButton("<");
+			prevButton.setEnabled(CURRENT_PAGE > 0);
+			prevButton.addActionListener(actionEvent -> {
+				if (CURRENT_PAGE > 0) {
+					CURRENT_PAGE--;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				}
+			});
+		}
+		return prevButton;
+	}
+
+	private JButton getNextButton() {
+		if (nextButton == null) {
+			nextButton = new JButton(">");
+			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+			nextButton.addActionListener(actionEvent -> {
+				if (CURRENT_PAGE < TOTAL_PAGES -1) {
+					CURRENT_PAGE++;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				}
+			});
+		}
+		return nextButton;
+	}
+
+	private JComboBox<Integer> getPagesCombo() {
+		if (pagesCombo == null) {
+			pagesCombo = new JComboBox<>();
+			pagesCombo.setPreferredSize(new Dimension(100, 25));
+			for (int i = 0; i <= TOTAL_PAGES; i++) {
+				pagesCombo.addItem(i + 1);
+			}
+			pagesCombo.addActionListener(actionEvent -> {
+				if (pagesCombo.getItemCount() != 0) {
+					if (pagesCombo.getSelectedItem() != null) {
+						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+						applyFilter(CURRENT_PAGE);
+					}
+				}
+			});
+		}
+		return pagesCombo;
+	}
+
+	private void applyFilter(int currentPage) {
+		nextButton.setEnabled(currentPage < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(currentPage > 0);
+	}
+
+	private JLabel getUnderLabel() {
+		if (underLabel == null) {
+			underLabel = new JLabel("/ " + (TOTAL_PAGES + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel.setPreferredSize(new Dimension(60, 30));
+		}
+		return underLabel;
+	}
+
+	private JLabel getTotalMortuaryLabel() throws OHServiceException {
+		if (totalMortuaryLabel == null) {
+			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") +": "+ TOTAL_MOVEMENTS);
+		}
+		return totalMortuaryLabel;
 	}
 
 	class MortuaryBrowserModel extends DefaultTableModel {
