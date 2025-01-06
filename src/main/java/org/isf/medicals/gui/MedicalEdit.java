@@ -29,6 +29,7 @@ import java.util.EventListener;
 import java.util.List;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -148,6 +149,8 @@ public class MedicalEdit extends JDialog {
 	 */
 	private void initialize() {
 		this.setContentPane(getJContentPane());
+		ImageIcon img = new ImageIcon("./rsc/icons/oh.png");
+		setIconImage(img.getImage());
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.medicals.newmedical.title"));
 		} else {
