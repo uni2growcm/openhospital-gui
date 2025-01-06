@@ -274,6 +274,9 @@ public class MortuaryBrowser extends ModalJFrame {
 		if(filterButton == null)  {
 			filterButton = new JButton(MessageBundle.getMessage("angal.common.filter.btn"));
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
+			filterButton.addActionListener(actionEvent -> {
+
+			});
 		}
 		return filterButton;
 	}
@@ -477,7 +480,7 @@ public class MortuaryBrowser extends ModalJFrame {
 
 	private JLabel getTotalMortuaryLabel() throws OHServiceException {
 		if (totalMortuaryLabel == null) {
-			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.medicalstock.totalmovement.txt") +": "+ TOTAL_MOVEMENTS);
+			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") +": "+ TOTAL_MOVEMENTS);
 		}
 		return totalMortuaryLabel;
 	}
