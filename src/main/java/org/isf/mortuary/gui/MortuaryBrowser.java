@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import org.isf.mortuary.manager.DeathReasonManager;
 import org.isf.mortuary.manager.MortuaryBrowserManager;
 import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.model.Mortuary;
+import org.isf.mortuary.service.MortuaryIoOperations;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
@@ -278,6 +280,24 @@ public class MortuaryBrowser extends ModalJFrame {
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
 			filterButton.addActionListener(actionEvent -> {
 
+				List<Mortuary> result = new ArrayList<>();
+				if(patientTextfield != null) {
+					result = mortuaryBrowserManager.getMortuariesWhereData(
+						patientTextfield.getText().trim(),
+						"Chirurgie",
+						dateFrom.getDateStartOfDay(),
+						dateTo.getDateStartOfDay() ,
+						(String) deathReasonCombo.getSelectedItem()
+					);
+				}
+
+				try {
+					model = new MortuaryBrowserModel(result);
+					model.fireTableDataChanged();
+					movTable.updateUI();
+				} catch (OHException e) {
+					throw new RuntimeException(e);
+				}
 			});
 		}
 		return filterButton;
@@ -496,6 +516,11 @@ public class MortuaryBrowser extends ModalJFrame {
 			updateTotals();
 		}
 
+		public MortuaryBrowserModel(List<Mortuary> result) throws OHException {
+			mortuaries = result;
+			updateTotals();
+		}
+
 		@Override
 		public int getRowCount() {
 			if (mortuaries == null) {
@@ -521,6 +546,9 @@ public class MortuaryBrowser extends ModalJFrame {
 		 */
 		@Override
 		public Object getValueAt(int r, int c) {
+			if(mortuaries == null){
+				return null;
+			}
 			Mortuary mortuary = mortuaries.get(r);
 			Patient patient = mortuary.getPatient();
 			DeathReason deathReason = mortuary.getDeathReason();
