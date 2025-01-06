@@ -149,8 +149,7 @@ public class MedicalEdit extends JDialog {
 	 */
 	private void initialize() {
 		this.setContentPane(getJContentPane());
-		ImageIcon img = new ImageIcon("./rsc/icons/oh.png");
-		setIconImage(img.getImage());
+		setIconImage((new ImageIcon("./rsc/icons/oh.png")).getImage());
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.medicals.newmedical.title"));
 		} else {
