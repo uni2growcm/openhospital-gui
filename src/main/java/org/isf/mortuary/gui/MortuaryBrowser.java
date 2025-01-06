@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.mortuary.manager.DeathReasonManager;
 import org.isf.mortuary.manager.MortuaryBrowserManager;
 import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.model.Mortuary;
@@ -95,6 +96,7 @@ public class MortuaryBrowser extends ModalJFrame {
 
 	private MortuaryBrowserManager mortuaryBrowserManager = Context.getApplicationContext().getBean(MortuaryBrowserManager.class);
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+	private DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
 	private GoodDateChooser dateFrom;
 	private GoodDateChooser dateTo;
 	private JButton prevButton;
@@ -256,10 +258,10 @@ public class MortuaryBrowser extends ModalJFrame {
 			deathReasonCombo = new JComboBox<String>();
 			deathReasonCombo.setPreferredSize(new Dimension(200, 24));
 		}
-		List<Ward> wards = wardBrowserManager.getWards();
+		List<DeathReason> deathReasons = deathReasonManager.getAll();
 		deathReasonCombo.addItem(TEXT_ALL);
-		for(Ward ward : wards) {
-			deathReasonCombo.addItem(ward.getDescription());
+		for(DeathReason deathReason : deathReasons) {
+			deathReasonCombo.addItem(deathReason.getDescription());
 		}
 		return deathReasonCombo;
 	}
@@ -521,7 +523,7 @@ public class MortuaryBrowser extends ModalJFrame {
 		public Object getValueAt(int r, int c) {
 			Mortuary mortuary = mortuaries.get(r);
 			Patient patient = mortuary.getPatient();
-			DeathReason deathReason = mortuary.getCause();
+			DeathReason deathReason = mortuary.getDeathReason();
 			int col = -1;
 			if (c == col) {
 				return mortuary;
