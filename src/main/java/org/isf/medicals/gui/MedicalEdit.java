@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.util.EventListener;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -131,7 +132,7 @@ public class MedicalEdit extends JDialog {
 	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
 	 */
 	public MedicalEdit(Medical old, boolean inserting, JFrame owner) {
-		super(owner, true);
+		super();
 		insert = inserting;
 		try {
 			oldMedical = (Medical) old.clone();
@@ -190,6 +191,7 @@ public class MedicalEdit extends JDialog {
 			JLabel conditioningLabel = new JLabel(MessageBundle.getMessage("angal.medicals.conditioning.label") + ':');
 			JLabel shapeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.shape.label") + ':');
 			JLabel dosingLabel = new JLabel(MessageBundle.getMessage("angal.medicals.dosing.label") + ':');
+
 			dataPanel.add(typeLabel);
 			dataPanel.add(getTypeComboBox());
 			dataPanel.add(codeLabel);
@@ -208,7 +210,7 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getDosingTextField());
 			dataPanel.add(activeLabel);
 			dataPanel.add(getActiveField());
-			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 9, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
@@ -362,6 +364,9 @@ public class MedicalEdit extends JDialog {
 							medical.setProdCode(codeTextField.getText());
 							medical.setPcsperpck(pcsperpckField.getValue());
 							medical.setMinqty(minQtiField.getValue());
+							medical.setConditioning(conditioningTextField.getText());
+							medical.setShape(shapeTextField.getText());
+							medical.setDosing(dosingTextField.getText());
 							medical.setLock(updatedMedical.getLock());
 							medical.setDeleted(updatedMedical.getDeleted());
 							fireMedicalUpdated();
