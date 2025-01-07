@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.IntStream;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,7 +36,6 @@ import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
-import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.mortuary.manager.DeathReasonManager;
 import org.isf.mortuary.manager.MortuaryBrowserManager;
 import org.isf.mortuary.model.DeathReason;
@@ -69,10 +70,10 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		}
 	}
 
-	private static long TOTAL_PAGES;
-	private static int CURRENT_PAGE = 0;
-	private final int PAGE_SIZE = 2;
-	private static long TOTAL_MORTUARIES;
+	private long TOTAL_PAGES;
+	private int CURRENT_PAGE = 0;
+	private final int PAGE_SIZE = 3;
+	private long TOTAL_MORTUARIES;
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
 	private JButton jNewButton;
@@ -132,21 +133,20 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JComboBox<Integer> pagesCombo;
 	private JLabel underLabel;
 	private JLabel totalMortuaryLabel;
-	private String user = UserBrowsingManager.getCurrentUser();
-	private List<String> users;
+	private boolean isSearch;
 
 	public MortuaryBrowser() throws OHException, OHServiceException {
 		super();
 		myFrame = this;
 		initialize();
+		filterButton.doClick();
 		setLocationRelativeTo(null);
 	}
 
 	private void initialize() throws OHException, OHServiceException {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.browser.title"));
 		this.setContentPane(getJContainPanel());
-		this.setMinimumSize(new Dimension(700 + getJTableWidth(), 700));//rowCounter.setText(rowCounterText + pSur.size());
-		validate();
+		this.setMinimumSize(new Dimension(700 + getJTableWidth(), 700));
 	}
 
 	/**
@@ -273,15 +273,14 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JPanel getEnteredPanel() {
 		if(inOutPanel == null) {
 			inOutPanel = new JPanel();
-			inputRadioButton = new JRadioButton();
-			outputRadioButton = new JRadioButton();
-			JLabel inputLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.input.txt"));
-			JLabel outputLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.output.txt"));
+			ButtonGroup group = new ButtonGroup();
+			inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
+			outputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.output.txt"));
 			inputRadioButton.setSelected(true);
+			group.add(inputRadioButton);
+			group.add(outputRadioButton);
 			inOutPanel.add(inputRadioButton);
-			inOutPanel.add(inputLabel);
 			inOutPanel.add(outputRadioButton);
-			inOutPanel.add(outputLabel);
 		}
 		return inOutPanel;
  	}
@@ -290,7 +289,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		JPanel dateFromPanel = new JPanel();
 		dateFromPanel.setLayout(new BorderLayout());
 		JLabel dateFromLabel = new JLabel(FROM_LABEL);
-		dateFrom = new GoodDateChooser();
+		dateFrom = new GoodDateChooser(LocalDate.now().minusWeeks(1));
 		dateFromPanel.add(dateFromLabel, BorderLayout.WEST);
 		dateFromPanel.add(dateFrom, BorderLayout.EAST);
 		return dateFromPanel;
@@ -339,6 +338,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			filterButton.addActionListener(actionEvent -> {
 				String provenanceSelected;
 				String deathReasonSelected;
+				String inputOrOutput = getInputOrOutput();
 
 				if(!(provenanceCombo.getSelectedItem() instanceof String)) {
 					provenanceSelected = (String) provenanceCombo.getSelectedItem();
@@ -358,18 +358,54 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 				}
 
 				try {
+					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMovements(
+						patientTextfield.getText().trim(),
+						provenanceSelected,
+						dateFrom.getDateStartOfDay(),
+						dateTo.getDateStartOfDay() ,
+						deathReasonSelected,
+						inputOrOutput
+					);
+				} catch (OHServiceException e) {
+					throw new RuntimeException(e);
+				}
+
+				try {
 					model = new MortuaryBrowserModel(
 						patientTextfield.getText().trim(),
 						provenanceSelected,
 						dateFrom.getDateStartOfDay(),
 						dateTo.getDateStartOfDay() ,
-						deathReasonSelected
+						deathReasonSelected,
+						inputOrOutput
 					);
-					model.fireTableDataChanged();
-					movTable.updateUI();
 				} catch (OHException e) {
 					throw new RuntimeException(e);
 				}
+
+				totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+				TOTAL_PAGES = (int) Math.ceil((double) TOTAL_MORTUARIES / PAGE_SIZE);
+				underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+				CURRENT_PAGE = 0;
+
+				isSearch = false;
+				pagesCombo.removeAllItems();
+				for (int i = 0; i < TOTAL_PAGES; i++) {
+					pagesCombo.addItem(i + 1);
+				}
+
+				pagesCombo.setSelectedItem(1);
+
+				if (mortuaries != null) {
+					model.fireTableDataChanged();
+					movTable.updateUI();
+				}
+
+				updateTotals();
+
+				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+				prevButton.setEnabled(CURRENT_PAGE > 0);
+
 			});
 		}
 		return filterButton;
@@ -471,14 +507,39 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		if(searchButton == null){
 			searchButton = new JButton();
 			searchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchButton.addActionListener(actionListener -> {
+			searchButton.addActionListener(actionEvent -> {
+				String inputOrOutput = getInputOrOutput();
 				try {
-					model = new MortuaryBrowserModel(searchTextfield.getText().trim(), null, null, null, null);
-					model.fireTableDataChanged();
-					movTable.updateUI();
-				} catch (OHException e) {
+					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMovements(
+						searchTextfield.getText().trim(),
+						null,
+						null,
+						null ,
+						null,
+						inputOrOutput
+					);
+				} catch (OHServiceException e) {
 					throw new RuntimeException(e);
 				}
+
+				totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+				TOTAL_PAGES = (int) Math.ceil((double) TOTAL_MORTUARIES / PAGE_SIZE);
+				underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+				CURRENT_PAGE = 0;
+
+				isSearch = true;
+				pagesCombo.removeAllItems();
+				for (int i = 0; i < TOTAL_PAGES; i++) {
+					pagesCombo.addItem(i + 1);
+				}
+
+				pagesCombo.setSelectedItem(1);
+
+				updateTotals();
+
+				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
+				prevButton.setEnabled(CURRENT_PAGE > 0);
+
 			});
 		}
 		return searchButton;
@@ -560,7 +621,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
 						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(CURRENT_PAGE);
+						applyFilter(CURRENT_PAGE, isSearch);
 					}
 				}
 			});
@@ -568,7 +629,59 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return pagesCombo;
 	}
 
-	private void applyFilter(int currentPage) {
+	private void applyFilter(int currentPage, boolean isSearch) {
+		String provenanceSelected;
+		String deathReasonSelected;
+		String inputOrOutput = getInputOrOutput();
+
+		if(!(provenanceCombo.getSelectedItem() instanceof String)) {
+			provenanceSelected = (String) provenanceCombo.getSelectedItem();
+		} else {
+			provenanceSelected = (String) provenanceCombo.getSelectedItem();
+			if(provenanceSelected.equals(TEXT_ALL)) {
+				provenanceSelected = null;
+			}
+		}
+		if(!(deathReasonCombo.getSelectedItem() instanceof String)) {
+			deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
+		} else {
+			deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
+			if(deathReasonSelected.equals(TEXT_ALL)) {
+				deathReasonSelected = null;
+			}
+		}
+
+		try {
+			if(isSearch) {
+				model = new MortuaryBrowserModel(
+					searchTextfield.getText().trim(),
+					null,
+					null,
+					null,
+					null,
+					inputOrOutput
+				);
+			} else {
+				model = new MortuaryBrowserModel(
+					patientTextfield.getText().trim(),
+					provenanceSelected,
+					dateFrom.getDateStartOfDay(),
+					dateTo.getDateStartOfDay(),
+					deathReasonSelected,
+					inputOrOutput
+				);
+			}
+
+		} catch (OHException e) {
+			throw new RuntimeException(e);
+		}
+
+		if (mortuaries != null) {
+			model.fireTableDataChanged();
+			movTable.updateUI();
+		}
+
+		updateTotals();
 
 		nextButton.setEnabled(currentPage < TOTAL_PAGES -1 && TOTAL_PAGES != 1);
 		prevButton.setEnabled(currentPage > 0);
@@ -589,6 +702,16 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return totalMortuaryLabel;
 	}
 
+	private String getInputOrOutput() {
+		String inputOrOutput;
+		if (inputRadioButton.isSelected()) {
+			inputOrOutput = "I";
+		} else {
+			inputOrOutput = "O";
+		}
+		return inputOrOutput;
+	}
+
 	class MortuaryBrowserModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
@@ -596,7 +719,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		public MortuaryBrowserModel() throws OHException {
 			LocalDateTime now = TimeTools.getNow();
 			LocalDateTime old = now.minusWeeks(1);
-			model = new MortuaryBrowserModel(null, null, old, now, null);
+			model = new MortuaryBrowserModel(null, null, old, now, null, "I");
 		}
 
 		public MortuaryBrowserModel(
@@ -604,9 +727,10 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			String provenance,
 			LocalDateTime dateFrom,
 			LocalDateTime dateTo,
-			String deathReason
+			String deathReason,
+			String inputOrOutput
 		) throws OHException {
-			mortuaries = mortuaryBrowserManager.getMortuariesWhereData(patientName, provenance, dateFrom, dateTo, deathReason);
+			mortuaries = mortuaryBrowserManager.getMortuariesWhereDataPageable(patientName, provenance, dateFrom, dateTo, deathReason, inputOrOutput,CURRENT_PAGE , PAGE_SIZE);
 			updateTotals();
 		}
 
