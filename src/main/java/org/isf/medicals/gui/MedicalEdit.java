@@ -70,6 +70,7 @@ public class MedicalEdit extends JDialog {
 	public interface MedicalListener extends EventListener {
 
 		void medicalUpdated(AWTEvent e);
+
 		void medicalInserted(Medical medical);
 	}
 
@@ -114,6 +115,9 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField descriptionTextField;
 	private VoLimitedTextField codeTextField;
 	private VoDoubleTextField minQtiField;
+	private VoLimitedTextField conditioningTextField;
+	private VoLimitedTextField dosingTextField;
+	private VoLimitedTextField shapeTextField;
 	private JComboBox<MedicalType> typeComboBox;
 	private JCheckBox activeCheckbox;
 	private Medical oldMedical;
@@ -183,7 +187,9 @@ public class MedicalEdit extends JDialog {
 			JLabel pcsperpckLabel = new JLabel(MessageBundle.getMessage("angal.medicals.pcsperpck.txt") + ':');
 			JLabel criticLabel = new JLabel(MessageBundle.getMessage("angal.medicals.criticallevel.txt") + ':');
 			JLabel activeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.active.txt") + ':');
-
+			JLabel conditioningLabel = new JLabel(MessageBundle.getMessage("angal.medicals.conditioning.label") + ':');
+			JLabel shapeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.shape.label") + ':');
+			JLabel dosingLabel = new JLabel(MessageBundle.getMessage("angal.medicals.dosing.label") + ':');
 			dataPanel.add(typeLabel);
 			dataPanel.add(getTypeComboBox());
 			dataPanel.add(codeLabel);
@@ -194,6 +200,12 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getPcsperpckField());
 			dataPanel.add(criticLabel);
 			dataPanel.add(getMinQtiField());
+			dataPanel.add(shapeLabel);
+			dataPanel.add(getShapeTextField());
+			dataPanel.add(conditioningLabel);
+			dataPanel.add(getConditioningTextField());
+			dataPanel.add(dosingLabel);
+			dataPanel.add(getDosingTextField());
 			dataPanel.add(activeLabel);
 			dataPanel.add(getActiveField());
 			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
@@ -260,6 +272,9 @@ public class MedicalEdit extends JDialog {
 							newMedical.setProdCode(codeTextField.getText());
 							newMedical.setPcsperpck(pcsperpckField.getValue());
 							newMedical.setMinqty(minQtiField.getValue());
+							newMedical.setConditioning(conditioningTextField.getText());
+							newMedical.setShape(shapeTextField.getText());
+							newMedical.setDosing(dosingTextField.getText());
 							newMedical.setDeleted(activeCheckbox.isSelected() ? 'N' : 'Y');
 						} catch (CloneNotSupportedException cloneNotSupportedException) {
 							LOGGER.error(cloneNotSupportedException.getMessage(), cloneNotSupportedException);
@@ -302,6 +317,9 @@ public class MedicalEdit extends JDialog {
 						oldMedical.setProdCode(codeTextField.getText());
 						oldMedical.setPcsperpck(pcsperpckField.getValue());
 						oldMedical.setMinqty(minQtiField.getValue());
+						oldMedical.setConditioning(conditioningTextField.getText());
+						oldMedical.setShape(shapeTextField.getText());
+						oldMedical.setDosing(dosingTextField.getText());
 						oldMedical.setDeleted(activeCheckbox.isSelected() ? 'N' : 'Y');
 						try {
 							Medical updatedMedical = medicalBrowsingManager.updateMedical(oldMedical);
@@ -399,6 +417,51 @@ public class MedicalEdit extends JDialog {
 			}
 		}
 		return codeTextField;
+	}
+
+	/**
+	 * This method initializes shapeTextField
+	 * 
+	 * @return javax.swing.JTextField
+	 */
+	private VoLimitedTextField getShapeTextField() {
+		if (shapeTextField == null) {
+			shapeTextField = new VoLimitedTextField(10);
+			if (medical != null && medical.getShape() != null) {
+				shapeTextField.setText(medical.getShape());
+			}
+		}
+		return shapeTextField;
+	}
+
+	/**
+	 * This method initializes conditioningTextField
+	 * 
+	 * @return javax.swing.JTextField
+	 */
+	private VoLimitedTextField getConditioningTextField() {
+		if (conditioningTextField == null) {
+			conditioningTextField = new VoLimitedTextField(10);
+			if (medical != null && medical.getConditioning() != null) {
+				conditioningTextField.setText(medical.getConditioning());
+			}
+		}
+		return conditioningTextField;
+	}
+
+	/**
+	 * This method initializes dosingTextField
+	 * 
+	 * @return javax.swing.JTextField
+	 */
+	private VoLimitedTextField getDosingTextField() {
+		if (dosingTextField == null) {
+			dosingTextField = new VoLimitedTextField(50);
+			if (medical != null && medical.getDosing() != null) {
+				dosingTextField.setText(medical.getDosing());
+			}
+		}
+		return dosingTextField;
 	}
 
 	private JTextField getMinQtiField() {
