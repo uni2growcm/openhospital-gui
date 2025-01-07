@@ -21,6 +21,7 @@
  */
 package org.isf.reductionplan.gui;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
+import org.isf.reductionplan.gui.ReductionPlanEdit.ReductionPlanListener;
 import org.isf.menu.manager.Context;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
@@ -40,7 +42,7 @@ import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.ModalJFrame;
 
-public class ReductionPlanBrowser extends ModalJFrame {
+public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -164,6 +166,10 @@ public class ReductionPlanBrowser extends ModalJFrame {
 			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
 		return jCloseButton;
+	}
+	@Override
+	public void ReductionPlanInserted(AWTEvent aEvent) {
+
 	}
 
 	private class ReductionPlanModel extends DefaultTableModel {
