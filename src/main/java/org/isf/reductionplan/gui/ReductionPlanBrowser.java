@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -40,6 +41,7 @@ import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 
 public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanListener {
@@ -51,17 +53,19 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 	private JButton jEditButton;
 	private JButton jDeleteButton;
 	private JButton jCloseButton;
+	private JTable table;
 	private final String[] columnHeaders = new String[] {
 			MessageBundle.getMessage("angal.common.code.txt"),
 			MessageBundle.getMessage("angal.common.description.txt"),
 			MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
 			MessageBundle.getMessage("angal.reductionplan.examrate.col"),
-			MessageBundle.getMessage("angal.reductionplan.operate.col"),
+			MessageBundle.getMessage("angal.reductionplan.operationrate.col"),
 			MessageBundle.getMessage("angal.reductionplan.otherrate.col")
 	};
 	private final int[] columnsWidth = { 80, 200, 90, 90, 90, 90 };
 	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	List<ReductionPlan> reductionplansList;
+	private ReductionPlan reductionPlan;
 
 	/**
 	 * This is the default constructor
@@ -89,7 +93,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		if (contentPane == null) {
 			contentPane = new JPanel();
 			contentPane.setLayout(new BorderLayout());
-			JTable table = new JTable();
+			table = new JTable();
 			JScrollPane scrollPane = new JScrollPane();
 			try {
 				table.setModel(new ReductionPlanModel());
@@ -127,6 +131,12 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		if (jNewButton == null) {
 			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
+
+			jNewButton.addActionListener(actionEvent -> {
+				ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(new ReductionPlan(), true);
+				reductionPlanEdit.addReductionPlanListener(ReductionPlanBrowser.this);
+				reductionPlanEdit.setVisible(true);
+			});
 		}
 		return jNewButton;
 	}
@@ -139,6 +149,17 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		if (jEditButton == null) {
 			jEditButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
 			jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
+
+			jEditButton.addActionListener(actionEvent -> {
+				if (table.getSelectedRow() < 0) {
+					MessageDialog.error(ReductionPlanBrowser.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
+					ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(reductionPlan, false);
+					reductionPlanEdit.addReductionPlanListener(ReductionPlanBrowser.this);
+					reductionPlanEdit.setVisible(true);
+				}
+			});
 		}
 		return jEditButton;
 	}
@@ -151,6 +172,17 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		if (jDeleteButton == null) {
 			jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
 			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
+
+			jDeleteButton.addActionListener(actionEvent -> {
+				if (table.getSelectedRow() < 0) {
+					MessageDialog.error(ReductionPlanBrowser.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
+					if (MessageDialog.yesNo(null, "angal.reductionplan.deletereductionplanused.msg") == JOptionPane.YES_OPTION) {
+
+					}
+				}
+			});
 		}
 		return jDeleteButton;
 	}
@@ -177,7 +209,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		private static final long serialVersionUID = 1L;
 
 		public ReductionPlanModel() throws OHServiceException {
-			reductionplansList = reductionPlanManager.getAll();
+			reductionplansList = reductionPlanManager.getAll(false);
 		}
 
 		public int getRowCount() {

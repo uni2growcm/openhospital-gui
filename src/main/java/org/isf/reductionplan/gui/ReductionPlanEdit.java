@@ -1,3 +1,24 @@
+/*
+ * Open Hospital (www.open-hospital.org)
+ * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ *
+ * Open Hospital is a free and open source software for healthcare data management.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package org.isf.reductionplan.gui;
 
 import java.awt.AWTEvent;
@@ -15,13 +36,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.DefaultTableModel;
 
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
@@ -33,6 +54,10 @@ import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
+import org.isf.reductionplan.manager.ExamReductionManager;
+import org.isf.reductionplan.manager.MedicalReductionManager;
+import org.isf.reductionplan.manager.OperationReductionManager;
+import org.isf.reductionplan.manager.PriceOtherReductionManager;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ExamReduction;
 import org.isf.reductionplan.model.MedicalReduction;
@@ -45,24 +70,35 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 
 public class ReductionPlanEdit extends ModalJFrame {
-	
+
 	@Serial
 	private static final long serialVersionUID = 1L;
+	private final String[] medicalReductionColumn = new String[] {
+		MessageBundle.getMessage("angal.reductionplan.medical.col").toUpperCase(),
+		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+	private final String[] examReductionColumn = new String[] {
+		MessageBundle.getMessage("angal.reductionplan.exam.col").toUpperCase(),
+		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+	private final String[] operationReductionColumn = new String[] {
+		MessageBundle.getMessage("angal.reductionplan.operation.col").toUpperCase(),
+		MessageBundle.getMessage("angal.reductionplan.reductionrate.col") };
+	private final String[] priceOtherReductionColumn = new String[] {
+		MessageBundle.getMessage("angal.reductionplan.other.col").toUpperCase(),
+		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
+	private final ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
+	private final PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
+	private final MedicalReductionManager medicalReductionManager = Context.getApplicationContext().getBean(MedicalReductionManager.class);
+	private final ExamReductionManager examReductionManager = Context.getApplicationContext().getBean(ExamReductionManager.class);
+	private final OperationReductionManager operationReductionManager = Context.getApplicationContext().getBean(OperationReductionManager.class);
+	private final PriceOtherReductionManager priceOtherReductionManager = Context.getApplicationContext().getBean(PriceOtherReductionManager.class);
+	private final EventListenerList reductionPlanListener = new EventListenerList();
+	private final ReductionPlan reductionPlan;
+	private final boolean isInsert;
 	private JPanel contentPane;
 	private JButton jCloseButton;
-	private final String[] medicalReductionColumn = new String[] {
-					MessageBundle.getMessage("angal.reduction.medical"),
-					MessageBundle.getMessage("angal.reduction.reductionrate") };
-	private final String[] examReductionColumn = new String[] {
-					MessageBundle.getMessage("angal.reduction.exam"),
-					MessageBundle.getMessage("angal.reduction.reductionrate") };
-	private final String[] operationReductionColumn = new String[] {
-					MessageBundle.getMessage("angal.reduction.operation"),
-					MessageBundle.getMessage("angal.reduction.reductionrate") };
-	private final String[] priceOtherReductionColumn = new String[] {
-					MessageBundle.getMessage("angal.reduction.other"),
-					MessageBundle.getMessage("angal.reduction.reductionrate") };
-	private ReductionPlan reductionPlan=new ReductionPlan();
 	private JPanel buttonPanel;
 	private JLabel labelDescription;
 	private JTextField textDescription;
@@ -76,32 +112,22 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private JTextField textPriceOtherRate;
 	private List<MedicalReduction> medicalReductionList;
 	private JTable medicalReductionTable;
-
 	private List<ExamReduction> examReductionList;
 	private JTable examReductionTable;
-
 	private List<OperationReduction> operationReductionList;
 	private JTable operationReductionTable;
-
 	private List<PriceOtherReduction> priceOtherReductionList;
 	private JTable priceOtherReductionTable;
-	private JButton jAddbutton;
+	private JButton jAddButton;
 	private JTabbedPane tabbedPane;
 	private JButton jDeleteButton;
-	private boolean isInsert;
 	private JButton jSaveButton;
 
-	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
-	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
-	private final ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
-	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
-	private final PricesOthersManager pricesOthersManager = Context .getApplicationContext().getBean(PricesOthersManager.class);
-
-
-	private final EventListenerList reductionPlanListener = new EventListenerList();
-
-	public interface ReductionPlanListener extends EventListener {
-		public void ReductionPlanInserted(AWTEvent aEvent);
+	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
+		this.isInsert = isInsert;
+		this.reductionPlan = reductionPlan;
+		initialize();
+		loadDataFromObject();
 	}
 
 	public void addReductionPlanListener(ReductionPlanListener l) {
@@ -110,6 +136,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private void fireReductionPlanInserted(ReductionPlan reductionPlan) {
 		AWTEvent event = new AWTEvent(reductionPlan, AWTEvent.RESERVED_ID_MAX + 1) {
+
 			@Serial
 			private static final long serialVersionUID = 1L;
 		};
@@ -119,23 +146,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 			((ReductionPlanListener) listener).ReductionPlanInserted(event);
 		}
 	}
-
-
-	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
-		this.isInsert=isInsert;
-		this.reductionPlan=reductionPlan;
-		initialize();
-		loadDataFromObject();
-	}
-
 	private void initialize() {
-		setTitle(MessageBundle.getMessage("angal.reduction.editreductionplan"));
+		setTitle(isInsert ? MessageBundle.getMessage("angal.reductionplan.createreductionplan.title")
+			: MessageBundle.getMessage("angal.reductionplan.editreductionplan.title"));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 600, 350);
 		setContentPane(getMainContentPane());
 		setLocationRelativeTo(null);
 	}
-
 	private JPanel getMainContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
@@ -175,7 +193,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		return contentPane;
 	}
-
 	private JPanel getDetailPane() {
 		JPanel detailPane = new JPanel();
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -281,7 +298,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		return detailPane;
 
 	}
-
 	private JPanel getMedicalReductionPanel() {
 		JPanel medicalReductionPanel = new JPanel();
 		medicalReductionPanel.setLayout(new BorderLayout());
@@ -294,7 +310,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(medicalReductionTable);
 		return medicalReductionPanel;
 	}
-
 	private JPanel getExamReductionPanel() {
 		JPanel examReductionPanel = new JPanel();
 		examReductionPanel.setLayout(new BorderLayout());
@@ -307,7 +322,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(examReductionTable);
 		return examReductionPanel;
 	}
-
 	private JPanel getOperationReductionPanel() {
 		JPanel operationReductionPanel = new JPanel();
 		operationReductionPanel.setLayout(new BorderLayout());
@@ -320,7 +334,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(operationReductionTable);
 		return operationReductionPanel;
 	}
-
 	private JPanel getPriceOtherReductionPanel() {
 		JPanel priceOtherReductionPanel = new JPanel();
 		priceOtherReductionPanel.setLayout(new BorderLayout());
@@ -333,86 +346,75 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(priceOtherReductionTable);
 		return priceOtherReductionPanel;
 	}
-
 	private JLabel getJLabelPriceOtherRate() {
 		if (labelPriceOtherRate == null) {
-			labelPriceOtherRate = new JLabel(MessageBundle.getMessage("angal.reduction.otherrate"));
+			labelPriceOtherRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.otherrate.label"));
 		}
 		return labelPriceOtherRate;
 	}
-
 	private JTextField getTextFieldPriceOtherRate() {
 		if (textPriceOtherRate == null) {
 			textPriceOtherRate = new JTextField();
 		}
 		return textPriceOtherRate;
 	}
-
 	private JTextField getTextFieldExamRate() {
 		if (textExamRate == null) {
 			textExamRate = new JTextField();
 		}
 		return textExamRate;
 	}
-
 	private JLabel getJLabelExamRate() {
 		if (labelExamRate == null) {
-			labelExamRate = new JLabel(MessageBundle.getMessage("angal.reduction.examrate"));
+			labelExamRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.examrate.label"));
 		}
 		return labelExamRate;
 	}
-
 	private JLabel getJLabelOperationRate() {
 		if (labelOperationRate == null) {
-			labelOperationRate = new JLabel(MessageBundle.getMessage("angal.reduction.operate"));
+			labelOperationRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.operationrate.label"));
 		}
 		return labelOperationRate;
 
 	}
-
 	private JLabel getJLabelMedicalRate() {
 		if (labelMedicalRate == null) {
-			labelMedicalRate = new JLabel(MessageBundle.getMessage("angal.reduction.medicalrate"));
+			labelMedicalRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.medicalrate.label"));
 		}
 		return labelMedicalRate;
 	}
-
 	private JTextField getJTextFieldDescription() {
 		if (textDescription == null) {
 			textDescription = new JTextField();
 		}
 		return textDescription;
 	}
-
 	private JTextField getJTextFieldMedicalRate() {
 		if (textMedicalRate == null) {
 			textMedicalRate = new JTextField();
 		}
 		return textMedicalRate;
 	}
-
 	private JTextField getJTextFieldOperationRate() {
 		if (textOperationRate == null) {
 			textOperationRate = new JTextField();
 		}
 		return textOperationRate;
 	}
-
 	private JLabel getJLabelDescription() {
 		if (labelDescription == null) {
-			labelDescription = new JLabel(MessageBundle.getMessage("angal.common.description"));
+			labelDescription = new JLabel(MessageBundle.getMessage("angal.reductionplan.description.label"));
 		}
 		return labelDescription;
 	}
-
 	private JPanel getJTabbedPane() {
-		JPanel panel=new JPanel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		tabbedPane = new JTabbedPane();
-		tabbedPane.addTab(MessageBundle.getMessage("angal.reduction.medical") , getMedicalReductionPanel());
-		tabbedPane.addTab(MessageBundle.getMessage("angal.reduction.exam"), getExamReductionPanel());
-		tabbedPane.addTab(MessageBundle.getMessage("angal.reduction.operation"), getOperationReductionPanel());
-		tabbedPane.addTab(MessageBundle.getMessage("angal.reduction.other"), getPriceOtherReductionPanel());
+		tabbedPane.addTab(MessageBundle.getMessage("angal.reductionplan.medical.title"), getMedicalReductionPanel());
+		tabbedPane.addTab(MessageBundle.getMessage("angal.reductionplan.exam.title"), getExamReductionPanel());
+		tabbedPane.addTab(MessageBundle.getMessage("angal.reductionplan.operation.title"), getOperationReductionPanel());
+		tabbedPane.addTab(MessageBundle.getMessage("angal.reductionplan.other.title"), getPriceOtherReductionPanel());
 		panel.add(tabbedPane, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(getJAddButton());
@@ -421,7 +423,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		panel.add(buttonPanel, BorderLayout.EAST);
 		return panel;
 	}
-
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
@@ -430,49 +431,28 @@ public class ReductionPlanEdit extends ModalJFrame {
 		}
 		return buttonPanel;
 	}
-
 	private JButton getJAddButton() {
-		if (jAddbutton == null) {
-			jAddbutton = new JButton();
-			jAddbutton.setText(MessageBundle.getMessage("angal.reductionplan.add.btn"));
-			jAddbutton.setMnemonic(MessageBundle.getMnemonic("angal.reductionplan.add.btn.key"));
-			jAddbutton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
-			jAddbutton.addActionListener(actionEvent -> {
+		if (jAddButton == null) {
+			jAddButton = new JButton();
+			jAddButton.setText(MessageBundle.getMessage("angal.reductionplan.add.btn"));
+			jAddButton.setMnemonic(MessageBundle.getMnemonic("angal.reductionplan.add.btn.key"));
+			jAddButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+			jAddButton.addActionListener(actionEvent -> {
 				int tabSelected = tabbedPane.getSelectedIndex();
-				switch (tabSelected) {
-					case 0 -> {
-						try {
-							addMedicalReduction();
-						} catch (OHServiceException e) {
-							OHServiceExceptionUtil.showMessages(e);
-						}
+				try {
+					switch (tabSelected) {
+						case 0 -> addMedicalReduction();
+						case 1 -> addExamReduction();
+						case 2 -> addOperationReduction();
+						case 3 -> addPriceOtherReduction();
+						default -> {}
 					}
-					case 1 -> {
-						try {
-							addExamReduction();
-						} catch (OHServiceException e) {
-							OHServiceExceptionUtil.showMessages(e);
-						}
-					}
-					case 2 -> {
-						try {
-							addOperationReduction();
-						} catch (OHServiceException e) {
-							OHServiceExceptionUtil.showMessages(e);
-						}
-					}
-					case 3 -> {
-						try {
-							addPriceOtherReduction();
-						} catch (OHServiceException e) {
-							throw new RuntimeException(e);
-						}
-					}
-					default -> {}
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
 				}
 			});
 		}
-		return jAddbutton;
+		return jAddButton;
 	}
 	private JButton getJDeleteButton() {
 		if (jDeleteButton == null) {
@@ -484,37 +464,37 @@ public class ReductionPlanEdit extends ModalJFrame {
 				int index;
 				int tabSelected = tabbedPane.getSelectedIndex();
 				switch (tabSelected) {
-					case 0 -> {
-						index = medicalReductionTable.getSelectedRow();
-						medicalReductionList.remove(index);
-						MedicalReductionModel medicalReductionModel = (MedicalReductionModel)medicalReductionTable.getModel();
-						medicalReductionModel.fireTableDataChanged();
-					}
-					case 1 -> {
-						index=examReductionTable.getSelectedRow();
-						examReductionList.remove(index);
-						ExamReductionModel examReductionModel=(ExamReductionModel)examReductionTable.getModel();
-						examReductionModel.fireTableDataChanged();
-					}
-					case 2 -> {
-						index= operationReductionTable.getSelectedRow();
-						operationReductionList.remove(index);
-						OperationReductionModel operationReductionModel=(OperationReductionModel) operationReductionTable.getModel();
-						operationReductionModel.fireTableDataChanged();
-					}
-					case 3 -> {
-						index= priceOtherReductionTable.getSelectedRow();
-						priceOtherReductionList.remove(index);
-						PriceOtherReductionModel priceOtherReductionModel=(PriceOtherReductionModel) priceOtherReductionTable.getModel();
-						priceOtherReductionModel.fireTableDataChanged();
-					}
-					default -> {}
+				case 0 -> {
+					index = medicalReductionTable.getSelectedRow();
+					medicalReductionList.remove(index);
+					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+					medicalReductionModel.fireTableDataChanged();
+				}
+				case 1 -> {
+					index = examReductionTable.getSelectedRow();
+					examReductionList.remove(index);
+					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+					examReductionModel.fireTableDataChanged();
+				}
+				case 2 -> {
+					index = operationReductionTable.getSelectedRow();
+					operationReductionList.remove(index);
+					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+					operationReductionModel.fireTableDataChanged();
+				}
+				case 3 -> {
+					index = priceOtherReductionTable.getSelectedRow();
+					priceOtherReductionList.remove(index);
+					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+					priceOtherReductionModel.fireTableDataChanged();
+				}
+				default -> {
+				}
 				}
 			});
 		}
 		return jDeleteButton;
 	}
-
 	private JButton getJSaveButton() {
 		if (jSaveButton == null) {
 			jSaveButton = new JButton();
@@ -522,15 +502,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 			jSaveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.save.btn.key"));
 			jSaveButton.addActionListener(actionEvent -> {
 				try {
-					if(loadDataInObject()){
-						if(isInsert){
+					if (loadDataInObject()) {
+						if (isInsert) {
 							reductionPlanManager.save(reductionPlan);
-						}
-						else{
+						} else {
 							reductionPlanManager.update(reductionPlan);
 						}
 						fireReductionPlanInserted(reductionPlan);
-						ReductionPlanEdit.this.dispose();
+						jCloseButton.doClick();
 					}
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
@@ -539,89 +518,84 @@ public class ReductionPlanEdit extends ModalJFrame {
 		}
 		return jSaveButton;
 	}
-
-
 	private void addMedicalReduction() throws OHServiceException {
 		List<Medical> medicalList = medicalBrowsingManager.getMedicals();
 
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
 		Medical medical = (Medical) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, medicalList.toArray(), "",
-			MessageBundle.getMessage("angal.newbill.selectamedical"), MessageBundle.getMessage("angal.newbill.medical"));
+			MessageBundle.getMessage("angal.newbill.selectamedical.txt"), MessageBundle.getMessage("angal.newbill.medical.title"));
 
 		if (medical != null) {
 			double rate = 0;
 			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
-				MessageBundle.getMessage("angal.reduction.reductionrate"),  MessageBundle.getMessage("angal.reduction.reductionrate"));
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.txt"), MessageBundle.getMessage("angal.reductionplan.reductionrate.title"));
 
 			if (stringRate == null || stringRate.isEmpty()) {
 				return;
 			}
 
-			try	{
+			try {
 				rate = Double.parseDouble(stringRate);
 				MedicalReduction medicalReduction = new MedicalReduction(reductionPlan, medical, rate);
 				medicalReductionList.add(medicalReduction);
-				MedicalReductionModel medicalReductionModel=(MedicalReductionModel)medicalReductionTable.getModel();
+				MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
 				medicalReductionModel.fireTableDataChanged();
 			} catch (Exception ex) {
-				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain"),
-					MessageBundle.getMessage("angal.newbill.invalidquantity"));
+				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain.msg"));
 			}
 		}
 	}
-
 	private void addExamReduction() throws OHServiceException {
 		List<Exam> examList = examBrowsingManager.getExams();
 
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
-		Exam exam = (Exam) MessageDialog.inputDialog(ReductionPlanEdit.this, icon,examList.toArray(), "",
-			MessageBundle.getMessage("angal.newbill.selectanexam"), MessageBundle.getMessage("angal.newbill.exam"));
+		Exam exam = (Exam) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, examList.toArray(), "",
+			MessageBundle.getMessage("angal.newbill.selectanexam.txt"), MessageBundle.getMessage("angal.newbill.exam.title"));
 
 		if (exam != null) {
 			double rate = 0;
 			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
-				MessageBundle.getMessage("angal.reduction.reductionrate"), MessageBundle.getMessage("angal.reduction.reductionrate"));
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.txt"),
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.title"));
 
 			try {
 				if (stringRate == null || stringRate.isEmpty()) {
 					return;
 				}
 				rate = Double.parseDouble(stringRate);
-				ExamReduction exaReduction=new ExamReduction(reductionPlan, exam, rate);
+				ExamReduction exaReduction = new ExamReduction(reductionPlan, exam, rate);
 				examReductionList.add(exaReduction);
-				ExamReductionModel examModel=(ExamReductionModel)examReductionTable.getModel();
+				ExamReductionModel examModel = (ExamReductionModel) examReductionTable.getModel();
 				examModel.fireTableDataChanged();
 			} catch (Exception ex) {
-				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain"),
-					MessageBundle.getMessage("angal.newbill.invalidquantity"));
+				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain.msg"));
 			}
 		}
 	}
-
 	private void addOperationReduction() throws OHServiceException {
 		List<Operation> operationList = operationBrowserManager.getOperation();
 
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
 		Operation operation = (Operation) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, operationList.toArray(), "",
-			MessageBundle.getMessage("angal.newbill.selectanoperation"), MessageBundle.getMessage("angal.newbill.operation"));
+			MessageBundle.getMessage("angal.newbill.selectanoperation.txt"), MessageBundle.getMessage("angal.newbill.operation.title"));
 
 		if (operation != null) {
 			double rate = 0;
 			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
-				MessageBundle.getMessage("angal.reduction.reductionrate"), MessageBundle.getMessage("angal.reduction.reductionrate"));
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.txt"),
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.title"));
 
 			try {
 				if (stringRate == null || stringRate.isEmpty()) {
 					return;
 				}
 				rate = Double.parseDouble(stringRate);
-				OperationReduction opeReduction=new OperationReduction(reductionPlan, operation, rate);
+				OperationReduction opeReduction = new OperationReduction(reductionPlan, operation, rate);
 				operationReductionList.add(opeReduction);
-				OperationReductionModel opeModel=(OperationReductionModel) operationReductionTable.getModel();
+				OperationReductionModel opeModel = (OperationReductionModel) operationReductionTable.getModel();
 				opeModel.fireTableDataChanged();
 			} catch (Exception eee) {
-				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain"),
-					MessageBundle.getMessage("angal.newbill.invalidquantity"));
+				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain.msg"));
 			}
 		}
 	}
@@ -630,53 +604,52 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
 		PricesOthers pricesOthers = (PricesOthers) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, pricesOthersList.toArray(),
-			"", MessageBundle.getMessage("angal.newbill.pleaseselectanitem"), MessageBundle.getMessage("angal.newbill.item"));
+			"", MessageBundle.getMessage("angal.newbill.pleaseselectanitem.txt"), MessageBundle.getMessage("angal.newbill.item.title"));
 
 		if (pricesOthers != null) {
 			double rate = 0;
 			String strRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
-				MessageBundle.getMessage("angal.reduction.reductionrate"), MessageBundle.getMessage("angal.reduction.reductionrate"));
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.txt"),
+				MessageBundle.getMessage("angal.reductionplan.reductionrate.title"));
 
 			try {
 				if (strRate == null || strRate.isEmpty()) {
 					return;
 				}
 				rate = Double.parseDouble(strRate);
-				PriceOtherReduction priceOtherReduction=new PriceOtherReduction(reductionPlan, pricesOthers, rate);
+				PriceOtherReduction priceOtherReduction = new PriceOtherReduction(reductionPlan, pricesOthers, rate);
 				priceOtherReductionList.add(priceOtherReduction);
-				PriceOtherReductionModel priceOtherReductionModel=(PriceOtherReductionModel) priceOtherReductionTable.getModel();
+				PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
 				priceOtherReductionModel.fireTableDataChanged();
 
-			} catch (Exception eee) {
-				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain"),
-					MessageBundle.getMessage("angal.newbill.invalidquantity"));
+			} catch (Exception ex) {
+				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.newbill.invalidquantitypleasetryagain.msg"));
 			}
 		}
 	}
 	private boolean loadDataInObject() {
 		try {
-			if(!textDescription.getText().equals(reductionPlan.getDescription())) {
-				if(reductionPlanManager.getByDescription(textDescription.getText()) != null) {
-					JOptionPane.showMessageDialog(ReductionPlanEdit.this, MessageBundle.getMessage("angal.reduction.descriptionused"));
-					return false;
-				}
+			if (!textDescription.getText().equals(reductionPlan.getDescription()) && reductionPlanManager.getByDescription(textDescription.getText()) != null) {
+				MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.reductionplan.descriptionalreadyused.msg"));
+				return false;
 			}
 
 			reductionPlan.setDescription(textDescription.getText());
-			reductionPlan.setExamReductions(examReductionList);
-			reductionPlan.setExamRate(Double.valueOf(textExamRate.getText()));
-			reductionPlan.setMedicalRate(Double.valueOf(textMedicalRate.getText()));
-			reductionPlan.setMedicalsReductions(medicalReductionList);
-			reductionPlan.setOperationreductions(operationReductionList);
-			reductionPlan.setOperationRate(Double.valueOf(textOperationRate.getText()));
-			reductionPlan.setOtherReductions(priceOtherReductionList);
-			reductionPlan.setOtherRate(Double.valueOf(textPriceOtherRate.getText()));
+			reductionPlan.setExamReductionList(examReductionList);
+			reductionPlan.setExamRate(Double.parseDouble(textExamRate.getText()));
+			reductionPlan.setMedicalRate(Double.parseDouble(textMedicalRate.getText()));
+			reductionPlan.setMedicalReductionList(medicalReductionList);
+			reductionPlan.setOperationReductionList(operationReductionList);
+			reductionPlan.setOperationRate(Double.parseDouble(textOperationRate.getText()));
+			reductionPlan.setPriceOtherReductionList(priceOtherReductionList);
+			reductionPlan.setOtherRate(Double.parseDouble(textPriceOtherRate.getText()));
 			return true;
-		} catch (NumberFormatException e) {
-			throw new OHException(e.getMessage());
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
+		return false;
 	}
-	private void loadDataFromObject(){
+	private void loadDataFromObject() {
 		textDescription.setText(this.reductionPlan.getDescription());
 		textMedicalRate.setText(String.valueOf(this.reductionPlan.getMedicalRate()));
 		textExamRate.setText(String.valueOf(this.reductionPlan.getExamRate()));
@@ -684,12 +657,10 @@ public class ReductionPlanEdit extends ModalJFrame {
 		textPriceOtherRate.setText(String.valueOf(this.reductionPlan.getOtherRate()));
 
 		try {
-			medicalReductionList=manager.getMedicalsReductions(this.reductionPlan.getId());
-			examReductionList = manager.getExamsReductions(this.reductionPlan
-							.getId());
-			operationReductionList =manager.getOperationsReductions(this.reductionPlan.getId());
-			priceOtherReductionList = manager.getOtherReductions(this.reductionPlan
-							.getId());
+			medicalReductionList = medicalReductionManager.getByReductionPlanId(this.reductionPlan.getId());
+			examReductionList = examReductionManager.getByReductionPlanId(this.reductionPlan.getId());
+			operationReductionList = operationReductionManager.getByReductionPlanId(this.reductionPlan.getId());
+			priceOtherReductionList = priceOtherReductionManager.getByReductionPlanId(this.reductionPlan.getId());
 
 			((ExamReductionModel) examReductionTable.getModel()).fireTableDataChanged();
 			examReductionTable.updateUI();
@@ -700,49 +671,40 @@ public class ReductionPlanEdit extends ModalJFrame {
 			((PriceOtherReductionModel) priceOtherReductionTable.getModel()).fireTableDataChanged();
 			priceOtherReductionTable.updateUI();
 
-		} catch (OHException e) {
-			e.printStackTrace();
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
-
 
 	}
 	private JButton getJCloseButton() {
 		if (jCloseButton == null) {
 			jCloseButton = new JButton();
-			jCloseButton
-							.setText(MessageBundle.getMessage("angal.common.close"));
-			jCloseButton.setMnemonic(KeyEvent.VK_C);
-			jCloseButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					dispose();
-				}
-			});
+			jCloseButton.setText(MessageBundle.getMessage("angal.common.close.btn"));
+			jCloseButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
+			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
 		return jCloseButton;
 	}
+	public interface ReductionPlanListener extends EventListener {
+
+		void ReductionPlanInserted(AWTEvent aEvent);
+	}
 
 	private class ExamReductionModel extends DefaultTableModel {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-		private ExamBrowsingManager examManager = new ExamBrowsingManager();
 
-		public ExamReductionModel() throws OHException {
-			ReductionPlanManager manager = new ReductionPlanManager();
-			try{
-				examReductionList = manager.getExamsReductions(reductionPlan
-								.getId());
-			}
-			catch(NullPointerException e){
-				e.printStackTrace();
+		@Serial
+		private static final long serialVersionUID = 1L;
+
+		public ExamReductionModel() {
+			try {
+				examReductionList = examReductionManager.getByReductionPlanId(reductionPlan.getId());
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		public int getRowCount() {
-			if (examReductionList == null)
-				return 0;
-			return examReductionList.size();
+			return examReductionList == null ? 0 : examReductionList.size();
 		}
 
 		public String getColumnName(int c) {
@@ -753,12 +715,9 @@ public class ReductionPlanEdit extends ModalJFrame {
 			return examReductionColumn.length;
 		}
 
-		// { "CODE", "DESCRIPTION","MEDICALRATE","EXAMRATE","OPERATIONRATE",
-		// "OTHERRATE"};
 		public Object getValueAt(int r, int c) {
 			if (c == 0) {
-				return examManager.getExam(
-								examReductionList.get(r).getExaCode()).getDescription();
+				return examReductionList.get(r).getExam().getDescription();
 			} else if (c == -1) {
 				return examReductionList.get(r);
 			} else if (c == 1) {
@@ -769,32 +728,25 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
-			// return super.isCellEditable(arg0, arg1);
 			return false;
 		}
 	}
 
 	private class OperationReductionModel extends DefaultTableModel {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-		private OperationBrowserManager opeManager = new OperationBrowserManager();
 
-		public OperationReductionModel() throws OHException {
-			ReductionPlanManager manager = new ReductionPlanManager();
+		@Serial
+		private static final long serialVersionUID = 1L;
+
+		public OperationReductionModel() {
 			try {
-				operationReductionList = manager
-								.getOperationsReductions(reductionPlan.getId());
-			} catch (NullPointerException e) {
-				e.printStackTrace();
+				operationReductionList = operationReductionManager.getByReductionPlanId(reductionPlan.getId());
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		public int getRowCount() {
-			if (operationReductionList == null)
-				return 0;
-			return operationReductionList.size();
+			return operationReductionList == null ? 0 : operationReductionList.size();
 		}
 
 		public String getColumnName(int c) {
@@ -805,12 +757,9 @@ public class ReductionPlanEdit extends ModalJFrame {
 			return operationReductionColumn.length;
 		}
 
-		// { "CODE", "DESCRIPTION","MEDICALRATE","EXAMRATE","OPERATIONRATE",
-		// "OTHERRATE"};
 		public Object getValueAt(int r, int c) {
 			if (c == 0) {
-				return opeManager.getOperationByCode(
-								operationReductionList.get(r).getOpeCode()).getDescription();
+				return operationReductionList.get(r).getOperation().getDescription();
 			} else if (c == -1) {
 				return operationReductionList.get(r);
 			} else if (c == 1) {
@@ -821,33 +770,25 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
-			// return super.isCellEditable(arg0, arg1);
 			return false;
 		}
 	}
 
 	private class PriceOtherReductionModel extends DefaultTableModel {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-		private PricesOthersManager othManager = new PricesOthersManager();
 
-		public PriceOtherReductionModel() throws OHException {
-			ReductionPlanManager manager = new ReductionPlanManager();
-			try{
-				priceOtherReductionList = manager.getOtherReductions(reductionPlan
-								.getId());
-			}
-			catch(NullPointerException e){
-				e.printStackTrace();
+		@Serial
+		private static final long serialVersionUID = 1L;
+
+		public PriceOtherReductionModel() {
+			try {
+				priceOtherReductionList = priceOtherReductionManager.getByReductionPlanId(reductionPlan.getId());
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		public int getRowCount() {
-			if (priceOtherReductionList == null)
-				return 0;
-			return priceOtherReductionList.size();
+			return priceOtherReductionList == null ? 0 : priceOtherReductionList.size();
 		}
 
 		public String getColumnName(int c) {
@@ -858,11 +799,9 @@ public class ReductionPlanEdit extends ModalJFrame {
 			return priceOtherReductionColumn.length;
 		}
 
-		// { "CODE", "DESCRIPTION","MEDICALRATE","EXAMRATE","OPERATIONRATE",
-		// "OTHERRATE"};
 		public Object getValueAt(int r, int c) {
 			if (c == 0) {
-				return othManager.getOther(priceOtherReductionList.get(r).getOthID());
+				return priceOtherReductionList.get(r).getPricesOthers().getDescription();
 			} else if (c == -1) {
 				return priceOtherReductionList.get(r);
 			} else if (c == 1) {
@@ -873,33 +812,25 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
-			// return super.isCellEditable(arg0, arg1);
 			return false;
 		}
 	}
 
 	private class MedicalReductionModel extends DefaultTableModel {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-		MedicalBrowsingManager medManager = new MedicalBrowsingManager();
 
-		public MedicalReductionModel() throws OHException {
-			ReductionPlanManager manager = new ReductionPlanManager();
+		@Serial
+		private static final long serialVersionUID = 1L;
+
+		public MedicalReductionModel() {
 			try {
-				medicalReductionList = manager
-								.getMedicalsReductions(reductionPlan.getId());
-			}
-			catch(NullPointerException e){
-				e.printStackTrace();
+				medicalReductionList = medicalReductionManager.getByReductionPlanId(reductionPlan.getId());
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		public int getRowCount() {
-			if (medicalReductionList == null)
-				return 0;
-			return medicalReductionList.size();
+			return medicalReductionList == null ? 0 : medicalReductionList.size();
 		}
 
 		public String getColumnName(int c) {
@@ -910,13 +841,9 @@ public class ReductionPlanEdit extends ModalJFrame {
 			return medicalReductionColumn.length;
 		}
 
-		// { "CODE", "DESCRIPTION","MEDICALRATE","EXAMRATE","OPERATIONRATE",
-		// "OTHERRATE"};
 		public Object getValueAt(int r, int c) {
 			if (c == 0) {
-				return medManager.getMedical(
-												medicalReductionList.get(r).getMedID())
-								.getDescription();
+				return medicalReductionList.get(r).getMedical().getDescription();
 			} else if (c == -1) {
 				return medicalReductionList.get(r);
 			} else if (c == 1) {
@@ -927,7 +854,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
-			// return super.isCellEditable(arg0, arg1);
 			return false;
 		}
 	}
