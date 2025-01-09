@@ -378,7 +378,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 				}
 
 				try {
-					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMovements(
+					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMortuaries(
 						patientTextfield.getText().trim(),
 						provenanceSelected,
 						dateFrom.getDateStartOfDay(),
@@ -530,7 +530,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			searchButton.addActionListener(actionEvent -> {
 				String inputOrOutput = getInputOrOutput();
 				try {
-					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMovements(
+					TOTAL_MORTUARIES = mortuaryBrowserManager.countTotalMortuaries(
 						searchTextfield.getText().trim(),
 						null,
 						null,
