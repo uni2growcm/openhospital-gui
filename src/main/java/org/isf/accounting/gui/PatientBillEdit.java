@@ -1234,10 +1234,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
 
-				if (hasBillGuarantor() && jComboBoxGuarantor.getSelectedItem() == null){
-					MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
-					return;
-				}
 				/*
 				 * we check again for underlying data changes
 				 */
@@ -1264,10 +1260,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor()) {
+					if (hasBillGuarantor() && newBill.getStatus() == "O") {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
+						System.out.println(guarantor);
 						if (guarantor != null) {
 							newBill.setGuarantor(guarantor);
+						} else {
+							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
+							return;
 						}
 					}
 					try {
@@ -1296,10 +1296,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor()) {
+					if (hasBillGuarantor() && updateBill.getStatus() == "O") {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
 							updateBill.setGuarantor(guarantor);
+						} else {
+							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
+							return;
 						}
 					}
 
