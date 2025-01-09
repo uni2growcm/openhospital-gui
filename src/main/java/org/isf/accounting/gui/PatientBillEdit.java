@@ -1234,11 +1234,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
 
-				if (hasBillGuarantor()){
-					if (jComboBoxGuarantor.getSelectedItem() == null){
-						MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
-						return;
-					}
+				if (hasBillGuarantor() && jComboBoxGuarantor.getSelectedItem() == null){
+					MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
+					return;
 				}
 				/*
 				 * we check again for underlying data changes
