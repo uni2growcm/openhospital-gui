@@ -40,6 +40,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -84,6 +85,7 @@ import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -131,6 +133,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private JComboBox pbox;
 	private JComboBox activeComboBox;
 	private List<Medical> pMedicals;
+	private JButton nextButton;
+	private JButton prevButton;
+	private JComboBox<Integer> pagesCombo;
+	private JLabel underLabel;
+	private JLabel totalMedicalsLabel;
+	private int pages = 0;
+	private int currentPage = 0;
+	private long totalMedicals = 0;
+	private final int PAGE_SIZE = 10;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
@@ -159,13 +170,17 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
 
+	private List<Medical> medicalList;
+
+	private long totalElements;
+
 	private void filterMedical(String key) {
-		model = new MedicalBrowsingModel(key, false);
+		model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
 		table.setModel(model);
 		searchString.requestFocus();
 	}
 
-	public MedicalBrowser() {
+	public MedicalBrowser() throws OHServiceException {
 		me = this;
 		setTitle(MessageBundle.getMessage("angal.medicals.pharmaceuticalbrowser.title"));
 		setPreferredSize(new Dimension(1220, 550));
@@ -177,12 +192,104 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchString.requestFocus();
 	}
 
-	private JPanel getContentpane() {
+	private JPanel getContentpane() throws OHServiceException {
 		JPanel contentPane = new JPanel(new BorderLayout());
+		contentPane.add(getPaginatePanel(), BorderLayout.NORTH);
 		contentPane.add(getScrollPane(), BorderLayout.CENTER);
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		return contentPane;
 	}
+	
+	private JPanel getPaginatePanel() throws OHServiceException {
+		JPanel paginatePanel = new JPanel(new WrapLayout());
+		paginatePanel.add(getPrevButton());
+		paginatePanel.add(getPagesCombo());
+		paginatePanel.add(getUnderLabel());
+		paginatePanel.add(getNextButton());
+		paginatePanel.add(getTotalMovementsLabel());
+		return paginatePanel;
+	}
+	
+	private JButton getNextButton() {
+	if (nextButton == null) {
+		nextButton = new JButton(">");
+		nextButton.setEnabled(currentPage < pages -1 && pages != 1);
+		nextButton.addActionListener(actionEvent -> {
+			if (currentPage < pages -1) {
+				currentPage ++;
+				pagesCombo.setSelectedItem(currentPage + 1);
+			}
+		});
+	}
+	return nextButton;
+}
+
+private JButton getPrevButton() {
+	if (prevButton == null) {
+		prevButton = new JButton("<");
+		prevButton.setEnabled(currentPage > 0);
+		prevButton.addActionListener(actionEvent -> {
+			if (currentPage > 0) {
+				currentPage--;
+				pagesCombo.setSelectedItem(currentPage + 1);
+				applyFilter(currentPage);
+			}
+		});
+	}
+	return prevButton;
+}
+
+public void initializeCombo(int page) {
+	for (int i = 0; i <= page; i++) {
+		pagesCombo.addItem(i+1);
+	}
+}
+
+private JComboBox<Integer> getPagesCombo() {
+	if (pagesCombo == null) {
+		pagesCombo = new JComboBox<>();
+		pagesCombo.setPreferredSize(new Dimension(100, 25));
+		pagesCombo.addActionListener(actionEvent -> {
+			if (pagesCombo.getItemCount() != 0) {
+				if (pagesCombo.getSelectedItem() != null) {
+					currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
+					applyFilter(currentPage);
+				}
+			}
+		});
+	}
+	return pagesCombo;
+}
+
+private void applyFilter(int currentPage) {
+	model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
+	if (medicalList != null) {
+		if (table == null) {
+			table = new JTable(model);
+		} else {
+			table.setModel(model);	
+		} 
+		table.updateUI();
+	}
+
+	nextButton.setEnabled(currentPage < pages - 1 && pages != 1);
+    prevButton.setEnabled(currentPage > 0);
+}
+
+private JLabel getUnderLabel() throws OHServiceException {
+	if (underLabel == null) {
+		underLabel = new JLabel("/ " + (pages + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		underLabel.setPreferredSize(new Dimension(60, 30));
+	}
+	return underLabel;
+}
+
+private JLabel getTotalMovementsLabel() throws OHServiceException {
+	if (totalMedicalsLabel == null) {
+		totalMedicalsLabel = new JLabel(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ totalMedicals);
+	}
+	return totalMedicalsLabel;
+}
 
 	private JScrollPane getScrollPane() {
 		JScrollPane scrollPane = new JScrollPane(getJTable());
@@ -566,56 +673,56 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		});
 		return buttonNew;
 	}
-
+	
 	private JComboBox getComboBoxActive() {
-		if (activeComboBox == null) {
-			activeComboBox = new JComboBox();
-			activeComboBox.addItem(STR_ACTIVE_ONLY);
-			activeComboBox.addItem(STR_ALL);
-			activeComboBox.addItem(STR_DISABLED_ONLY);
-			activeSelection = STR_ACTIVE_ONLY;
-		}
-		activeComboBox.addActionListener(actionEvent -> {
-			activeSelection = activeComboBox.getSelectedItem().toString();
-			if (pSelection.compareTo(STR_ALL) == 0) {
-				model = new MedicalBrowsingModel();
-			} else {
-				model = new MedicalBrowsingModel(pSelection, true);
-			}
-			table.setModel(model);
-			model.fireTableDataChanged();
-			table.updateUI();
-		});
-		return activeComboBox;
+	    if (activeComboBox == null) {
+	        activeComboBox = new JComboBox();
+	        activeComboBox.addItem(STR_ACTIVE_ONLY);
+	        activeComboBox.addItem(STR_ALL);
+	        activeComboBox.addItem(STR_DISABLED_ONLY);
+	        activeSelection = STR_ACTIVE_ONLY;
+	    }
+	    activeComboBox.addActionListener(actionEvent -> {
+	        activeSelection = activeComboBox.getSelectedItem().toString();
+	        if (pSelection.compareTo(STR_ALL) == 0) {
+	            model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
+	        } else {
+	            model = new MedicalBrowsingModel(pSelection, true, currentPage, PAGE_SIZE);
+	        }
+	        table.setModel(model);
+	        model.fireTableDataChanged();
+	        table.updateUI();
+	    });
+	    return activeComboBox;
 	}
-
+	
 	private JComboBox getComboBoxMedicalType() {
-		if (pbox == null) {
-			pbox = new JComboBox();
-			pbox.addItem(STR_ALL);
-			List<MedicalType> type;
-			try {
-				type = medicalTypeManager.getMedicalType();
-				for (MedicalType elem : type) {
-					pbox.addItem(elem);
-				}
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-			pSelection = STR_ALL;
-		}
-		pbox.addActionListener(actionEvent -> {
-			pSelection = pbox.getSelectedItem().toString();
-			if (pSelection.compareTo(STR_ALL) == 0) {
-				model = new MedicalBrowsingModel();
-			} else {
-				model = new MedicalBrowsingModel(pSelection, true);
-			}
-			table.setModel(model);
-			model.fireTableDataChanged();
-			table.updateUI();
-		});
-		return pbox;
+	    if (pbox == null) {
+	        pbox = new JComboBox();
+	        pbox.addItem(STR_ALL);
+	        List<MedicalType> type;
+	        try {
+	            type = medicalTypeManager.getMedicalType();
+	            for (MedicalType elem : type) {
+	                pbox.addItem(elem);
+	            }
+	        } catch (OHServiceException e) {
+	            OHServiceExceptionUtil.showMessages(e);
+	        }
+	        pSelection = STR_ALL;
+	    }
+	    pbox.addActionListener(actionEvent -> {
+	        pSelection = pbox.getSelectedItem().toString();
+	        if (pSelection.compareTo(STR_ALL) == 0) {
+	            model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
+	        } else {
+	            model = new MedicalBrowsingModel(pSelection, true, currentPage, PAGE_SIZE);
+	        }
+	        table.setModel(model);
+	        model.fireTableDataChanged();
+	        table.updateUI();
+	    });
+	    return pbox;
 	}
 
 	protected void launchExpiringReport() {
@@ -717,54 +824,44 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 		private static final long serialVersionUID = 1L;
 
-		List<Medical> medicalList = new ArrayList<>();
-
-		public MedicalBrowsingModel(String key, boolean isType) {
+		public MedicalBrowsingModel(String key, boolean isType, int page, int size) {
 			if (isType) {
 				try {
-					medicalList = pMedicals = medicalBrowsingManager.getMedicals(key, false);
+					Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, "", false, page, size);
+					medicalList = pMedicals = medicalPage.getContent();
+					totalMedicals = medicalPage.getTotalElements();
+
 					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(pMedicals.stream().filter(med -> med.getDeleted() == 'N').toList());
+						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
 					} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(pMedicals.stream().filter(med -> med.getDeleted() == 'Y').toList());
+						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
 					}
 				} catch (OHServiceException e) {
 					pMedicals = null;
 					OHServiceExceptionUtil.showMessages(e);
 				}
 			} else {
-				for (Medical med : pMedicals) {
-					if (key != null) {
+				try {
+					Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", key, false, page, size);
+					medicalList = pMedicals = medicalPage.getContent();
 
-						String s = key + lastKey;
-						s = s.trim();
-						String[] tokens = s.split(" ");
-
-						if (!s.isEmpty()) {
-							String description = med.getProdCode() + med.getDescription();
-							int a = 0;
-							for (String value : tokens) {
-								String token = value.toLowerCase();
-								if (description.toLowerCase().contains(token)) {
-									a++;
-								}
-							}
-							if (a == tokens.length) {
-								medicalList.add(med);
-							}
-						} else {
-							medicalList.add(med);
-						}
-					} else {
-						medicalList.add(med);
+					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
+						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
+					} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
+						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
 					}
+				} catch (OHServiceException e) {
+					pMedicals = null;
+					OHServiceExceptionUtil.showMessages(e);
 				}
 			}
 		}
 
 		public MedicalBrowsingModel() {
 			try {
-				medicalList = pMedicals = medicalBrowsingManager.getMedicals(null, false);
+				medicalList = pMedicals = medicalBrowsingManager.getMedicals(null, false );
+				totalMedicals = medicalList.size();
+				updatePageCombo(totalMedicals);
 				if (activeSelection.equals(STR_ACTIVE_ONLY)) {
 					medicalList = pMedicals = new ArrayList<>(pMedicals.stream().filter(med -> med.getDeleted() == 'N').toList());
 				} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
@@ -774,6 +871,25 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				pMedicals = null;
 				OHServiceExceptionUtil.showMessages(e);
 			}
+		}
+
+		public MedicalBrowsingModel(int page, int size) {
+		    try {
+		        Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", "", false, page, size);
+		        medicalList = medicalPage.getContent();
+				pMedicals = medicalPage.getContent();
+		        totalMedicals = medicalPage.getTotalElements();
+		        pages = medicalPage.getTotalPages();
+
+		        if (activeSelection.equals(STR_ACTIVE_ONLY)) {
+		            medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
+		        } else if (activeSelection.equals(STR_DISABLED_ONLY)) {
+		            medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
+		        }
+		    } catch (OHServiceException e) {
+		        pMedicals = null;
+		        OHServiceExceptionUtil.showMessages(e);
+		    }
 		}
 
 		@Override
@@ -872,4 +988,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 	}
 
+	public void updatePageCombo(long totalMedicals2) {
+		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ totalMedicals);
+		pages = (int) Math.ceil((double) totalMedicals / PAGE_SIZE);
+		initializeCombo(pages);
+		underLabel.setText("/ " + (pages + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+	}
 }
