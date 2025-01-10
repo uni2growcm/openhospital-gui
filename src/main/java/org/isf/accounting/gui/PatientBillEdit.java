@@ -1260,7 +1260,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor() && newBill.getStatus() == "O") {
+					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
 							newBill.setGuarantor(guarantor);
@@ -1295,7 +1295,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor() && updateBill.getStatus() == "O") {
+					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
 							updateBill.setGuarantor(guarantor);
