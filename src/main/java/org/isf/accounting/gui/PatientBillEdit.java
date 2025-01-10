@@ -1262,7 +1262,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									thisBill.getAdmission()); // Admission
 					if (hasBillGuarantor() && newBill.getStatus() == "O") {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
-						System.out.println(guarantor);
 						if (guarantor != null) {
 							newBill.setGuarantor(guarantor);
 						} else {
