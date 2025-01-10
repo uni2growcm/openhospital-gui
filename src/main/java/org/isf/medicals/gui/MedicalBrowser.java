@@ -141,7 +141,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private int pages = 0;
 	private int currentPage = 0;
 	private long totalMedicals = 0;
-	private final int PAGE_SIZE = 10;
+	private final int PAGE_SIZE = 100;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
