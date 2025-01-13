@@ -1268,6 +1268,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 							return;
 						}
+					}else {
+						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
+						if (result== JOptionPane.YES_OPTION) {
+							newBill.setStatus("C");
+						} else {
+							newBill.setStatus("O");
+						}
 					}
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
@@ -1302,6 +1309,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						} else {
 							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 							return;
+						}
+					}else {
+						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
+						if (result == JOptionPane.YES_OPTION) {
+							updateBill.setStatus("C");
+						} else {
+							updateBill.setStatus("O");
 						}
 					}
 
@@ -1526,22 +1540,32 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 				LocalDateTime datePay;
 
-				String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
-								MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, amount);
-				if (quantity != null) {
-					try {
-						amount = new BigDecimal(quantity);
-						if (amount.equals(new BigDecimal(0))) {
+				if(balance.compareTo(BigDecimal.ZERO) != 0) {
+					if ( balance.equals(bigTotal)){
+						amount = balance;
+						String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+							MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, amount);
+						if (quantity != null) {
+							try {
+								amount = new BigDecimal(quantity);
+								if (amount.equals(new BigDecimal(0))) {
+									return;
+								}
+							} catch (Exception eee) {
+								MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+								return;
+							}
+						} else {
 							return;
 						}
-					} catch (Exception eee) {
-						MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
-						return;
+					} else {
+						amount = balance;
+						String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+							MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, amount);
 					}
 				} else {
 					return;
 				}
-
 				if (thisBill.getDate().isBefore(today)) { // if is a bill in the past the user will be asked for date of payment
 
 					GoodDateTimeSpinnerChooser datePayChooser = new GoodDateTimeSpinnerChooser(TimeTools.getNow());
