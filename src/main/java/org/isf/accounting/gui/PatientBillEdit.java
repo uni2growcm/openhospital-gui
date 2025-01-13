@@ -1233,7 +1233,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setIcon(new ImageIcon("rsc/icons/save_button.png"));
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
-
 				/*
 				 * we check again for underlying data changes
 				 */
@@ -1566,6 +1565,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				} else {
 					return;
 				}
+
 				if (thisBill.getDate().isBefore(today)) { // if is a bill in the past the user will be asked for date of payment
 
 					GoodDateTimeSpinnerChooser datePayChooser = new GoodDateTimeSpinnerChooser(TimeTools.getNow());
