@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -54,6 +55,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 	private JButton jDeleteButton;
 	private JButton jCloseButton;
 	private JTable table;
+	private ReductionPlanModel reductionPlanModel;
 	private final String[] columnHeaders = new String[] {
 			MessageBundle.getMessage("angal.common.code.txt"),
 			MessageBundle.getMessage("angal.common.description.txt"),
@@ -82,7 +84,6 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setVisible(true);
 	}
 
 	/**
@@ -95,11 +96,8 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			contentPane.setLayout(new BorderLayout());
 			table = new JTable();
 			JScrollPane scrollPane = new JScrollPane();
-			try {
-				table.setModel(new ReductionPlanModel());
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
+			reductionPlanModel = new ReductionPlanModel();
+			table.setModel(reductionPlanModel);
 			for (int i = 0; i < columnHeaders.length; i++) {
 				table.getColumnModel().getColumn(i).setMinWidth(columnsWidth[i]);
 			}
@@ -135,7 +133,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			jNewButton.addActionListener(actionEvent -> {
 				ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(new ReductionPlan(), true);
 				reductionPlanEdit.addReductionPlanListener(ReductionPlanBrowser.this);
-				reductionPlanEdit.setVisible(true);
+				reductionPlanEdit.showAsModal(ReductionPlanBrowser.this);
 			});
 		}
 		return jNewButton;
@@ -157,7 +155,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 					reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
 					ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(reductionPlan, false);
 					reductionPlanEdit.addReductionPlanListener(ReductionPlanBrowser.this);
-					reductionPlanEdit.setVisible(true);
+					reductionPlanEdit.showAsModal(ReductionPlanBrowser.this);
 				}
 			});
 		}
@@ -177,9 +175,17 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 				if (table.getSelectedRow() < 0) {
 					MessageDialog.error(ReductionPlanBrowser.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
 				} else {
-					reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
-					if (MessageDialog.yesNo(null, "angal.reductionplan.deletereductionplanused.msg") == JOptionPane.YES_OPTION) {
-
+					try {
+						reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
+						if (MessageDialog.yesNo(null, "angal.reductionplan.doyouwantdeletereductionplan.msg") == JOptionPane.YES_OPTION
+							&& reductionPlanManager.delete(reductionPlan).isDeleted()) {
+							reductionplansList.remove(reductionPlan);
+							reductionPlanModel.fireTableDataChanged();
+							table.setModel(reductionPlanModel);
+							table.clearSelection();
+						}
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
 					}
 				}
 			});
@@ -201,15 +207,19 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 	}
 	@Override
 	public void ReductionPlanInserted(AWTEvent aEvent) {
-
+		table.setModel(new ReductionPlanModel());
 	}
 
 	private class ReductionPlanModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
 
-		public ReductionPlanModel() throws OHServiceException {
-			reductionplansList = reductionPlanManager.getAll(false);
+		public ReductionPlanModel() {
+			try {
+				reductionplansList = reductionPlanManager.getAll(false);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
 		}
 
 		public int getRowCount() {
