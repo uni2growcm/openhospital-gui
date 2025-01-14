@@ -1534,7 +1534,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				if(balance.compareTo(BigDecimal.ZERO) != 0) {
 					if (balance.equals(bigTotal)){
 						amount = balance;
-						String quantity = (String) MessageDialog.inputDialog(this, icon,null, "angal.newbill.insertquantity.txt", "angal.common.quantity.txt");
+						String quantity = (String) MessageDialog.inputDialog(this, icon,null,amount,"angal.newbill.insertquantity.txt");
 						if (quantity != null) {
 							try {
 								amount = new BigDecimal(quantity);
@@ -1550,8 +1550,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						}
 					} else {
 						amount = balance;
-						String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
-							MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, amount);
+						String quantity = (String) MessageDialog.inputDialog(this, icon,null,amount,"angal.newbill.insertquantity.txt");
 					}
 				} else {
 					return;
