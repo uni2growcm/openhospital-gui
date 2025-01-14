@@ -40,7 +40,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -102,7 +101,58 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private static final String STR_ACTIVE_ONLY = MessageBundle.getMessage("angal.medicals.activeonly.txt");
 	private static final String STR_DISABLED_ONLY = MessageBundle.getMessage("angal.medicals.disabledonly.txt");
+	private final int PAGE_SIZE = 15;
+	private final JFrame me;
+	protected boolean altKeyReleased = true;
+	private int selectedrow;
+	private JComboBox pbox;
+	private JComboBox activeComboBox;
+	private List<Medical> pMedicals;
+	private JButton nextButton;
+	private JButton prevButton;
+	private JComboBox<Integer> pagesCombo;
+	private JLabel underLabel;
+	private JLabel totalMedicalsLabel;
+	private int pages = 0;
+	private int currentPage = 0;
+	private long totalMedicals = 0;
+	private final String[] pColumns = {
+		MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.medicals.pcsperpck.col"), // not uppercased so column reads better
+		MessageBundle.getMessage("angal.medicals.stock.col").toUpperCase(),
+		MessageBundle.getMessage("angal.medicals.critlevel.col").toUpperCase(),
+		MessageBundle.getMessage("angal.medicals.outofstock.col").toUpperCase()
+	};
+	private final String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, "STOCK", "MDSR_MIN_STOCK_QTI", "STOCK" };
+	private final boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, false };
+	private final int[] pColumnWidth = { 100, 100, 400, 60, 60, 80, 100 };
+	private final boolean[] pColumnResizable = { true, true, true, true, true, true, true };
+	private Medical medical;
+	private DefaultTableModel model;
+	private JTable table;
+	private String pSelection;
+	private String activeSelection = STR_ACTIVE_ONLY;
+	private JTextField searchString;
+	private String lastKey = "";
+	private JButton buttonAMC;
+	private final MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
+	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
+	private List<Medical> medicalList;
+	private long totalElements;
 
+	public MedicalBrowser() throws OHServiceException {
+		me = this;
+		setTitle(MessageBundle.getMessage("angal.medicals.pharmaceuticalbrowser.title"));
+		setPreferredSize(new Dimension(1220, 550));
+		setMinimumSize(new Dimension(940, 550));
+		setContentPane(getContentpane());
+		pack();
+		setVisible(true);
+		setLocationRelativeTo(null);
+		searchString.requestFocus();
+	}
 	@Override
 	public void medicalInserted(Medical medical) {
 		pMedicals.add(0, medical);
@@ -113,7 +163,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		repaint();
 	}
-
 	@Override
 	public void medicalUpdated(AWTEvent e) {
 		pMedicals.set(selectedrow, medical);
@@ -128,74 +177,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		KeyEvent enterPressed = new KeyEvent(searchString, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, keyCode, '\n');
 		searchString.dispatchEvent(enterPressed);
 	}
-
-	private int selectedrow;
-	private JComboBox pbox;
-	private JComboBox activeComboBox;
-	private List<Medical> pMedicals;
-	private JButton nextButton;
-	private JButton prevButton;
-	private JComboBox<Integer> pagesCombo;
-	private JLabel underLabel;
-	private JLabel totalMedicalsLabel;
-	private int pages = 0;
-	private int currentPage = 0;
-	private long totalMedicals = 0;
-	private final int PAGE_SIZE = 15;
-	private String[] pColumns = {
-			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.medicals.pcsperpck.col"), // not uppercased so column reads better
-			MessageBundle.getMessage("angal.medicals.stock.col").toUpperCase(),
-			MessageBundle.getMessage("angal.medicals.critlevel.col").toUpperCase(),
-			MessageBundle.getMessage("angal.medicals.outofstock.col").toUpperCase()
-	};
-	private String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, "STOCK", "MDSR_MIN_STOCK_QTI", "STOCK" };
-	private boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, false };
-	private int[] pColumnWidth = { 100, 100, 400, 60, 60, 80, 100 };
-	private boolean[] pColumnResizable = { true, true, true, true, true, true, true };
-	private Medical medical;
-	private DefaultTableModel model;
-	private JTable table;
-	private final JFrame me;
-
-	private String pSelection;
-	private String activeSelection = STR_ACTIVE_ONLY;
-	private JTextField searchString;
-	protected boolean altKeyReleased = true;
-	private String lastKey = "";
-	private JButton buttonAMC;
-
-	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
-	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
-
-	private List<Medical> medicalList;
-
-	private long totalElements;
-
-	private void filterMedical(String key) {
-		model = new MedicalBrowsingModel(key,currentPage, PAGE_SIZE);
-		table.setModel(model);
-		searchString.requestFocus();
-	}
-
-	public MedicalBrowser() throws OHServiceException {
-		me = this;
-		setTitle(MessageBundle.getMessage("angal.medicals.pharmaceuticalbrowser.title"));
-		setPreferredSize(new Dimension(1220, 550));
-		setMinimumSize(new Dimension(940, 550));
-		setContentPane(getContentpane());
-		pack();
-		setVisible(true);
-		setLocationRelativeTo(null);
-		searchString.requestFocus();
-	}
-
 	private JPanel getContentpane() throws OHServiceException {
 		JPanel contentPane = new JPanel(new BorderLayout());
-		contentPane.add(getSubPanel(), BorderLayout.CENTER);
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+		contentPane.add(getSubPanel(), BorderLayout.CENTER);
 		return contentPane;
 	}
 
@@ -205,7 +190,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		subPanel.add(getScrollPane(), BorderLayout.CENTER);
 		return subPanel;
 	}
-	
+
 	private JPanel getPaginatePanel() throws OHServiceException {
 		JPanel paginatePanel = new JPanel(new WrapLayout());
 		paginatePanel.add(getPrevButton());
@@ -224,7 +209,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (currentPage < pages - 1) {
 					currentPage++;
 					pagesCombo.setSelectedItem(currentPage + 1);
-					applyFilter(currentPage);
 				}
 			});
 		}
@@ -239,7 +223,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (currentPage > 0) {
 					currentPage--;
 					pagesCombo.setSelectedItem(currentPage + 1);
-					applyFilter(currentPage);
 				}
 			});
 		}
@@ -248,7 +231,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	public void initializeCombo(int page) {
 		pagesCombo.removeAllItems();
-		for (int i = 0; i <= page; i++) {
+		for (int i = 0; i < page; i++) {
 			pagesCombo.addItem(i + 1);
 		}
 	}
@@ -270,17 +253,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	}
 
 	private void applyFilter(int currentPage) {
-		if (pSelection == null) {
+		if ((pSelection == null) || (pSelection.compareTo(STR_ALL) == 0)) {
 			pSelection = "";
 		}
 
-		if (pSelection.compareTo(STR_ALL) == 0) {
-			model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
-		} else {
-			model = new MedicalBrowsingModel(pSelection, true, currentPage, PAGE_SIZE);
-		}
-
-		updatePageCombo(pages);
+		model = new MedicalBrowsingModel(pSelection, searchString.getText().trim(), true, currentPage, PAGE_SIZE);
 
 		if (medicalList != null) {
 			if (table == null) {
@@ -297,20 +274,20 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		prevButton.setEnabled(currentPage > 0);
 	}
 
-private JLabel getUnderLabel() throws OHServiceException {
-	if (underLabel == null) {
-		underLabel = new JLabel("/ " + (pages) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-		underLabel.setPreferredSize(new Dimension(60, 30));
+	private JLabel getUnderLabel() throws OHServiceException {
+		if (underLabel == null) {
+			underLabel = new JLabel("/ " + (pages) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel.setPreferredSize(new Dimension(60, 30));
+		}
+		return underLabel;
 	}
-	return underLabel;
-}
 
-private JLabel getTotalMovementsLabel() throws OHServiceException {
-	if (totalMedicalsLabel == null) {
-		totalMedicalsLabel = new JLabel(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ totalMedicals);
+	private JLabel getTotalMovementsLabel() throws OHServiceException {
+		if (totalMedicalsLabel == null) {
+			totalMedicalsLabel = new JLabel(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + totalMedicals);
+		}
+		return totalMedicalsLabel;
 	}
-	return totalMedicalsLabel;
-}
 
 	private JScrollPane getScrollPane() {
 		JScrollPane scrollPane = new JScrollPane(getJTable());
@@ -324,7 +301,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 	private JTable getJTable() {
 		if (table == null) {
-			model = new MedicalBrowsingModel();
+			model = new MedicalBrowsingModel("", "", true, currentPage, PAGE_SIZE);
 			table = new JTable(model);
 			table.setAutoCreateRowSorter(true);
 			table.setAutoCreateColumnsFromModel(false);
@@ -376,10 +353,10 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 				Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
 				String dateOption = (String) MessageDialog.inputDialog(this,
-								icon,
-								dateOptions.toArray(),
-								dateOptions.get(0),
-								"angal.medicals.pleaseselectareport.msg");
+					icon,
+					dateOptions.toArray(),
+					dateOptions.get(0),
+					"angal.medicals.pleaseselectareport.msg");
 
 				if (dateOption == null) {
 					return;
@@ -396,11 +373,11 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 					GoodDateChooser dateChooser = new GoodDateChooser(LocalDate.now(), true, false);
 					int r = JOptionPane.showConfirmDialog(this,
-									dateChooser,
-									MessageBundle.getMessage("angal.common.date.txt"),
-									JOptionPane.OK_CANCEL_OPTION,
-									JOptionPane.PLAIN_MESSAGE,
-									icon);
+						dateChooser,
+						MessageBundle.getMessage("angal.common.date.txt"),
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.PLAIN_MESSAGE,
+						icon);
 
 					if (r == JOptionPane.OK_OPTION) {
 						new GenericReportPharmaceuticalAMC(dateChooser.getDateEndOfDay(), GeneralData.PHARMACEUTICALAMC, false);
@@ -426,7 +403,8 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 						if (Character.isLetterOrDigit(e.getKeyChar())) {
 							lastKey = s;
 						}
-						filterMedical(searchString.getText());
+						applyFilter(currentPage);
+						searchString.requestFocus();
 					}
 				}
 
@@ -479,10 +457,10 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 			Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
 			String dateOption = (String) MessageDialog.inputDialog(this,
-							icon,
-							dateOptions.toArray(),
-							dateOptions.get(0),
-							"angal.medicals.pleaseselectareport.msg");
+				icon,
+				dateOptions.toArray(),
+				dateOptions.get(0),
+				"angal.medicals.pleaseselectareport.msg");
 
 			if (dateOption == null) {
 				return;
@@ -493,10 +471,10 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			lotOptions.add(MessageBundle.getMessage("angal.medicals.withlot"));
 
 			String lotOption = (String) MessageDialog.inputDialog(this,
-							icon,
-							lotOptions.toArray(),
-							lotOptions.get(0),
-							"angal.medicals.pleaseselectareport.msg");
+				icon,
+				lotOptions.toArray(),
+				lotOptions.get(0),
+				"angal.medicals.pleaseselectareport.msg");
 
 			/* Getting Report parameters */
 			String sortBy;
@@ -505,7 +483,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			if (pbox.getSelectedItem() instanceof MedicalType) {
 				groupBy = ((MedicalType) pbox.getSelectedItem()).getDescription();
 			}
-			List< ? > sortedKeys = table.getRowSorter().getSortKeys();
+			List<?> sortedKeys = table.getRowSorter().getSortKeys();
 			if (!sortedKeys.isEmpty()) {
 				int sortedColumn = ((SortKey) sortedKeys.get(0)).getColumn();
 				SortOrder sortedOrder = ((SortKey) sortedKeys.get(0)).getSortOrder();
@@ -548,11 +526,11 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 				GoodDateChooser dateChooser = new GoodDateChooser(LocalDate.now(), true, false);
 				int r = JOptionPane.showConfirmDialog(this,
-								dateChooser,
-								MessageBundle.getMessage("angal.common.date.txt"),
-								JOptionPane.OK_CANCEL_OPTION,
-								JOptionPane.PLAIN_MESSAGE,
-								icon);
+					dateChooser,
+					MessageBundle.getMessage("angal.common.date.txt"),
+					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.PLAIN_MESSAGE,
+					icon);
 
 				if (r == JOptionPane.OK_OPTION) {
 					new GenericReportPharmaceuticalStock(dateChooser.getDateEndOfDay(), report, filter, groupBy, sortBy, false);
@@ -584,7 +562,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 				if (!dataRange.isCancel()) {
 					new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
-									null, toExcel);
+						null, toExcel);
 				}
 			}
 		});
@@ -619,9 +597,9 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 					}
 				} catch (IOException exc) {
 					JOptionPane.showMessageDialog(this,
-									exc.getMessage(),
-									MessageBundle.getMessage("angal.messagedialog.error.title"),
-									JOptionPane.PLAIN_MESSAGE);
+						exc.getMessage(),
+						MessageBundle.getMessage("angal.messagedialog.error.title"),
+						JOptionPane.PLAIN_MESSAGE);
 					LOGGER.error("Export to excel error : {}", exc.getMessage());
 				}
 			}
@@ -632,8 +610,8 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 	private String compileFileName() {
 		StringBuilder filename = new StringBuilder(MessageBundle.getMessage("angal.medicals.stock.txt"));
 		if (pbox.isEnabled()
-						&& !pbox.getSelectedItem().equals(
-										MessageBundle.getMessage("angal.common.all.txt").toUpperCase())) {
+			&& !pbox.getSelectedItem().equals(
+			MessageBundle.getMessage("angal.common.all.txt").toUpperCase())) {
 
 			filename.append('_').append(pbox.getSelectedItem());
 		}
@@ -746,10 +724,10 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 		Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
 		String option = (String) MessageDialog.inputDialog(this,
-						icon,
-						options.toArray(),
-						options.get(0),
-						"angal.medicals.pleaseselectperiod.msg");
+			icon,
+			options.toArray(),
+			options.get(0),
+			"angal.medicals.pleaseselectperiod.msg");
 
 		if (option == null) {
 			return;
@@ -792,11 +770,11 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
 			JMonthYearChooser monthYearChooser = new JMonthYearChooser();
 			int r = JOptionPane.showConfirmDialog(this,
-							monthYearChooser,
-							MessageBundle.getMessage("angal.billbrowser.month.txt"),
-							JOptionPane.OK_CANCEL_OPTION,
-							JOptionPane.PLAIN_MESSAGE,
-							icon);
+				monthYearChooser,
+				MessageBundle.getMessage("angal.billbrowser.month.txt"),
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE,
+				icon);
 
 			if (r == JOptionPane.OK_OPTION) {
 				monthYear = monthYearChooser.getLocalDate();
@@ -812,12 +790,12 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 		}
 
 		new GenericReportFromDateToDate(
-						from,
-						to,
-						"rpt_base",
-						"PharmaceuticalExpiration",
-						MessageBundle.getMessage("angal.medicals.expiringreport"),
-						false);
+			from,
+			to,
+			"rpt_base",
+			"PharmaceuticalExpiration",
+			MessageBundle.getMessage("angal.medicals.expiringreport"),
+			false);
 	}
 
 	private LocalDate getToDatePlusMonth(int monthsToMove) {
@@ -828,101 +806,41 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 	private LocalDate getFromDate() {
 		return LocalDate.now().withDayOfMonth(1);
 	}
+	public void updatePageCombo() {
+		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + totalMedicals);
+		initializeCombo(pages);
+		underLabel.setText("/ " + (pages) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+	}
 
 	class MedicalBrowsingModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
 
-		public MedicalBrowsingModel(String key, boolean isType, int page, int size) {
+		public MedicalBrowsingModel(String key, String description, boolean isType, int page, int size) {
 			if (isType) {
+				Page<Medical> medicalPage;
 				try {
-					Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, "", false, page, size);
+					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
+						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, 'N', false, page, size);
+					} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
+						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, 'Y', false, page, size);
+					} else {
+						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, null, false, page, size);
+					}
+
 					medicalList = pMedicals = medicalPage.getContent();
 					totalMedicals = medicalPage.getTotalElements();
 					pages = medicalPage.getTotalPages();
-
-					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
-					} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
-					}
+					updatePageCombo();
 				} catch (OHServiceException e) {
 					pMedicals = null;
 					OHServiceExceptionUtil.showMessages(e);
 				}
-			} else {
-				try {
-					Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", key, false, page, size);
-					medicalList = pMedicals = medicalPage.getContent();
-
-					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
-					} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
-					}
-				} catch (OHServiceException e) {
-					pMedicals = null;
-					OHServiceExceptionUtil.showMessages(e);
-				}
-			}
-		}
-
-		public MedicalBrowsingModel() {
-			try {
-				medicalList = pMedicals = medicalBrowsingManager.getMedicals(null, false );
-				totalMedicals = medicalList.size();
-				updatePageCombo(totalMedicals);
-				if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-					medicalList = pMedicals = new ArrayList<>(pMedicals.stream().filter(med -> med.getDeleted() == 'N').toList());
-				} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-					medicalList = pMedicals = new ArrayList<>(pMedicals.stream().filter(med -> med.getDeleted() == 'Y').toList());
-				}
-			} catch (OHServiceException e) {
-				pMedicals = null;
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		}
-
-		public MedicalBrowsingModel(int page, int size) {
-		    try {
-		        Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", "", false, page, size);
-		        medicalList = medicalPage.getContent();
-				pMedicals = medicalPage.getContent();
-		        totalMedicals = medicalPage.getTotalElements();
-		        pages = medicalPage.getTotalPages();
-
-		        if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-		            medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
-		        } else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-		            medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
-		        }
-		    } catch (OHServiceException e) {
-		        pMedicals = null;
-		        OHServiceExceptionUtil.showMessages(e);
-		    }
-		}
-
-		public MedicalBrowsingModel(String key, int page, int size) {
-			try {
-				Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", key, false, page, size);
-				medicalList = medicalPage.getContent();
-				pMedicals = medicalPage.getContent();
-				totalMedicals = medicalPage.getTotalElements();
-				pages = medicalPage.getTotalPages();
-
-				if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-					medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
-				} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-					medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'Y').toList());
-				}
-			} catch (OHServiceException e) {
-				pMedicals = null;
-				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		@Override
-		public Class< ? > getColumnClass(int c) {
+		public Class<?> getColumnClass(int c) {
 			if (c == 0) {
 				return String.class;
 			} else if (c == 1) {
@@ -988,12 +906,6 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
-
-		// Ajoutez cette méthode dans MedicalBrowsingModel
-		public long getTotalMedicals(String key) {
-			return totalMedicals; // Renvoyer le nombre total d'éléments
-		}
-
 	}
 
 	class ColorTableCellRenderer extends DefaultTableCellRenderer {
@@ -1002,7 +914,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-						boolean hasFocus, int row, int column) {
+			boolean hasFocus, int row, int column) {
 			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			cell.setForeground(Color.BLACK);
 			Medical med = (Medical) table.getValueAt(row, -1);
@@ -1020,12 +932,5 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			}
 			return cell;
 		}
-	}
-
-	public void updatePageCombo(long totalMedicals2) {
-		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ totalMedicals);
-		pages = (int) Math.ceil((double) totalMedicals / PAGE_SIZE);
-		initializeCombo(pages);
-		underLabel.setText("/ " + (pages) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 	}
 }
