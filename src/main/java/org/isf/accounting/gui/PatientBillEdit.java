@@ -1311,11 +1311,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						}
 					} else {
 						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
-						if (result == JOptionPane.YES_OPTION) {
-							updateBill.setStatus("C");
-						} else {
-							updateBill.setStatus("O");
-						}
+						newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
 					}
 
 					try {
