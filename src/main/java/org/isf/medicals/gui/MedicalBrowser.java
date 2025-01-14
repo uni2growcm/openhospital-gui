@@ -706,7 +706,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			pbox.addItem(STR_ALL);
 			List<MedicalType> type;
 			try {
-				type = medicalTypeManager.getMedicalType();
+				type = medicalTypeManager.getAllActiveMedicalType();
 				for (MedicalType elem : type) {
 					pbox.addItem(elem);
 				}

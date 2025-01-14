@@ -90,6 +90,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 	private boolean flag_Sms;
 	private boolean flag_Telemetry;
 	private TelemetryDaemon telemetryDaemon;
+	private boolean flag_Mortuary;
 	// used to understand if a module is enabled
 	private Map<String, Boolean> activableModules;
 
