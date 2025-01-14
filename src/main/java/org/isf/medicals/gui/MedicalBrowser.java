@@ -175,7 +175,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private long totalElements;
 
 	private void filterMedical(String key) {
-		model = new MedicalBrowsingModel(key,currentPage, PAGE_SIZE);
+		model = new MedicalBrowsingModel(currentPage, PAGE_SIZE);
 		table.setModel(model);
 		searchString.requestFocus();
 	}
@@ -194,18 +194,19 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private JPanel getContentpane() throws OHServiceException {
 		JPanel contentPane = new JPanel(new BorderLayout());
-		contentPane.add(getSubPanel(), BorderLayout.CENTER);
+		contentPane.add(getPaginatePanel(), BorderLayout.NORTH);
+		contentPane.add(getScrollPane(), BorderLayout.CENTER);
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		return contentPane;
 	}
 
 	private JPanel getSubPanel() throws OHServiceException {
 		JPanel subPanel = new JPanel(new BorderLayout());
-		subPanel.add(getPaginatePanel(), BorderLayout.SOUTH);
 		subPanel.add(getScrollPane(), BorderLayout.CENTER);
+		subPanel.add(getPaginatePanel(), BorderLayout.SOUTH);
 		return subPanel;
 	}
-	
+
 	private JPanel getPaginatePanel() throws OHServiceException {
 		JPanel paginatePanel = new JPanel(new WrapLayout());
 		paginatePanel.add(getPrevButton());
@@ -279,8 +280,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		} else {
 			model = new MedicalBrowsingModel(pSelection, true, currentPage, PAGE_SIZE);
 		}
-
-		updatePageCombo(pages);
 
 		if (medicalList != null) {
 			if (table == null) {
@@ -839,7 +838,6 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 					Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, "", false, page, size);
 					medicalList = pMedicals = medicalPage.getContent();
 					totalMedicals = medicalPage.getTotalElements();
-					pages = medicalPage.getTotalPages();
 
 					if (activeSelection.equals(STR_ACTIVE_ONLY)) {
 						medicalList = pMedicals = new ArrayList<>(medicalList.stream().filter(med -> med.getDeleted() == 'N').toList());
@@ -883,9 +881,9 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			}
 		}
 
-		public MedicalBrowsingModel(int page, int size) {
+		public MedicalBrowsingModel(String key, int page, int size) {
 		    try {
-		        Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", "", false, page, size);
+		        Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", key, false, page, size);
 		        medicalList = medicalPage.getContent();
 				pMedicals = medicalPage.getContent();
 		        totalMedicals = medicalPage.getTotalElements();
@@ -902,9 +900,9 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 		    }
 		}
 
-		public MedicalBrowsingModel(String key, int page, int size) {
+		public MedicalBrowsingModel(int page, int size) {
 			try {
-				Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", key, false, page, size);
+				Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription("", "", false, page, size);
 				medicalList = medicalPage.getContent();
 				pMedicals = medicalPage.getContent();
 				totalMedicals = medicalPage.getTotalElements();
