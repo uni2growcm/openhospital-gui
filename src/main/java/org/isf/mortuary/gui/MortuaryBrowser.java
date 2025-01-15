@@ -69,7 +69,6 @@ import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
-import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
@@ -81,7 +80,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int PAGE_SIZE = 3;
+	private final int PAGE_SIZE = 100;
 	private final JFrame myFrame;
 	private final String rowCounterText = MessageBundle.getMessage("angal.common.count.label") + ' ';
 	private final boolean isSingleUser = GeneralData.getGeneralData().getSINGLEUSER();
@@ -125,8 +124,8 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JPanel inOutPanel;
 	private JComboBox provenanceCombo;
 	private JComboBox deathReasonCombo;
-	private JTextField patientTextfield;
-	private JTextField searchTextfield;
+	private JTextField patientTextField;
+	private JTextField searchTextField;
 	private Patient patientParent;
 	private MortuaryBrowserModel model;
 	private JTable movTable;
@@ -168,6 +167,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			}
 		}
 	}
+
 	private void initialize() throws OHException, OHServiceException {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.browser.title"));
 		this.setContentPane(getJContainPanel());
@@ -210,8 +210,8 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JPanel getSearchPatientPanel() {
 		JPanel searchPatientPanel = new JPanel();
 		searchPatientPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.searchpatient.border")));
-		patientTextfield = new JTextField(14);
-		searchPatientPanel.add(patientTextfield);
+		patientTextField = new JTextField(14);
+		searchPatientPanel.add(patientTextField);
 		searchPatientPanel.add(getPickPatientButton());
 		searchPatientPanel.add(getRemovePatientButton());
 		return searchPatientPanel;
@@ -244,7 +244,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 	public void patientSelected(Patient patient) throws OHServiceException {
 		patientParent = patient;
-		patientTextfield.setText(patientParent != null ? patientParent.getName() : "");
+		patientTextField.setText(patientParent != null ? patientParent.getName() : "");
 	}
 
 	private JButton getRemovePatientButton() {
@@ -257,7 +257,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					patientParent = null;
-					patientTextfield.setText("");
+					patientTextField.setText("");
 				}
 			});
 		}
@@ -385,7 +385,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 				try {
 					model = new MortuaryBrowserModel(
-						patientTextfield.getText().trim(),
+						patientTextField.getText().trim(),
 						wardSelected,
 						dateFrom.getDateStartOfDay(),
 						dateTo.getDateStartOfDay(),
@@ -507,8 +507,8 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 	private JPanel getSearchPanel() {
 		JPanel searchPanel = new JPanel();
-		searchTextfield = new JTextField(20);
-		searchPanel.add(searchTextfield);
+		searchTextField = new JTextField(20);
+		searchPanel.add(searchTextField);
 		searchPanel.add(getSearchButton());
 		return searchPanel;
 	}
@@ -522,7 +522,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 					isEnter = false;
 				}
 				try {
-					model = new MortuaryBrowserModel(searchTextfield.getText().trim(), dateFrom.getDateStartOfDay(), dateTo.getDateStartOfDay(), isEnter);
+					model = new MortuaryBrowserModel(searchTextField.getText().trim(), dateFrom.getDateStartOfDay(), dateTo.getDateStartOfDay(), isEnter);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
@@ -663,14 +663,14 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		try {
 			if (isSearch) {
 				model = new MortuaryBrowserModel(
-					searchTextfield.getText().trim(),
+					searchTextField.getText().trim(),
 					dateFrom.getDateStartOfDay(),
 					dateTo.getDateStartOfDay(),
 					isEnter
 				);
 			} else {
 				model = new MortuaryBrowserModel(
-					patientTextfield.getText().trim(),
+					patientTextField.getText().trim(),
 					wardSelected,
 					dateFrom.getDateStartOfDay(),
 					dateTo.getDateStartOfDay(),
