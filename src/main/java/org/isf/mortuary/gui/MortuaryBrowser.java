@@ -143,7 +143,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private boolean isSearch;
 	private boolean isEnter = true;
 
-	public MortuaryBrowser() throws OHException, OHServiceException {
+	public MortuaryBrowser() {
 		super();
 		myFrame = this;
 		initialize();
@@ -168,7 +168,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		}
 	}
 
-	private void initialize() throws OHException, OHServiceException {
+	private void initialize() {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.browser.title"));
 		this.setContentPane(getJContainPanel());
 		this.setMinimumSize(new Dimension(700 + getJTableWidth(), 700));
@@ -178,7 +178,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	 * This method initializes containPanel
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJContainPanel() throws OHException, OHServiceException {
+	private JPanel getJContainPanel() {
 		if (jContainPanel == null) {
 			jContainPanel = new JPanel();
 			jContainPanel.setLayout(new BorderLayout());
@@ -190,13 +190,13 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return jContainPanel;
 	}
 
-	private JPanel getJSelectionPanel() throws OHServiceException {
+	private JPanel getJSelectionPanel() {
 		JPanel jSelectionPanel = new JPanel();
 		jSelectionPanel.add(getJSelectionContentPanel());
 		return jSelectionPanel;
 	}
 
-	private JPanel getJSelectionContentPanel() throws OHServiceException {
+	private JPanel getJSelectionContentPanel() {
 		JPanel jSelectionContentPanel = new JPanel();
 		jSelectionContentPanel.setLayout(new BoxLayout(jSelectionContentPanel, BoxLayout.Y_AXIS));
 		jSelectionContentPanel.add(getSearchPatientPanel());
@@ -230,19 +230,14 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 					selectPatient.addSelectionListener(MortuaryBrowser.this);
 					selectPatient.setVisible(true);
 					Patient pat = selectPatient.getPatient();
-
-					try {
-						patientSelected(pat);
-					} catch (OHServiceException ohServiceException) {
-						OHServiceExceptionUtil.showMessages(ohServiceException);
-					}
+					patientSelected(pat);
 				}
 			});
 		}
 		return pickPatientButton;
 	}
 
-	public void patientSelected(Patient patient) throws OHServiceException {
+	public void patientSelected(Patient patient) {
 		patientParent = patient;
 		patientTextField.setText(patientParent != null ? patientParent.getName() : "");
 	}
@@ -264,19 +259,24 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return removePatientButton;
 	}
 
-	private JPanel getProvenancePanel() throws OHServiceException {
+	private JPanel getProvenancePanel() {
 		JPanel provenancePanel = new JPanel();
 		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.provenance.border")));
 		provenancePanel.add(getProvenanceCombo());
 		return provenancePanel;
 	}
 
-	private JComboBox getProvenanceCombo() throws OHServiceException {
+	private JComboBox getProvenanceCombo() {
 		if (provenanceCombo == null) {
 			provenanceCombo = new JComboBox();
 			provenanceCombo.setPreferredSize(new Dimension(200, 24));
 		}
-		List<Ward> wards = wardBrowserManager.getWards();
+		List<Ward> wards = null;
+		try {
+			wards = wardBrowserManager.getWards();
+		} catch (OHServiceException e) {
+			throw new RuntimeException(e);
+		}
 		provenanceCombo.addItem(TEXT_ALL);
 		for (Ward ward : wards) {
 			provenanceCombo.addItem(ward);
@@ -329,19 +329,24 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return dateToPanel;
 	}
 
-	private JPanel getDeathReasonPanel() throws OHServiceException {
+	private JPanel getDeathReasonPanel() {
 		JPanel provenancePanel = new JPanel();
 		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathreason.border")));
 		provenancePanel.add(getDeathReasonCombo());
 		return provenancePanel;
 	}
 
-	private JComboBox getDeathReasonCombo() throws OHServiceException {
+	private JComboBox getDeathReasonCombo() {
 		if (deathReasonCombo == null) {
 			deathReasonCombo = new JComboBox();
 			deathReasonCombo.setPreferredSize(new Dimension(200, 24));
 		}
-		List<DeathReason> deathReasons = deathReasonManager.getAll();
+		List<DeathReason> deathReasons = null;
+		try {
+			deathReasons = deathReasonManager.getAll();
+		} catch (OHServiceException e) {
+			throw new RuntimeException(e);
+		}
 		deathReasonCombo.addItem(TEXT_ALL);
 		for (DeathReason deathReason : deathReasons) {
 			deathReasonCombo.addItem(deathReason);
@@ -496,7 +501,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return jCloseButton;
 	}
 
-	private JPanel getTablePanel() throws OHException, OHServiceException {
+	private JPanel getTablePanel() {
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
 		tablePanel.add(getSearchPanel(), BorderLayout.NORTH);
@@ -554,7 +559,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return searchButton;
 	}
 
-	private JScrollPane getTable() throws OHServiceException {
+	private JScrollPane getTable() {
 		JScrollPane scrollPane = new JScrollPane(getMovTable());
 		int totWidth = 0;
 		for (int colWidth : pColumnWidth) {
@@ -564,9 +569,13 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return scrollPane;
 	}
 
-	private JTable getMovTable() throws OHServiceException {
+	private JTable getMovTable() {
 
-		model = new MortuaryBrowserModel();
+		try {
+			model = new MortuaryBrowserModel();
+		} catch (OHServiceException e) {
+			throw new RuntimeException(e);
+		}
 		movTable = new JTable(model);
 
 		for (int i = 0; i < pColumns.length; i++) {
@@ -581,7 +590,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return movTable;
 	}
 
-	private JPanel getPaginationPanel() throws OHServiceException {
+	private JPanel getPaginationPanel() {
 		JPanel jPaginationPanel = new JPanel();
 		jPaginationPanel.add(getPrevButton());
 		jPaginationPanel.add(getPagesCombo());
@@ -701,7 +710,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return underLabel;
 	}
 
-	private JLabel getTotalMortuaryLabel() throws OHServiceException {
+	private JLabel getTotalMortuaryLabel() {
 		if (totalMortuaryLabel == null) {
 			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
 		}
