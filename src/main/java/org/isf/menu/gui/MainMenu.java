@@ -333,7 +333,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		if(!flag_Mortuary){
 			List<UserMenuItem> junkMenu = new ArrayList<>();
 			for (UserMenuItem umi: myMenu){
-				if("mortuarystays".equalsIgnoreCase(umi.getCode()) || "mortuary".equalsIgnoreCase(umi.getCode())){
+				if ("mortuarystays".equalsIgnoreCase(umi.getCode()) || "mortuary".equalsIgnoreCase(umi.getCode())) {
 					junkMenu.add(umi);
 				}
 			}
