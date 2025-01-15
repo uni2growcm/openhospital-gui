@@ -330,9 +330,9 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 
 		// remove mortuary if not enabled
 		flag_Mortuary = GeneralData.ENABLEMORTUARYMODULE;
-		if(!flag_Mortuary){
+		if (!flag_Mortuary) {
 			List<UserMenuItem> junkMenu = new ArrayList<>();
-			for (UserMenuItem umi: myMenu){
+			for (UserMenuItem umi: myMenu) {
 				if ("mortuarystays".equalsIgnoreCase(umi.getCode()) || "mortuary".equalsIgnoreCase(umi.getCode())) {
 					junkMenu.add(umi);
 				}
