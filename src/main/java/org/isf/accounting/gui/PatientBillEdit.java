@@ -1540,7 +1540,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 								if (amount.equals(BigDecimal.ZERO)) {
 									return;
 								}
-							} catch (Exception eee) {
+							} catch (Exception e) {
 								MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
 								return;
 							}
