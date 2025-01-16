@@ -1532,7 +1532,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				LocalDateTime datePay;
 
 				if (balance.compareTo(BigDecimal.ZERO) != 0) {
-					if (balance.equals(bigTotal)){
+					if (balance.equals(bigTotal)) {
 						String quantity = (String) MessageDialog.inputDialog(this, icon, null, balance, "angal.newbill.insertquantity.txt");
 						if (quantity != null) {
 							try {
