@@ -141,7 +141,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private int pages = 0;
 	private int currentPage = 0;
 	private long totalMedicals = 0;
-	private final int PAGE_SIZE = 15;
+	private final int PAGE_SIZE = 100;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
@@ -172,7 +172,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private List<Medical> medicalList;
 
-	public MedicalBrowser() throws OHServiceException {
+	public MedicalBrowser() {
 		me = this;
 		setTitle(MessageBundle.getMessage("angal.medicals.pharmaceuticalbrowser.title"));
 		setPreferredSize(new Dimension(1220, 550));
@@ -184,21 +184,21 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchString.requestFocus();
 	}
 
-	private JPanel getContentpane() throws OHServiceException {
+	private JPanel getContentpane() {
 		JPanel contentPane = new JPanel(new BorderLayout());
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		contentPane.add(getSubPanel(), BorderLayout.CENTER);
 		return contentPane;
 	}
 
-	private JPanel getSubPanel() throws OHServiceException {
+	private JPanel getSubPanel() {
 		JPanel subPanel = new JPanel(new BorderLayout());
 		subPanel.add(getPaginatePanel(), BorderLayout.SOUTH);
 		subPanel.add(getScrollPane(), BorderLayout.CENTER);
 		return subPanel;
 	}
 
-	private JPanel getPaginatePanel() throws OHServiceException {
+	private JPanel getPaginatePanel() {
 		JPanel paginatePanel = new JPanel(new WrapLayout());
 		paginatePanel.add(getPrevButton());
 		paginatePanel.add(getPagesCombo());
@@ -264,7 +264,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			pSelection = "";
 		}
 
-		System.out.println(currentPage);
 		model = new MedicalBrowsingModel(pSelection,searchString.getText().trim(),true,currentPage, PAGE_SIZE);
 
 		if (medicalList != null) {
@@ -282,7 +281,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		prevButton.setEnabled(currentPage > 0);
 	}
 
-private JLabel getUnderLabel() throws OHServiceException {
+private JLabel getUnderLabel() {
 	if (underLabel == null) {
 		underLabel = new JLabel("/ " + (pages) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 		underLabel.setPreferredSize(new Dimension(60, 30));
@@ -290,7 +289,7 @@ private JLabel getUnderLabel() throws OHServiceException {
 	return underLabel;
 }
 
-private JLabel getTotalMovementsLabel() throws OHServiceException {
+private JLabel getTotalMovementsLabel() {
 	if (totalMedicalsLabel == null) {
 		totalMedicalsLabel = new JLabel(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ totalMedicals);
 	}
@@ -706,7 +705,7 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 			pbox.addItem(STR_ALL);
 			List<MedicalType> type;
 			try {
-				type = medicalTypeManager.getAllActiveMedicalType();
+				type = medicalTypeManager.getMedicalType();
 				for (MedicalType elem : type) {
 					pbox.addItem(elem);
 				}
@@ -913,12 +912,6 @@ private JLabel getTotalMovementsLabel() throws OHServiceException {
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
-
-		// Ajoutez cette méthode dans MedicalBrowsingModel
-		public long getTotalMedicals(String key) {
-			return totalMedicals; // Renvoyer le nombre total d'éléments
-		}
-
 	}
 
 	class ColorTableCellRenderer extends DefaultTableCellRenderer {
