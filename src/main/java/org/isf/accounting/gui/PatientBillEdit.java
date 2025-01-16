@@ -783,12 +783,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JLabel getJTextWard(){
 		if (jTextWard == null) {
 			jTextWard = new JLabel();
-			jTextWard.setPreferredSize(WARD_DIMENSION); // TODO: improve Layouts avoiding fixed dimensions
+			jTextWard.setPreferredSize(WARD_DIMENSION);
 		}
 		setJLabelWard();
 		return jTextWard;
 	}
-
 
 	private void setJLabelWard() {
 		Admission admission = thisBill.getAdmission();
@@ -872,8 +871,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
-//			jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
-//			jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
+			jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
+			jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
 		}
 		return jComboBoxGuarantor;
 	}
@@ -1260,7 +1259,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setIcon(new ImageIcon("rsc/icons/save_button.png"));
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
-
 				/*
 				 * we check again for underlying data changes
 				 */
