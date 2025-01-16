@@ -275,7 +275,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		try {
 			wards = wardBrowserManager.getWards();
 		} catch (OHServiceException e) {
-			throw new RuntimeException(e);
+			OHServiceExceptionUtil.showMessages(e);
 		}
 		provenanceCombo.addItem(TEXT_ALL);
 		for (Ward ward : wards) {
@@ -345,7 +345,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		try {
 			deathReasons = deathReasonManager.getAll();
 		} catch (OHServiceException e) {
-			throw new RuntimeException(e);
+			OHServiceExceptionUtil.showMessages(e);
 		}
 		deathReasonCombo.addItem(TEXT_ALL);
 		for (DeathReason deathReason : deathReasons) {
@@ -574,7 +574,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		try {
 			model = new MortuaryBrowserModel();
 		} catch (OHServiceException e) {
-			throw new RuntimeException(e);
+			OHServiceExceptionUtil.showMessages(e);
 		}
 		movTable = new JTable(model);
 
