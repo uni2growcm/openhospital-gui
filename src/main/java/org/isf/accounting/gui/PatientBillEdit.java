@@ -287,8 +287,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private static final int BUTTON_HEIGHT = 25;
 	private static final Dimension PATIENT_DIMENSION = new Dimension(200, 20);
 	private static final Dimension LABELS_DIMENSION = new Dimension(60, 20);
-	private static final Dimension USER_DIMENSION = new Dimension(60, 20);
-	private static final Dimension WARD_DIMENSION = new Dimension(60, 20);
+	private static final Dimension WARD_DIMENSION = new Dimension(80, 20);
 	private static final Dimension TOTAL_TABLE_SIZE = new Dimension(PANEL_WIDTH, TOTAL_HEIGHT);
 	private static final Dimension BIGTOTAL_TABLE_SIZE = new Dimension(PANEL_WIDTH, BIG_TOTAL_HEIGHT);
 	private static final Dimension BALANCE_TABLE_SIZE = new Dimension(PANEL_WIDTH, BALANCE_HEIGHT);
