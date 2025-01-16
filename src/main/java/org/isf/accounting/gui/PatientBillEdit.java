@@ -661,7 +661,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private JPanel getJPanelPrice() {
-		if (jPanelPrice == null){
+		if (jPanelPrice == null) {
 			jPanelPrice = new JPanel();
 			jPanelPrice.setLayout(new FlowLayout(FlowLayout.LEFT));
 			jPanelPrice.add(getJLabelPriceList());
