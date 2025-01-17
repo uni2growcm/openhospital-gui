@@ -420,7 +420,6 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
 				prevButton.setEnabled(CURRENT_PAGE > 0);
-
 			});
 		}
 		return filterButton;
@@ -553,7 +552,6 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
 				prevButton.setEnabled(CURRENT_PAGE > 0);
-
 			});
 		}
 		return searchButton;
