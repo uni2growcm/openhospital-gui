@@ -889,13 +889,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private JLabel getJLabelUser() {
-			if (jLabelUser == null) {
-				jLabelUser = new JLabel(MainMenu.getUser().getUserName());
-				jLabelUser.setPreferredSize(USER_DIMENSION); // improve Layouts avoiding fixed dimensions
-				jLabelUser.setHorizontalAlignment(SwingConstants.RIGHT);
-				jLabelUser.setForeground(Color.BLUE);
-				jLabelUser.setFont(new Font(jLabelUser.getFont().getName(), Font.BOLD, jLabelUser.getFont().getSize() + 2));
-			}
+		if (jLabelUser == null) {
+			jLabelUser = new JLabel(MainMenu.getUser().getUserName());
+			jLabelUser.setPreferredSize(USER_DIMENSION);
+			jLabelUser.setHorizontalAlignment(SwingConstants.RIGHT);
+			jLabelUser.setForeground(Color.BLUE);
+			jLabelUser.setFont(new Font(jLabelUser.getFont().getName(), Font.BOLD, jLabelUser.getFont().getSize() + 2));
+		}
 		return jLabelUser;
 	}
 
