@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -82,6 +83,7 @@ import org.isf.utils.jobjects.JMonthYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.jfree.ui.tabbedui.VerticalLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,9 +181,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private JPanel getContentpane() {
 		JPanel contentPane = new JPanel(new BorderLayout());
+		contentPane.add(getTopPanel(), BorderLayout.NORTH);
 		contentPane.add(getScrollPane(), BorderLayout.CENTER);
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		return contentPane;
+	}
+	private JPanel  getTopPanel(){
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		topPanel.add(getSearchBox());
+		return topPanel;
 	}
 
 	private JScrollPane getScrollPane() {
@@ -216,7 +224,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonPanel.add(getComboBoxActive());
 		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.medicals.selecttype")));
 		buttonPanel.add(getComboBoxMedicalType());
-		buttonPanel.add(getSearchBox());
 		if (MainMenu.checkUserGrants("btnpharmaceuticalnew")) {
 			buttonPanel.add(getJButtonNew());
 		}
