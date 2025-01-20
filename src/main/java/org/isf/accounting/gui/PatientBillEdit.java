@@ -1267,7 +1267,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 							return;
 						}
-					} else {
+					} else if (hasBillGuarantor()){
 						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
 						newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
 					}
@@ -1305,7 +1305,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 							return;
 						}
-					} else {
+					} else if (hasBillGuarantor()){
 						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
 						updateBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
 					}
@@ -1533,7 +1533,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 				if (balance.compareTo(BigDecimal.ZERO) != 0) {
 					if (balance.equals(bigTotal)) {
-						String quantity = (String) MessageDialog.inputDialog(this, icon, null, balance, "angal.newbill.insertquantity.txt");
+						amount = balance;
+						String quantity = (String) MessageDialog.inputDialog(this, icon, null, amount, "angal.newbill.insertquantity.txt");
 						if (quantity != null) {
 							try {
 								amount = new BigDecimal(quantity);
@@ -1548,7 +1549,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							return;
 						}
 					} else {
-						String quantity = (String) MessageDialog.inputDialog(this, icon, null, balance, "angal.newbill.insertquantity.txt");
+						amount = balance;
+						String quantity = (String) MessageDialog.inputDialog(this, icon, null, amount, "angal.newbill.insertquantity.txt");
 					}
 				} else {
 					return;
