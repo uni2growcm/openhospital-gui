@@ -27,6 +27,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
@@ -512,6 +514,14 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JPanel getSearchPanel() {
 		JPanel searchPanel = new JPanel();
 		searchTextField = new JTextField(20);
+		searchTextField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					searchAction();
+				}
+			}
+		});
 		searchPanel.add(searchTextField);
 		searchPanel.add(getSearchButton());
 		return searchPanel;
@@ -521,40 +531,42 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		if (searchButton == null) {
 			searchButton = new JButton();
 			searchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchButton.addActionListener(actionEvent -> {
-				if (outputRadioButton.isSelected()) {
-					isEnter = false;
-				}
-				try {
-					model = new MortuaryBrowserModel(searchTextField.getText().trim(), dateFrom.getDateStartOfDay(), dateTo.getDateStartOfDay(), isEnter);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-
-				totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
-				underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-				CURRENT_PAGE = 0;
-
-				isSearch = true;
-				pagesCombo.removeAllItems();
-				for (int i = 0; i < TOTAL_PAGES; i++) {
-					pagesCombo.addItem(i + 1);
-				}
-
-				pagesCombo.setSelectedItem(1);
-
-				if (mortuaries != null) {
-					model.fireTableDataChanged();
-					movTable.updateUI();
-				}
-
-				updateTotals();
-
-				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-				prevButton.setEnabled(CURRENT_PAGE > 0);
-			});
+			searchButton.addActionListener(actionEvent -> searchAction());
 		}
 		return searchButton;
+	}
+
+	private void searchAction() {
+		if (outputRadioButton.isSelected()) {
+			isEnter = false;
+		}
+		try {
+			model = new MortuaryBrowserModel(searchTextField.getText().trim(), dateFrom.getDateStartOfDay(), dateTo.getDateStartOfDay(), isEnter);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+
+		totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+		underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		CURRENT_PAGE = 0;
+
+		isSearch = true;
+		pagesCombo.removeAllItems();
+		for (int i = 0; i < TOTAL_PAGES; i++) {
+			pagesCombo.addItem(i + 1);
+		}
+
+		pagesCombo.setSelectedItem(1);
+
+		if (mortuaries != null) {
+			model.fireTableDataChanged();
+			movTable.updateUI();
+		}
+
+		updateTotals();
+
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JScrollPane getTable() {
