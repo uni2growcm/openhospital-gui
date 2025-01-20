@@ -22,10 +22,10 @@
 
 package org.isf.mortuary.gui;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -34,10 +34,10 @@ import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -56,8 +56,6 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
-import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.DeathReasonManager;
@@ -67,25 +65,22 @@ import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.service.MortuaryIoOperations;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
-import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.springframework.data.domain.Page;
 
-public class MortuaryBrowser extends ModalJFrame implements PatientBillListener {
+public class MortuaryBrowser extends ModalJFrame {
 
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
 	private final int PAGE_SIZE = 100;
-	private final JFrame myFrame;
-	private final String rowCounterText = MessageBundle.getMessage("angal.common.count.label") + ' ';
-	private final boolean isSingleUser = GeneralData.getGeneralData().getSINGLEUSER();
 	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
@@ -121,19 +116,16 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	private JButton pickPatientButton;
 	private JButton removePatientButton;
 	private JButton searchButton;
-	private JRadioButton inputRadioButton;
 	private JRadioButton outputRadioButton;
 	private JPanel inOutPanel;
-	private JComboBox provenanceCombo;
-	private JComboBox deathReasonCombo;
+	private JComboBox<Object> provenanceCombo;
+	private JComboBox<Object> deathReasonCombo;
 	private JTextField patientTextField;
 	private JTextField searchTextField;
 	private Patient patientParent;
 	private MortuaryBrowserModel model;
 	private JTable movTable;
 	private JTable jTableTotal;
-	private int totalQti;
-	private BigDecimal totalAmount;
 	private List<Death> mortuaries;
 	private GoodDateChooser dateFrom;
 	private GoodDateChooser dateTo;
@@ -147,27 +139,10 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 
 	public MortuaryBrowser() {
 		super();
-		myFrame = this;
+		JFrame myFrame = this;
 		initialize();
 		filterButton.doClick();
 		setLocationRelativeTo(null);
-	}
-
-	@Override
-	public void billInserted(AWTEvent event) {
-		updateTotals();
-		if (event != null) {
-			Death mortuaryInserted = (Death) event.getSource();
-			if (mortuaryInserted != null) {
-				int insertedId = mortuaryInserted.getId();
-				IntStream.range(0, movTable.getRowCount()).forEach(i -> {
-					Death aMortuary = (Death) movTable.getModel().getValueAt(i, -1);
-					if (aMortuary.getId() == insertedId) {
-						movTable.getSelectionModel().setSelectionInterval(i, i);
-					}
-				});
-			}
-		}
 	}
 
 	private void initialize() {
@@ -268,12 +243,12 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return provenancePanel;
 	}
 
-	private JComboBox getProvenanceCombo() {
+	private JComboBox<Object> getProvenanceCombo() {
 		if (provenanceCombo == null) {
-			provenanceCombo = new JComboBox();
+			provenanceCombo = new JComboBox<Object>();
 			provenanceCombo.setPreferredSize(new Dimension(200, 24));
 		}
-		List<Ward> wards = null;
+		List<Ward> wards = new ArrayList<>();
 		try {
 			wards = wardBrowserManager.getWards();
 		} catch (OHServiceException e) {
@@ -300,7 +275,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		if (inOutPanel == null) {
 			inOutPanel = new JPanel();
 			ButtonGroup group = new ButtonGroup();
-			inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
+			JRadioButton inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
 			outputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.output.txt"));
 			inputRadioButton.setSelected(true);
 			group.add(inputRadioButton);
@@ -338,12 +313,12 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		return provenancePanel;
 	}
 
-	private JComboBox getDeathReasonCombo() {
+	private JComboBox<Object> getDeathReasonCombo() {
 		if (deathReasonCombo == null) {
-			deathReasonCombo = new JComboBox();
+			deathReasonCombo = new JComboBox<Object>();
 			deathReasonCombo.setPreferredSize(new Dimension(200, 24));
 		}
-		List<DeathReason> deathReasons = null;
+		List<DeathReason> deathReasons = new ArrayList<>();
 		try {
 			deathReasons = deathReasonManager.getAll();
 		} catch (OHServiceException e) {
@@ -385,6 +360,14 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 					if (deathReasonSelected.equals(TEXT_ALL)) {
 						deathReasonSelected = "";
 					}
+				}
+
+				LocalDate dateFromDate = dateFrom.getDate();
+				LocalDate dateToDate = dateTo.getDate();
+
+				if (dateFromDate.isAfter(dateToDate)) {
+					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+					return;
 				}
 				if (outputRadioButton.isSelected()) {
 					isEnter = false;
@@ -512,8 +495,11 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 	}
 
 	private JPanel getSearchPanel() {
-		JPanel searchPanel = new JPanel();
-		searchTextField = new JTextField(20);
+		FlowLayout flowLayout = new FlowLayout();
+		flowLayout.setHgap(0);
+		JPanel searchPanel = new JPanel(flowLayout);
+		searchTextField = new JTextField();
+		searchTextField.setPreferredSize(new Dimension(170,27));
 		searchTextField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -731,8 +717,8 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 		if (jTableTotal == null) {
 			return;
 		}
-		totalQti = 0;
-		totalAmount = BigDecimal.ZERO;
+		int totalQti = 0;
+		BigDecimal totalAmount = BigDecimal.ZERO;
 
 		jTableTotal.getModel().setValueAt(MessageBundle.getMessage("angal.common.notapplicable.txt"), 0, 4);
 	}
@@ -753,7 +739,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			LocalDateTime dateTo,
 			boolean isEnter
 		) throws OHServiceException {
-			Page<Death> mortuariesPages = mortuaryBrowserManager.searchPatientByName(
+			Page<Death> mortuariesPages = mortuaryBrowserManager.getByPatientNameAndDates(
 				patientName,
 				dateFrom,
 				dateTo,
@@ -775,7 +761,7 @@ public class MortuaryBrowser extends ModalJFrame implements PatientBillListener 
 			boolean isEnter,
 			String deathReasonCode
 		) throws OHServiceException {
-			Page<Death> mortuariesPages = mortuaryBrowserManager.getMortuariesWhereDataPageable(
+			Page<Death> mortuariesPages = mortuaryBrowserManager.getMortuariesPages(
 				patientName,
 				wardCode,
 				dateFrom,
