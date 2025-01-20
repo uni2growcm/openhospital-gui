@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -141,6 +143,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private int CURRENT_PAGE = 0;
 	private long TOTAL_PAGES = 0;
 	private final int PAGE_SIZE = 100;
+	protected AbstractButton searchBoxButton;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
@@ -185,9 +188,22 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private JPanel getContentpane() {
 		JPanel contentPane = new JPanel(new BorderLayout());
+		contentPane.add(getTopPanel(), BorderLayout.NORTH);
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		contentPane.add(getSubPanel(), BorderLayout.CENTER);
 		return contentPane;
+	}
+
+	private JPanel  getTopPanel(){
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JLabel searchBoxLabel = new JLabel(MessageBundle.getMessage("angal.medicals.SearchBox.label"));
+		topPanel.add(searchBoxLabel);
+		topPanel.add(getSearchBox());
+		searchBoxButton = new JButton("");
+		searchBoxButton.setPreferredSize(new Dimension(20, 20));
+		searchBoxButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+		topPanel.add(searchBoxButton);
+		return topPanel;
 	}
 
 	private JPanel getSubPanel() {
@@ -230,7 +246,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonPanel.add(getComboBoxActive());
 		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.medicals.selecttype")));
 		buttonPanel.add(getComboBoxMedicalType());
-		buttonPanel.add(getSearchBox());
 		if (MainMenu.checkUserGrants("btnpharmaceuticalnew")) {
 			buttonPanel.add(getJButtonNew());
 		}
