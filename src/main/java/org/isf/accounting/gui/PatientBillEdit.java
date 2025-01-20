@@ -269,7 +269,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonTrashPatient;
 	private JComboBox<User> jComboBoxGuarantor;
 	private JLabel jLabelGuarantor;
-	private JLabel jTextUser;
 	private JLabel jTextWard;
 
 	private static final int PANEL_WIDTH = 450;
@@ -287,7 +286,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private static final int BUTTON_HEIGHT = 25;
 	private static final Dimension PATIENT_DIMENSION = new Dimension(200, 20);
 	private static final Dimension LABELS_DIMENSION = new Dimension(60, 20);
-	private static final Dimension WARD_DIMENSION = new Dimension(80, 20);
+	private static final Dimension USER_DIMENSION = new Dimension(220, 20);
+	private static final Dimension WARD_DIMENSION = new Dimension(195, 20);
 	private static final Dimension TOTAL_TABLE_SIZE = new Dimension(PANEL_WIDTH, TOTAL_HEIGHT);
 	private static final Dimension BIGTOTAL_TABLE_SIZE = new Dimension(PANEL_WIDTH, BIG_TOTAL_HEIGHT);
 	private static final Dimension BALANCE_TABLE_SIZE = new Dimension(PANEL_WIDTH, BALANCE_HEIGHT);
@@ -682,10 +682,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelPatient.add(getJTextFieldPatient());
 			jPanelPatient.add(getJLabelWard());
 			jPanelPatient.add(getJTextWard());
-			if (!GeneralData.getGeneralData().getSINGLEUSER()) {
-				jPanelPatient.add(getJLabelUser());
-				jPanelPatient.add(getJTextUser());
-			}
 		}
 		return jPanelPatient;
 	}
@@ -885,25 +881,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelDate.add(getJCalendarDate());
 			jPanelDate.add(getJButtonPickPatient());
 			jPanelDate.add(getJButtonTrashPatient());
+			if (!GeneralData.getGeneralData().getSINGLEUSER()) {
+				jPanelDate.add(getJLabelUser());
+			}
 		}
 		return jPanelDate;
 	}
 
 	private JLabel getJLabelUser() {
-		if (jLabelUser == null) {
-			jLabelUser = new JLabel(MessageBundle.getMessage("angal.newbill.currentuser.label"));
-		}
+			if (jLabelUser == null) {
+				jLabelUser = new JLabel(MainMenu.getUser().getUserName());
+				jLabelUser.setPreferredSize(USER_DIMENSION); // improve Layouts avoiding fixed dimensions
+				jLabelUser.setHorizontalAlignment(SwingConstants.RIGHT);
+				jLabelUser.setForeground(Color.BLUE);
+				jLabelUser.setFont(new Font(jLabelUser.getFont().getName(), Font.BOLD, jLabelUser.getFont().getSize() + 2));
+			}
 		return jLabelUser;
-	}
-
-	private JLabel getJTextUser() {
-		if (jTextUser == null) {
-			jTextUser =  new JLabel(MainMenu.getUser().getUserName());
-			jTextUser.setPreferredSize(LABELS_DIMENSION);
-			jTextUser.setForeground(Color.BLUE);
-			jTextUser.setFont(new Font(jTextUser.getFont().getName(), Font.BOLD, jTextUser.getFont().getSize() + 2));
-		}
-		return jTextUser;
 	}
 
 	private JButton getJButtonTrashPatient() {
