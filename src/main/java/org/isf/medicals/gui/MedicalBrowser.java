@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
@@ -61,6 +62,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.disease.model.Disease;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.gui.MedicalEdit.MedicalListener;
@@ -194,15 +196,19 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return contentPane;
 	}
 
-	private JPanel  getTopPanel(){
+	private JPanel getTopPanel() {
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JLabel searchBoxLabel = new JLabel(MessageBundle.getMessage("angal.medicals.SearchBox.label"));
 		topPanel.add(searchBoxLabel);
-		topPanel.add(getSearchBox());
+		JTextField searchBox = getSearchBox();
+		topPanel.add(searchBox);
+
 		searchBoxButton = new JButton("");
 		searchBoxButton.setPreferredSize(new Dimension(20, 20));
 		searchBoxButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 		topPanel.add(searchBoxButton);
+		searchBoxButton.addActionListener(actionEvent -> applyFilter(CURRENT_PAGE));
+
 		return topPanel;
 	}
 
@@ -317,33 +323,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		if (searchString == null) {
 			searchString = new JTextField();
 			searchString.setColumns(15);
-			searchString.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if (altKeyReleased) {
-						lastKey = "";
-						String s = String.valueOf(e.getKeyChar());
-						if (Character.isLetterOrDigit(e.getKeyChar())) {
-							lastKey = s;
-						}
-						applyFilter(CURRENT_PAGE);
-						updatePageCombo();
-						searchString.requestFocus();
-					}
-				}
+			searchString.addKeyListener(new KeyAdapter() {
 
 				@Override
 				public void keyPressed(KeyEvent e) {
 					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ALT) {
-						altKeyReleased = false;
+					if (key == KeyEvent.VK_ENTER) {
+						applyFilter(CURRENT_PAGE);
 					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-					altKeyReleased = true;
 				}
 			});
 		}
@@ -621,7 +608,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			pbox.addItem(STR_ALL);
 			List<MedicalType> type;
 			try {
-				type = medicalTypeManager.getMedicalType();
+				type = medicalTypeManager.getAllActiveMedicalType();
 				for (MedicalType elem : type) {
 					pbox.addItem(elem);
 				}
