@@ -208,7 +208,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchBoxButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 		topPanel.add(searchBoxButton);
 		searchBoxButton.addActionListener(actionEvent -> applyFilter(CURRENT_PAGE));
-
 		return topPanel;
 	}
 
