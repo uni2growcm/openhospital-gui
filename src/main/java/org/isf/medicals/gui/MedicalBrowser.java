@@ -86,6 +86,7 @@ import org.isf.utils.jobjects.JMonthYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.jfree.ui.tabbedui.VerticalLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -194,6 +195,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		contentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		contentPane.add(getSubPanel(), BorderLayout.CENTER);
 		return contentPane;
+	}
+	private JPanel  getTopPanel(){
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		topPanel.add(getSearchBox());
+		return topPanel;
 	}
 
 	private JPanel getTopPanel() {
