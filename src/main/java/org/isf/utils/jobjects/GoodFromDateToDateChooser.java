@@ -23,13 +23,18 @@ package org.isf.utils.jobjects;
 
 import java.awt.BorderLayout;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.isf.generaldata.MessageBundle;
+import org.isf.ward.manager.WardBrowserManager;
+import org.isf.ward.model.Ward;
 
 public class GoodFromDateToDateChooser extends JDialog {
 
@@ -44,11 +49,20 @@ public class GoodFromDateToDateChooser extends JDialog {
 	private LocalDate dateFrom;
 	private LocalDate dateTo;
 	private boolean isExcel;
+	private JComboBox<Object> jComboBoxWard;
 
 	public GoodFromDateToDateChooser(ModalJFrame owner) {
 		super(owner, true);
 		this.dateFrom = LocalDate.now();
 		this.dateTo = LocalDate.now();
+		initComponents();
+	}
+
+	public GoodFromDateToDateChooser(ModalJFrame owner, JComboBox<Object> wardCombo) {
+		super(owner, true);
+		this.dateFrom = LocalDate.now();
+		this.dateTo = LocalDate.now();
+		this.jComboBoxWard = wardCombo;
 		initComponents();
 	}
 
@@ -60,7 +74,10 @@ public class GoodFromDateToDateChooser extends JDialog {
 	}
 
 	private void initComponents() {
+		JPanel comboPane = new JPanel();
+		comboPane.add(jComboBoxWard);
 		getContentPane().setLayout(new BorderLayout(10, 10));
+		getContentPane().add(comboPane, BorderLayout.NORTH);
 		getContentPane().add(getDatesChoosers(dateFrom, dateTo), BorderLayout.CENTER);
 		getContentPane().add(getButtonsPanel(), BorderLayout.SOUTH);
 		pack();
@@ -144,6 +161,10 @@ public class GoodFromDateToDateChooser extends JDialog {
 
 	public boolean isCancel() {
 		return isCancel;
+	}
+
+	public Object getSelectedWard() {
+		return this.jComboBoxWard.getSelectedItem();
 	}
 
 }

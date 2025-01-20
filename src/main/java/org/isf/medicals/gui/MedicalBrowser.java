@@ -59,6 +59,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.hibernate.type.descriptor.jdbc.ObjectJdbcType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.gui.MedicalEdit.MedicalListener;
@@ -157,7 +158,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	protected boolean altKeyReleased = true;
 	private String lastKey = "";
 	private JButton buttonAMC;
-	private JComboBox<Ward> jComboBoxWard;
+	private JComboBox<Object> jComboBoxWard;
 
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
@@ -448,10 +449,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			} else {
 				selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
 				medical = (Medical) model.getValueAt(selectedrow, -1);
-
-				getJComboBoxWard();
 				// Select Dates
-				GoodFromDateToDateChooser dataRange = new GoodFromDateToDateChooser(this);
+				GoodFromDateToDateChooser dataRange = new GoodFromDateToDateChooser(this, getJComboBoxWard());
 				dataRange.setTitle(MessageBundle.getMessage("angal.messagedialog.question.title"));
 				dataRange.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				dataRange.setVisible(true);
@@ -461,14 +460,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				boolean toExcel = dataRange.isExcel();
 
 				if (!dataRange.isCancel()) {
-					Ward ward = (Ward) getJComboBoxWard().getSelectedItem();
+					Object ward = (Object) dataRange.getSelectedWard();
 					assert ward != null;
-					if (ward.getCode().equals("DEFAULT")) {
+					if (ward instanceof String) {
 						new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
 							null, toExcel);
 					} else {
-						new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
-							ward, toExcel);
+						new GenericReportPharmaceuticalStockCard("WardProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
+							(Ward) ward, toExcel);
 					}
 				}
 			}
@@ -476,12 +475,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return buttonStockCard;
 	}
 
-	private JComboBox<Ward> getJComboBoxWard(){
-		Ward w = new Ward();
-		w.setCode("DEFAULT");
-		w.setDescription("");
+	private JComboBox<Object> getJComboBoxWard() {
 		if (jComboBoxWard == null) {
-			jComboBoxWard = new JComboBox();
+			jComboBoxWard = new JComboBox<>();
 			List<Ward> wardList;
 			try {
 				wardList = wardBrowserManager.getWards();
@@ -489,16 +485,18 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				wardList = new ArrayList<>();
 				OHServiceExceptionUtil.showMessages(e);
 			}
-			jComboBoxWard.addItem(w);
+
+			jComboBoxWard.addItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
 			for (Ward wardCombo : wardList) {
-				if (wardCombo.isPharmacy()) {
-					jComboBoxWard.addItem(wardCombo);
-				}
+				jComboBoxWard.addItem(wardCombo);
 			}
+
 			jComboBoxWard.setBorder(null);
-			jComboBoxWard.setBounds(15, 14, 122, 24);
-			jComboBoxWard.setSelectedItem(w);
+
+			jComboBoxWard.setPreferredSize(new Dimension(270, 26));
 		}
+
+		jComboBoxWard.setSelectedItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
 		return jComboBoxWard;
 	}
 
