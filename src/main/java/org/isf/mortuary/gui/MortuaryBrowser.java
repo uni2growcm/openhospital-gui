@@ -80,7 +80,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int PAGE_SIZE = 3;
+	private final int PAGE_SIZE = 100;
 	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
