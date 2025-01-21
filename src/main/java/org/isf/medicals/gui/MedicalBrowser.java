@@ -208,7 +208,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchBoxButton.setPreferredSize(new Dimension(20, 20));
 		searchBoxButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 		topPanel.add(searchBoxButton);
-		searchBoxButton.addActionListener(actionEvent -> applyFilter(CURRENT_PAGE));
+		searchBoxButton.addActionListener(actionEvent -> {
+			applyFilter(CURRENT_PAGE);
+			updatePageCombo();
+		});
 		return topPanel;
 	}
 
@@ -330,6 +333,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 					int key = e.getKeyCode();
 					if (key == KeyEvent.VK_ENTER) {
 						applyFilter(CURRENT_PAGE);
+						updatePageCombo();
 					}
 				}
 			});
@@ -592,7 +596,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			activeComboBox.addItem(STR_ALL);
 			activeComboBox.addItem(STR_DISABLED_ONLY);
 			activeSelection = STR_ALL;
-			activeComboBox.setSelectedItem(STR_ALL);
+			activeComboBox.setSelectedItem(STR_ACTIVE_ONLY);
 		}
 		activeComboBox.addActionListener(actionEvent -> {
 			activeSelection = activeComboBox.getSelectedItem().toString();
@@ -925,8 +929,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			}
 			table.updateUI();
 		}
-
-		totalMedicalsLabel.setText("Total medicals: " + TOTAL_PAGES);
 
 		nextButton.setEnabled(currentPage < PAGES - 1 && PAGES != 1);
 		prevButton.setEnabled(currentPage > 0);
