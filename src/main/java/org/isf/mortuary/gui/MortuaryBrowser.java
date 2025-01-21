@@ -80,7 +80,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int PAGE_SIZE = 100;
+	private final int PAGE_SIZE = 3;
 	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
@@ -187,7 +187,8 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JPanel getSearchPatientPanel() {
 		JPanel searchPatientPanel = new JPanel();
 		searchPatientPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.searchpatient.border")));
-		patientTextField = new JTextField(14);
+		patientTextField = new JTextField();
+		patientTextField.setPreferredSize(new Dimension(170,27));
 		searchPatientPanel.add(patientTextField);
 		searchPatientPanel.add(getPickPatientButton());
 		searchPatientPanel.add(getRemovePatientButton());
@@ -246,7 +247,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JComboBox<Object> getProvenanceCombo() {
 		if (provenanceCombo == null) {
 			provenanceCombo = new JComboBox<Object>();
-			provenanceCombo.setPreferredSize(new Dimension(200, 24));
+			provenanceCombo.setPreferredSize(new Dimension(300, 27));
 		}
 		List<Ward> wards = new ArrayList<>();
 		try {
@@ -291,6 +292,7 @@ public class MortuaryBrowser extends ModalJFrame {
 		dateFromPanel.setLayout(new BorderLayout());
 		JLabel dateFromLabel = new JLabel(FROM_LABEL);
 		dateFrom = new GoodDateChooser(LocalDate.now().minusWeeks(1));
+		dateFrom.setPreferredSize(new Dimension(250, 27));
 		dateFromPanel.add(dateFromLabel, BorderLayout.WEST);
 		dateFromPanel.add(dateFrom, BorderLayout.EAST);
 		return dateFromPanel;
@@ -301,6 +303,7 @@ public class MortuaryBrowser extends ModalJFrame {
 		dateToPanel.setLayout(new BorderLayout());
 		JLabel dateToLabel = new JLabel(TO_LABEL);
 		dateTo = new GoodDateChooser();
+		dateTo.setPreferredSize(new Dimension(250, 27));
 		dateToPanel.add(dateToLabel, BorderLayout.WEST);
 		dateToPanel.add(dateTo, BorderLayout.EAST);
 		return dateToPanel;
@@ -316,7 +319,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JComboBox<Object> getDeathReasonCombo() {
 		if (deathReasonCombo == null) {
 			deathReasonCombo = new JComboBox<Object>();
-			deathReasonCombo.setPreferredSize(new Dimension(200, 24));
+			deathReasonCombo.setPreferredSize(new Dimension(300, 24));
 		}
 		List<DeathReason> deathReasons = new ArrayList<>();
 		try {
@@ -342,69 +345,8 @@ public class MortuaryBrowser extends ModalJFrame {
 			filterButton = new JButton(MessageBundle.getMessage("angal.common.filter.btn"));
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
 			filterButton.addActionListener(actionEvent -> {
-				String wardSelected;
-				String deathReasonSelected;
-
-				if (!(provenanceCombo.getSelectedItem() instanceof String)) {
-					wardSelected = ((Ward) Objects.requireNonNull(provenanceCombo.getSelectedItem())).getCode();
-				} else {
-					wardSelected = (String) provenanceCombo.getSelectedItem();
-					if (wardSelected.equals(TEXT_ALL)) {
-						wardSelected = "";
-					}
-				}
-				if (!(deathReasonCombo.getSelectedItem() instanceof String)) {
-					deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getCode();
-				} else {
-					deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
-					if (deathReasonSelected.equals(TEXT_ALL)) {
-						deathReasonSelected = "";
-					}
-				}
-
-				LocalDate dateFromDate = dateFrom.getDate();
-				LocalDate dateToDate = dateTo.getDate();
-
-				if (dateFromDate.isAfter(dateToDate)) {
-					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
-					return;
-				}
-				if (outputRadioButton.isSelected()) {
-					isEnter = false;
-				}
-
-				try {
-					model = new MortuaryBrowserModel(
-						patientTextField.getText().trim(),
-						wardSelected,
-						dateFrom.getDateStartOfDay(),
-						dateTo.getDateStartOfDay(),
-						isEnter,
-						deathReasonSelected
-					);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-
-				totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
-				underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-				CURRENT_PAGE = 0;
-
 				isSearch = false;
-				pagesCombo.removeAllItems();
-				for (int i = 0; i < TOTAL_PAGES; i++) {
-					pagesCombo.addItem(i + 1);
-				}
-
-				pagesCombo.setSelectedItem(1);
-
-				if (mortuaries != null) {
-					model.fireTableDataChanged();
-					movTable.updateUI();
-				}
-
-				nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-				prevButton.setEnabled(CURRENT_PAGE > 0);
+				applyFilter(false);
 			});
 		}
 		return filterButton;
@@ -488,10 +430,16 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JPanel getTablePanel() {
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
-		tablePanel.add(getSearchPanel(), BorderLayout.NORTH);
+		tablePanel.add(getSubSearchPanel(), BorderLayout.NORTH);
 		tablePanel.add(getTable(), BorderLayout.CENTER);
 		tablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
 		return tablePanel;
+	}
+
+	private JPanel getSubSearchPanel() {
+		JPanel subSearchPanel = new JPanel(new BorderLayout());
+		subSearchPanel.add(getSearchPanel(), BorderLayout.EAST);
+		return subSearchPanel;
 	}
 
 	private JPanel getSearchPanel() {
@@ -504,7 +452,8 @@ public class MortuaryBrowser extends ModalJFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					searchAction();
+					isSearch = true;
+					applyFilter(false);
 				}
 			}
 		});
@@ -517,42 +466,12 @@ public class MortuaryBrowser extends ModalJFrame {
 		if (searchButton == null) {
 			searchButton = new JButton();
 			searchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchButton.addActionListener(actionEvent -> searchAction());
+			searchButton.addActionListener(actionEvent -> {
+				isSearch = true;
+				applyFilter(false);
+			});
 		}
 		return searchButton;
-	}
-
-	private void searchAction() {
-		if (outputRadioButton.isSelected()) {
-			isEnter = false;
-		}
-		try {
-			model = new MortuaryBrowserModel(searchTextField.getText().trim(), dateFrom.getDateStartOfDay(), dateTo.getDateStartOfDay(), isEnter);
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
-		}
-
-		totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
-		underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-		CURRENT_PAGE = 0;
-
-		isSearch = true;
-		pagesCombo.removeAllItems();
-		for (int i = 0; i < TOTAL_PAGES; i++) {
-			pagesCombo.addItem(i + 1);
-		}
-
-		pagesCombo.setSelectedItem(1);
-
-		if (mortuaries != null) {
-			model.fireTableDataChanged();
-			movTable.updateUI();
-		}
-
-		updateTotals();
-
-		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JScrollPane getTable() {
@@ -635,7 +554,7 @@ public class MortuaryBrowser extends ModalJFrame {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
 						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(CURRENT_PAGE);
+						applyFilter(true);
 					}
 				}
 			});
@@ -643,23 +562,31 @@ public class MortuaryBrowser extends ModalJFrame {
 		return pagesCombo;
 	}
 
-	private void applyFilter(int currentPage) {
-		String wardSelected = "";
-		String deathReasonSelected = "";
-
+	private void applyFilter(boolean isNextOrPrevButton) {
+		String wardSelected;
+		String deathReasonSelected;
 		if (!(provenanceCombo.getSelectedItem() instanceof String)) {
 			wardSelected = ((Ward) Objects.requireNonNull(provenanceCombo.getSelectedItem())).getCode();
 		} else {
-			if (((String) provenanceCombo.getSelectedItem()).equals(TEXT_ALL)) {
+			wardSelected = (String) provenanceCombo.getSelectedItem();
+			if (wardSelected.equals(TEXT_ALL)) {
 				wardSelected = "";
 			}
 		}
 		if (!(deathReasonCombo.getSelectedItem() instanceof String)) {
 			deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getCode();
 		} else {
-			if (((String) deathReasonCombo.getSelectedItem()).equals(TEXT_ALL)) {
+			deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
+			if (deathReasonSelected.equals(TEXT_ALL)) {
 				deathReasonSelected = "";
 			}
+		}
+
+		LocalDate dateFromDate = dateFrom.getDate();
+		LocalDate dateToDate = dateTo.getDate();
+		if (dateFromDate.isAfter(dateToDate)) {
+			MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+			return;
 		}
 		if (outputRadioButton.isSelected()) {
 			isEnter = false;
@@ -687,6 +614,19 @@ public class MortuaryBrowser extends ModalJFrame {
 			OHServiceExceptionUtil.showMessages(e);
 		}
 
+		if (!isNextOrPrevButton) {
+			totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			CURRENT_PAGE = 0;
+
+			pagesCombo.removeAllItems();
+			for (int i = 0; i < TOTAL_PAGES; i++) {
+				pagesCombo.addItem(i + 1);
+			}
+
+			pagesCombo.setSelectedItem(1);
+		}
+
 		if (mortuaries != null) {
 			model.fireTableDataChanged();
 			movTable.updateUI();
@@ -694,8 +634,8 @@ public class MortuaryBrowser extends ModalJFrame {
 
 		updateTotals();
 
-		nextButton.setEnabled(currentPage < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JLabel getUnderLabel() {
