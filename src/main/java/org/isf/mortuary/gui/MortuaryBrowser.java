@@ -430,48 +430,9 @@ public class MortuaryBrowser extends ModalJFrame {
 	private JPanel getTablePanel() {
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
-		tablePanel.add(getSubSearchPanel(), BorderLayout.NORTH);
 		tablePanel.add(getTable(), BorderLayout.CENTER);
 		tablePanel.add(getPaginationPanel(), BorderLayout.SOUTH);
 		return tablePanel;
-	}
-
-	private JPanel getSubSearchPanel() {
-		JPanel subSearchPanel = new JPanel(new BorderLayout());
-		subSearchPanel.add(getSearchPanel(), BorderLayout.EAST);
-		return subSearchPanel;
-	}
-
-	private JPanel getSearchPanel() {
-		FlowLayout flowLayout = new FlowLayout();
-		flowLayout.setHgap(0);
-		JPanel searchPanel = new JPanel(flowLayout);
-		searchTextField = new JTextField();
-		searchTextField.setPreferredSize(new Dimension(170,27));
-		searchTextField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					isSearch = true;
-					applyFilter(false);
-				}
-			}
-		});
-		searchPanel.add(searchTextField);
-		searchPanel.add(getSearchButton());
-		return searchPanel;
-	}
-
-	private JButton getSearchButton() {
-		if (searchButton == null) {
-			searchButton = new JButton();
-			searchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchButton.addActionListener(actionEvent -> {
-				isSearch = true;
-				applyFilter(false);
-			});
-		}
-		return searchButton;
 	}
 
 	private JScrollPane getTable() {
@@ -588,9 +549,8 @@ public class MortuaryBrowser extends ModalJFrame {
 			MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
 			return;
 		}
-		if (outputRadioButton.isSelected()) {
-			isEnter = false;
-		}
+
+		isEnter = !outputRadioButton.isSelected();
 
 		try {
 			if (isSearch) {
@@ -701,7 +661,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			boolean isEnter,
 			String deathReasonCode
 		) throws OHServiceException {
-			Page<Death> mortuariesPages = mortuaryBrowserManager.getMortuariesPages(
+			Page<Death> mortuariesPages = mortuaryBrowserManager.getMortuariesPageable(
 				patientName,
 				wardCode,
 				dateFrom,
@@ -765,7 +725,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			} else if (c == 5) {
 				return mortuary.getAdmissionDate().toLocalDate();
 			} else if (c == 6) {
-				return mortuary.getDischargeDate().toLocalDate();
+				return mortuary.getEstimatedDischargeDate().toLocalDate();
 			} else if (c == 7) {
 				return deathReason.getDescription();
 			}
