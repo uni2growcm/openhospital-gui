@@ -493,7 +493,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 			jComboBoxWard.setBorder(null);
 
-			jComboBoxWard.setPreferredSize(new Dimension(270, 26));
+			jComboBoxWard.setPreferredSize(new Dimension(340, 26));
 		}
 
 		jComboBoxWard.setSelectedItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
