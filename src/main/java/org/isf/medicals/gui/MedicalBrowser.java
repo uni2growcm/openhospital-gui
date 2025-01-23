@@ -99,8 +99,6 @@ import com.github.lgooddatepicker.zinternaltools.WrapLayout;
  */
 public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
-	private static final long serialVersionUID = 1L;
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(MedicalBrowser.class);
 	private static final String STR_ALL = MessageBundle.getMessage("angal.common.all.txt");
 
@@ -168,8 +166,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private String pSelection;
 	private String activeSelection = STR_ACTIVE_ONLY;
 	private JTextField searchString;
-	protected boolean altKeyReleased = true;
-	private String lastKey = "";
 	private JButton buttonAMC;
 
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
@@ -199,7 +195,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private JPanel getTopPanel() {
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		JLabel searchBoxLabel = new JLabel(MessageBundle.getMessage("angal.medicals.SearchBox.label"));
+		JLabel searchBoxLabel = new JLabel(MessageBundle.getMessage("angal.medicals.searchbox.label"));
 		topPanel.add(searchBoxLabel);
 		JTextField searchBox = getSearchBox();
 		topPanel.add(searchBox);
