@@ -776,7 +776,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jLabelWard;
 	}
 
-	private JLabel getJTextWard() {
+	private JLabel getJLabelWardDescription() {
 		if (jTextWard == null) {
 			jTextWard = new JLabel();
 			jTextWard.setPreferredSize(WARD_DIMENSION);
