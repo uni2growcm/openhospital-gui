@@ -785,7 +785,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jTextWard;
 	}
 
-	private void setJLabelWard() {
+	private void setJLabelWardDescription() {
 		Admission admission = thisBill.getAdmission();
 		if (admission != null) {
 			jTextWard.setText(admission.getWard().getDescription());
