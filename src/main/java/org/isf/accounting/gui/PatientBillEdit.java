@@ -269,7 +269,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonTrashPatient;
 	private JComboBox<User> jComboBoxGuarantor;
 	private JLabel jLabelGuarantor;
-	private JLabel jTextWard;
+	private JLabel jLabelWardDescription;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
