@@ -107,7 +107,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	@Override
 	public void medicalInserted(Medical medical) {
-		pMedicals.add(0, medical);
+		medicalList.add(0, medical);
 		((MedicalBrowsingModel) table.getModel()).fireTableDataChanged();
 		table.updateUI();
 		if (table.getRowCount() > 0) {
@@ -118,7 +118,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	@Override
 	public void medicalUpdated(AWTEvent e) {
-		pMedicals.set(selectedrow, medical);
+		medicalList.set(selectedrow, medical);
 		((MedicalBrowsingModel) table.getModel()).fireTableDataChanged();
 		table.updateUI();
 		if (table.getRowCount() > 0 && selectedrow > -1) {
@@ -134,7 +134,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private int selectedrow;
 	private JComboBox pbox;
 	private JComboBox activeComboBox;
-	private List<Medical> pMedicals;
+//	private List<Medical> pMedicals;
 	private JButton nextButton;
 	private JButton prevButton;
 	private JComboBox<Integer> pagesCombo;
@@ -543,7 +543,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (answer == JOptionPane.YES_OPTION) {
 					try {
 						medicalBrowsingManager.deleteMedical(medical);
-						pMedicals.remove(selectedrow);
+						medicalList.remove(selectedrow);
 						model.fireTableDataChanged();
 						table.updateUI();
 					} catch (OHServiceException e) {
@@ -737,12 +737,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, null,false, page, size);
 					}
 
-					medicalList = pMedicals = new ArrayList<>(medicalPage.getContent());
+					medicalList = new ArrayList<>(medicalPage.getContent());
 					TOTAL_PAGES = medicalPage.getTotalElements();
 					PAGES = medicalPage.getTotalPages();
 
 				} catch (OHServiceException e) {
-					pMedicals = null;
+					medicalList = null;
 					OHServiceExceptionUtil.showMessages(e);
 				}
 			}
