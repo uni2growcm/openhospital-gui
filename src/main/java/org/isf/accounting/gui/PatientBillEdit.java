@@ -777,22 +777,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private JLabel getJLabelWardDescription() {
-		if (jTextWard == null) {
-			jTextWard = new JLabel();
-			jTextWard.setPreferredSize(WARD_DIMENSION);
+		if (jLabelWardDescription == null) {
+			jLabelWardDescription = new JLabel();
+			jLabelWardDescription.setPreferredSize(WARD_DIMENSION);
 		}
-		setJLabelWard();
-		return jTextWard;
+		setJLabelWardDescription();
+		return jLabelWardDescription;
 	}
 
 	private void setJLabelWardDescription() {
 		Admission admission = thisBill.getAdmission();
 		if (admission != null) {
-			jTextWard.setText(admission.getWard().getDescription());
-			jTextWard.setIcon(ADMISSION_ICON);
+			jLabelWardDescription.setText(admission.getWard().getDescription());
+			jLabelWardDescription.setIcon(ADMISSION_ICON);
 		} else {
-			jTextWard.setText(OPD_TEXT);
-			jTextWard.setIcon(null);
+			jLabelWardDescription.setText(OPD_TEXT);
+			jLabelWardDescription.setIcon(null);
 		}
 	}
 
