@@ -590,7 +590,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			activeComboBox.addItem(STR_ALL);
 			activeComboBox.addItem(STR_DISABLED_ONLY);
 			activeSelection = STR_ALL;
-			activeComboBox.setSelectedItem(STR_ALL);
+			activeComboBox.setSelectedItem(STR_ACTIVE_ONLY);
 		}
 		activeComboBox.addActionListener(actionEvent -> {
 			activeSelection = activeComboBox.getSelectedItem().toString();
@@ -735,7 +735,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, null,false, page, size);
 					}
 
-					medicalList = pMedicals = medicalPage.getContent();
+					medicalList = pMedicals = new ArrayList<>(medicalPage.getContent());
 					TOTAL_PAGES = medicalPage.getTotalElements();
 					PAGES = medicalPage.getTotalPages();
 
@@ -924,7 +924,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			table.updateUI();
 		}
 
-		totalMedicalsLabel.setText("Total medicals: " + TOTAL_PAGES);
+		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": " + TOTAL_PAGES);
 
 		nextButton.setEnabled(currentPage < PAGES - 1 && PAGES != 1);
 		prevButton.setEnabled(currentPage > 0);
