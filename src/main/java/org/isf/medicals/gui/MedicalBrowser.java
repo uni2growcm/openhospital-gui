@@ -589,7 +589,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			activeComboBox.addItem(STR_ACTIVE_ONLY);
 			activeComboBox.addItem(STR_ALL);
 			activeComboBox.addItem(STR_DISABLED_ONLY);
-			activeSelection = STR_ALL;
+			activeSelection = STR_ACTIVE_ONLY;
 			activeComboBox.setSelectedItem(STR_ACTIVE_ONLY);
 		}
 		activeComboBox.addActionListener(actionEvent -> {
