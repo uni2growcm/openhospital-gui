@@ -737,7 +737,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, null,false, page, size);
 					}
 
-					medicalList = pMedicals = medicalPage.getContent();
+					medicalList = pMedicals = new ArrayList<>(medicalPage.getContent());
 					TOTAL_PAGES = medicalPage.getTotalElements();
 					PAGES = medicalPage.getTotalPages();
 
