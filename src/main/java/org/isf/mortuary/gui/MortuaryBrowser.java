@@ -237,7 +237,7 @@ public class MortuaryBrowser extends ModalJFrame {
 
 	private JComboBox<Object> getProvenanceCombo() {
 		if (provenanceCombo == null) {
-			provenanceCombo = new JComboBox<Object>();
+			provenanceCombo = new JComboBox<>();
 			provenanceCombo.setPreferredSize(new Dimension(300, 27));
 		}
 		List<Ward> wards = new ArrayList<>();
@@ -309,7 +309,7 @@ public class MortuaryBrowser extends ModalJFrame {
 
 	private JComboBox<Object> getDeathReasonCombo() {
 		if (deathReasonCombo == null) {
-			deathReasonCombo = new JComboBox<Object>();
+			deathReasonCombo = new JComboBox<>();
 			deathReasonCombo.setPreferredSize(new Dimension(300, 24));
 		}
 		List<DeathReason> deathReasons = new ArrayList<>();
@@ -335,9 +335,7 @@ public class MortuaryBrowser extends ModalJFrame {
 		if (filterButton == null) {
 			filterButton = new JButton(MessageBundle.getMessage("angal.common.filter.btn"));
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.filter.btn.key"));
-			filterButton.addActionListener(actionEvent -> {
-				applyFilter(false);
-			});
+			filterButton.addActionListener(actionEvent ->   applyFilter(false));
 		}
 		return filterButton;
 	}
