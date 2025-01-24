@@ -312,7 +312,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 						if (Character.isLetterOrDigit(e.getKeyChar())) {
 							lastKey = s;
 						}
-						applyFilter(CURRENT_PAGE);
+						applyFilter();
 						updatePageCombo();
 						searchString.requestFocus();
 					}
@@ -594,7 +594,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		activeComboBox.addActionListener(actionEvent -> {
 			activeSelection = activeComboBox.getSelectedItem().toString();
-			applyFilter(CURRENT_PAGE);
+			applyFilter();
 			updatePageCombo();
 		});
 		return activeComboBox;
@@ -618,7 +618,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		pbox.addActionListener(actionEvent -> {
 			pSelection = pbox.getSelectedItem().toString();
-			applyFilter(CURRENT_PAGE);
+			applyFilter();
 			updatePageCombo();
 		});
 		return pbox;
@@ -900,7 +900,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
 						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(CURRENT_PAGE);
+						applyFilter();
 					}
 				}
 			});
@@ -908,12 +908,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return pagesCombo;
 	}
 
-	private void applyFilter(int currentPage) {
+	private void applyFilter() {
 		if ((pSelection == null) || (pSelection.compareTo(STR_ALL) == 0)) {
 			pSelection = "";
 		}
 
-		model = new MedicalBrowsingModel(pSelection,searchString.getText().trim(),true,currentPage, PAGE_SIZE);
+		model = new MedicalBrowsingModel(pSelection,searchString.getText().trim(),true,CURRENT_PAGE, PAGE_SIZE);
 
 		if (medicalList != null) {
 			if (table == null) {
@@ -926,8 +926,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": " + TOTAL_PAGES);
 
-		nextButton.setEnabled(currentPage < PAGES - 1 && PAGES != 1);
-		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(CURRENT_PAGE < PAGES - 1 && PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JLabel getUnderLabel() {
