@@ -681,7 +681,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelPatient.add(getJLabelPatient());
 			jPanelPatient.add(getJTextFieldPatient());
 			jPanelPatient.add(getJLabelWard());
-			jPanelPatient.add(getJTextWard());
+			jPanelPatient.add(getJLabelWardDescription());
 		}
 		return jPanelPatient;
 	}
