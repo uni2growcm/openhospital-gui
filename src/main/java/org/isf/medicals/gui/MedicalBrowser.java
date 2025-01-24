@@ -205,7 +205,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchBoxButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 		topPanel.add(searchBoxButton);
 		searchBoxButton.addActionListener(actionEvent -> {
-			applyFilter(CURRENT_PAGE);
+			applyFilter();
 			updatePageCombo();
 		});
 		return topPanel;
@@ -328,7 +328,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				public void keyPressed(KeyEvent e) {
 					int key = e.getKeyCode();
 					if (key == KeyEvent.VK_ENTER) {
-						applyFilter(CURRENT_PAGE);
+						applyFilter();
 						updatePageCombo();
 					}
 				}
@@ -591,12 +591,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			activeComboBox.addItem(STR_ACTIVE_ONLY);
 			activeComboBox.addItem(STR_ALL);
 			activeComboBox.addItem(STR_DISABLED_ONLY);
-			activeSelection = STR_ALL;
+			activeSelection = STR_ACTIVE_ONLY;
 			activeComboBox.setSelectedItem(STR_ACTIVE_ONLY);
 		}
 		activeComboBox.addActionListener(actionEvent -> {
 			activeSelection = activeComboBox.getSelectedItem().toString();
-			applyFilter(CURRENT_PAGE);
+			applyFilter();
 			updatePageCombo();
 		});
 		return activeComboBox;
@@ -620,7 +620,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		pbox.addActionListener(actionEvent -> {
 			pSelection = pbox.getSelectedItem().toString();
-			applyFilter(CURRENT_PAGE);
+			applyFilter();
 			updatePageCombo();
 		});
 		return pbox;
@@ -902,7 +902,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
 						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(CURRENT_PAGE);
+						applyFilter();
 					}
 				}
 			});
@@ -910,12 +910,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return pagesCombo;
 	}
 
-	private void applyFilter(int currentPage) {
+	private void applyFilter() {
 		if ((pSelection == null) || (pSelection.compareTo(STR_ALL) == 0)) {
 			pSelection = "";
 		}
 
-		model = new MedicalBrowsingModel(pSelection,searchString.getText().trim(),true,currentPage, PAGE_SIZE);
+		model = new MedicalBrowsingModel(pSelection,searchString.getText().trim(),true,CURRENT_PAGE, PAGE_SIZE);
 
 		if (medicalList != null) {
 			if (table == null) {
@@ -926,8 +926,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			table.updateUI();
 		}
 
-		nextButton.setEnabled(currentPage < PAGES - 1 && PAGES != 1);
-		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(CURRENT_PAGE < PAGES - 1 && PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JLabel getUnderLabel() {
