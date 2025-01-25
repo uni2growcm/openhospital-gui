@@ -101,6 +101,7 @@ public class MortuaryBrowser extends ModalJFrame {
 	private long TOTAL_MORTUARIES;
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
+	private JButton jBodyCompartmentButton;
 	private JButton jNewButton;
 	private JButton jEditButton;
 	private JButton jDeleteButton;
@@ -346,6 +347,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			jButtonPanel.add(getNewButton());
 			jButtonPanel.add(getEditButton());
 			jButtonPanel.add(getDeleteButton());
+			jButtonPanel.add(getBodyCompartmentButton());
 			jButtonPanel.add(getCertificateButton());
 			jButtonPanel.add(getMortuaryStayButton());
 			jButtonPanel.add(getRapportButton());
@@ -380,6 +382,18 @@ public class MortuaryBrowser extends ModalJFrame {
 			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
 		}
 		return jDeleteButton;
+	}
+
+	private JButton getBodyCompartmentButton() {
+		if (jBodyCompartmentButton == null) {
+			jBodyCompartmentButton = new JButton(MessageBundle.getMessage("angal.mortuary.bodycompartment.btn"));
+			jBodyCompartmentButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.bodycompartment.btn.key"));
+			jBodyCompartmentButton.addActionListener(actionEvent ->{
+				MortuaryBodyCompartment mortuaryBodyCompartment = new MortuaryBodyCompartment();
+				mortuaryBodyCompartment.setVisible(true);
+			});
+		}
+		return jBodyCompartmentButton;
 	}
 
 	private JButton getCertificateButton() {
