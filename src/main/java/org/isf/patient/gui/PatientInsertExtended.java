@@ -44,6 +44,8 @@ import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -77,6 +79,8 @@ import org.isf.patconsensus.model.PatientConsensus;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patient.model.PatientProfilePhoto;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.image.ImageUtil;
@@ -245,6 +249,13 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jTelephoneLabelPanel;
 	private JPanel jTelephoneFieldPanel;
 	private JTextField jTelephoneTextField;
+
+	// Billing Components:
+	private JPanel jBilling;
+	private JPanel jBillingPanel;
+	private JComboBox<ReductionPlan> jReductionPlanComboBox;
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+
 
 	// COMPONENTS: Extension
 	private JPanel jExtensionContent;
@@ -496,6 +507,13 @@ public class PatientInsertExtended extends JDialog {
 								patient.setFather('U');
 							}
 						}
+
+						ReductionPlan reductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+						if (reductionPlan.getId() != 0) {
+							patient.setReductionPlan(reductionPlan);
+						} else {
+							patient.setReductionPlan(null);
+						}
 						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
@@ -582,6 +600,13 @@ public class PatientInsertExtended extends JDialog {
 						} else {
 							patient.setFather('U');
 						}
+					}
+
+					ReductionPlan reductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+					if (reductionPlan.getId() != 0) {
+						patient.setReductionPlan(reductionPlan);
+					} else {
+						patient.setReductionPlan(null);
 					}
 					patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 					patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
@@ -1126,6 +1151,7 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJCity(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
+			jAnagraphPanel.add(getJBilling(), null);
 			jAnagraphPanel.add(getJLabelRequiredFields(), null);
 		}
 		return jAnagraphPanel;
@@ -1680,6 +1706,51 @@ public class PatientInsertExtended extends JDialog {
 			jTelephone.add(getJTelephoneFieldPanel(), BorderLayout.EAST);
 		}
 		return jTelephone;
+	}
+
+	/**
+	 * This method initializes jBilling
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBilling() {
+		if (jBilling == null) {
+			jBilling = new JPanel();
+			jBilling.setLayout(new BorderLayout());
+			jBilling.add(getJBillingPanel(),null);
+		}
+		return jBilling;
+	}
+
+	/**
+	 * This method initializes jBillingPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBillingPanel() {
+		if (jBillingPanel == null) {
+			jBillingPanel = new JPanel();
+			jBillingPanel = setMyBorder(jBillingPanel, MessageBundle.getMessage("angal.patient.billing.txt"));
+
+			jReductionPlanComboBox = new JComboBox<>();
+			List<ReductionPlan> reductionPlanList = null;
+			try {
+				reductionPlanList = reductionPlanManager.getAll();
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			jReductionPlanComboBox.addItem(new ReductionPlan());
+			for (ReductionPlan reductionPlan: reductionPlanList) {
+				jReductionPlanComboBox.addItem(reductionPlan);
+			}
+
+			if (!insert) {
+				jReductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
+			}
+
+			jBillingPanel.add(jReductionPlanComboBox);
+		}
+		return jBillingPanel;
 	}
 
 	/**
