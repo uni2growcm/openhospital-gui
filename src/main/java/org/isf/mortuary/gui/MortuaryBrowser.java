@@ -389,8 +389,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			jBodyCompartmentButton = new JButton(MessageBundle.getMessage("angal.mortuary.bodycompartment.btn"));
 			jBodyCompartmentButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.bodycompartment.btn.key"));
 			jBodyCompartmentButton.addActionListener(actionEvent ->{
-				MortuaryBodyCompartment mortuaryBodyCompartment = new MortuaryBodyCompartment();
-				mortuaryBodyCompartment.setVisible(true);
+				MortuaryBodyCompartment mortuaryBodyCompartment = new MortuaryBodyCompartment(this);
 			});
 		}
 		return jBodyCompartmentButton;

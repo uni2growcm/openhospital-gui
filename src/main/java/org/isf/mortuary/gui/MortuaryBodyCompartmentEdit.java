@@ -21,7 +21,6 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.BodyCompartmentManager;
 import org.isf.mortuary.model.BodyCompartment;
-import org.isf.mortuarystays.manager.MortuaryStayManager;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
@@ -73,16 +72,16 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 	private JPanel jDataPanel;
 	private JButton cancelButton;
 	private JButton okButton;
-	private JTextField codeTextField;
+	private JTextField labelTextField;
 	private JTextField descriptionTextField;
-	private String code;
+	private String label;
 	private String desc;
 	private boolean insert;
 	private BodyCompartment bodyCompartment;
 
 	private BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public MortuaryBodyCompartmentEdit(JFrame parent, BodyCompartment old, boolean inserting) {
+	public MortuaryBodyCompartmentEdit(JDialog parent, BodyCompartment old, boolean inserting) {
 		super(parent, true);
 		insert = inserting;
 		bodyCompartment = old;
@@ -117,7 +116,7 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 			GridBagLayout gblDataPanel = new GridBagLayout();
 			gblDataPanel.columnWeights = new double[] { 0.0, 1.0 };
 			jDataPanel.setLayout(gblDataPanel);
-			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.codestar"));
+			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.bodycompartment.label.txt"));
 			GridBagConstraints gbcCodeLabel = new GridBagConstraints();
 			gbcCodeLabel.anchor = GridBagConstraints.WEST;
 			gbcCodeLabel.insets = new Insets(0, 0, 5, 5);
@@ -129,9 +128,9 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 			gbcCodeTextField.insets = new Insets(0, 0, 5, 0);
 			gbcCodeTextField.gridx = 1;
 			gbcCodeTextField.gridy = 0;
-			jDataPanel.add(getCodeTextField(), gbcCodeTextField);
+			jDataPanel.add(getLabelTextField(), gbcCodeTextField);
 
-			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuarystays.descriptionedit.txt"));
+			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.bodycompartment.descriptionedit.txt"));
 			GridBagConstraints gbcDescLabel = new GridBagConstraints();
 			gbcDescLabel.anchor = GridBagConstraints.WEST;
 			gbcDescLabel.insets = new Insets(0, 0, 5, 5);
@@ -149,15 +148,15 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 		return jDataPanel;
 	}
 
-	private JTextField getCodeTextField() {
-		if (codeTextField == null) {
-			codeTextField = new VoLimitedTextField(11, 20);
+	private JTextField getLabelTextField() {
+		if (labelTextField == null) {
+			labelTextField = new VoLimitedTextField(6, 20);
 			if (!insert) {
-				codeTextField.setText(bodyCompartment.getCode());
-				codeTextField.setEnabled(false);
+				labelTextField.setText(bodyCompartment.getLabel());
+				labelTextField.setEnabled(false);
 			}
 		}
-		return codeTextField;
+		return labelTextField;
 	}
 
 	private JTextField getDescriptionTextField() {
@@ -183,17 +182,17 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
 				if (insert) {
-					code = codeTextField.getText().trim();
-					if (code.isEmpty()) {
-						MessageDialog.error(this, "angal.common.pleaseinsertacode.msg");
+					label = labelTextField.getText().trim();
+					if (label.isEmpty()) {
+						MessageDialog.error(this, "angal.mortuary.bodycompartment.pleaseinsertalabel.msg");
 						return;
 					}
-					if (code.length() > 6) {
-						MessageDialog.error(this, "angal.common.thecodeistoolongmax1char.msg");
+					if (label.length() > 6) {
+						MessageDialog.error(this, "angal.mortuary.bodycompartment.thelabelistoolongmax6char.msg");
 						return;
 					}
 					try {
-						if (bodyCompartmentManager.isCodePresent(code)) {
+						if (bodyCompartmentManager.isCodePresent(label)) {
 							MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
 							return;
 						}
@@ -201,14 +200,9 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 						OHServiceExceptionUtil.showMessages(e);
 					}
 				}
-				desc = descriptionTextField.getText().trim();
-				if (desc.isEmpty()) {
-					MessageDialog.error(this, "angal.common.pleaseinsertavaliddescription.msg");
-					return;
-				}
 
-				bodyCompartment.setDescription(desc);
-				bodyCompartment.setCode(codeTextField.getText());
+				bodyCompartment.setDescription(descriptionTextField.getText().trim());
+				bodyCompartment.setLabel(labelTextField.getText().trim());
 
 				boolean result = false;
 				BodyCompartment savedBodyCompartment;

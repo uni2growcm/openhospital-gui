@@ -26,12 +26,18 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,16 +49,13 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.BodyCompartmentManager;
 import org.isf.mortuary.model.BodyCompartment;
-import org.isf.mortuarystays.gui.MortuaryStaysBrowser;
 import org.isf.mortuary.gui.MortuaryBodyCompartmentEdit.BodyCompartmentListener;
-import org.isf.mortuarystays.gui.MortuaryStaysEdit;
-import org.isf.mortuarystays.model.MortuaryStay;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
-import org.isf.utils.jobjects.ModalJFrame;
+import org.springframework.data.domain.Page;
 
-public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartmentListener {
+public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentListener {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -75,13 +78,21 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		}
 	}
 
-	private final JFrame myFrame;
+	private final JDialog myJDialog;
+	private final int PAGE_SIZE = 100;
+	private int CURRENT_PAGE = 0;
+	private int TOTAL_PAGES;
 	private JPanel jContentPane;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
 	private JButton jEditButton;
 	private JButton jNewButton;
+	private JButton nextButton;
+	private JButton prevButton;
 	private JButton jSearchButton;
+	private JComboBox<Integer> pagesCombo;
+	private JLabel totalBodyCompartmentLabel;
+	private JLabel underLabel;
 	private JScrollPane jScrollPane;
 	private JTextField jSearchTextFiled;
 	private JTable bcTable;
@@ -92,20 +103,21 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 	private int pfrmBordX;
 	private int pfrmBordY;
 	private List<BodyCompartment> bodyCompartmentList;
-	private String[] pColums = { MessageBundle.getMessage("angal.mortuary.bodycompartment.id.col"),
+	private final String[] pColums = { MessageBundle.getMessage("angal.mortuary.bodycompartment.id.col"),
 		MessageBundle.getMessage("angal.mortuary.bodycompartment.code.col"),
 		MessageBundle.getMessage("angal.mortuary.bodycompartment.description.col")
 	};
-	private int[] pColumwidth = {50, 50, 70};
-	private Class[] pColumnClass = {int.class, String.class, String.class};
+	private final int[] pColumwidth = {50, 50, 70};
+	private final Class[] pColumnClass = {int.class, String.class, String.class};
 	private BodyCompartment bodyCompartment;
 	private int selectedrow;
+	private long TOTAL_BODYCOMPARTMENT;
 
-	private BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
+	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public MortuaryBodyCompartment() {
-		super();
-		myFrame = this;
+	public MortuaryBodyCompartment(JFrame parentFrame) {
+		super(parentFrame, true);
+		myJDialog = this;
 		initialize();
 		setVisible(true);
 	}
@@ -113,10 +125,10 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 	private void initialize() {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.title"));
 		Toolkit kit = Toolkit.getDefaultToolkit();
-		Dimension screensize = kit.getScreenSize();
-		pfrmBordX = (screensize.width - (screensize.width / pfrmBase * pfrmWidth)) / 2;
-		pfrmBordY = (screensize.height - (screensize.height / pfrmBase * pfrmHeight)) / 2;
-		this.setBounds(pfrmBordX,pfrmBordY,screensize.width / pfrmBase * pfrmWidth,screensize.height / pfrmBase * pfrmHeight);
+		Dimension screenSize = kit.getScreenSize();
+		pfrmBordX = (screenSize.width - (screenSize.width / pfrmBase * pfrmWidth)) / 2;
+		pfrmBordY = (screenSize.height - (screenSize.height / pfrmBase * pfrmHeight)) / 2;
+		this.setBounds(pfrmBordX,pfrmBordY,screenSize.width / pfrmBase * pfrmWidth,screenSize.height / pfrmBase * pfrmHeight);
 		this.setContentPane(getJContentPane());
 		this.setLocationRelativeTo(this);
 	}
@@ -125,11 +137,17 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJSearchPanel(), BorderLayout.NORTH);
+			jContentPane.add(getJSearchSubPanel(), BorderLayout.NORTH);
 			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
-			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
+			jContentPane.add(getJContentSubPanel(), BorderLayout.CENTER);
 		}
 		return jContentPane;
+	}
+
+	private JPanel getJSearchSubPanel() {
+		JPanel jSearchSubPanel = new JPanel(new BorderLayout());
+		jSearchSubPanel.add(getJSearchPanel(), BorderLayout.EAST);
+		return jSearchSubPanel;
 	}
 
 	private JPanel getJSearchPanel() {
@@ -143,6 +161,16 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		if (jSearchTextFiled == null) {
 			jSearchTextFiled = new JTextField();
 			jSearchTextFiled.setPreferredSize(new Dimension(270, 27));
+			jSearchTextFiled.addKeyListener(new KeyAdapter() {
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					int key = e.getKeyCode();
+					if (key == KeyEvent.VK_ENTER) {
+						applyFilter(false);
+					}
+				}
+			});
 		}
 		return jSearchTextFiled;
 	}
@@ -151,6 +179,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		if (jSearchButton == null) {
 			jSearchButton = new JButton();
 			jSearchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+			jSearchButton.addActionListener(actionEvent -> applyFilter(false));
 		}
 		return jSearchButton;
 	}
@@ -171,7 +200,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jNewButton.addActionListener(actionEvent -> {
 				bodyCompartment = new BodyCompartment(0,"", "", false);
-				MortuaryBodyCompartmentEdit newrecord = new MortuaryBodyCompartmentEdit(myFrame, bodyCompartment, true);
+				MortuaryBodyCompartmentEdit newrecord = new MortuaryBodyCompartmentEdit(myJDialog, bodyCompartment, true);
 				newrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
 				newrecord.setVisible(true);
 			});
@@ -190,7 +219,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 					} else {
 						selectedrow = bcTable.getSelectedRow();
 						bodyCompartment = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
-						MortuaryBodyCompartmentEdit editrecord = new MortuaryBodyCompartmentEdit(myFrame, bodyCompartment, false);
+						MortuaryBodyCompartmentEdit editrecord = new MortuaryBodyCompartmentEdit(myJDialog, bodyCompartment, false);
 						editrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
 						editrecord.setVisible(true);
 					}
@@ -210,7 +239,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
 				} else {
 					BodyCompartment bodyCompartments = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
-					int answer = MessageDialog.yesNo(this, "angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg", bodyCompartments.getCode());
+					int answer = MessageDialog.yesNo(this, "angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg", bodyCompartments.getLabel());
 					try {
 						if (answer == JOptionPane.YES_OPTION) {
 							BodyCompartment bodyCompartmentDeleted = bodyCompartmentManager.delete(bodyCompartments);
@@ -241,6 +270,13 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		return jCloseButton;
 	}
 
+	private JPanel getJContentSubPanel() {
+		JPanel jContentSubPanel = new JPanel(new BorderLayout());
+		jContentSubPanel.add(getJScrollPane(), BorderLayout.CENTER);
+		jContentSubPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		return jContentSubPanel;
+	}
+
 	private JScrollPane getJScrollPane() {
 		if (jScrollPane == null) {
 			jScrollPane = new JScrollPane();
@@ -251,7 +287,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 
 	private JTable getJTable() {
 		if (bcTable == null) {
-			model = new MortuaryBodyCompartmentModel();
+			model = new MortuaryBodyCompartmentModel("");
 			bcTable = new JTable(model);
 			bcTable.getColumnModel().getColumn(0).setMaxWidth(pColumwidth[0]);
 			bcTable.getColumnModel().getColumn(1).setPreferredWidth(pColumwidth[1]);
@@ -260,13 +296,115 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 		return bcTable;
 	}
 
+	private JPanel getPaginationPanel() {
+		JPanel jPaginationPanel = new JPanel();
+		jPaginationPanel.add(getPrevButton());
+		jPaginationPanel.add(getPagesCombo());
+		jPaginationPanel.add(getUnderLabel());
+		jPaginationPanel.add(getNextButton());
+		jPaginationPanel.add(getTotalBodyCompartmentLabel());
+		return jPaginationPanel;
+	}
+
+	private JButton getPrevButton() {
+		if (prevButton == null) {
+			prevButton = new JButton("<");
+			prevButton.setEnabled(CURRENT_PAGE > 0);
+			prevButton.addActionListener(actionEvent -> {
+				if (CURRENT_PAGE > 0) {
+					CURRENT_PAGE--;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				}
+			});
+		}
+		return prevButton;
+	}
+
+	private JButton getNextButton() {
+		if (nextButton == null) {
+			nextButton = new JButton(">");
+			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+			nextButton.addActionListener(actionEvent -> {
+				if (CURRENT_PAGE < TOTAL_PAGES - 1) {
+					CURRENT_PAGE++;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				}
+			});
+		}
+		return nextButton;
+	}
+
+	private JComboBox<Integer> getPagesCombo() {
+		if (pagesCombo == null) {
+			pagesCombo = new JComboBox<>();
+			pagesCombo.setPreferredSize(new Dimension(100, 25));
+			for (int i = 0; i < TOTAL_PAGES; i++) {
+				pagesCombo.addItem(i + 1);
+			}
+			pagesCombo.addActionListener(actionEvent -> {
+				if (pagesCombo.getItemCount() != 0) {
+					if (pagesCombo.getSelectedItem() != null) {
+						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+						applyFilter(true);
+					}
+				}
+			});
+		}
+		return pagesCombo;
+	}
+
+	private void applyFilter(boolean isNextOrPrevButton) {
+
+		model = new MortuaryBodyCompartmentModel(jSearchTextFiled.getText().trim());
+
+		if (!isNextOrPrevButton) {
+			totalBodyCompartmentLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_BODYCOMPARTMENT);
+			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			CURRENT_PAGE = 0;
+
+			pagesCombo.removeAllItems();
+			for (int i = 0; i < TOTAL_PAGES; i++) {
+				pagesCombo.addItem(i + 1);
+			}
+
+			pagesCombo.setSelectedItem(1);
+		}
+
+		if (bodyCompartmentList != null) {
+			model.fireTableDataChanged();
+			bcTable.updateUI();
+		}
+
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
+	}
+
+	private JLabel getUnderLabel() {
+		if (underLabel == null) {
+			underLabel = new JLabel("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel.setPreferredSize(new Dimension(60, 30));
+		}
+		return underLabel;
+	}
+
+	private JLabel getTotalBodyCompartmentLabel() {
+		if (totalBodyCompartmentLabel == null) {
+			totalBodyCompartmentLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_BODYCOMPARTMENT);
+		}
+		return totalBodyCompartmentLabel;
+	}
+
 	class MortuaryBodyCompartmentModel extends DefaultTableModel {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public MortuaryBodyCompartmentModel() {
+		public MortuaryBodyCompartmentModel(String label) {
 			try {
-				bodyCompartmentList = bodyCompartmentManager.getAll();
+				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelPageable(label, CURRENT_PAGE, PAGE_SIZE);
+				bodyCompartmentList = new ArrayList<>(bodyCompartmentPage.getContent());
+				TOTAL_BODYCOMPARTMENT = bodyCompartmentPage.getTotalElements();
+				TOTAL_PAGES = bodyCompartmentPage.getTotalPages();
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -298,7 +436,7 @@ public class MortuaryBodyCompartment extends ModalJFrame implements BodyCompartm
 			} else if (c == -1) {
 				return bodyCompartment;
 			} else if (c == 1) {
-				return bodyCompartment.getCode();
+				return bodyCompartment.getLabel();
 			} else if (c == 2) {
 				return bodyCompartment.getDescription();
 			}
