@@ -71,8 +71,7 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	}
 	@Override
 	public void bodyCompartmentInserted(AWTEvent e) {
-		bodyCompartmentList.add(0, bodyCompartment);
-		((MortuaryBodyCompartment.MortuaryBodyCompartmentModel) bcTable.getModel()).fireTableDataChanged();
+		applyFilter(false);
 		if (bcTable.getRowCount() > 0) {
 			bcTable.setRowSelectionInterval(0, 0);
 		}
