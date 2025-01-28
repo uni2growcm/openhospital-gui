@@ -922,6 +922,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			table.updateUI();
 		}
 
+		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": " + TOTAL_PAGES);
+
 		nextButton.setEnabled(CURRENT_PAGE < PAGES - 1 && PAGES != 1);
 		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
