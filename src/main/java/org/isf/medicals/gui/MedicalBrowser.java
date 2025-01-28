@@ -461,7 +461,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 				if (!dataRange.isCancel()) {
 					Object ward = (Object) dataRange.getSelectedWard();
-					assert ward != null;
 					if (ward instanceof String) {
 						new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
 							null, toExcel);
