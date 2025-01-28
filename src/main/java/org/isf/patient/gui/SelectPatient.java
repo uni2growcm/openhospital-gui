@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -57,7 +57,6 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
-import org.isf.mortuary.gui.MortuaryBrowser;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -653,12 +652,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public void addSelectionListener(BillBrowser l) {
 		billBrowserListeners.add(l);
-	}
-
-	List<MortuaryBrowser> mortuaryBrowsersListeners = new ArrayList<>();
-
-	public void addSelectionListener(MortuaryBrowser l) {
-		mortuaryBrowsersListeners.add(l);
 	}
 
 	@Override
