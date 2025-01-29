@@ -239,6 +239,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JTextField jTextFieldPatient;
 	private JComboBox<PriceList> jComboBoxPriceList;
 	private JPanel jPanelData;
+	private JPanel jPanelPrice;
 	private JTable jTableTotal;
 	private JScrollPane jScrollPaneTotal;
 	private JTable jTableBigTotal;
@@ -268,6 +269,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonTrashPatient;
 	private JComboBox<User> jComboBoxGuarantor;
 	private JLabel jLabelGuarantor;
+	private JLabel jLabelWardDescription;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -282,7 +284,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private static final int PAYMENT_HEIGHT = 150;
 	private static final int BALANCE_HEIGHT = 20;
 	private static final int BUTTON_HEIGHT = 25;
-	private static final Dimension PATIENT_DIMENSION = new Dimension(300, 20);
+	private static final Dimension PATIENT_DIMENSION = new Dimension(200, 20);
 	private static final Dimension LABELS_DIMENSION = new Dimension(60, 20);
 	private static final Dimension USER_DIMENSION = new Dimension(220, 20);
 	private static final Dimension WARD_DIMENSION = new Dimension(195, 20);
@@ -479,7 +481,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void updateGUI() {
 		setJButtonTrashPatient();
-		setJLabelWard();
+		setJLabelWardDescription();
 		setJTextFieldPatient();
 		setJButtonPickPatient();
 		setJButtonPrintPayment();
@@ -658,15 +660,28 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jPanelData;
 	}
 
+	private JPanel getJPanelPrice() {
+		if (jPanelPrice == null) {
+			jPanelPrice = new JPanel();
+			jPanelPrice.setLayout(new FlowLayout(FlowLayout.LEFT));
+			jPanelPrice.add(getJLabelPriceList());
+			jPanelPrice.add(getJComboBoxPriceList());
+			if (hasBillGuarantor()) {
+				jPanelPrice.add(getJLabelGuarantor());
+				jPanelPrice.add(getJComboBoxGuarantor());
+			}
+		}
+		return jPanelPrice;
+	}
+
 	private JPanel getJPanelPatient() {
 		if (jPanelPatient == null) {
 			jPanelPatient = new JPanel();
 			jPanelPatient.setLayout(new FlowLayout(FlowLayout.LEFT));
 			jPanelPatient.add(getJLabelPatient());
 			jPanelPatient.add(getJTextFieldPatient());
-			jPanelPatient.add(getJLabelPriceList());
-			jPanelPatient.add(getJComboBoxPriceList());
 			jPanelPatient.add(getJLabelWard());
+			jPanelPatient.add(getJLabelWardDescription());
 		}
 		return jPanelPatient;
 	}
@@ -699,6 +714,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JLabel getJLabelPriceList() {
 		if (jLabelPriceList == null) {
 			jLabelPriceList = new JLabel(MessageBundle.getMessage("angal.newbill.list.txt"));
+			jLabelPriceList.setPreferredSize(LABELS_DIMENSION);
 		}
 		return jLabelPriceList;
 	}
@@ -755,21 +771,28 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JLabel getJLabelWard() {
 		if (jLabelWard == null) {
 			jLabelWard = new JLabel();
-			jLabelWard.setPreferredSize(WARD_DIMENSION); // TODO: improve Layouts avoiding fixed dimensions
-			jLabelWard.setHorizontalAlignment(SwingConstants.RIGHT);
+			jLabelWard = new JLabel(MessageBundle.getMessage("angal.newbill.ward.label"));
 		}
-		setJLabelWard();
 		return jLabelWard;
 	}
 
-	private void setJLabelWard() {
+	private JLabel getJLabelWardDescription() {
+		if (jLabelWardDescription == null) {
+			jLabelWardDescription = new JLabel();
+			jLabelWardDescription.setPreferredSize(WARD_DIMENSION);
+		}
+		setJLabelWardDescription();
+		return jLabelWardDescription;
+	}
+
+	private void setJLabelWardDescription() {
 		Admission admission = thisBill.getAdmission();
 		if (admission != null) {
-			jLabelWard.setText(admission.getWard().getDescription());
-			jLabelWard.setIcon(ADMISSION_ICON);
+			jLabelWardDescription.setText(admission.getWard().getDescription());
+			jLabelWardDescription.setIcon(ADMISSION_ICON);
 		} else {
-			jLabelWard.setText(OPD_TEXT);
-			jLabelWard.setIcon(null);
+			jLabelWardDescription.setText(OPD_TEXT);
+			jLabelWardDescription.setIcon(null);
 		}
 	}
 
@@ -858,11 +881,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelDate.add(getJCalendarDate());
 			jPanelDate.add(getJButtonPickPatient());
 			jPanelDate.add(getJButtonTrashPatient());
-			if (hasBillGuarantor()) {
-				jPanelDate.add(getJLabelGuarantor());
-				jPanelDate.add(getJComboBoxGuarantor());
-			}
-			
 			if (!GeneralData.getGeneralData().getSINGLEUSER()) {
 				jPanelDate.add(getJLabelUser());
 			}
@@ -873,7 +891,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JLabel getJLabelUser() {
 		if (jLabelUser == null) {
 			jLabelUser = new JLabel(MainMenu.getUser().getUserName());
-			jLabelUser.setPreferredSize(USER_DIMENSION); // improve Layouts avoiding fixed dimensions
+			jLabelUser.setPreferredSize(USER_DIMENSION);
 			jLabelUser.setHorizontalAlignment(SwingConstants.RIGHT);
 			jLabelUser.setForeground(Color.BLUE);
 			jLabelUser.setFont(new Font(jLabelUser.getFont().getName(), Font.BOLD, jLabelUser.getFont().getSize() + 2));
@@ -955,8 +973,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		if (jPanelTop == null) {
 			jPanelTop = new JPanel();
 			jPanelTop.setLayout(new BoxLayout(jPanelTop, BoxLayout.Y_AXIS));
-			jPanelTop.add(getJPanelDate());
-			jPanelTop.add(getJPanelPatient());
+			jPanelTop.add(getJPanelDate(), BorderLayout.NORTH);
+			jPanelTop.add(getJPanelPrice(), BorderLayout.CENTER);
+			jPanelTop.add(getJPanelPatient(), BorderLayout.SOUTH);
 		}
 		return jPanelTop;
 	}
@@ -1259,10 +1278,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor()) {
+					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
 							newBill.setGuarantor(guarantor);
+						} else {
+							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
+							return;
 						}
 					}
 					try {
@@ -1291,10 +1313,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
-					if (hasBillGuarantor()) {
+					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
 							updateBill.setGuarantor(guarantor);
+						} else {
+							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
+							return;
 						}
 					}
 
