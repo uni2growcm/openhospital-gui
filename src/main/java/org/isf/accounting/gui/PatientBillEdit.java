@@ -481,7 +481,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void updateGUI() {
 		setJButtonTrashPatient();
-		setJLabelWard();
+		setJLabelWardDescription();
 		setJTextFieldPatient();
 		setJButtonPickPatient();
 		setJButtonPrintPayment();
