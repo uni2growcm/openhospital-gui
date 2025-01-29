@@ -30,8 +30,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
@@ -128,8 +128,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		searchString.dispatchEvent(enterPressed);
 	}
 
-	private boolean altKeyReleased = true;
-	private String lastKey = "";
 	private int selectedrow;
 	private JComboBox pbox;
 	private JComboBox activeComboBox;
@@ -320,33 +318,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		if (searchString == null) {
 			searchString = new JTextField();
 			searchString.setColumns(15);
-			searchString.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if (altKeyReleased) {
-						lastKey = "";
-						String s = String.valueOf(e.getKeyChar());
-						if (Character.isLetterOrDigit(e.getKeyChar())) {
-							lastKey = s;
-						}
-						applyFilter();
-						updatePageCombo();
-						searchString.requestFocus();
-					}
-				}
-
+			searchString.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ALT) {
-						altKeyReleased = false;
+					if (key == KeyEvent.VK_ENTER) {
+						applyFilter();
+						updatePageCombo();
 					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-					altKeyReleased = true;
 				}
 			});
 		}
