@@ -1267,9 +1267,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 							return;
 						}
-					} else if (hasBillGuarantor()) {
+					}
+
+					if (balance.doubleValue() == 0 && !paid) {
 						int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
-						newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
+						newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : newBill.getStatus());
 					}
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
