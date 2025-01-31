@@ -151,7 +151,7 @@ public class MedicalTypeBrowserEdit extends JDialog {
 	/**
 	 * This method initializes dataPanel	
 	 * 	
-	 * @return javax.swing.JPanel	
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
@@ -203,7 +203,7 @@ public class MedicalTypeBrowserEdit extends JDialog {
 				medicalType.setDescription(descriptionTextField.getText());
 				medicalType.setCode(codeTextField.getText());
 				medicalType.setDeleted(deletedCheckbox.isSelected() ? 'Y' : 'N');
-				
+
 				if (insert) { // inserting
 					try {
 						MedicalType insertedMedicalType = medicalTypeBrowserManager.newMedicalType(medicalType);
@@ -269,7 +269,7 @@ public class MedicalTypeBrowserEdit extends JDialog {
 		}
 		return codeTextField;
 	}
-	
+
 	private JCheckBox getDeletedField() {
 		if (deletedCheckbox == null) {
 			deletedCheckbox = new JCheckBox(MessageBundle.getMessage("angal.common.deleted.label"));
