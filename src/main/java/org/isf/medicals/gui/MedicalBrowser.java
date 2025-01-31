@@ -59,6 +59,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.hibernate.type.descriptor.jdbc.ObjectJdbcType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.gui.MedicalEdit.MedicalListener;
@@ -82,6 +83,8 @@ import org.isf.utils.jobjects.JMonthYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.isf.ward.manager.WardBrowserManager;
+import org.isf.ward.model.Ward;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +158,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	protected boolean altKeyReleased = true;
 	private String lastKey = "";
 	private JButton buttonAMC;
+	private JComboBox<Object> jComboBoxWard;
 
+	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
 
@@ -445,7 +450,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
 				medical = (Medical) model.getValueAt(selectedrow, -1);
 				// Select Dates
-				GoodFromDateToDateChooser dataRange = new GoodFromDateToDateChooser(this);
+				GoodFromDateToDateChooser dataRange = new GoodFromDateToDateChooser(this, getJComboBoxWard());
 				dataRange.setTitle(MessageBundle.getMessage("angal.messagedialog.question.title"));
 				dataRange.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				dataRange.setVisible(true);
@@ -455,12 +460,43 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				boolean toExcel = dataRange.isExcel();
 
 				if (!dataRange.isCancel()) {
-					new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
-									null, toExcel);
+					Object ward = (Object) dataRange.getSelectedWard();
+					if (ward instanceof String) {
+						new GenericReportPharmaceuticalStockCard("ProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
+							null, toExcel);
+					} else {
+						new GenericReportPharmaceuticalStockCard("WardProductLedger", dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX), medical,
+							(Ward) ward, toExcel);
+					}
 				}
 			}
 		});
 		return buttonStockCard;
+	}
+
+	private JComboBox<Object> getJComboBoxWard() {
+		if (jComboBoxWard == null) {
+			jComboBoxWard = new JComboBox<>();
+			List<Ward> wardList;
+			try {
+				wardList = wardBrowserManager.getWards();
+			} catch (OHServiceException e) {
+				wardList = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+
+			jComboBoxWard.addItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
+			for (Ward wardCombo : wardList) {
+				jComboBoxWard.addItem(wardCombo);
+			}
+
+			jComboBoxWard.setBorder(null);
+
+			jComboBoxWard.setPreferredSize(new Dimension(340, 26));
+		}
+
+		jComboBoxWard.setSelectedItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
+		return jComboBoxWard;
 	}
 
 	private JButton getJButtonReport() {
