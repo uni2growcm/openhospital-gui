@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -57,6 +57,7 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.mortuary.gui.MortuaryBrowser;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -67,7 +68,7 @@ import org.isf.utils.jobjects.VoLimitedTextField;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
-//LISTENER INTERFACE --------------------------------------------------------
+	//LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList selectionListener = new EventListenerList();
 
 	public interface SelectionListener extends EventListener {
@@ -91,7 +92,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 	}
 
-//---------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelButtons;
 	private JPanel jPanelTop;
@@ -113,7 +114,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JButton buttonNew;
 	private PatientSummary ps;
 	private String[] patColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
+		MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
 	private int[] patColumnsWidth = { 100, 250 };
 	private boolean[] patColumnsResizable = { false, true };
 
@@ -652,6 +653,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public void addSelectionListener(BillBrowser l) {
 		billBrowserListeners.add(l);
+	}
+
+	List<MortuaryBrowser> mortuaryBrowsersListeners = new ArrayList<>();
+
+	public void addSelectionListener(MortuaryBrowser l) {
+		mortuaryBrowsersListeners.add(l);
 	}
 
 	@Override
