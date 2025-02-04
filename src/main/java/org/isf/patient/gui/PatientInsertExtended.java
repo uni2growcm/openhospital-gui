@@ -1731,6 +1731,7 @@ public class PatientInsertExtended extends JDialog {
 			jBillingPanel = setMyBorder(jBillingPanel, MessageBundle.getMessage("angal.patient.billing.txt"));
 
 			jReductionPlanComboBox = new JComboBox<>();
+			jReductionPlanComboBox.setPreferredSize(new Dimension(200,24));
 			List<ReductionPlan> reductionPlanList = null;
 			try {
 				reductionPlanList = reductionPlanManager.getAll();
