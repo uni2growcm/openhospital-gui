@@ -507,7 +507,7 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						ReductionPlan reductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
-						if (reductionPlan.getId() != 0) {
+						if (reductionPlan != null && reductionPlan.getId() != 0) {
 							patient.setReductionPlan(reductionPlan);
 						} else {
 							patient.setReductionPlan(null);
