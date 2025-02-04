@@ -252,7 +252,7 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jBilling;
 	private JPanel jBillingPanel;
 	private JComboBox<ReductionPlan> jReductionPlanComboBox;
-	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 
 
 	// COMPONENTS: Extension
