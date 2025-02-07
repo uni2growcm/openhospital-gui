@@ -26,6 +26,8 @@ import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +40,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
-import org.isf.exa.model.ExamTarget;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
@@ -52,6 +54,7 @@ import org.isf.lab.gui.LabEdit.LabEditListener;
 import org.isf.lab.gui.LabEditExtended.LabEditExtendedListener;
 import org.isf.lab.gui.LabNew.LabListener;
 import org.isf.lab.manager.LabManager;
+import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.menu.gui.MainMenu;
@@ -100,6 +103,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JPanel jSelectionPanel;
 	private JTable jTable;
 	private JComboBox comboExams;
+	private JTextField patientCodeField;
 	private int pfrmHeight = 100;
 	private List<Laboratory> pLabs;
 	private String[] pColumns = {
@@ -113,6 +117,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private int[] maxWidth = {150, 200, 200, 200};
 	private boolean[] columnsVisible = { true, GeneralData.LABEXTENDED, true, true};
 	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
+	private PatientBrowserManager patManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private PrintManager printManager = Context.getApplicationContext().getBean(PrintManager.class);
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 	private LabBrowsingModel model;
@@ -241,7 +246,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				} catch (JRException e) {
 					OHServiceExceptionUtil.showMessages(new OHServiceException(new OHExceptionMessage(MessageBundle.getMessage("angal.lab.noprinter.msg"))));
 				}
-
 			});
 		}
 		return printLabelButton;
@@ -283,7 +287,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			buttonNew.addActionListener(actionEvent -> {
 				laboratory = new Laboratory(0, new Exam("", "",
-						new ExamType("", ""), 0, "", ExamTarget.no),
+						new ExamType("", ""), 0, ""),
 						TimeTools.getNow(), "P", "", new Patient(), "");
 				if (GeneralData.LABEXTENDED) {
 					if (GeneralData.LABMULTIPLEINSERT) {
@@ -365,6 +369,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (jSelectionPanel == null) {
 			jSelectionPanel = new JPanel();
 			jSelectionPanel.setPreferredSize(new Dimension(225, pfrmHeight));
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.searchbycodepatientpressenter")));
+			jSelectionPanel.add(getPatientCodeField());
 			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.selectanexam")));
 			jSelectionPanel.add(getComboExams());
 			jSelectionPanel.add(getDateFilterPanel());
@@ -400,6 +406,39 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	}
 
 	/**
+	 * This method initializes the patient code search text field.
+	 *
+	 * @return patientCodeField (JTextField)
+	 */
+	private JTextField getPatientCodeField() {
+		if (patientCodeField == null) {
+			patientCodeField = new JTextField();
+			patientCodeField.setPreferredSize(new Dimension(215, 30));
+			patientCodeField.addKeyListener(new KeyListener() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					int key = e.getKeyCode();
+					if (key == KeyEvent.VK_ENTER) {
+						model = new LabBrowsingModel(patientCodeField.getText());
+						model.fireTableDataChanged();
+						jTable.updateUI();
+					}
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+				}
+
+				@Override
+				public void keyTyped(KeyEvent e) {
+				}
+			});
+		}
+		return patientCodeField;
+	}
+
+
+	/**
 	 * This method initializes comboExams, that allows to choose which Exam the
 	 * user want to display on the Table
 	 *
@@ -409,7 +448,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (comboExams == null) {
 			comboExams = new JComboBox();
 			comboExams.setPreferredSize(new Dimension(225, 30));
-			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, "", ExamTarget.no));
+			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, ""));
 			List<Exam> type;
 			try {
 				type = examBrowsingManager.getExams();
@@ -460,9 +499,9 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			filterButton.addActionListener(actionEvent -> {
 				typeSelected = comboExams.getSelectedItem().toString();
 				if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
-					typeSelected = null;
+					typeSelected = "";
 				}
-				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate());
+				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
 				model.fireTableDataChanged();
 				jTable.updateUI();
 			});
@@ -480,14 +519,47 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 
 		private static final long serialVersionUID = 1L;
 
-		public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo) {
-			try {
-				pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay());
-			} catch (OHServiceException e) {
+        public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo, String patid) {
+            try {
+				if (!patid.isEmpty()) {
+					Patient pat = patManager.getPatientById(Integer.parseInt(patid));
+					if (pat == null) {
+						pLabs = new ArrayList<>();
+					} else {
+						pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), pat);
+					}
+				} else {
+					pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), null);
+				}
+            } catch (OHServiceException e) {
+                pLabs = new ArrayList<>();
+                OHServiceExceptionUtil.showMessages(e);
+            } catch (NumberFormatException e) {
 				pLabs = new ArrayList<>();
-				OHServiceExceptionUtil.showMessages(e);
+				MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
 			}
-		}
+        }
+
+		public LabBrowsingModel(String patid) {
+            try {
+				if (!patid.isEmpty()) {
+					Patient pat = patManager.getPatientById(Integer.parseInt(patid));
+					if (pat == null) {
+						pLabs = new ArrayList<>();
+					} else {
+						pLabs = labManager.getLaboratory(pat);
+					}
+				} else {
+					pLabs = new ArrayList<>();
+				}
+            } catch (OHServiceException e) {
+                pLabs = new ArrayList<>();
+                OHServiceExceptionUtil.showMessages(e);
+            } catch (NumberFormatException e) {
+				pLabs = new ArrayList<>();
+				MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
+			}
+        }
 
 		public LabBrowsingModel() {
 			try {
