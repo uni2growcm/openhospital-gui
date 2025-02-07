@@ -38,9 +38,7 @@ class ExamComboBoxTest {
 	void shouldCreateComboBoxWithPersistedExamsAndExamFromLaboratorySelected() {
 		// given:
 		Exam exam = TestExam.examWithCode("test");
-		exam.setTarget(ExamTarget.no);
 		Exam exam2 = TestExam.examWithCode("test2");
-		exam2.setTarget(ExamTarget.no);
 		List<Exam> exams = Arrays.asList(exam, exam2);
 		Laboratory laboratory = new Laboratory();
 		laboratory.setExam(exam2);
