@@ -58,4 +58,3 @@ public class ExamTargetItem {
 			return prefix + MessageBundle.getMessage("angal.exa.examtarget." + item.toString() + ".txt");
 		}
 	}
-

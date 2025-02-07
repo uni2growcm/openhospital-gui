@@ -94,7 +94,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 	// used to understand if a module is enabled
 	private Map<String, Boolean> activableModules;
 
-	private SessionAuditManager sessionAuditManager = Context.getApplicationContext().getBean(SessionAuditManager.class);
+	private SessionAuditManager sessionAuditManager = Context.getApplicationContext()
+			.getBean(SessionAuditManager.class);
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainMenu.class);
 	private Integer sessionAuditId;
 
@@ -145,7 +146,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 	// singleUser=true : one user
 	private boolean singleUser;
 
-	private UserBrowsingManager userBrowsingManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+	private UserBrowsingManager userBrowsingManager = Context.getApplicationContext()
+			.getBean(UserBrowsingManager.class);
 
 	public MainMenu(User myUserIn) {
 		setTitle(OH_TITLE);
@@ -219,7 +221,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		MDC.put("OHUser", myUser.getUserName());
 		MDC.put("OHUserGroup", myUser.getUserGroupName().getCode());
 		try {
-			this.sessionAuditId = sessionAuditManager.newSessionAudit(new SessionAudit(myUser.getUserName(), LocalDateTime.now(), null));
+			this.sessionAuditId = sessionAuditManager
+					.newSessionAudit(new SessionAudit(myUser.getUserName(), LocalDateTime.now(), null));
 		} catch (OHServiceException e1) {
 			LOGGER.error("Unable to log user login in the session_audit table.");
 		}
@@ -241,15 +244,18 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 				}
 				new CommunicationFrame();
 				/*
-				 * Interaction communication = new Interaction(); communication.incomingChat(); communication.receiveFile();
+				 * Interaction communication = new Interaction(); communication.incomingChat();
+				 * communication.receiveFile();
 				 */
 			} catch (XMPPException e) {
 				String message = e.getMessage();
 				if (message.contains("SASL authentication DIGEST-MD5 failed")) {
 					if (ADMIN_STR.equals(myUser.getUserName())) {
-						LOGGER.error("Cannot use \"admin\" user, please consider creating another user under the admin group.");
+						LOGGER.error(
+								"Cannot use \"admin\" user, please consider creating another user under the admin group.");
 					} else {
-						LOGGER.error("Passwords do not match, please drop the XMPP user and login to OH again with the same user.");
+						LOGGER.error(
+								"Passwords do not match, please drop the XMPP user and login to OH again with the same user.");
 					}
 				} else if (message.contains("XMPPError connecting")) {
 					LOGGER.error("No XMPP Server seems to be running: set XMPPMODULEENABLED = false");
@@ -319,7 +325,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		if (!internalPharmacies) {
 			List<UserMenuItem> junkMenu = new ArrayList<>();
 			for (UserMenuItem umi : myMenu) {
-				if ("MEDICALSWARD".equalsIgnoreCase(umi.getCode()) || "MEDICALSWARD".equalsIgnoreCase(umi.getMySubmenu())) {
+				if ("MEDICALSWARD".equalsIgnoreCase(umi.getCode())
+						|| "MEDICALSWARD".equalsIgnoreCase(umi.getMySubmenu())) {
 					junkMenu.add(umi);
 				}
 			}
@@ -330,9 +337,16 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 
 		// remove mortuary if not enabled
 		flag_Mortuary = GeneralData.ENABLEMORTUARYMODULE;
-		if(!flag_Mortuary){
-			List<UserMenuItem> junkMenu = myMenu.stream().filter(item -> "mortuarystays".equalsIgnoreCase(item.getCode())).toList();
-			myMenu.removeAll(junkMenu);
+		if (!flag_Mortuary) {
+			List<UserMenuItem> junkMenu = new ArrayList<>();
+			for (UserMenuItem umi : myMenu) {
+				if ("mortuarystays".equalsIgnoreCase(umi.getCode()) || "mortuary".equalsIgnoreCase(umi.getCode())) {
+					junkMenu.add(umi);
+				}
+			}
+			for (UserMenuItem umi : junkMenu) {
+				myMenu.remove(umi);
+			}
 		}
 
 		// remove disabled buttons
@@ -416,7 +430,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		}
 		updateSessionAudit();
 		String newLine = System.lineSeparator();
-		LOGGER.info("{}{}====================={} Open Hospital closed {}====================={}", newLine, newLine, newLine, newLine, newLine);
+		LOGGER.info("{}{}====================={} Open Hospital closed {}====================={}", newLine, newLine,
+				newLine, newLine, newLine);
 		System.exit(status);
 	}
 
@@ -461,7 +476,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 							}
 						}
 					} catch (InstantiationException | ClassNotFoundException | IllegalAccessException ie) {
-						LOGGER.error("Error instantiating menu item: '{}' with class '{}'.", u.getCode(), u.getMyClass());
+						LOGGER.error("Error instantiating menu item: '{}' with class '{}'.", u.getCode(),
+								u.getMyClass());
 					}
 					break;
 				}
@@ -513,7 +529,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 			JPanel centerPanel = new JPanel();
 			centerPanel.setLayout(new BorderLayout());
 
-			JLabel userName = new JLabel(MessageBundle.formatMessage("angal.mainmenu.username.fmt", myUser.getUserName()));
+			JLabel userName = new JLabel(
+					MessageBundle.formatMessage("angal.mainmenu.username.fmt", myUser.getUserName()));
 			userName.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
 			userName.setToolTipText(myUser.getUserName());
 			int nameWidth = buttonsPanel.getLayout().minimumLayoutSize(buttonsPanel).getSize().width;
@@ -541,7 +558,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		}
 
 		private JPanel getLogoPanel() {
-			JLabel logo_appl = new JLabel(new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_menu_vert.png"))
+			JLabel logo_appl = new JLabel(
+					new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_menu_vert.png"))
 							.getImage().getScaledInstance(28, 180, Image.SCALE_SMOOTH)));
 			Object checkLogoHospital = getClass().getClassLoader().getResource("logo_hospital.png");
 
@@ -551,12 +569,12 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 			logoPanel.setLayout(layout);
 			logoPanel.setBackground(Color.decode(BACKGROUND_COLOR_HEX));
 			if (checkLogoHospital != null) {
-				JLabel logo_hosp = new JLabel(new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_hospital.png"))
+				JLabel logo_hosp = new JLabel(
+						new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_hospital.png"))
 								.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
 				logoPanel.add(logo_hosp);
-				logo_appl.setIcon(new ImageIcon(
-								new ImageIcon(getClass().getClassLoader().getResource("logo_menu.png"))
-												.getImage().getScaledInstance(90, 57, Image.SCALE_SMOOTH)));
+				logo_appl.setIcon(new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_menu.png"))
+						.getImage().getScaledInstance(90, 57, Image.SCALE_SMOOTH)));
 			} else {
 				logoPanel.add(Box.createVerticalStrut(100)); // for short menu
 			}
