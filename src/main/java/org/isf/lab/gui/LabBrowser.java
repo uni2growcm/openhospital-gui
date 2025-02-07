@@ -241,8 +241,10 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				}
 				try {
 					new PrintLabels("LabelForSamples", patId);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
+				} catch (OHException e) {
+					OHServiceExceptionUtil.showMessages(new OHServiceException(new OHExceptionMessage(e.getMessage())));
+				} catch (JRException e) {
+					OHServiceExceptionUtil.showMessages(new OHServiceException(new OHExceptionMessage(MessageBundle.getMessage("angal.lab.noprinter.msg"))));
 				}
 			});
 		}
