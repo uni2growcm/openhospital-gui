@@ -213,7 +213,7 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 						return;
 					}
 					try {
-						if (bodyCompartmentManager.isCodePresent(label)) {
+						if (bodyCompartmentManager.isLabelPresent(label)) {
 							MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
 							return;
 						}
