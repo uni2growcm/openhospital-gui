@@ -9,6 +9,7 @@ DEMODATA=off
 APISERVER=off
 
 # internal settings, modules, directories
+ALLOWBILLGUARANTOR=no
 LANGUAGE=OH_LANGUAGE
 SINGLEUSER=YES_OR_NO
 DEBUG=no
@@ -45,9 +46,6 @@ PATIENTBILL=PatientBill
 PATIENTBILLGROUPED=PatientBillGrouped
 PATIENTBILLSTATEMENT=PatientBillStatement
 RECEIPTPRINTER=yes
-
-#mortuary
-ENABLEMORTUARYMODULE=yes
 
 # pharmacy
 AUTOMATICLOT_IN=no
