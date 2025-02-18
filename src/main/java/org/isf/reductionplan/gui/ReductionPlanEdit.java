@@ -55,10 +55,6 @@ import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
-import org.isf.reductionplan.manager.ExamReductionManager;
-import org.isf.reductionplan.manager.MedicalReductionManager;
-import org.isf.reductionplan.manager.OperationReductionManager;
-import org.isf.reductionplan.manager.PriceOtherReductionManager;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ExamReduction;
 import org.isf.reductionplan.model.MedicalReduction;
@@ -91,10 +87,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private final ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
-	private final MedicalReductionManager medicalReductionManager = Context.getApplicationContext().getBean(MedicalReductionManager.class);
-	private final ExamReductionManager examReductionManager = Context.getApplicationContext().getBean(ExamReductionManager.class);
-	private final OperationReductionManager operationReductionManager = Context.getApplicationContext().getBean(OperationReductionManager.class);
-	private final PriceOtherReductionManager priceOtherReductionManager = Context.getApplicationContext().getBean(PriceOtherReductionManager.class);
 	private final EventListenerList reductionPlanListener = new EventListenerList();
 	private ReductionPlan reductionPlan;
 	private final boolean isInsert;
@@ -520,7 +512,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			jSaveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.save.btn.key"));
 			jSaveButton.addActionListener(actionEvent -> {
 				try {
-					deleteUnsedUnderReductionPlan();
+					//deleteUnsedUnderReductionPlan();
 					if (loadDataInObject()) {
 						if (isInsert) {
 							reductionPlan = reductionPlanManager.save(reductionPlan);
@@ -531,27 +523,28 @@ public class ReductionPlanEdit extends ModalJFrame {
 					if (!examReductionList.isEmpty()) {
 						for (ExamReduction examReduction : examReductionList) {
 							examReduction.setReductionPlan(reductionPlan);
-							examReductionManager.save(examReduction);
+							//reductionPlanManager.save(examReduction);
 						}
 					}
 					if (!medicalReductionList.isEmpty()) {
 						for (MedicalReduction medicalReduction : medicalReductionList) {
 							medicalReduction.setReductionPlan(reductionPlan);
-							medicalReductionManager.save(medicalReduction);
+							//reductionPlanManager.save(medicalReduction);
 						}
 					}
 					if(!operationReductionList.isEmpty()) {
 						for (OperationReduction operationReduction : operationReductionList) {
 							operationReduction.setReductionPlan(reductionPlan);
-							operationReductionManager.save(operationReduction);
+							//reductionPlanManager.save(operationReduction);
 						}
 					}
 					if (!priceOtherReductionList.isEmpty()) {
 						for (PriceOtherReduction priceOtherReduction : priceOtherReductionList) {
 							priceOtherReduction.setReductionPlan(reductionPlan);
-							priceOtherReductionManager.save(priceOtherReduction);
+							//reductionPlanManager.save(priceOtherReduction);
 						}
 					}
+
 					fireReductionPlanInserted();
 					jCloseButton.doClick();
 				} catch (OHServiceException e) {
@@ -694,10 +687,10 @@ public class ReductionPlanEdit extends ModalJFrame {
 		textPriceOtherRate.setText(String.valueOf(this.reductionPlan.getOtherRate()));
 
 		try {
-			medicalReductionList = medicalReductionManager.getByReductionPlanId(this.reductionPlan.getId(), false);
-			examReductionList = examReductionManager.getByReductionPlanId(this.reductionPlan.getId(), false);
-			operationReductionList = operationReductionManager.getByReductionPlanId(this.reductionPlan.getId(), false);
-			priceOtherReductionList = priceOtherReductionManager.getByReductionPlanId(this.reductionPlan.getId(), false);
+			medicalReductionList = reductionPlanManager.getMedicalReductionByReductionPlanId(this.reductionPlan.getId(), false);
+			examReductionList = reductionPlanManager.getExamReductionByReductionPlanId(this.reductionPlan.getId(), false);
+			operationReductionList = reductionPlanManager.getOperationReductionByReductionPlanId(this.reductionPlan.getId(), false);
+			priceOtherReductionList = reductionPlanManager.getPriceOtherReductionByReductionPlanId(this.reductionPlan.getId(), false);
 
 			((ExamReductionModel) examReductionTable.getModel()).fireTableDataChanged();
 			examReductionTable.updateUI();
@@ -716,16 +709,16 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private void deleteUnsedUnderReductionPlan() throws OHServiceException {
 		if (!examReductionDeletedList.isEmpty()) {
-			examReductionManager.deleteBulk(examReductionDeletedList);
+			reductionPlanManager.deleteBulkExamReduction(examReductionDeletedList);
 		}
 		if (!medicalReductionDeletedList.isEmpty()) {
-			medicalReductionManager.deleteBulk(medicalReductionDeletedList);
+			reductionPlanManager.deleteBulkMedicalReduction(medicalReductionDeletedList);
 		}
 		if (!operationReductionDeletedList.isEmpty()) {
-			operationReductionManager.deleteBulk(operationReductionDeletedList);
+			reductionPlanManager.deleteBulkOperationReduction(operationReductionDeletedList);
 		}
 		if (!priceOtherReductionDeletedList.isEmpty()) {
-			priceOtherReductionManager.deleteBulk(priceOtherReductionDeletedList);
+			reductionPlanManager.deleteBulkPriceOtherReduction(priceOtherReductionDeletedList);
 		}
 	}
 	private JButton getJCloseButton() {
@@ -749,7 +742,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public ExamReductionModel() {
 			try {
-				examReductionList = examReductionManager.getByReductionPlanId(reductionPlan.getId(), false);
+				examReductionList = reductionPlanManager.getExamReductionByReductionPlanId(reductionPlan.getId(), false);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -791,7 +784,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public OperationReductionModel() {
 			try {
-				operationReductionList = operationReductionManager.getByReductionPlanId(reductionPlan.getId(), false);
+				operationReductionList = reductionPlanManager.getOperationReductionByReductionPlanId(reductionPlan.getId(), false);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -833,7 +826,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public PriceOtherReductionModel() {
 			try {
-				priceOtherReductionList = priceOtherReductionManager.getByReductionPlanId(reductionPlan.getId(), false);
+				priceOtherReductionList = reductionPlanManager.getPriceOtherReductionByReductionPlanId(reductionPlan.getId(), false);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -875,7 +868,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public MedicalReductionModel() {
 			try {
-				medicalReductionList = medicalReductionManager.getByReductionPlanId(reductionPlan.getId(), false);
+				medicalReductionList = reductionPlanManager.getMedicalReductionByReductionPlanId(reductionPlan.getId(), false);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
