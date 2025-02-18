@@ -77,10 +77,10 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		}
 	}
 
-	private final JDialog myJDialog;
+	private final JDialog MY_JDIALOG;
 	private final int PAGE_SIZE = 100;
-	private int CURRENT_PAGE = 0;
-	private int TOTAL_PAGES;
+	private int currentPage = 0;
+	private int totalPages;
 	private JPanel jContentPane;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
@@ -110,13 +110,13 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private final Class[] pColumnClass = {int.class, String.class, String.class};
 	private BodyCompartment bodyCompartment;
 	private int selectedrow;
-	private long TOTAL_BODYCOMPARTMENT;
+	private long totalBodycompartment;
 
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
 	public MortuaryBodyCompartment(JFrame parentFrame) {
 		super(parentFrame, true);
-		myJDialog = this;
+		MY_JDIALOG = this;
 		initialize();
 		setVisible(true);
 	}
@@ -198,8 +198,7 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jNewButton.addActionListener(actionEvent -> {
-				bodyCompartment = new BodyCompartment(0,"", "", false);
-				MortuaryBodyCompartmentEdit newrecord = new MortuaryBodyCompartmentEdit(myJDialog, bodyCompartment, true);
+				MortuaryBodyCompartmentEdit newrecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, null, true);
 				newrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
 				newrecord.setVisible(true);
 			});
@@ -218,7 +217,7 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 					} else {
 						selectedrow = bcTable.getSelectedRow();
 						bodyCompartment = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
-						MortuaryBodyCompartmentEdit editrecord = new MortuaryBodyCompartmentEdit(myJDialog, bodyCompartment, false);
+						MortuaryBodyCompartmentEdit editrecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, bodyCompartment, false);
 						editrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
 						editrecord.setVisible(true);
 					}
@@ -239,8 +238,9 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 				} else {
 					BodyCompartment bodyCompartments = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
 					int answer = MessageDialog.yesNo(this, "angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg", bodyCompartments.getLabel());
-					try {
-						if (answer == JOptionPane.YES_OPTION) {
+
+					if (answer == JOptionPane.YES_OPTION) {
+						try {
 							BodyCompartment bodyCompartmentDeleted = bodyCompartmentManager.delete(bodyCompartments);
 							if (bodyCompartmentDeleted != null) {
 								bodyCompartmentList.remove(bcTable.getSelectedRow());
@@ -249,9 +249,9 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 							} else {
 								MessageDialog.info(this, "angal.common.suppressionfailed.msg");
 							}
+						} catch (OHServiceException e) {
+							OHServiceExceptionUtil.showMessages(e);
 						}
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
 					}
 				}
 			});
@@ -308,11 +308,11 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private JButton getPrevButton() {
 		if (prevButton == null) {
 			prevButton = new JButton("<");
-			prevButton.setEnabled(CURRENT_PAGE > 0);
+			prevButton.setEnabled(currentPage > 0);
 			prevButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE > 0) {
-					CURRENT_PAGE--;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				if (currentPage > 0) {
+					currentPage--;
+					pagesCombo.setSelectedItem(currentPage + 1);
 				}
 			});
 		}
@@ -322,11 +322,11 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private JButton getNextButton() {
 		if (nextButton == null) {
 			nextButton = new JButton(">");
-			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+			nextButton.setEnabled(currentPage < totalPages - 1 && totalPages != 1);
 			nextButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE < TOTAL_PAGES - 1) {
-					CURRENT_PAGE++;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+				if (currentPage < totalPages - 1) {
+					currentPage++;
+					pagesCombo.setSelectedItem(currentPage + 1);
 				}
 			});
 		}
@@ -337,13 +337,13 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		if (pagesCombo == null) {
 			pagesCombo = new JComboBox<>();
 			pagesCombo.setPreferredSize(new Dimension(100, 25));
-			for (int i = 0; i < TOTAL_PAGES; i++) {
+			for (int i = 0; i < totalPages; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 			pagesCombo.addActionListener(actionEvent -> {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
-						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+						currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
 						applyFilter(true);
 					}
 				}
@@ -357,12 +357,12 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		model = new MortuaryBodyCompartmentModel(jSearchTextFiled.getText().trim());
 
 		if (!isNextOrPrevButton) {
-			totalBodyCompartmentLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_BODYCOMPARTMENT);
-			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			CURRENT_PAGE = 0;
+			totalBodyCompartmentLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalBodycompartment);
+			underLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			currentPage = 0;
 
 			pagesCombo.removeAllItems();
-			for (int i = 0; i < TOTAL_PAGES; i++) {
+			for (int i = 0; i < totalPages; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 
@@ -374,13 +374,13 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			bcTable.updateUI();
 		}
 
-		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-		prevButton.setEnabled(CURRENT_PAGE > 0);
+		nextButton.setEnabled(currentPage < totalPages - 1 && totalPages != 1);
+		prevButton.setEnabled(currentPage > 0);
 	}
 
 	private JLabel getUnderLabel() {
 		if (underLabel == null) {
-			underLabel = new JLabel("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel = new JLabel("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			underLabel.setPreferredSize(new Dimension(60, 30));
 		}
 		return underLabel;
@@ -388,7 +388,7 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 	private JLabel getTotalBodyCompartmentLabel() {
 		if (totalBodyCompartmentLabel == null) {
-			totalBodyCompartmentLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_BODYCOMPARTMENT);
+			totalBodyCompartmentLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalBodycompartment);
 		}
 		return totalBodyCompartmentLabel;
 	}
@@ -400,10 +400,10 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 		public MortuaryBodyCompartmentModel(String label) {
 			try {
-				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelPageable(label, CURRENT_PAGE, PAGE_SIZE);
+				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelPageable(label, currentPage, PAGE_SIZE);
 				bodyCompartmentList = new ArrayList<>(bodyCompartmentPage.getContent());
-				TOTAL_BODYCOMPARTMENT = bodyCompartmentPage.getTotalElements();
-				TOTAL_PAGES = bodyCompartmentPage.getTotalPages();
+				totalBodycompartment = bodyCompartmentPage.getTotalElements();
+				totalPages = bodyCompartmentPage.getTotalPages();
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}

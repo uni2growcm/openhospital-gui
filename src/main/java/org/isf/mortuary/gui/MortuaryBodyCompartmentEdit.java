@@ -67,6 +67,7 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 	private void fireMortuaryStaysInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
 
+			@Serial
 			private static final long serialVersionUID = 1L;
 		};
 
@@ -96,7 +97,6 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 	private JTextField labelTextField;
 	private JTextField descriptionTextField;
 	private String label;
-	private String desc;
 	private boolean insert;
 	private BodyCompartment bodyCompartment;
 
@@ -113,6 +113,7 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 		this.setContentPane(getJContentPane());
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.newmortuarystays.title"));
+			bodyCompartment = new BodyCompartment(0,"","",false);
 		} else {
 			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.editmortuarystays.title"));
 		}
