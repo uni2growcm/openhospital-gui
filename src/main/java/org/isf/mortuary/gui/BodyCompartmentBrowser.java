@@ -55,32 +55,15 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.springframework.data.domain.Page;
 
-public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentListener {
+public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentListener {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void bodyCompartmentUpdated(AWTEvent e) {
-		bodyCompartmentList.set(selectedrow, bodyCompartment);
-		((MortuaryBodyCompartment.MortuaryBodyCompartmentModel) bcTable.getModel()).fireTableDataChanged();
-		bcTable.updateUI();
-		if (bcTable.getRowCount() > 0 && selectedrow > -1) {
-			bcTable.setRowSelectionInterval(selectedrow, selectedrow);
-		}
-	}
-	@Override
-	public void bodyCompartmentInserted(AWTEvent e) {
-		applyFilter(false);
-		if (bcTable.getRowCount() > 0) {
-			bcTable.setRowSelectionInterval(0, 0);
-		}
-	}
-
 	private final JDialog MY_JDIALOG;
 	private final int PAGE_SIZE = 100;
-	private int currentPage = 0;
-	private int totalPages;
+	private int CURRENT_PAGE = 0;
+	private int TOTAL_PAGES;
 	private JPanel jContentPane;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
@@ -94,19 +77,16 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private JLabel underLabel;
 	private JScrollPane jScrollPane;
 	private JTextField jSearchTextFiled;
-	private JTable bcTable;
+	private JTable bodyCompartmentsTable;
 	private DefaultTableModel model;
-	private final int pfrmBase = 8;
-	private final int pfrmWidth = 6;
-	private final int pfrmHeight = 4;
-	private int pfrmBordX;
-	private int pfrmBordY;
+	private final int pfrmBase = 8, pfrmWidth = 6, pfrmHeight = 4;
+	private int pfrmBordX, pfrmBordY;
 	private List<BodyCompartment> bodyCompartmentList;
-	private final String[] pColums = { MessageBundle.getMessage("angal.mortuary.bodycompartment.id.col"),
+	private final String[] columnNames = { MessageBundle.getMessage("angal.mortuary.bodycompartment.id.col"),
 		MessageBundle.getMessage("angal.mortuary.bodycompartment.code.col"),
 		MessageBundle.getMessage("angal.mortuary.bodycompartment.description.col")
 	};
-	private final int[] pColumwidth = {50, 50, 70};
+	private final int[] columnWidths = {50, 50, 70};
 	private final Class[] pColumnClass = {int.class, String.class, String.class};
 	private BodyCompartment bodyCompartment;
 	private int selectedrow;
@@ -114,7 +94,7 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public MortuaryBodyCompartment(JFrame parentFrame) {
+	public BodyCompartmentBrowser(JFrame parentFrame) {
 		super(parentFrame, true);
 		MY_JDIALOG = this;
 		initialize();
@@ -198,9 +178,9 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jNewButton.addActionListener(actionEvent -> {
-				MortuaryBodyCompartmentEdit newrecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, null, true);
-				newrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
-				newrecord.setVisible(true);
+				MortuaryBodyCompartmentEdit newRecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, null, true);
+				newRecord.addBodyCompartmentListener(BodyCompartmentBrowser.this);
+				newRecord.setVisible(true);
 			});
 		}
 		return jNewButton;
@@ -212,14 +192,14 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			jEditButton.setText(MessageBundle.getMessage("angal.common.edit.btn"));
 			jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
 			jEditButton.addActionListener(actionEvent -> {
-					if (bcTable.getSelectedRow() < 0) {
+					if (bodyCompartmentsTable.getSelectedRow() < 0) {
 						MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
 					} else {
-						selectedrow = bcTable.getSelectedRow();
-						bodyCompartment = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
-						MortuaryBodyCompartmentEdit editrecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, bodyCompartment, false);
-						editrecord.addBodyCompartmentListener(MortuaryBodyCompartment.this);
-						editrecord.setVisible(true);
+						selectedrow = bodyCompartmentsTable.getSelectedRow();
+						bodyCompartment = (BodyCompartment) model.getValueAt(bodyCompartmentsTable.getSelectedRow(), -1);
+						MortuaryBodyCompartmentEdit editRecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, bodyCompartment, false);
+						editRecord.addBodyCompartmentListener(BodyCompartmentBrowser.this);
+						editRecord.setVisible(true);
 					}
 				}
 			);
@@ -233,19 +213,23 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
 			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
 			jDeleteButton.addActionListener(actionEvent -> {
-				if (bcTable.getSelectedRow() < 0) {
+				if (bodyCompartmentsTable.getSelectedRow() < 0) {
 					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
 				} else {
-					BodyCompartment bodyCompartments = (BodyCompartment) model.getValueAt(bcTable.getSelectedRow(), -1);
-					int answer = MessageDialog.yesNo(this, "angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg", bodyCompartments.getLabel());
+					BodyCompartment bodyCompartments = (BodyCompartment) model.getValueAt(bodyCompartmentsTable.getSelectedRow(), -1);
+					int answer = MessageDialog.yesNo(
+						this,
+						"angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg",
+						bodyCompartments.getLabel()
+					);
 
 					if (answer == JOptionPane.YES_OPTION) {
 						try {
 							boolean isDeleted = bodyCompartmentManager.delete(bodyCompartments);
 							if (isDeleted) {
-								bodyCompartmentList.remove(bcTable.getSelectedRow());
+								bodyCompartmentList.remove(bodyCompartmentsTable.getSelectedRow());
 								model.fireTableDataChanged();
-								bcTable.updateUI();
+								bodyCompartmentsTable.updateUI();
 							} else {
 								MessageDialog.info(this, "angal.common.suppressionfailed.msg");
 							}
@@ -285,14 +269,14 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	}
 
 	private JTable getJTable() {
-		if (bcTable == null) {
-			model = new MortuaryBodyCompartmentModel("");
-			bcTable = new JTable(model);
-			bcTable.getColumnModel().getColumn(0).setMaxWidth(pColumwidth[0]);
-			bcTable.getColumnModel().getColumn(1).setPreferredWidth(pColumwidth[1]);
-			bcTable.getColumnModel().getColumn(2).setPreferredWidth(pColumwidth[2]);
+		if (bodyCompartmentsTable == null) {
+			model = new BodyCompartmentTableModel("");
+			bodyCompartmentsTable = new JTable(model);
+			bodyCompartmentsTable.getColumnModel().getColumn(0).setMaxWidth(columnWidths[0]);
+			bodyCompartmentsTable.getColumnModel().getColumn(1).setPreferredWidth(columnWidths[1]);
+			bodyCompartmentsTable.getColumnModel().getColumn(2).setPreferredWidth(columnWidths[2]);
 		}
-		return bcTable;
+		return bodyCompartmentsTable;
 	}
 
 	private JPanel getPaginationPanel() {
@@ -308,11 +292,11 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private JButton getPrevButton() {
 		if (prevButton == null) {
 			prevButton = new JButton("<");
-			prevButton.setEnabled(currentPage > 0);
+			prevButton.setEnabled(CURRENT_PAGE > 0);
 			prevButton.addActionListener(actionEvent -> {
-				if (currentPage > 0) {
-					currentPage--;
-					pagesCombo.setSelectedItem(currentPage + 1);
+				if (CURRENT_PAGE > 0) {
+					CURRENT_PAGE--;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
 				}
 			});
 		}
@@ -322,11 +306,11 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 	private JButton getNextButton() {
 		if (nextButton == null) {
 			nextButton = new JButton(">");
-			nextButton.setEnabled(currentPage < totalPages - 1 && totalPages != 1);
+			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
 			nextButton.addActionListener(actionEvent -> {
-				if (currentPage < totalPages - 1) {
-					currentPage++;
-					pagesCombo.setSelectedItem(currentPage + 1);
+				if (CURRENT_PAGE < TOTAL_PAGES - 1) {
+					CURRENT_PAGE++;
+					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
 				}
 			});
 		}
@@ -337,13 +321,13 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		if (pagesCombo == null) {
 			pagesCombo = new JComboBox<>();
 			pagesCombo.setPreferredSize(new Dimension(100, 25));
-			for (int i = 0; i < totalPages; i++) {
+			for (int i = 0; i < TOTAL_PAGES; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 			pagesCombo.addActionListener(actionEvent -> {
 				if (pagesCombo.getItemCount() != 0) {
 					if (pagesCombo.getSelectedItem() != null) {
-						currentPage = (Integer) pagesCombo.getSelectedItem() - 1;
+						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
 						applyFilter(true);
 					}
 				}
@@ -354,15 +338,15 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 	private void applyFilter(boolean isNextOrPrevButton) {
 
-		model = new MortuaryBodyCompartmentModel(jSearchTextFiled.getText().trim());
+		model = new BodyCompartmentTableModel(jSearchTextFiled.getText().trim());
 
 		if (!isNextOrPrevButton) {
 			totalBodyCompartmentLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalBodycompartment);
-			underLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			currentPage = 0;
+			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			CURRENT_PAGE = 0;
 
 			pagesCombo.removeAllItems();
-			for (int i = 0; i < totalPages; i++) {
+			for (int i = 0; i < TOTAL_PAGES; i++) {
 				pagesCombo.addItem(i + 1);
 			}
 
@@ -371,16 +355,16 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 		if (bodyCompartmentList != null) {
 			model.fireTableDataChanged();
-			bcTable.updateUI();
+			bodyCompartmentsTable.updateUI();
 		}
 
-		nextButton.setEnabled(currentPage < totalPages - 1 && totalPages != 1);
-		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		prevButton.setEnabled(CURRENT_PAGE > 0);
 	}
 
 	private JLabel getUnderLabel() {
 		if (underLabel == null) {
-			underLabel = new JLabel("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+			underLabel = new JLabel("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			underLabel.setPreferredSize(new Dimension(60, 30));
 		}
 		return underLabel;
@@ -393,17 +377,17 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		return totalBodyCompartmentLabel;
 	}
 
-	class MortuaryBodyCompartmentModel extends DefaultTableModel {
+	class BodyCompartmentTableModel extends DefaultTableModel {
 
 		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public MortuaryBodyCompartmentModel(String key) {
+		public BodyCompartmentTableModel(String key) {
 			try {
-				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelOrDescriptionPageable(key, key,currentPage, PAGE_SIZE);
+				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelOrDescriptionPageable(key, key, CURRENT_PAGE, PAGE_SIZE);
 				bodyCompartmentList = new ArrayList<>(bodyCompartmentPage.getContent());
 				totalBodycompartment = bodyCompartmentPage.getTotalElements();
-				totalPages = bodyCompartmentPage.getTotalPages();
+				TOTAL_PAGES = bodyCompartmentPage.getTotalPages();
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -419,12 +403,12 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 		@Override
 		public String getColumnName(int c) {
-			return pColums[c];
+			return columnNames[c];
 		}
 
 		@Override
 		public int getColumnCount() {
-			return pColums.length;
+			return columnNames.length;
 		}
 
 		@Override
@@ -452,4 +436,23 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 			return false;
 		}
 	}
+
+	@Override
+	public void bodyCompartmentUpdated(AWTEvent e) {
+		bodyCompartmentList.set(selectedrow, bodyCompartment);
+		((BodyCompartmentTableModel) bodyCompartmentsTable.getModel()).fireTableDataChanged();
+		bodyCompartmentsTable.updateUI();
+		if (bodyCompartmentsTable.getRowCount() > 0 && selectedrow > -1) {
+			bodyCompartmentsTable.setRowSelectionInterval(selectedrow, selectedrow);
+		}
+	}
+
+	@Override
+	public void bodyCompartmentInserted(AWTEvent e) {
+		applyFilter(false);
+		if (bodyCompartmentsTable.getRowCount() > 0) {
+			bodyCompartmentsTable.setRowSelectionInterval(0, 0);
+		}
+	}
+
 }
