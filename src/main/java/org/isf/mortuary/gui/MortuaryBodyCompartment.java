@@ -241,8 +241,8 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 
 					if (answer == JOptionPane.YES_OPTION) {
 						try {
-							BodyCompartment bodyCompartmentDeleted = bodyCompartmentManager.delete(bodyCompartments);
-							if (bodyCompartmentDeleted != null) {
+							boolean isDeleted = bodyCompartmentManager.delete(bodyCompartments);
+							if (isDeleted) {
 								bodyCompartmentList.remove(bcTable.getSelectedRow());
 								model.fireTableDataChanged();
 								bcTable.updateUI();
@@ -398,9 +398,9 @@ public class MortuaryBodyCompartment extends JDialog implements BodyCompartmentL
 		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public MortuaryBodyCompartmentModel(String label) {
+		public MortuaryBodyCompartmentModel(String key) {
 			try {
-				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelPageable(label, currentPage, PAGE_SIZE);
+				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelOrDescriptionPageable(key, key,currentPage, PAGE_SIZE);
 				bodyCompartmentList = new ArrayList<>(bodyCompartmentPage.getContent());
 				totalBodycompartment = bodyCompartmentPage.getTotalElements();
 				totalPages = bodyCompartmentPage.getTotalPages();

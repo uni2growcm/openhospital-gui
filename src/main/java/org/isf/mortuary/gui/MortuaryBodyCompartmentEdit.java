@@ -183,7 +183,7 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 
 	private JTextField getDescriptionTextField() {
 		if (descriptionTextField == null) {
-			descriptionTextField = new VoLimitedTextField(50);
+			descriptionTextField = new JTextField();
 			if (!insert) {
 				descriptionTextField.setText(bodyCompartment.getDescription());
 			}
