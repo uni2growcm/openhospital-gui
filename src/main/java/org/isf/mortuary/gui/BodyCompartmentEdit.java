@@ -47,11 +47,11 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 
-public class MortuaryBodyCompartmentEdit extends JDialog {
+public class BodyCompartmentEdit extends JDialog {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
-	private EventListenerList bodyCompartmentListeners = new EventListenerList();
+	private final EventListenerList bodyCompartmentListeners = new EventListenerList();
 
 	public interface BodyCompartmentListener extends EventListener {
 
@@ -60,8 +60,8 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 		void bodyCompartmentInserted(AWTEvent e);
 	}
 
-	public void addBodyCompartmentListener(MortuaryBodyCompartmentEdit.BodyCompartmentListener l) {
-		bodyCompartmentListeners.add(MortuaryBodyCompartmentEdit.BodyCompartmentListener.class, l);
+	public void addBodyCompartmentListener(BodyCompartmentEdit.BodyCompartmentListener l) {
+		bodyCompartmentListeners.add(BodyCompartmentEdit.BodyCompartmentListener.class, l);
 	}
 
 	private void fireMortuaryStaysInserted() {
@@ -71,9 +71,9 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 			private static final long serialVersionUID = 1L;
 		};
 
-		EventListener[] listeners = bodyCompartmentListeners.getListeners(MortuaryBodyCompartmentEdit.BodyCompartmentListener.class);
+		EventListener[] listeners = bodyCompartmentListeners.getListeners(BodyCompartmentEdit.BodyCompartmentListener.class);
 		for (EventListener listener : listeners) {
-			((MortuaryBodyCompartmentEdit.BodyCompartmentListener) listener).bodyCompartmentInserted(event);
+			((BodyCompartmentEdit.BodyCompartmentListener) listener).bodyCompartmentInserted(event);
 		}
 	}
 
@@ -84,25 +84,25 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 			private static final long serialVersionUID = 1L;
 		};
 
-		EventListener[] listeners = bodyCompartmentListeners.getListeners(MortuaryBodyCompartmentEdit.BodyCompartmentListener.class);
+		EventListener[] listeners = bodyCompartmentListeners.getListeners(BodyCompartmentEdit.BodyCompartmentListener.class);
 		for (EventListener listener : listeners) {
-			((MortuaryBodyCompartmentEdit.BodyCompartmentListener) listener).bodyCompartmentUpdated(event);
+			((BodyCompartmentEdit.BodyCompartmentListener) listener).bodyCompartmentUpdated(event);
 		}
 	}
 
 	private JPanel jContentPane;
 	private JPanel jDataPanel;
 	private JButton cancelButton;
-	private JButton okButton;
+	private JButton saveButton;
 	private JTextField labelTextField;
 	private JTextField descriptionTextField;
 	private String label;
-	private boolean insert;
+	private final boolean insert;
 	private BodyCompartment bodyCompartment;
 
-	private BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
+	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public MortuaryBodyCompartmentEdit(JDialog parent, BodyCompartment old, boolean inserting) {
+	public BodyCompartmentEdit(JDialog parent, BodyCompartment old, boolean inserting) {
 		super(parent, true);
 		insert = inserting;
 		bodyCompartment = old;
@@ -193,70 +193,71 @@ public class MortuaryBodyCompartmentEdit extends JDialog {
 
 	private JPanel getButtonPanel() {
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(getOkButton());
+		buttonPanel.add(getSaveButton());
 		buttonPanel.add(getCancelButton());
 		return buttonPanel;
 	}
 
-	private JButton getOkButton() {
-		if (okButton == null) {
-			okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
-			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
-			okButton.addActionListener(actionEvent -> {
-				if (insert) {
-					label = labelTextField.getText().trim();
-					if (label.isEmpty()) {
-						MessageDialog.error(this, "angal.mortuary.bodycompartment.pleaseinsertalabel.msg");
-						return;
-					}
-					if (label.length() > 6) {
-						MessageDialog.error(this, "angal.mortuary.bodycompartment.thelabelistoolongmax6char.msg");
-						return;
-					}
-					try {
-						if (bodyCompartmentManager.isLabelPresent(label)) {
-							MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
-							return;
-						}
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-					}
-				}
-
-				bodyCompartment.setDescription(descriptionTextField.getText().trim());
-				bodyCompartment.setLabel(labelTextField.getText().trim());
-
-				boolean result = false;
-				BodyCompartment savedBodyCompartment;
-				if (insert) {
-					try {
-						savedBodyCompartment = bodyCompartmentManager.add(bodyCompartment);
-						result = (savedBodyCompartment != null);
-					} catch (OHServiceException ex) {
-						OHServiceExceptionUtil.showMessages(ex);
-					}
-					if (result) {
-						fireMortuaryStaysInserted();
-					}
-				} else {
-					try {
-						savedBodyCompartment = bodyCompartmentManager.update(bodyCompartment);
-						result = (savedBodyCompartment != null);
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-					}
-					if (result) {
-						fireMortuaryStaysUpdated();
-					}
-				}
-				if (!result) {
-					MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-				} else {
-					dispose();
-				}
-			});
+	private JButton getSaveButton() {
+		if (saveButton != null) {
+			return saveButton;
 		}
-		return okButton;
+		saveButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+		saveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
+		saveButton.addActionListener(actionEvent -> {
+			if (insert) {
+				label = labelTextField.getText().trim();
+				if (label.isEmpty()) {
+					MessageDialog.error(this, "angal.mortuary.bodycompartment.pleaseinsertalabel.msg");
+					return;
+				}
+				if (label.length() > 6) {
+					MessageDialog.error(this, "angal.mortuary.bodycompartment.thelabelistoolongmax6char.msg");
+					return;
+				}
+				try {
+					if (bodyCompartmentManager.isLabelPresent(label)) {
+						MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
+						return;
+					}
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+				}
+			}
+
+			bodyCompartment.setDescription(descriptionTextField.getText().trim());
+			bodyCompartment.setLabel(labelTextField.getText().trim());
+
+			boolean result = false;
+			BodyCompartment savedBodyCompartment;
+			if (insert) {
+				try {
+					savedBodyCompartment = bodyCompartmentManager.add(bodyCompartment);
+					result = savedBodyCompartment != null;
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex);
+				}
+				if (result) {
+					fireMortuaryStaysInserted();
+				}
+			} else {
+				try {
+					savedBodyCompartment = bodyCompartmentManager.update(bodyCompartment);
+					result = savedBodyCompartment != null;
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+				}
+				if (result) {
+					fireMortuaryStaysUpdated();
+				}
+			}
+			if (!result) {
+				MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+			} else {
+				dispose();
+			}
+		});
+		return saveButton;
 	}
 
 	private JButton getCancelButton() {

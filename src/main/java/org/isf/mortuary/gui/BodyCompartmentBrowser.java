@@ -49,7 +49,7 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.BodyCompartmentManager;
 import org.isf.mortuary.model.BodyCompartment;
-import org.isf.mortuary.gui.MortuaryBodyCompartmentEdit.BodyCompartmentListener;
+import org.isf.mortuary.gui.BodyCompartmentEdit.BodyCompartmentListener;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
@@ -178,7 +178,7 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jNewButton.addActionListener(actionEvent -> {
-				MortuaryBodyCompartmentEdit newRecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, null, true);
+				BodyCompartmentEdit newRecord = new BodyCompartmentEdit(MY_JDIALOG, null, true);
 				newRecord.addBodyCompartmentListener(BodyCompartmentBrowser.this);
 				newRecord.setVisible(true);
 			});
@@ -197,7 +197,7 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 					} else {
 						selectedRow = bodyCompartmentsTable.getSelectedRow();
 						bodyCompartment = (BodyCompartment) model.getValueAt(bodyCompartmentsTable.getSelectedRow(), -1);
-						MortuaryBodyCompartmentEdit editRecord = new MortuaryBodyCompartmentEdit(MY_JDIALOG, bodyCompartment, false);
+						BodyCompartmentEdit editRecord = new BodyCompartmentEdit(MY_JDIALOG, bodyCompartment, false);
 						editRecord.addBodyCompartmentListener(BodyCompartmentBrowser.this);
 						editRecord.setVisible(true);
 					}
