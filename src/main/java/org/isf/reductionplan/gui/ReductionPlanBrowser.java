@@ -24,10 +24,10 @@ package org.isf.reductionplan.gui;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.io.Serial;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -47,6 +47,7 @@ import org.isf.utils.jobjects.ModalJFrame;
 
 public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanListener {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	private JPanel contentPane;
@@ -212,6 +213,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 
 	private class ReductionPlanModel extends DefaultTableModel {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		public ReductionPlanModel() {
