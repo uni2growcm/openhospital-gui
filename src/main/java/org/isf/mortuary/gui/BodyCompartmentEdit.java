@@ -32,6 +32,7 @@ import java.util.EventListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -102,7 +103,7 @@ public class BodyCompartmentEdit extends JDialog {
 
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public BodyCompartmentEdit(JDialog parent, BodyCompartment old, boolean inserting) {
+	public BodyCompartmentEdit(JFrame parent, BodyCompartment old, boolean inserting) {
 		super(parent, true);
 		insert = inserting;
 		bodyCompartment = old;
