@@ -455,5 +455,4 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 			bodyCompartmentsTable.setRowSelectionInterval(0, 0);
 		}
 	}
-
 }

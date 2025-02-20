@@ -212,12 +212,12 @@ public class BodyCompartmentEdit extends JDialog {
 					return;
 				}
 				if (label.length() > 6) {
-					MessageDialog.error(this, "angal.mortuary.bodycompartment.thelabelistoolongmax6char.msg");
+					MessageDialog.error(this, "angal.mortuary.bodycompartment.labelexceedsmaxlengthofsixchars.msg");
 					return;
 				}
 				try {
 					if (bodyCompartmentManager.isLabelPresent(label)) {
-						MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
+						MessageDialog.error(this, "angal.common.codealreadyinuse.msg");
 						return;
 					}
 				} catch (OHServiceException e) {
