@@ -79,8 +79,6 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 	private JTextField jSearchTextFiled;
 	private JTable bodyCompartmentsTable;
 	private DefaultTableModel model;
-	private final int pfrmBase = 8, pfrmWidth = 6, pfrmHeight = 4;
-	private int pfrmBordX, pfrmBordY;
 	private List<BodyCompartment> bodyCompartmentList;
 	private final String[] columnNames = { MessageBundle.getMessage("angal.mortuary.bodycompartment.id.col"),
 		MessageBundle.getMessage("angal.mortuary.bodycompartment.code.col"),
@@ -105,9 +103,12 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.title"));
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = kit.getScreenSize();
-		pfrmBordX = (screenSize.width - (screenSize.width / pfrmBase * pfrmWidth)) / 2;
-		pfrmBordY = (screenSize.height - (screenSize.height / pfrmBase * pfrmHeight)) / 2;
-		this.setBounds(pfrmBordX,pfrmBordY,screenSize.width / pfrmBase * pfrmWidth,screenSize.height / pfrmBase * pfrmHeight);
+		int pfrmBase = 8;
+		int pfrmWidth = 6;
+		int pfrmBordX = (screenSize.width - (screenSize.width / pfrmBase * pfrmWidth)) / 2;
+		int pfrmHeight = 4;
+		int pfrmBordY = (screenSize.height - (screenSize.height / pfrmBase * pfrmHeight)) / 2;
+		this.setBounds(pfrmBordX, pfrmBordY,screenSize.width / pfrmBase * pfrmWidth,screenSize.height / pfrmBase * pfrmHeight);
 		this.setContentPane(getJContentPane());
 		this.setLocationRelativeTo(this);
 	}
@@ -219,7 +220,7 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 					BodyCompartment bodyCompartments = (BodyCompartment) model.getValueAt(bodyCompartmentsTable.getSelectedRow(), -1);
 					int answer = MessageDialog.yesNo(
 						this,
-						"angal.mortuary.bodycompartment.deletemortuarystays.fmt.msg",
+						"angal.mortuary.bodycompartment.deletebodycompartment.fmt.msg",
 						bodyCompartments.getLabel()
 					);
 

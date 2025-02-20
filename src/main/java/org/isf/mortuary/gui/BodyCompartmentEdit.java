@@ -64,7 +64,7 @@ public class BodyCompartmentEdit extends JDialog {
 		bodyCompartmentListeners.add(BodyCompartmentEdit.BodyCompartmentListener.class, l);
 	}
 
-	private void fireMortuaryStaysInserted() {
+	private void fireBodyCompartmentsInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
 
 			@Serial
@@ -77,7 +77,7 @@ public class BodyCompartmentEdit extends JDialog {
 		}
 	}
 
-	private void fireMortuaryStaysUpdated() {
+	private void fireBodyCompartmentsUpdated() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
 
 			@Serial
@@ -112,10 +112,10 @@ public class BodyCompartmentEdit extends JDialog {
 	private void initialize() {
 		this.setContentPane(getJContentPane());
 		if (insert) {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.newmortuarystays.title"));
+			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.newbodycompartment.title"));
 			bodyCompartment = new BodyCompartment(0,"","",false);
 		} else {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.editmortuarystays.title"));
+			this.setTitle(MessageBundle.getMessage("angal.mortuary.bodycompartment.editbodycompartment.title"));
 		}
 		pack();
 		setLocationRelativeTo(null);
@@ -238,7 +238,7 @@ public class BodyCompartmentEdit extends JDialog {
 					OHServiceExceptionUtil.showMessages(ex);
 				}
 				if (result) {
-					fireMortuaryStaysInserted();
+					fireBodyCompartmentsInserted();
 				}
 			} else {
 				try {
@@ -248,7 +248,7 @@ public class BodyCompartmentEdit extends JDialog {
 					OHServiceExceptionUtil.showMessages(e);
 				}
 				if (result) {
-					fireMortuaryStaysUpdated();
+					fireBodyCompartmentsUpdated();
 				}
 			}
 			if (!result) {
