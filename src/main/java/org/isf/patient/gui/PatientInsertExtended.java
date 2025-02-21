@@ -1734,11 +1734,12 @@ public class PatientInsertExtended extends JDialog {
 			jReductionPlanComboBox.setPreferredSize(new Dimension(200,24));
 			List<ReductionPlan> reductionPlanList = null;
 			try {
-				reductionPlanList = reductionPlanManager.getAll(false);
+				reductionPlanList = reductionPlanManager.getAll();
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 			jReductionPlanComboBox.addItem(new ReductionPlan());
+			assert reductionPlanList != null;
 			for (ReductionPlan reductionPlan: reductionPlanList) {
 				jReductionPlanComboBox.addItem(reductionPlan);
 			}

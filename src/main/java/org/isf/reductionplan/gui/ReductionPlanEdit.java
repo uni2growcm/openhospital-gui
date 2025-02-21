@@ -122,10 +122,10 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
 		this.isInsert = isInsert;
-		reductionPlan.setExamReductionList(examReductionList);
-		reductionPlan.setMedicalReductionList(medicalReductionList);
-		reductionPlan.setOperationReductionList(operationReductionList);
-		reductionPlan.setPriceOtherReductionList(priceOtherReductionList);
+		reductionPlan.setExamReductions(examReductionList);
+		reductionPlan.setMedicalReductions(medicalReductionList);
+		reductionPlan.setOperationReductions(operationReductionList);
+		reductionPlan.setPriceOtherReductions(priceOtherReductionList);
 		this.reductionPlan = reductionPlan;
 		initialize();
 		loadDataFromObject();
@@ -517,23 +517,23 @@ public class ReductionPlanEdit extends ModalJFrame {
 			jSaveButton.addActionListener(actionEvent -> {
 				try {
 					if (!examReductionList.isEmpty()) {
-						reductionPlan.setExamReductionList(examReductionList);
+						reductionPlan.setExamReductions(examReductionList);
 					}
 					if (!medicalReductionList.isEmpty()) {
-						reductionPlan.setMedicalReductionList(medicalReductionList);
+						reductionPlan.setMedicalReductions(medicalReductionList);
 					}
 					if(!operationReductionList.isEmpty()) {
-						reductionPlan.setOperationReductionList(operationReductionList);
+						reductionPlan.setOperationReductions(operationReductionList);
 					}
 					if (!priceOtherReductionList.isEmpty()) {
-						reductionPlan.setPriceOtherReductionList(priceOtherReductionList);
+						reductionPlan.setPriceOtherReductions(priceOtherReductionList);
 					}
 
 					if (loadDataInObject()) {
 						if (isInsert) {
-							reductionPlan = reductionPlanManager.save(reductionPlan);
+							reductionPlanManager.add(reductionPlan);
 						} else {
-							reductionPlan = reductionPlanManager.update(reductionPlan);
+							reductionPlanManager.update(reductionPlan);
 						}
 					}
 

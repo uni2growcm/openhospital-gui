@@ -218,7 +218,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 
 		public ReductionPlanModel() {
 			try {
-				reductionplansList = reductionPlanManager.getAll(false);
+				reductionplansList = reductionPlanManager.getAll();
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
