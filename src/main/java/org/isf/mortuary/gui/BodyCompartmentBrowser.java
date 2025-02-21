@@ -53,14 +53,15 @@ import org.isf.mortuary.gui.BodyCompartmentEdit.BodyCompartmentListener;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
+import org.isf.utils.jobjects.ModalJFrame;
 import org.springframework.data.domain.Page;
 
-public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentListener {
+public class BodyCompartmentBrowser extends ModalJFrame implements BodyCompartmentListener {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private final JDialog MY_JDIALOG;
+	private final JFrame MY_JDIALOG;
 	private final int PAGE_SIZE = 100;
 	private int CURRENT_PAGE = 0;
 	private int TOTAL_PAGES;
@@ -92,8 +93,8 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
-	public BodyCompartmentBrowser(JFrame parentFrame) {
-		super(parentFrame, true);
+	public BodyCompartmentBrowser() {
+		super();
 		MY_JDIALOG = this;
 		initialize();
 		setVisible(true);
