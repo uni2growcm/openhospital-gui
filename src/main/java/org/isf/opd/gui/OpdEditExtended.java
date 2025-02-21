@@ -55,6 +55,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
@@ -1679,6 +1680,13 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jAnamnesisButton = new JButton(MessageBundle.getMessage("angal.anamnesis.open.anamnesis.btn"));
 			jAnamnesisButton.setMnemonic(MessageBundle.getMnemonic("angal.opd.anamnesis.btn.key"));
 			jAnamnesisButton.addActionListener(actionEvent -> {
+				if (opdPatient == null) {
+					JOptionPane.showMessageDialog(null, MessageBundle.getMessage("angal.opd.pleaseselectapatient.msg"),
+						MessageBundle.getMessage("angal.common.error.title"),
+						JOptionPane.ERROR_MESSAGE
+					);
+					return;
+				}
 				try {
 					PatientHistory ph = new PatientHistory();
 					ph.setPatientId(opdPatient.getCode());
