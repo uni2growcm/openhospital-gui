@@ -58,6 +58,7 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.gui.MortuaryBrowser;
+import org.isf.mortuary.gui.MortuaryEdit;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -659,6 +660,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public void addSelectionListener(MortuaryBrowser l) {
 		mortuaryBrowsersListeners.add(l);
+	}
+
+	List<MortuaryEdit> mortuaryEditsListeners = new ArrayList<>();
+
+	public void addSelectionListener(MortuaryEdit l) {
+		mortuaryEditsListeners.add(l);
 	}
 
 	@Override
