@@ -22,13 +22,10 @@
 
 package org.isf.mortuary.gui;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.Serial;
-import java.util.EventListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -41,86 +38,28 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
-import org.isf.menu.manager.Context;
-import org.isf.mortuary.manager.DeathReasonManager;
 import org.isf.mortuary.model.DeathReason;
-import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.exception.gui.OHServiceExceptionUtil;
-import org.isf.utils.jobjects.MessageDialog;
 
-public class DeathReasonEdit extends JDialog {
-
-	@Serial
-	private static final long serialVersionUID = 1L;
-	private final EventListenerList deathReasonListeners = new EventListenerList();
-
-	public interface DeathReasonListener extends EventListener {
-
-		void deathReasonUpdated(AWTEvent e);
-
-		void deathReasonInserted(AWTEvent e);
-	}
-
-	public void addDeathReasonListener(DeathReasonEdit.DeathReasonListener l) {
-		deathReasonListeners.add(DeathReasonEdit.DeathReasonListener.class, l);
-	}
-
-	private void fireDeathReasonsInserted() {
-		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
-
-			@Serial
-			private static final long serialVersionUID = 1L;
-		};
-
-		EventListener[] listeners = deathReasonListeners.getListeners(DeathReasonEdit.DeathReasonListener.class);
-		for (EventListener listener : listeners) {
-			((DeathReasonEdit.DeathReasonListener) listener).deathReasonInserted(event);
-		}
-	}
-
-	private void fireDeathReasonsUpdated() {
-		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
-
-			@Serial
-			private static final long serialVersionUID = 1L;
-		};
-
-		EventListener[] listeners = deathReasonListeners.getListeners(DeathReasonEdit.DeathReasonListener.class);
-		for (EventListener listener : listeners) {
-			((DeathReasonEdit.DeathReasonListener) listener).deathReasonUpdated(event);
-		}
-	}
+public class DeathReasonDetails extends JDialog {
 
 	private JPanel jContentPane;
 	private JPanel jDataPanel;
-	private JButton cancelButton;
-	private JButton saveButton;
-	private JTextField titleTextField;
 	private JTextArea descriptionTextArea;
-	private String title;
-	private final boolean insert;
-	private DeathReason deathReason;
+	private JTextField titleTextField;
+	private JButton closeButton;
+	private final DeathReason deathReason;
 
-	private final DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
-
-	public DeathReasonEdit(JFrame parent, DeathReason old, boolean inserting) {
+	public DeathReasonDetails(JFrame parent, DeathReason old) {
 		super(parent, true);
-		insert = inserting;
 		deathReason = old;
 		initialize();
 	}
 
 	private void initialize() {
 		this.setContentPane(getJContentPane());
-		if (insert) {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.newdeathreason.title"));
-			deathReason = new DeathReason(0,"","",false);
-		} else {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.editdeathreason.title"));
-		}
+		this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.deathreasondetails.title"));
 		pack();
 		setLocationRelativeTo(null);
 	}
@@ -145,7 +84,7 @@ public class DeathReasonEdit extends JDialog {
 		GridBagLayout gblDataPanel = new GridBagLayout();
 		gblDataPanel.columnWeights = new double[] { 0.0, 1.0 };
 		jDataPanel.setLayout(gblDataPanel);
-		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.code.txt"));
+		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.details.title.txt"));
 		GridBagConstraints gbcCodeLabel = new GridBagConstraints();
 		gbcCodeLabel.anchor = GridBagConstraints.WEST;
 		gbcCodeLabel.insets = new Insets(0, 0, 5, 5);
@@ -181,9 +120,8 @@ public class DeathReasonEdit extends JDialog {
 			return titleTextField;
 		}
 		titleTextField = new JTextField();
-		if (!insert) {
-			titleTextField.setText(deathReason.getTitle());
-		}
+		titleTextField.setText(deathReason.getTitle());
+		titleTextField.setEnabled(false);
 		return titleTextField;
 	}
 
@@ -202,78 +140,25 @@ public class DeathReasonEdit extends JDialog {
 		}
 		descriptionTextArea = new JTextArea(6,20);
 		descriptionTextArea.setAutoscrolls(true);
-		if (!insert) {
-			descriptionTextArea.setText(deathReason.getDescription());
-		}
+		descriptionTextArea.setText(deathReason.getDescription());
 		descriptionTextArea.setWrapStyleWord(true);
 		descriptionTextArea.setLineWrap(true);
+		descriptionTextArea.setEnabled(false);
 		return descriptionTextArea;
 	}
 
 	private JPanel getButtonPanel() {
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(getSaveButton());
-		buttonPanel.add(getCancelButton());
+		buttonPanel.add(getCloseButton());
 		return buttonPanel;
 	}
 
-	private JButton getSaveButton() {
-		if (saveButton != null) {
-			return saveButton;
+	private JButton getCloseButton() {
+		if (closeButton == null) {
+			closeButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
+			closeButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
+			closeButton.addActionListener(actionEvent -> dispose());
 		}
-		saveButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
-		saveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
-		saveButton.addActionListener(actionEvent -> {
-			if (insert && titleTextField.getText().trim().isEmpty()) {
-				MessageDialog.error(this, "angal.mortuary.deathreason.pleaseinsertacode.msg");
-				return;
-			}
-
-			deathReason.setDescription(descriptionTextArea.getText().trim());
-			deathReason.setTitle(titleTextField.getText().trim());
-			if (insert && deathReasonManager.exists(deathReason)) {
-				MessageDialog.error(this, "angal.common.codealreadyinuse.msg");
-				return;
-			}
-
-			boolean result = false;
-			DeathReason savedDeathReason;
-			if (insert) {
-				try {
-					savedDeathReason = deathReasonManager.add(deathReason);
-					result = savedDeathReason != null;
-				} catch (OHServiceException ex) {
-					OHServiceExceptionUtil.showMessages(ex);
-				}
-				if (result) {
-					fireDeathReasonsInserted();
-				}
-			} else {
-				try {
-					savedDeathReason = deathReasonManager.update(deathReason);
-					result = savedDeathReason != null;
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				if (result) {
-					fireDeathReasonsUpdated();
-				}
-			}
-			if (!result) {
-				MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-			} else {
-				dispose();
-			}
-		});
-		return saveButton;
-	}
-
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
-			cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-			cancelButton.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
-			cancelButton.addActionListener(actionEvent -> dispose());
-		}
-		return cancelButton;
+		return closeButton;
 	}
 }

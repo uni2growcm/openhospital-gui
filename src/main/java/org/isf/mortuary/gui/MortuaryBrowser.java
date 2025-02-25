@@ -523,7 +523,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			}
 		}
 		if (!(deathReasonCombo.getSelectedItem() instanceof String)) {
-			deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getCode();
+			deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getTitle();
 		} else {
 			deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
 			if (deathReasonSelected.equals(TEXT_ALL)) {
@@ -674,7 +674,7 @@ public class MortuaryBrowser extends ModalJFrame {
 			} else if (c == 6) {
 				return mortuary.getEstimatedDischargeDate().toLocalDate();
 			} else if (c == 7) {
-				return deathReason.getDescription();
+				return deathReason.getTitle();
 			}
 			return null;
 		}

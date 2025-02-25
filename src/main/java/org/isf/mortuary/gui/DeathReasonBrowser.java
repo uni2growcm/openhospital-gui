@@ -24,6 +24,7 @@ package org.isf.mortuary.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
@@ -35,7 +36,6 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -59,13 +60,13 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private final JFrame MY_JDIALOG;
 	private final int PAGE_SIZE = 100;
 	private int CURRENT_PAGE = 0;
 	private int TOTAL_PAGES;
 	private JPanel jContentPane;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
+	private JButton jDetailsButton;
 	private JButton jEditButton;
 	private JButton jNewButton;
 	private JButton nextButton;
@@ -93,7 +94,6 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 
 	public DeathReasonBrowser() {
 		super();
-		MY_JDIALOG = this;
 		initialize();
 		setVisible(true);
 	}
@@ -102,10 +102,10 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.title"));
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = kit.getScreenSize();
-		int pfrmBase = 8;
-		int pfrmWidth = 6;
+		int pfrmBase = 10;
+		int pfrmWidth = 4;
 		int pfrmBordX = (screenSize.width - (screenSize.width / pfrmBase * pfrmWidth)) / 2;
-		int pfrmHeight = 4;
+		int pfrmHeight = 5;
 		int pfrmBordY = (screenSize.height - (screenSize.height / pfrmBase * pfrmHeight)) / 2;
 		this.setBounds(pfrmBordX, pfrmBordY,screenSize.width / pfrmBase * pfrmWidth,screenSize.height / pfrmBase * pfrmHeight);
 		this.setContentPane(getJContentPane());
@@ -113,13 +113,14 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	}
 
 	private JPanel getJContentPane() {
-		if (jContentPane == null) {
-			jContentPane = new JPanel();
-			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJSearchSubPanel(), BorderLayout.NORTH);
-			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
-			jContentPane.add(getJContentSubPanel(), BorderLayout.CENTER);
+		if (jContentPane != null) {
+			return jContentPane;
 		}
+		jContentPane = new JPanel();
+		jContentPane.setLayout(new BorderLayout());
+		jContentPane.add(getJSearchSubPanel(), BorderLayout.NORTH);
+		jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+		jContentPane.add(getJContentSubPanel(), BorderLayout.CENTER);
 		return jContentPane;
 	}
 
@@ -137,20 +138,21 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	}
 
 	private JTextField getJSearchTextField() {
-		if (jSearchTextFiled == null) {
-			jSearchTextFiled = new JTextField();
-			jSearchTextFiled.setPreferredSize(new Dimension(270, 27));
-			jSearchTextFiled.addKeyListener(new KeyAdapter() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						applyFilter(false);
-					}
-				}
-			});
+		if (jSearchTextFiled != null) {
+			return jSearchTextFiled;
 		}
+		jSearchTextFiled = new JTextField();
+		jSearchTextFiled.setPreferredSize(new Dimension(270, 27));
+		jSearchTextFiled.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int key = e.getKeyCode();
+				if (key == KeyEvent.VK_ENTER) {
+					applyFilter(false);
+				}
+			}
+		});
 		return jSearchTextFiled;
 	}
 
@@ -168,88 +170,111 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		jButtonPanel.add(getJNewButton());
 		jButtonPanel.add(getJEditButton());
 		jButtonPanel.add(getJDeleteButton());
+		jButtonPanel.add(getDetailsButton());
 		jButtonPanel.add(getJCloseButton());
 		return jButtonPanel;
 	}
 
 	private JButton getJNewButton() {
-		if (jNewButton == null) {
-			jNewButton = new JButton();
-			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
-			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
-			jNewButton.addActionListener(actionEvent -> {
-				DeathReasonEdit newRecord = new DeathReasonEdit(MY_JDIALOG, null, true);
-				newRecord.addDeathReasonListener(DeathReasonBrowser.this);
-				newRecord.setVisible(true);
-			});
+		if (jNewButton != null) {
+			return jNewButton;
 		}
+		jNewButton = new JButton();
+		jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
+		jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
+		jNewButton.addActionListener(actionEvent -> {
+			DeathReasonEdit newRecord = new DeathReasonEdit(this, null, true);
+			newRecord.addDeathReasonListener(DeathReasonBrowser.this);
+			newRecord.setVisible(true);
+		});
 		return jNewButton;
 	}
 
 	private JButton getJEditButton() {
-		if (jEditButton == null) {
-			jEditButton = new JButton();
-			jEditButton.setText(MessageBundle.getMessage("angal.common.edit.btn"));
-			jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
-			jEditButton.addActionListener(actionEvent -> {
-					if (deathReasonsTable.getSelectedRow() < 0) {
-						MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
-					} else {
-						selectedRow = deathReasonsTable.getSelectedRow();
-						deathReason = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
-						DeathReasonEdit editRecord = new DeathReasonEdit(MY_JDIALOG, deathReason, false);
-						editRecord.addDeathReasonListener(DeathReasonBrowser.this);
-						editRecord.setVisible(true);
-					}
-				}
-			);
+		if (jEditButton != null) {
+			return jEditButton;
 		}
+		jEditButton = new JButton();
+		jEditButton.setText(MessageBundle.getMessage("angal.common.edit.btn"));
+		jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
+		jEditButton.addActionListener(actionEvent -> {
+			if (deathReasonsTable.getSelectedRow() < 0) {
+				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
+			} else {
+				selectedRow = deathReasonsTable.getSelectedRow();
+				deathReason = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
+				DeathReasonEdit editRecord = new DeathReasonEdit(this, deathReason, false);
+				editRecord.addDeathReasonListener(DeathReasonBrowser.this);
+				editRecord.setVisible(true);
+			}
+		});
 		return jEditButton;
 	}
 
 	private JButton getJDeleteButton() {
-		if (jDeleteButton == null) {
-			jDeleteButton = new JButton();
-			jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
-			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
-			jDeleteButton.addActionListener(actionEvent -> {
-				if (deathReasonsTable.getSelectedRow() < 0) {
-					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
-				} else {
-					DeathReason deathReasons = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
-					int answer = MessageDialog.yesNo(
-						this,
-						"angal.mortuary.deathreason.deletedeathreason.fmt.msg",
-						deathReasons.getCode()
-					);
+		if (jDeleteButton != null) {
+			return jDeleteButton;
+		}
+		jDeleteButton = new JButton();
+		jDeleteButton.setText(MessageBundle.getMessage("angal.common.delete.btn"));
+		jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
+		jDeleteButton.addActionListener(actionEvent -> {
+			if (deathReasonsTable.getSelectedRow() < 0) {
+				MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
+			} else {
+				DeathReason deathReasons = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
+				int answer = MessageDialog.yesNo(
+					this,
+					"angal.mortuary.deathreason.deletedeathreason.fmt.msg",
+					deathReasons.getTitle()
+				);
 
-					if (answer == JOptionPane.YES_OPTION) {
-						try {
-							boolean isDeleted = deathReasonManager.delete(deathReasons);
-							if (isDeleted) {
-								deathReasonList.remove(deathReasonsTable.getSelectedRow());
-								model.fireTableDataChanged();
-								deathReasonsTable.updateUI();
-							} else {
-								MessageDialog.info(this, "angal.common.suppressionfailed.msg");
-							}
-						} catch (OHServiceException e) {
-							OHServiceExceptionUtil.showMessages(e);
+				if (answer == JOptionPane.YES_OPTION) {
+					try {
+						boolean isDeleted = deathReasonManager.delete(deathReasons);
+						if (isDeleted) {
+							deathReasonList.remove(deathReasonsTable.getSelectedRow());
+							model.fireTableDataChanged();
+							deathReasonsTable.updateUI();
+						} else {
+							MessageDialog.info(this, "angal.common.suppressionfailed.msg");
 						}
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
 					}
 				}
-			});
-		}
+			}
+		});
 		return jDeleteButton;
 	}
 
-	private JButton getJCloseButton() {
-		if (jCloseButton == null) {
-			jCloseButton = new JButton();
-			jCloseButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
-			jCloseButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
-			jCloseButton.addActionListener(actionEvent -> dispose());
+	private JButton getDetailsButton() {
+		if (jDetailsButton != null) {
+			return jDetailsButton;
 		}
+		jDetailsButton = new JButton(MessageBundle.getMessage("angal.mortuary.deathreason.details.btn"));
+		jDetailsButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.deathreason.details.btn.key"));
+		jDetailsButton.addActionListener(actionEvent -> {
+			if (deathReasonsTable.getSelectedRow() < 0) {
+				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
+			} else {
+				selectedRow = deathReasonsTable.getSelectedRow();
+				deathReason = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
+				DeathReasonDetails detailsRecord = new DeathReasonDetails(this, deathReason);
+				detailsRecord.setVisible(true);
+			}
+		});
+		return jDetailsButton;
+	}
+
+	private JButton getJCloseButton() {
+		if (jCloseButton != null) {
+			return jCloseButton;
+		}
+		jCloseButton = new JButton();
+		jCloseButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
+		jCloseButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
+		jCloseButton.addActionListener(actionEvent -> dispose());
 		return jCloseButton;
 	}
 
@@ -269,13 +294,15 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	}
 
 	private JTable getJTable() {
-		if (deathReasonsTable == null) {
-			model = new DeathReasonTableModel("");
-			deathReasonsTable = new JTable(model);
-			deathReasonsTable.getColumnModel().getColumn(0).setMaxWidth(columnWidths[0]);
-			deathReasonsTable.getColumnModel().getColumn(1).setPreferredWidth(columnWidths[1]);
-			deathReasonsTable.getColumnModel().getColumn(2).setPreferredWidth(columnWidths[2]);
+		if (deathReasonsTable != null) {
+			return deathReasonsTable;
 		}
+		model = new DeathReasonTableModel("");
+		deathReasonsTable = new JTable(model);
+		deathReasonsTable.getColumnModel().getColumn(0).setMaxWidth(columnWidths[0]);
+		deathReasonsTable.getColumnModel().getColumn(1).setPreferredWidth(columnWidths[1]);
+		deathReasonsTable.getColumnModel().getColumn(2).setPreferredWidth(columnWidths[2]);
+		deathReasonsTable.getColumnModel().getColumn(2).setCellRenderer(new TruncatedTextRenderer(50));
 		return deathReasonsTable;
 	}
 
@@ -290,49 +317,52 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	}
 
 	private JButton getPrevButton() {
-		if (prevButton == null) {
-			prevButton = new JButton("<");
-			prevButton.setEnabled(CURRENT_PAGE > 0);
-			prevButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE > 0) {
-					CURRENT_PAGE--;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
-				}
-			});
+		if (prevButton != null) {
+			return prevButton;
 		}
+		prevButton = new JButton("<");
+		prevButton.setEnabled(CURRENT_PAGE > 0);
+		prevButton.addActionListener(actionEvent -> {
+			if (CURRENT_PAGE > 0) {
+				CURRENT_PAGE--;
+				pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+			}
+		});
 		return prevButton;
 	}
 
 	private JButton getNextButton() {
-		if (nextButton == null) {
-			nextButton = new JButton(">");
-			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-			nextButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE < TOTAL_PAGES - 1) {
-					CURRENT_PAGE++;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
-				}
-			});
+		if (nextButton != null) {
+			return nextButton;
 		}
+		nextButton = new JButton(">");
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		nextButton.addActionListener(actionEvent -> {
+			if (CURRENT_PAGE < TOTAL_PAGES - 1) {
+				CURRENT_PAGE++;
+				pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+			}
+		});
 		return nextButton;
 	}
 
 	private JComboBox<Integer> getPagesCombo() {
-		if (pagesCombo == null) {
-			pagesCombo = new JComboBox<>();
-			pagesCombo.setPreferredSize(new Dimension(100, 25));
-			for (int i = 0; i < TOTAL_PAGES; i++) {
-				pagesCombo.addItem(i + 1);
-			}
-			pagesCombo.addActionListener(actionEvent -> {
-				if (pagesCombo.getItemCount() != 0) {
-					if (pagesCombo.getSelectedItem() != null) {
-						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(true);
-					}
-				}
-			});
+		if (pagesCombo != null) {
+			return pagesCombo;
 		}
+		pagesCombo = new JComboBox<>();
+		pagesCombo.setPreferredSize(new Dimension(100, 25));
+		for (int i = 0; i < TOTAL_PAGES; i++) {
+			pagesCombo.addItem(i + 1);
+		}
+		pagesCombo.addActionListener(actionEvent -> {
+			if (pagesCombo.getItemCount() != 0) {
+				if (pagesCombo.getSelectedItem() != null) {
+					CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+					applyFilter(true);
+				}
+			}
+		});
 		return pagesCombo;
 	}
 
@@ -384,7 +414,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 
 		public DeathReasonTableModel(String key) {
 			try {
-				Page<DeathReason> deathReasonPage = deathReasonManager.getByCodeOrDescriptionPageable(key, key, CURRENT_PAGE, PAGE_SIZE);
+				Page<DeathReason> deathReasonPage = deathReasonManager.getByTitleOrDescriptionPageable(key, CURRENT_PAGE, PAGE_SIZE);
 				deathReasonList = new ArrayList<>(deathReasonPage.getContent());
 				totalDeathReasons = deathReasonPage.getTotalElements();
 				TOTAL_PAGES = deathReasonPage.getTotalPages();
@@ -419,7 +449,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 			} else if (c == -1) {
 				return deathReason;
 			} else if (c == 1) {
-				return deathReason.getCode();
+				return deathReason.getTitle();
 			} else if (c == 2) {
 				return deathReason.getDescription();
 			}
@@ -434,6 +464,36 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
+		}
+	}
+
+	static class TruncatedTextRenderer extends JLabel implements TableCellRenderer {
+		private final int maxLength;
+
+		public TruncatedTextRenderer(int maxLength) {
+			this.maxLength = maxLength;
+			setOpaque(true);
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			String text = (value != null) ? value.toString() : "";
+
+			if (text.length() > maxLength) {
+				text = text.substring(0, maxLength) + "...";
+			}
+
+			setText(text);
+
+			if (isSelected) {
+				setBackground(table.getSelectionBackground());
+				setForeground(table.getSelectionForeground());
+			} else {
+				setBackground(table.getBackground());
+				setForeground(table.getForeground());
+			}
+
+			return this;
 		}
 	}
 
