@@ -80,9 +80,9 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	private JTable deathReasonsTable;
 	private DefaultTableModel model;
 	private List<DeathReason> deathReasonList;
-	private final String[] columnNames = { MessageBundle.getMessage("angal.mortuary.deathreason.id.col"),
-		MessageBundle.getMessage("angal.mortuary.deathreason.code.col"),
-		MessageBundle.getMessage("angal.mortuary.deathreason.description.col")
+	private final String[] columnNames = { MessageBundle.getMessage("angal.common.id.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.deathreason.code.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.deathreason.description").toUpperCase()
 	};
 	private final int[] columnWidths = {50, 50, 70};
 	private final Class[] columnClasses = {int.class, String.class, String.class};
@@ -236,6 +236,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 							deathReasonList.remove(deathReasonsTable.getSelectedRow());
 							model.fireTableDataChanged();
 							deathReasonsTable.updateUI();
+							applyFilter(false);
 						} else {
 							MessageDialog.info(this, "angal.common.suppressionfailed.msg");
 						}
@@ -510,8 +511,5 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	@Override
 	public void deathReasonInserted(AWTEvent e) {
 		applyFilter(false);
-		if (deathReasonsTable.getRowCount() > 0) {
-			deathReasonsTable.setRowSelectionInterval(0, 0);
-		}
 	}
 }

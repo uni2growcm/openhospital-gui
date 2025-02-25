@@ -100,7 +100,6 @@ public class DeathReasonEdit extends JDialog {
 	private JButton saveButton;
 	private JTextField titleTextField;
 	private JTextArea descriptionTextArea;
-	private String title;
 	private final boolean insert;
 	private DeathReason deathReason;
 
@@ -159,7 +158,7 @@ public class DeathReasonEdit extends JDialog {
 		gbcCodeTextField.gridy = 0;
 		jDataPanel.add(getTitleTextField(), gbcCodeTextField);
 
-		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description.txt"));
+		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description"));
 		GridBagConstraints gbcDescLabel = new GridBagConstraints();
 		gbcDescLabel.anchor = GridBagConstraints.WEST;
 		gbcDescLabel.insets = new Insets(0, 0, 5, 5);

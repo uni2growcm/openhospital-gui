@@ -98,7 +98,7 @@ public class DeathReasonDetails extends JDialog {
 		gbcCodeTextField.gridy = 0;
 		jDataPanel.add(getTitleTextField(), gbcCodeTextField);
 
-		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description.txt"));
+		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description"));
 		GridBagConstraints gbcDescLabel = new GridBagConstraints();
 		gbcDescLabel.anchor = GridBagConstraints.WEST;
 		gbcDescLabel.insets = new Insets(0, 0, 5, 5);
