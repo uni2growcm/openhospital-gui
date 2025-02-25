@@ -178,8 +178,9 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 				} else {
 					try {
 						reductionPlan = (ReductionPlan) ((ReductionPlanModel)table.getModel()).getValueAt(table.getSelectedRow(), -1);
-						if (MessageDialog.yesNo(null, "angal.reductionplan.doyouwantdeletereductionplan.msg") == JOptionPane.YES_OPTION
-							&& reductionPlanManager.delete(reductionPlan).isDeleted()) {
+						if (MessageDialog.yesNo(null, "angal.reductionplan.doyouwantdeletereductionplan.msg") == JOptionPane.YES_OPTION)
+							 {
+							reductionPlanManager.delete(reductionPlan);
 							reductionplansList.remove(reductionPlan);
 							reductionPlanModel.fireTableDataChanged();
 							table.setModel(reductionPlanModel);

@@ -88,7 +88,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
 	private final EventListenerList reductionPlanListener = new EventListenerList();
-	private ReductionPlan reductionPlan;
+	private final ReductionPlan reductionPlan;
 	private final boolean isInsert;
 	private JPanel contentPane;
 	private JButton jCloseButton;
@@ -104,16 +104,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private JLabel labelPriceOtherRate;
 	private JTextField textPriceOtherRate;
 	private List<MedicalReduction> medicalReductionList = new ArrayList<>();
-	private final List<MedicalReduction> medicalReductionDeletedList = new ArrayList<>();
 	private JTable medicalReductionTable;
 	private List<ExamReduction> examReductionList = new ArrayList<>();
-	private final List<ExamReduction> examReductionDeletedList = new ArrayList<>();
 	private JTable examReductionTable;
 	private List<OperationReduction> operationReductionList = new ArrayList<>();
-	private final List<OperationReduction> operationReductionDeletedList = new ArrayList<>();
 	private JTable operationReductionTable;
 	private List<PriceOtherReduction> priceOtherReductionList = new ArrayList<>();
-	private final List<PriceOtherReduction> priceOtherReductionDeletedList = new ArrayList<>();
 	private JTable priceOtherReductionTable;
 	private JButton jAddButton;
 	private JTabbedPane tabbedPane;
@@ -122,10 +118,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
 		this.isInsert = isInsert;
-		reductionPlan.setExamReductions(examReductionList);
-		reductionPlan.setMedicalReductions(medicalReductionList);
-		reductionPlan.setOperationReductions(operationReductionList);
-		reductionPlan.setPriceOtherReductions(priceOtherReductionList);
+		if (isInsert){
+			reductionPlan.setExamReductions(examReductionList);
+			reductionPlan.setMedicalReductions(medicalReductionList);
+			reductionPlan.setOperationReductions(operationReductionList);
+			reductionPlan.setPriceOtherReductions(priceOtherReductionList);
+		}
 		this.reductionPlan = reductionPlan;
 		initialize();
 		loadDataFromObject();
@@ -137,7 +135,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private void fireReductionPlanInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
-
 			@Serial
 			private static final long serialVersionUID = 1L;
 		};
@@ -147,6 +144,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			((ReductionPlanListener) listener).ReductionPlanInserted(event);
 		}
 	}
+
 	private void initialize() {
 
 		setTitle(isInsert ? MessageBundle.getMessage("angal.reductionplan.createreductionplan.title")
@@ -156,6 +154,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		setContentPane(getMainContentPane());
 		setLocationRelativeTo(null);
 	}
+
 	private JPanel getMainContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
@@ -195,6 +194,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		return contentPane;
 	}
+
 	private JPanel getDetailPane() {
 		JPanel detailPane = new JPanel();
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -300,6 +300,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		return detailPane;
 
 	}
+
 	private JPanel getMedicalReductionPanel() {
 		JPanel medicalReductionPanel = new JPanel();
 		medicalReductionPanel.setLayout(new BorderLayout());
@@ -312,6 +313,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(medicalReductionTable);
 		return medicalReductionPanel;
 	}
+
 	private JPanel getExamReductionPanel() {
 		JPanel examReductionPanel = new JPanel();
 		examReductionPanel.setLayout(new BorderLayout());
@@ -324,6 +326,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(examReductionTable);
 		return examReductionPanel;
 	}
+
 	private JPanel getOperationReductionPanel() {
 		JPanel operationReductionPanel = new JPanel();
 		operationReductionPanel.setLayout(new BorderLayout());
@@ -336,6 +339,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(operationReductionTable);
 		return operationReductionPanel;
 	}
+
 	private JPanel getPriceOtherReductionPanel() {
 		JPanel priceOtherReductionPanel = new JPanel();
 		priceOtherReductionPanel.setLayout(new BorderLayout());
@@ -348,30 +352,35 @@ public class ReductionPlanEdit extends ModalJFrame {
 		scrollPane.setViewportView(priceOtherReductionTable);
 		return priceOtherReductionPanel;
 	}
+
 	private JLabel getJLabelPriceOtherRate() {
 		if (labelPriceOtherRate == null) {
 			labelPriceOtherRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.otherrate.label"));
 		}
 		return labelPriceOtherRate;
 	}
+
 	private JTextField getTextFieldPriceOtherRate() {
 		if (textPriceOtherRate == null) {
 			textPriceOtherRate = new JTextField();
 		}
 		return textPriceOtherRate;
 	}
+
 	private JTextField getTextFieldExamRate() {
 		if (textExamRate == null) {
 			textExamRate = new JTextField();
 		}
 		return textExamRate;
 	}
+
 	private JLabel getJLabelExamRate() {
 		if (labelExamRate == null) {
 			labelExamRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.examrate.label"));
 		}
 		return labelExamRate;
 	}
+
 	private JLabel getJLabelOperationRate() {
 		if (labelOperationRate == null) {
 			labelOperationRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.operationrate.label"));
@@ -379,36 +388,42 @@ public class ReductionPlanEdit extends ModalJFrame {
 		return labelOperationRate;
 
 	}
+
 	private JLabel getJLabelMedicalRate() {
 		if (labelMedicalRate == null) {
 			labelMedicalRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.medicalrate.label"));
 		}
 		return labelMedicalRate;
 	}
+
 	private JTextField getJTextFieldDescription() {
 		if (textDescription == null) {
 			textDescription = new JTextField();
 		}
 		return textDescription;
 	}
+
 	private JTextField getJTextFieldMedicalRate() {
 		if (textMedicalRate == null) {
 			textMedicalRate = new JTextField();
 		}
 		return textMedicalRate;
 	}
+
 	private JTextField getJTextFieldOperationRate() {
 		if (textOperationRate == null) {
 			textOperationRate = new JTextField();
 		}
 		return textOperationRate;
 	}
+
 	private JLabel getJLabelDescription() {
 		if (labelDescription == null) {
 			labelDescription = new JLabel(MessageBundle.getMessage("angal.reductionplan.description.label"));
 		}
 		return labelDescription;
 	}
+
 	private JPanel getJTabbedPane() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
@@ -425,6 +440,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		panel.add(buttonPanel, BorderLayout.EAST);
 		return panel;
 	}
+
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
@@ -433,6 +449,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		}
 		return buttonPanel;
 	}
+
 	private JButton getJAddButton() {
 		if (jAddButton == null) {
 			jAddButton = new JButton();
@@ -456,6 +473,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		}
 		return jAddButton;
 	}
+
 	private JButton getJDeleteButton() {
 		if (jDeleteButton == null) {
 			jDeleteButton = new JButton();
@@ -466,49 +484,59 @@ public class ReductionPlanEdit extends ModalJFrame {
 				int index;
 				int tabSelected = tabbedPane.getSelectedIndex();
 				switch (tabSelected) {
-				case 0 -> {
-					index = medicalReductionTable.getSelectedRow();
-					if (medicalReductionList.get(index).getId() != 0) {
-						medicalReductionDeletedList.add(medicalReductionList.get(index));
+					case 0 -> {
+						index = medicalReductionTable.getSelectedRow();
+						if (index < 0) {
+							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+						} else {
+							medicalReductionList.remove(index);
+							MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+							medicalReductionModel.fireTableDataChanged();
+						}
 					}
-					medicalReductionList.remove(index);
-					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-					medicalReductionModel.fireTableDataChanged();
-				}
-				case 1 -> {
-					index = examReductionTable.getSelectedRow();
-					if (examReductionList.get(index).getId() != 0) {
-						examReductionDeletedList.add(examReductionList.get(index));
+
+					case 1 -> {
+						index = examReductionTable.getSelectedRow();
+						if (index < 0) {
+							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+						} else {
+							examReductionList.remove(index);
+							ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+							examReductionModel.fireTableDataChanged();
+						}
 					}
-					examReductionList.remove(index);
-					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
-					examReductionModel.fireTableDataChanged();
-				}
-				case 2 -> {
-					index = operationReductionTable.getSelectedRow();
-					if (operationReductionList.get(index).getId() != 0) {
-						operationReductionDeletedList.add(operationReductionList.get(index));
+
+					case 2 -> {
+						index = operationReductionTable.getSelectedRow();
+						if (index < 0) {
+							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+						} else {
+							operationReductionList.remove(index);
+							OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+							operationReductionModel.fireTableDataChanged();
+						}
 					}
-					operationReductionList.remove(index);
-					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
-					operationReductionModel.fireTableDataChanged();
-				}
-				case 3 -> {
-					index = priceOtherReductionTable.getSelectedRow();
-					if (priceOtherReductionList.get(index).getId() != 0) {
-						priceOtherReductionDeletedList.add(priceOtherReductionList.get(index));
+
+					case 3 -> {
+						index = priceOtherReductionTable.getSelectedRow();
+						if (index < 0) {
+							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+						} else {
+							priceOtherReductionList.remove(index);
+							PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+							priceOtherReductionModel.fireTableDataChanged();
+						}
 					}
-					priceOtherReductionList.remove(index);
-					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
-					priceOtherReductionModel.fireTableDataChanged();
-				}
-				default -> {
-				}
+
+					default -> {
+					}
 				}
 			});
 		}
+
 		return jDeleteButton;
 	}
+
 	private JButton getJSaveButton() {
 		if (jSaveButton == null) {
 			jSaveButton = new JButton();
@@ -519,15 +547,19 @@ public class ReductionPlanEdit extends ModalJFrame {
 					if (!examReductionList.isEmpty()) {
 						reductionPlan.setExamReductions(examReductionList);
 					}
+
 					if (!medicalReductionList.isEmpty()) {
 						reductionPlan.setMedicalReductions(medicalReductionList);
 					}
+
 					if(!operationReductionList.isEmpty()) {
 						reductionPlan.setOperationReductions(operationReductionList);
 					}
+
 					if (!priceOtherReductionList.isEmpty()) {
 						reductionPlan.setPriceOtherReductions(priceOtherReductionList);
 					}
+
 
 					if (loadDataInObject()) {
 						if (isInsert) {
@@ -544,8 +576,10 @@ public class ReductionPlanEdit extends ModalJFrame {
 				}
 			});
 		}
+
 		return jSaveButton;
 	}
+
 	private void addMedicalReduction() throws OHServiceException {
 		List<Medical> medicalList = medicalBrowsingManager.getMedicals();
 
@@ -573,6 +607,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			}
 		}
 	}
+
 	private void addExamReduction() throws OHServiceException {
 		List<Exam> examList = examBrowsingManager.getExams();
 
@@ -655,7 +690,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private boolean loadDataInObject() {
 		try {
 			if (!textDescription.getText().equals(reductionPlan.getDescription())
-				&& !reductionPlanManager.getByDescription(textDescription.getText(), false).isEmpty()) {
+				&& !reductionPlanManager.getByDescription(textDescription.getText()).isEmpty()) {
 				MessageDialog.error(ReductionPlanEdit.this, "angal.reductionplan.descriptionalreadyused.msg");
 				return false;
 			}
@@ -679,10 +714,10 @@ public class ReductionPlanEdit extends ModalJFrame {
 		textPriceOtherRate.setText(String.valueOf(this.reductionPlan.getOtherRate()));
 
 		try {
-			medicalReductionList = reductionPlanManager.getMedicalReductionByReductionPlanId(this.reductionPlan.getId());
-			examReductionList = reductionPlanManager.getExamReductionByReductionPlanId(this.reductionPlan.getId());
-			operationReductionList = reductionPlanManager.getOperationReductionByReductionPlanId(this.reductionPlan.getId());
-			priceOtherReductionList = reductionPlanManager.getPriceOtherReductionByReductionPlanId(this.reductionPlan.getId());
+			medicalReductionList = reductionPlanManager.getMedicalReductionsByReductionPlanId(this.reductionPlan.getId());
+			examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(this.reductionPlan.getId());
+			operationReductionList = reductionPlanManager.getOperationReductionsByReductionPlanId(this.reductionPlan.getId());
+			priceOtherReductionList = reductionPlanManager.getPriceOtherReductionsByReductionPlanId(this.reductionPlan.getId());
 
 			((ExamReductionModel) examReductionTable.getModel()).fireTableDataChanged();
 			examReductionTable.updateUI();
@@ -696,7 +731,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
-
 	}
 
 	private JButton getJCloseButton() {
@@ -720,7 +754,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public ExamReductionModel() {
 			try {
-				examReductionList = reductionPlanManager.getExamReductionByReductionPlanId(reductionPlan.getId());
+				examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(reductionPlan.getId());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -762,7 +796,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public OperationReductionModel() {
 			try {
-				operationReductionList = reductionPlanManager.getOperationReductionByReductionPlanId(reductionPlan.getId());
+				operationReductionList = reductionPlanManager.getOperationReductionsByReductionPlanId(reductionPlan.getId());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -804,7 +838,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		public PriceOtherReductionModel() {
 			try {
-				priceOtherReductionList = reductionPlanManager.getPriceOtherReductionByReductionPlanId(reductionPlan.getId());
+				priceOtherReductionList = reductionPlanManager.getPriceOtherReductionsByReductionPlanId(reductionPlan.getId());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
@@ -840,13 +874,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	}
 
 	private class MedicalReductionModel extends DefaultTableModel {
-
 		@Serial
 		private static final long serialVersionUID = 1L;
 
 		public MedicalReductionModel() {
 			try {
-				medicalReductionList = reductionPlanManager.getMedicalReductionByReductionPlanId(reductionPlan.getId());
+				medicalReductionList = reductionPlanManager.getMedicalReductionsByReductionPlanId(reductionPlan.getId());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
