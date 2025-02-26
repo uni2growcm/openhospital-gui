@@ -47,7 +47,7 @@ public class DeathReasonDetails extends JDialog {
 	private JPanel jContentPane;
 	private JPanel jDataPanel;
 	private JTextArea descriptionTextArea;
-	private JTextField titleTextField;
+	private JLabel titleLabel;
 	private JButton closeButton;
 	private final DeathReason deathReason;
 
@@ -91,12 +91,12 @@ public class DeathReasonDetails extends JDialog {
 		gbcCodeLabel.gridx = 0;
 		gbcCodeLabel.gridy = 0;
 		jDataPanel.add(codeLabel, gbcCodeLabel);
-		GridBagConstraints gbcCodeTextField = new GridBagConstraints();
-		gbcCodeTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbcCodeTextField.insets = new Insets(0, 0, 5, 0);
-		gbcCodeTextField.gridx = 1;
-		gbcCodeTextField.gridy = 0;
-		jDataPanel.add(getTitleTextField(), gbcCodeTextField);
+		GridBagConstraints gbcTitleLabel = new GridBagConstraints();
+		gbcTitleLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbcTitleLabel.insets = new Insets(0, 0, 5, 0);
+		gbcTitleLabel.gridx = 1;
+		gbcTitleLabel.gridy = 0;
+		jDataPanel.add(getTitleLabel(), gbcTitleLabel);
 
 		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description"));
 		GridBagConstraints gbcDescLabel = new GridBagConstraints();
@@ -115,14 +115,13 @@ public class DeathReasonDetails extends JDialog {
 		return jDataPanel;
 	}
 
-	private JTextField getTitleTextField() {
-		if (titleTextField != null) {
-			return titleTextField;
+	private JLabel getTitleLabel() {
+		if (titleLabel != null) {
+			return titleLabel;
 		}
-		titleTextField = new JTextField();
-		titleTextField.setText(deathReason.getTitle());
-		titleTextField.setEnabled(false);
-		return titleTextField;
+		titleLabel = new JLabel();
+		titleLabel.setText(deathReason.getTitle());
+		return titleLabel;
 	}
 
 	private JScrollPane getDescriptionScrollPanel() {
@@ -143,7 +142,8 @@ public class DeathReasonDetails extends JDialog {
 		descriptionTextArea.setText(deathReason.getDescription());
 		descriptionTextArea.setWrapStyleWord(true);
 		descriptionTextArea.setLineWrap(true);
-		descriptionTextArea.setEnabled(false);
+		descriptionTextArea.setEditable(false);
+		descriptionTextArea.setOpaque(false);
 		return descriptionTextArea;
 	}
 

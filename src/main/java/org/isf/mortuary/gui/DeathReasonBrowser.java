@@ -485,6 +485,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 			}
 
 			setText(text);
+			setFont(table.getFont());
 
 			if (isSelected) {
 				setBackground(table.getSelectionBackground());
