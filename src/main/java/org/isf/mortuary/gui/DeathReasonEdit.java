@@ -115,10 +115,10 @@ public class DeathReasonEdit extends JDialog {
 	private void initialize() {
 		this.setContentPane(getJContentPane());
 		if (insert) {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.newdeathreason.title"));
+			this.setTitle(MessageBundle.getMessage("angal.mortuary.causeofdeath.newcauseofdeath.title"));
 			deathReason = new DeathReason(0,"","",false);
 		} else {
-			this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.editdeathreason.title"));
+			this.setTitle(MessageBundle.getMessage("angal.mortuary.causeofdeath.editcauseofdeath.title"));
 		}
 		pack();
 		setLocationRelativeTo(null);
@@ -144,7 +144,7 @@ public class DeathReasonEdit extends JDialog {
 		GridBagLayout gblDataPanel = new GridBagLayout();
 		gblDataPanel.columnWeights = new double[] { 0.0, 1.0 };
 		jDataPanel.setLayout(gblDataPanel);
-		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.code.txt"));
+		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.code.txt"));
 		GridBagConstraints gbcCodeLabel = new GridBagConstraints();
 		gbcCodeLabel.anchor = GridBagConstraints.WEST;
 		gbcCodeLabel.insets = new Insets(0, 0, 5, 5);
@@ -158,7 +158,7 @@ public class DeathReasonEdit extends JDialog {
 		gbcCodeTextField.gridy = 0;
 		jDataPanel.add(getTitleTextField(), gbcCodeTextField);
 
-		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description"));
+		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.description"));
 		GridBagConstraints gbcDescLabel = new GridBagConstraints();
 		gbcDescLabel.anchor = GridBagConstraints.WEST;
 		gbcDescLabel.insets = new Insets(0, 0, 5, 5);
@@ -224,7 +224,7 @@ public class DeathReasonEdit extends JDialog {
 		saveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 		saveButton.addActionListener(actionEvent -> {
 			if (insert && titleTextField.getText().trim().isEmpty()) {
-				MessageDialog.error(this, "angal.mortuary.deathreason.pleaseinsertatitle.msg");
+				MessageDialog.error(this, "angal.mortuary.causeofdeath.pleaseinsertatitle.msg");
 				return;
 			}
 

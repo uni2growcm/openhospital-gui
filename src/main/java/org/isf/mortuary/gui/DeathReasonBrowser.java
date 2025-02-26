@@ -81,8 +81,8 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	private DefaultTableModel model;
 	private List<DeathReason> deathReasonList;
 	private final String[] columnNames = { MessageBundle.getMessage("angal.common.id.txt").toUpperCase(),
-		MessageBundle.getMessage("angal.mortuary.deathreason.code.col").toUpperCase(),
-		MessageBundle.getMessage("angal.mortuary.deathreason.description").toUpperCase()
+		MessageBundle.getMessage("angal.mortuary.causeofdeath.code.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.causeofdeath.description").toUpperCase()
 	};
 	private final int[] columnWidths = {50, 50, 70};
 	private final Class[] columnClasses = {int.class, String.class, String.class};
@@ -99,7 +99,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	}
 
 	private void initialize() {
-		this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.title"));
+		this.setTitle(MessageBundle.getMessage("angal.mortuary.causeofdeath.title"));
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = kit.getScreenSize();
 		int pfrmBase = 10;
@@ -225,7 +225,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 				DeathReason deathReasons = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
 				int answer = MessageDialog.yesNo(
 					this,
-					"angal.mortuary.deathreason.deletedeathreason.fmt.msg",
+					"angal.mortuary.causeofdeath.deletecauseofdeath.fmt.msg",
 					deathReasons.getTitle()
 				);
 
@@ -253,8 +253,8 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		if (jDetailsButton != null) {
 			return jDetailsButton;
 		}
-		jDetailsButton = new JButton(MessageBundle.getMessage("angal.mortuary.deathreason.details.btn"));
-		jDetailsButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.deathreason.details.btn.key"));
+		jDetailsButton = new JButton(MessageBundle.getMessage("angal.mortuary.causeofdeath.details.btn"));
+		jDetailsButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.causeofdeath.details.btn.key"));
 		jDetailsButton.addActionListener(actionEvent -> {
 			if (deathReasonsTable.getSelectedRow() < 0) {
 				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
@@ -372,7 +372,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		model = new DeathReasonTableModel(jSearchTextFiled.getText().trim());
 
 		if (!isNextOrPrevButton) {
-			totalDeathReasonLabel.setText(MessageBundle.getMessage("angal.mortuary.totaldeathreason.txt") + ": " + totalDeathReasons);
+			totalDeathReasonLabel.setText(MessageBundle.getMessage("angal.mortuary.totalcauseofdeath.txt") + ": " + totalDeathReasons);
 			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			CURRENT_PAGE = 0;
 
@@ -403,7 +403,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 
 	private JLabel getTotalDeathReasonLabel() {
 		if (totalDeathReasonLabel == null) {
-			totalDeathReasonLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totaldeathreason.txt") + ": " + totalDeathReasons);
+			totalDeathReasonLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalcauseofdeath.txt") + ": " + totalDeathReasons);
 		}
 		return totalDeathReasonLabel;
 	}

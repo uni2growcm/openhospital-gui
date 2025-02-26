@@ -59,7 +59,7 @@ public class DeathReasonDetails extends JDialog {
 
 	private void initialize() {
 		this.setContentPane(getJContentPane());
-		this.setTitle(MessageBundle.getMessage("angal.mortuary.deathreason.deathreasondetails.title"));
+		this.setTitle(MessageBundle.getMessage("angal.mortuary.causeofdeath.causeofdeathdetails.title"));
 		pack();
 		setLocationRelativeTo(null);
 	}
@@ -84,7 +84,7 @@ public class DeathReasonDetails extends JDialog {
 		GridBagLayout gblDataPanel = new GridBagLayout();
 		gblDataPanel.columnWeights = new double[] { 0.0, 1.0 };
 		jDataPanel.setLayout(gblDataPanel);
-		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.details.title.txt"));
+		JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.details.title.txt"));
 		GridBagConstraints gbcCodeLabel = new GridBagConstraints();
 		gbcCodeLabel.anchor = GridBagConstraints.WEST;
 		gbcCodeLabel.insets = new Insets(0, 0, 5, 5);
@@ -98,7 +98,7 @@ public class DeathReasonDetails extends JDialog {
 		gbcTitleLabel.gridy = 0;
 		jDataPanel.add(getTitleLabel(), gbcTitleLabel);
 
-		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.description"));
+		JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.description"));
 		GridBagConstraints gbcDescLabel = new GridBagConstraints();
 		gbcDescLabel.anchor = GridBagConstraints.WEST;
 		gbcDescLabel.insets = new Insets(0, 0, 5, 5);

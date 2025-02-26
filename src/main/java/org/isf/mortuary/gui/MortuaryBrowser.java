@@ -86,7 +86,7 @@ public class MortuaryBrowser extends ModalJFrame {
 		MessageBundle.getMessage("angal.mortuary.provenance.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.indate.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.outdate.col").toUpperCase(),
-		MessageBundle.getMessage("angal.mortuary.deathreason.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.causeofdeath.col").toUpperCase(),
 	};
 	private final int[] columnAlignment = { SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER,
 		SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT
@@ -302,7 +302,7 @@ public class MortuaryBrowser extends ModalJFrame {
 
 	private JPanel getDeathReasonPanel() {
 		JPanel provenancePanel = new JPanel();
-		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathreason.border")));
+		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.causeofdeath.border")));
 		provenancePanel.add(getDeathReasonCombo());
 		return provenancePanel;
 	}
