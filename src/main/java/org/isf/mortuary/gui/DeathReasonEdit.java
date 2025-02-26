@@ -230,10 +230,6 @@ public class DeathReasonEdit extends JDialog {
 
 			deathReason.setDescription(descriptionTextArea.getText().trim());
 			deathReason.setTitle(titleTextField.getText().trim());
-			if (insert && deathReasonManager.exists(deathReason)) {
-				MessageDialog.error(this, "angal.mortuary.deathreason.titlealreadyinuse.msg");
-				return;
-			}
 
 			boolean result = false;
 			DeathReason savedDeathReason;
