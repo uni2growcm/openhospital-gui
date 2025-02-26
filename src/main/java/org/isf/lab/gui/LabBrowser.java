@@ -42,6 +42,7 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+import net.sf.jasperreports.engine.JRException;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamTarget;
@@ -60,8 +61,10 @@ import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.serviceprinting.manager.PrintLabels;
 import org.isf.serviceprinting.manager.PrintManager;
+import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.exception.model.OHExceptionMessage;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -232,11 +235,13 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				}
 				try {
 					new PrintLabels("LabelForSamples", patId);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
+				} catch (JRException | OHException e) {
+					OHServiceExceptionUtil.showMessages(
+							new OHServiceException(new OHExceptionMessage(e.getMessage()))
+					);
+                }
 
-			});
+            });
 		}
 		return printLabelButton;
 	}
