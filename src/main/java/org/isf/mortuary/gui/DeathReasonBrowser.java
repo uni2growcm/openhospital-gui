@@ -303,7 +303,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		deathReasonsTable.getColumnModel().getColumn(0).setMaxWidth(columnWidths[0]);
 		deathReasonsTable.getColumnModel().getColumn(1).setPreferredWidth(columnWidths[1]);
 		deathReasonsTable.getColumnModel().getColumn(2).setPreferredWidth(columnWidths[2]);
-		deathReasonsTable.getColumnModel().getColumn(2).setCellRenderer(new TruncatedTextRenderer(50));
+		deathReasonsTable.getColumnModel().getColumn(2).setCellRenderer(new TruncatedTextRenderer(200));
 		return deathReasonsTable;
 	}
 

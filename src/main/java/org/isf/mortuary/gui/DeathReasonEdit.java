@@ -224,14 +224,14 @@ public class DeathReasonEdit extends JDialog {
 		saveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 		saveButton.addActionListener(actionEvent -> {
 			if (insert && titleTextField.getText().trim().isEmpty()) {
-				MessageDialog.error(this, "angal.mortuary.deathreason.pleaseinsertacode.msg");
+				MessageDialog.error(this, "angal.mortuary.deathreason.pleaseinsertatitle.msg");
 				return;
 			}
 
 			deathReason.setDescription(descriptionTextArea.getText().trim());
 			deathReason.setTitle(titleTextField.getText().trim());
 			if (insert && deathReasonManager.exists(deathReason)) {
-				MessageDialog.error(this, "angal.common.codealreadyinuse.msg");
+				MessageDialog.error(this, "angal.mortuary.deathreason.titlealreadyinuse.msg");
 				return;
 			}
 
