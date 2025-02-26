@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamTarget;
 import org.isf.lab.model.Laboratory;
 import org.junit.jupiter.api.Test;
 

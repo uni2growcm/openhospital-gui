@@ -294,7 +294,7 @@ public class MortuaryStaysEdit extends JDialog {
                     }
                     try {
                         if (mortuaryStayManager.isCodePresent(code)) {
-                            MessageDialog.error(this, "angal.mortuarystays.codealreadyinuse.msg");
+                            MessageDialog.error(this, "angal.common.codealreadyinuse.msg");
                             return;
                         }
                     } catch (OHServiceException e) {
