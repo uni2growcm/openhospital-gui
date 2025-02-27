@@ -23,16 +23,19 @@ package org.isf.reductionplan.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.Serial;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -42,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 
@@ -70,18 +74,22 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
+
 	private final String[] medicalReductionColumn = new String[] {
 		MessageBundle.getMessage("angal.reductionplan.medical.col").toUpperCase(),
 		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+
 	private final String[] examReductionColumn = new String[] {
 		MessageBundle.getMessage("angal.reductionplan.exam.col").toUpperCase(),
 		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+
 	private final String[] operationReductionColumn = new String[] {
 		MessageBundle.getMessage("angal.reductionplan.operation.col").toUpperCase(),
 		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
 	private final String[] priceOtherReductionColumn = new String[] {
 		MessageBundle.getMessage("angal.reductionplan.other.col").toUpperCase(),
 		MessageBundle.getMessage("angal.reductionplan.reductionrate.col").toUpperCase() };
+
 	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
 	private final ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
@@ -113,7 +121,8 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private JTable priceOtherReductionTable;
 	private JButton jAddButton;
 	private JTabbedPane tabbedPane;
-	private JButton jDeleteButton;
+	private JButton jRemoveButton;
+	private JButton jRemoveAllButton;
 	private JButton jSaveButton;
 
 	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
@@ -186,8 +195,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		contentPane.add(tabPane, gbcTabbedPane);
 
 		GridBagConstraints gbcButtonPane = new GridBagConstraints();
-		gbcButtonPane.anchor = GridBagConstraints.WEST;
-		gbcButtonPane.insets = new Insets(5, 5, 5, 5);
+		gbcButtonPane.anchor = GridBagConstraints.CENTER;
 		gbcButtonPane.gridx = 0;
 		gbcButtonPane.gridy = 2;
 		contentPane.add(getButtonPanel(), gbcButtonPane);
@@ -298,7 +306,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		textPriceOtherRate.setColumns(10);
 
 		return detailPane;
-
 	}
 
 	private JPanel getMedicalReductionPanel() {
@@ -357,6 +364,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (labelPriceOtherRate == null) {
 			labelPriceOtherRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.otherrate.label"));
 		}
+
 		return labelPriceOtherRate;
 	}
 
@@ -364,6 +372,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textPriceOtherRate == null) {
 			textPriceOtherRate = new JTextField();
 		}
+
 		return textPriceOtherRate;
 	}
 
@@ -371,6 +380,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textExamRate == null) {
 			textExamRate = new JTextField();
 		}
+
 		return textExamRate;
 	}
 
@@ -378,6 +388,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (labelExamRate == null) {
 			labelExamRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.examrate.label"));
 		}
+
 		return labelExamRate;
 	}
 
@@ -385,14 +396,15 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (labelOperationRate == null) {
 			labelOperationRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.operationrate.label"));
 		}
-		return labelOperationRate;
 
+		return labelOperationRate;
 	}
 
 	private JLabel getJLabelMedicalRate() {
 		if (labelMedicalRate == null) {
 			labelMedicalRate = new JLabel(MessageBundle.getMessage("angal.reductionplan.medicalrate.label"));
 		}
+
 		return labelMedicalRate;
 	}
 
@@ -400,6 +412,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textDescription == null) {
 			textDescription = new JTextField();
 		}
+
 		return textDescription;
 	}
 
@@ -407,6 +420,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textMedicalRate == null) {
 			textMedicalRate = new JTextField();
 		}
+
 		return textMedicalRate;
 	}
 
@@ -414,6 +428,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textOperationRate == null) {
 			textOperationRate = new JTextField();
 		}
+
 		return textOperationRate;
 	}
 
@@ -421,6 +436,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (labelDescription == null) {
 			labelDescription = new JLabel(MessageBundle.getMessage("angal.reductionplan.description.label"));
 		}
+
 		return labelDescription;
 	}
 
@@ -434,9 +450,30 @@ public class ReductionPlanEdit extends ModalJFrame {
 		tabbedPane.addTab(MessageBundle.getMessage("angal.reductionplan.other.title"), getPriceOtherReductionPanel());
 		panel.add(tabbedPane, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(getJAddButton());
-		buttonPanel.add(getJDeleteButton());
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+		buttonPanel.setBorder(new EmptyBorder(22, 0, 0, 0));
+
+		JButton addButton = getJAddButton();
+		JButton removeButton = getJRemoveButton();
+		JButton removeAllButton = getJRemoveAllButton();
+		JButton[] buttons = { addButton, removeButton, removeAllButton};
+
+		Dimension maxSize = new Dimension(0, 0);
+		for (JButton b : buttons) {
+			Dimension d = b.getPreferredSize();
+			maxSize.width = Math.max(maxSize.width, d.width);
+			maxSize.height = Math.max(maxSize.height, d.height);
+		}
+
+		for (JButton b : buttons) {
+			b.setPreferredSize(maxSize);
+			b.setMinimumSize(maxSize);
+			b.setMaximumSize(maxSize);
+			b.setAlignmentX(Component.CENTER_ALIGNMENT);
+			buttonPanel.add(b);
+			buttonPanel.add(Box.createVerticalStrut(5));
+		}
+
 		panel.add(buttonPanel, BorderLayout.EAST);
 		return panel;
 	}
@@ -447,12 +484,15 @@ public class ReductionPlanEdit extends ModalJFrame {
 			buttonPanel.add(getJSaveButton());
 			buttonPanel.add(getJCloseButton());
 		}
+
 		return buttonPanel;
 	}
 
 	private JButton getJAddButton() {
 		if (jAddButton == null) {
 			jAddButton = new JButton();
+			Dimension uniformSize = new Dimension(70, jAddButton.getPreferredSize().height);
+			jAddButton.setPreferredSize(uniformSize);
 			jAddButton.setText(MessageBundle.getMessage("angal.reductionplan.add.btn"));
 			jAddButton.setMnemonic(MessageBundle.getMnemonic("angal.reductionplan.add.btn.key"));
 			jAddButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
@@ -471,16 +511,19 @@ public class ReductionPlanEdit extends ModalJFrame {
 				}
 			});
 		}
+
 		return jAddButton;
 	}
 
-	private JButton getJDeleteButton() {
-		if (jDeleteButton == null) {
-			jDeleteButton = new JButton();
-			jDeleteButton.setText(MessageBundle.getMessage("angal.common.delete.btn"));
-			jDeleteButton.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
-			jDeleteButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
-			jDeleteButton.addActionListener(actionEvent -> {
+	private JButton getJRemoveButton() {
+		if (jRemoveButton == null) {
+			jRemoveButton = new JButton();
+			Dimension uniformSize = new Dimension(70, jRemoveButton.getPreferredSize().height);
+			jRemoveButton.setPreferredSize(uniformSize);
+			jRemoveButton.setText(MessageBundle.getMessage("angal.common.remove.btn"));
+			jRemoveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.remove.btn.key"));
+			jRemoveButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
+			jRemoveButton.addActionListener(actionEvent -> {
 				int index;
 				int tabSelected = tabbedPane.getSelectedIndex();
 				switch (tabSelected) {
@@ -534,7 +577,51 @@ public class ReductionPlanEdit extends ModalJFrame {
 			});
 		}
 
-		return jDeleteButton;
+		return jRemoveButton;
+	}
+
+	private JButton getJRemoveAllButton() {
+		if (jRemoveAllButton == null) {
+			jRemoveAllButton = new JButton();
+			Dimension uniformSize = new Dimension(70, jRemoveAllButton.getPreferredSize().height);
+			jRemoveButton.setPreferredSize(uniformSize);
+			jRemoveAllButton.setText(MessageBundle.getMessage("angal.common.removeall.btn"));
+			jRemoveAllButton.setMnemonic(MessageBundle.getMnemonic("angal.common.removeall.btn.key"));
+			jRemoveAllButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
+			jRemoveAllButton.addActionListener(actionEvent -> {
+				int tabSelected = tabbedPane.getSelectedIndex();
+				switch (tabSelected) {
+				case 0 -> {
+					medicalReductionList.clear();
+					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+					medicalReductionModel.fireTableDataChanged();
+				}
+
+				case 1 -> {
+					examReductionList.clear();
+					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+					examReductionModel.fireTableDataChanged();
+				}
+
+				case 2 -> {
+					operationReductionList.clear();
+					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+					operationReductionModel.fireTableDataChanged();
+				}
+
+				case 3 -> {
+					priceOtherReductionList.clear();
+					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+					priceOtherReductionModel.fireTableDataChanged();
+				}
+
+				default -> {
+				}
+				}
+			});
+		}
+
+		return jRemoveAllButton;
 	}
 
 	private JButton getJSaveButton() {
@@ -583,13 +670,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addMedicalReduction() throws OHServiceException {
 		List<Medical> medicalList = medicalBrowsingManager.getMedicals();
 
-		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
-		Medical medical = (Medical) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, medicalList.toArray(), "",
+		Medical medical = (Medical) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), medicalList.toArray(), "",
 		"angal.newbill.selectamedical.txt", "angal.newbill.medical.title");
 
 		if (medical != null) {
 			double rate = 0;
-			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
+			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), null, rate,
 				"angal.reductionplan.reductionrate.txt", "angal.reductionplan.reductionrate.title");
 
 			if (stringRate == null || stringRate.isEmpty()) {
@@ -598,7 +684,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 			try {
 				rate = Double.parseDouble(stringRate);
-				MedicalReduction medicalReduction = new MedicalReduction(reductionPlan, medical, rate);
+				MedicalReduction medicalReduction = new MedicalReduction(reductionPlan, medical, BigDecimal.valueOf(rate));
 				medicalReductionList.add(medicalReduction);
 				MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
 				medicalReductionModel.fireTableDataChanged();
@@ -611,13 +697,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addExamReduction() throws OHServiceException {
 		List<Exam> examList = examBrowsingManager.getExams();
 
-		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
-		Exam exam = (Exam) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, examList.toArray(), "",
+		Exam exam = (Exam) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), examList.toArray(), "",
 			"angal.newbill.selectanexam.txt", "angal.newbill.exam.title");
 
 		if (exam != null) {
 			double rate = 0;
-			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
+			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), null, rate,
 				"angal.reductionplan.reductionrate.txt", "angal.reductionplan.reductionrate.title");
 
 			try {
@@ -625,7 +710,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 					return;
 				}
 				rate = Double.parseDouble(stringRate);
-				ExamReduction exaReduction = new ExamReduction(reductionPlan, exam, rate);
+				ExamReduction exaReduction = new ExamReduction(reductionPlan, exam, BigDecimal.valueOf(rate));
 				examReductionList.add(exaReduction);
 				ExamReductionModel examModel = (ExamReductionModel) examReductionTable.getModel();
 				examModel.fireTableDataChanged();
@@ -637,13 +722,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addOperationReduction() throws OHServiceException {
 		List<Operation> operationList = operationBrowserManager.getOperation();
 
-		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
-		Operation operation = (Operation) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, operationList.toArray(), "",
+		Operation operation = (Operation) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), operationList.toArray(), "",
 			"angal.newbill.selectanoperation.txt", "angal.newbill.operation.title");
 
 		if (operation != null) {
 			double rate = 0;
-			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
+			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), null, rate,
 				"angal.reductionplan.reductionrate.txt", "angal.reductionplan.reductionrate.title");
 
 			try {
@@ -651,7 +735,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 					return;
 				}
 				rate = Double.parseDouble(stringRate);
-				OperationReduction opeReduction = new OperationReduction(reductionPlan, operation, rate);
+				OperationReduction opeReduction = new OperationReduction(reductionPlan, operation, BigDecimal.valueOf(rate));
 				operationReductionList.add(opeReduction);
 				OperationReductionModel opeModel = (OperationReductionModel) operationReductionTable.getModel();
 				opeModel.fireTableDataChanged();
@@ -663,13 +747,12 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addPriceOtherReduction() throws OHServiceException {
 		List<PricesOthers> pricesOthersList = pricesOthersManager.getOthers();
 
-		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png");
-		PricesOthers pricesOthers = (PricesOthers) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, pricesOthersList.toArray(),
+		PricesOthers pricesOthers = (PricesOthers) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), pricesOthersList.toArray(),
 			"", "angal.newbill.pleaseselectanitem.txt", "angal.newbill.item.title");
 
 		if (pricesOthers != null) {
 			double rate = 0;
-			String strRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, icon, null, rate,
+			String strRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), null, rate,
 				"angal.reductionplan.reductionrate.txt", "angal.reductionplan.reductionrate.title");
 
 			try {
@@ -677,7 +760,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 					return;
 				}
 				rate = Double.parseDouble(strRate);
-				PriceOtherReduction priceOtherReduction = new PriceOtherReduction(reductionPlan, pricesOthers, rate);
+				PriceOtherReduction priceOtherReduction = new PriceOtherReduction(reductionPlan, pricesOthers, BigDecimal.valueOf(rate));
 				priceOtherReductionList.add(priceOtherReduction);
 				PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
 				priceOtherReductionModel.fireTableDataChanged();
@@ -687,25 +770,30 @@ public class ReductionPlanEdit extends ModalJFrame {
 			}
 		}
 	}
+
 	private boolean loadDataInObject() {
 		try {
 			if (!textDescription.getText().equals(reductionPlan.getDescription())
 				&& !reductionPlanManager.getByDescription(textDescription.getText()).isEmpty()) {
 				MessageDialog.error(ReductionPlanEdit.this, "angal.reductionplan.descriptionalreadyused.msg");
+
 				return false;
 			}
 
 			reductionPlan.setDescription(textDescription.getText());
-			reductionPlan.setExamRate(Double.parseDouble(textExamRate.getText()));
-			reductionPlan.setMedicalRate(Double.parseDouble(textMedicalRate.getText()));
-			reductionPlan.setOperationRate(Double.parseDouble(textOperationRate.getText()));
-			reductionPlan.setOtherRate(Double.parseDouble(textPriceOtherRate.getText()));
+			reductionPlan.setExamRate(BigDecimal.valueOf(Double.parseDouble(textExamRate.getText())));
+			reductionPlan.setMedicalRate(BigDecimal.valueOf(Double.parseDouble(textMedicalRate.getText())));
+			reductionPlan.setOperationRate(BigDecimal.valueOf(Double.parseDouble(textOperationRate.getText())));
+			reductionPlan.setOtherRate(BigDecimal.valueOf(Double.parseDouble(textPriceOtherRate.getText())));
+
 			return true;
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
+
 		return false;
 	}
+
 	private void loadDataFromObject() {
 		textDescription.setText(this.reductionPlan.getDescription());
 		textMedicalRate.setText(String.valueOf(this.reductionPlan.getMedicalRate()));
@@ -740,15 +828,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 			jCloseButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
+
 		return jCloseButton;
 	}
 	public interface ReductionPlanListener extends EventListener {
-
 		void ReductionPlanInserted(AWTEvent aEvent);
 	}
 
 	private class ExamReductionModel extends DefaultTableModel {
-
 		@Serial
 		private static final long serialVersionUID = 1L;
 
@@ -822,6 +909,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			} else if (c == 1) {
 				return operationReductionList.get(r).getReductionRate();
 			}
+
 			return null;
 		}
 
@@ -864,6 +952,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			} else if (c == 1) {
 				return priceOtherReductionList.get(r).getReductionRate();
 			}
+
 			return null;
 		}
 
@@ -905,6 +994,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			} else if (c == 1) {
 				return medicalReductionList.get(r).getReductionRate();
 			}
+
 			return null;
 		}
 
