@@ -631,7 +631,11 @@ public class MortuaryEdit extends JDialog {
 			bodyCompartmentCombo.setPreferredSize(new Dimension(270, 27));
 		}
 		List<BodyCompartment> bodyCompartments = new ArrayList<>();
-		bodyCompartments = bodyCompartmentManager.getBodyCompartments();
+		try {
+			bodyCompartments = bodyCompartmentManager.getBodyCompartments();
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
 		bodyCompartmentCombo.addItem("");
 		for (BodyCompartment bodyCompartment : bodyCompartments) {
 			bodyCompartmentCombo.addItem(bodyCompartment);
