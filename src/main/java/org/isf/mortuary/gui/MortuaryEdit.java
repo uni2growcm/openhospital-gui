@@ -149,13 +149,14 @@ public class MortuaryEdit extends JDialog {
 	}
 
 	private JPanel getJContentPanel() {
-		if (jContentPanel == null) {
-			jContentPanel = new JPanel();
-			jContentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-			jContentPanel.setLayout(new BorderLayout());
-			jContentPanel.add(getDataPanel(), BorderLayout.CENTER);
-			jContentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
+		if (jContentPanel != null) {
+			return jContentPanel;
 		}
+		jContentPanel = new JPanel();
+		jContentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		jContentPanel.setLayout(new BorderLayout());
+		jContentPanel.add(getDataPanel(), BorderLayout.CENTER);
+		jContentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
 		return jContentPanel;
 	}
 
@@ -266,7 +267,7 @@ public class MortuaryEdit extends JDialog {
 		gbcEstimatedDischargeDate.gridy = 5;
 		mortuaryNewsPanel.add(getEstimatedDischargeDate(), gbcEstimatedDischargeDate);
 
-		JLabel deathReasonLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathreason.label"));
+		JLabel deathReasonLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.label"));
 		GridBagConstraints gbcDeathReasonLabel = new GridBagConstraints();
 		gbcDeathReasonLabel.anchor = GridBagConstraints.WEST;
 		gbcDeathReasonLabel.insets = new Insets(0, 0, 5, 5);
@@ -297,25 +298,26 @@ public class MortuaryEdit extends JDialog {
 	}
 
 	private JButton getPickPatientButton() {
-		if (pickPatientButton == null) {
-			pickPatientButton = new JButton();
-			pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
-			pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
-			if (!insert) {
-				pickPatientButton.setEnabled(false);
-			}
-			pickPatientButton.addMouseListener(new MouseAdapter() {
-
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					SelectPatient selectPatient = new SelectPatient(MortuaryEdit.this, false, true);
-					selectPatient.addSelectionListener(MortuaryEdit.this);
-					selectPatient.setVisible(true);
-					Patient pat = selectPatient.getPatient();
-					patientSelected(pat);
-				}
-			});
+		if (pickPatientButton != null) {
+			return pickPatientButton;
 		}
+		pickPatientButton = new JButton();
+		pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
+		pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
+		if (!insert) {
+			pickPatientButton.setEnabled(false);
+		}
+		pickPatientButton.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				SelectPatient selectPatient = new SelectPatient(MortuaryEdit.this, false, true);
+				selectPatient.addSelectionListener(MortuaryEdit.this);
+				selectPatient.setVisible(true);
+				Patient pat = selectPatient.getPatient();
+				patientSelected(pat);
+			}
+		});
 		return pickPatientButton;
 	}
 
@@ -356,12 +358,13 @@ public class MortuaryEdit extends JDialog {
 	}
 
 	private JTextField getDeathPlaceTextField() {
-		if (deathPlace == null) {
-			deathPlace = new JTextField();
-			deathPlace.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				deathPlace.setText(mortuary.getPlace());
-			}
+		if (deathPlace != null) {
+			return deathPlace;
+		}
+		deathPlace = new JTextField();
+		deathPlace.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			deathPlace.setText(mortuary.getPlace());
 		}
 		return deathPlace;
 	}
@@ -401,7 +404,7 @@ public class MortuaryEdit extends JDialog {
 		for (DeathReason deathReason : deathReasons) {
 			deathReasonCombo.addItem(deathReason);
 			if (!insert) {
-				if (Objects.equals(deathReason.getCode(), mortuary.getDeathReason().getCode())) {
+				if (Objects.equals(deathReason.getTitle(), mortuary.getDeathReason().getTitle())) {
 					deathReasonCombo.setSelectedItem(deathReason);
 				}
 			}
@@ -444,7 +447,7 @@ public class MortuaryEdit extends JDialog {
 		gblMortuaryNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
 		declaringSubPanel.setLayout(gblMortuaryNewsPanel);
 
-		JLabel declaringNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.fullname.label"));
+		JLabel declaringNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.declaringfullname.label"));
 		GridBagConstraints gbcDeclaringNameLabel = new GridBagConstraints();
 		gbcDeclaringNameLabel.anchor = GridBagConstraints.WEST;
 		gbcDeclaringNameLabel.insets = new Insets(0, 0, 5, 5);
@@ -458,7 +461,7 @@ public class MortuaryEdit extends JDialog {
 		gbcDeclaringNameTextField.gridy = 0;
 		declaringSubPanel.add(getDeclaringNameTextField(), gbcDeclaringNameTextField);
 
-		JLabel declaringPhoneNumberLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.phonenumber.label"));
+		JLabel declaringPhoneNumberLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.declaringphonenumber.label"));
 		GridBagConstraints gbcDeclaringPhoneNumberLabel = new GridBagConstraints();
 		gbcDeclaringPhoneNumberLabel.anchor = GridBagConstraints.WEST;
 		gbcDeclaringPhoneNumberLabel.insets = new Insets(0, 0, 5, 5);
@@ -472,7 +475,7 @@ public class MortuaryEdit extends JDialog {
 		gbcDeclaringPhoneNumberTextField.gridy = 1;
 		declaringSubPanel.add(getDeclaringPhoneNumberTextField(), gbcDeclaringPhoneNumberTextField);
 
-		JLabel declaringNidLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.nid.label"));
+		JLabel declaringNidLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.declaringnid.label"));
 		GridBagConstraints gbcDeclaringNidLabel = new GridBagConstraints();
 		gbcDeclaringNidLabel.anchor = GridBagConstraints.WEST;
 		gbcDeclaringNidLabel.insets = new Insets(0, 0, 5, 5);
@@ -490,34 +493,37 @@ public class MortuaryEdit extends JDialog {
 	}
 
 	private JTextField getDeclaringNameTextField() {
-		if (declaringName == null) {
-			declaringName = new JTextField();
-			declaringName.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				declaringName.setText(mortuary.getDeclaringName());
-			}
+		if (declaringName != null) {
+			return declaringName;
+		}
+		declaringName = new JTextField();
+		declaringName.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			declaringName.setText(mortuary.getDeclaringName());
 		}
 		return declaringName;
 	}
 
 	private JTextField getDeclaringPhoneNumberTextField() {
-		if (declaringPhoneNumber == null) {
-			declaringPhoneNumber = new JTextField();
-			declaringPhoneNumber.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				declaringPhoneNumber.setText(mortuary.getDeclaringPhone());
-			}
+		if (declaringPhoneNumber != null) {
+			return declaringPhoneNumber;
+		}
+		declaringPhoneNumber = new JTextField();
+		declaringPhoneNumber.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			declaringPhoneNumber.setText(mortuary.getDeclaringPhone());
 		}
 		return declaringPhoneNumber;
 	}
 
 	private JTextField getDeclaringNidTextField() {
-		if (declaringNid == null) {
-			declaringNid = new JTextField();
-			declaringNid.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				declaringNid.setText(mortuary.getDeclaringNid());
-			}
+		if (declaringNid != null) {
+			return declaringNid;
+		}
+		declaringNid = new JTextField();
+		declaringNid.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			declaringNid.setText(mortuary.getDeclaringNid());
 		}
 		return declaringNid;
 	}
@@ -529,7 +535,7 @@ public class MortuaryEdit extends JDialog {
 		gblMortuaryNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
 		FamilyPanel.setLayout(gblMortuaryNewsPanel);
 
-		JLabel familyNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.fullname.label"));
+		JLabel familyNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.familyfullname.label"));
 		GridBagConstraints gbcFamilyNameLabel = new GridBagConstraints();
 		gbcFamilyNameLabel.anchor = GridBagConstraints.WEST;
 		gbcFamilyNameLabel.insets = new Insets(0, 0, 5, 5);
@@ -543,7 +549,7 @@ public class MortuaryEdit extends JDialog {
 		gbcFamilyNameTextField.gridy = 0;
 		FamilyPanel.add(getFamilyNameTextField(), gbcFamilyNameTextField);
 
-		JLabel familyPhoneNumberLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.phonenumber.label"));
+		JLabel familyPhoneNumberLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.familyphonenumber.label"));
 		GridBagConstraints gbcFamilyPhoneNumberLabel = new GridBagConstraints();
 		gbcFamilyPhoneNumberLabel.anchor = GridBagConstraints.WEST;
 		gbcFamilyPhoneNumberLabel.insets = new Insets(0, 0, 5, 5);
@@ -557,7 +563,7 @@ public class MortuaryEdit extends JDialog {
 		gbcFamilyPhoneNumberTextField.gridy = 1;
 		FamilyPanel.add(getFamilyPhoneNumberTextField(), gbcFamilyPhoneNumberTextField);
 
-		JLabel familyNidLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.nid.label"));
+		JLabel familyNidLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.familynid.label"));
 		GridBagConstraints gbcFamilyNidLabel = new GridBagConstraints();
 		gbcFamilyNidLabel.anchor = GridBagConstraints.WEST;
 		gbcFamilyNidLabel.insets = new Insets(0, 0, 5, 5);
@@ -575,34 +581,37 @@ public class MortuaryEdit extends JDialog {
 	}
 
 	private JTextField getFamilyNameTextField() {
-		if (familyName == null) {
-			familyName = new JTextField();
-			familyName.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				familyName.setText(mortuary.getFamilyName());
-			}
+		if (familyName != null) {
+			return familyName;
+		}
+		familyName = new JTextField();
+		familyName.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			familyName.setText(mortuary.getFamilyName());
 		}
 		return familyName;
 	}
 
 	private JTextField getFamilyPhoneNumberTextField() {
-		if (familyPhoneNumber == null) {
-			familyPhoneNumber = new JTextField();
-			familyPhoneNumber.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				familyPhoneNumber.setText(mortuary.getFamilyPhone());
-			}
+		if (familyPhoneNumber != null) {
+			return familyPhoneNumber;
+		}
+		familyPhoneNumber = new JTextField();
+		familyPhoneNumber.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			familyPhoneNumber.setText(mortuary.getFamilyPhone());
 		}
 		return familyPhoneNumber;
 	}
 
 	private JTextField getFamilyNidTextField() {
-		if (familyNid == null) {
-			familyNid = new JTextField();
-			familyNid.setPreferredSize(new Dimension(270,27));
-			if (!insert) {
-				familyNid.setText(mortuary.getFamilyNid());
-			}
+		if (familyNid != null) {
+			return familyNid;
+		}
+		familyNid = new JTextField();
+		familyNid.setPreferredSize(new Dimension(270,27));
+		if (!insert) {
+			familyNid.setText(mortuary.getFamilyNid());
 		}
 		return familyNid;
 	}

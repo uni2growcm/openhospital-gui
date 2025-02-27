@@ -43,7 +43,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -79,7 +78,6 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final JFrame MY_FRAME;
 	private final int PAGE_SIZE = 100;
 	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
 	private final String[] pColumns = {
@@ -102,7 +100,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	private final DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
 	private long TOTAL_PAGES;
 	private int CURRENT_PAGE = 0;
-	private long TOTAL_MORTUARIES;
+	private long totalMortuaries;
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
 	private JButton jNewButton;
@@ -137,7 +135,6 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 
 	public MortuaryBrowser() {
 		super();
-		MY_FRAME = this;
 		initialize();
 		filterButton.doClick();
 		setLocationRelativeTo(null);
@@ -348,16 +345,17 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	}
 
 	private JPanel getJButtonPanel() {
-		if (jButtonPanel == null) {
-			jButtonPanel = new JPanel();
-			jButtonPanel.add(getNewButton());
-			jButtonPanel.add(getEditButton());
-			jButtonPanel.add(getDeleteButton());
-			jButtonPanel.add(getCertificateButton());
-			jButtonPanel.add(getMortuaryStayButton());
-			jButtonPanel.add(getRapportButton());
-			jButtonPanel.add(getCloseButton());
+		if (jButtonPanel != null) {
+			return jButtonPanel;
 		}
+		jButtonPanel = new JPanel();
+		jButtonPanel.add(getNewButton());
+		jButtonPanel.add(getEditButton());
+		jButtonPanel.add(getDeleteButton());
+		jButtonPanel.add(getCertificateButton());
+		jButtonPanel.add(getMortuaryStayButton());
+		jButtonPanel.add(getRapportButton());
+		jButtonPanel.add(getCloseButton());
 		return jButtonPanel;
 	}
 
@@ -366,61 +364,64 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	}
 
 	private JButton getNewButton() {
-		if (jNewButton == null) {
-			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
-			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
-			jNewButton.addActionListener(actionEvent -> {
-				death = new Death();
-				MortuaryEdit newRecord = new MortuaryEdit(MY_FRAME, death, true);
-				newRecord.addMortuaryListener(MortuaryBrowser.this);
-				newRecord.setVisible(true);
-			});
+		if (jNewButton != null) {
+			return jNewButton;
 		}
+		jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
+		jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
+		jNewButton.addActionListener(actionEvent -> {
+			death = new Death();
+			MortuaryEdit newRecord = new MortuaryEdit(this, death, true);
+			newRecord.addMortuaryListener(MortuaryBrowser.this);
+			newRecord.setVisible(true);
+		});
 		return jNewButton;
 	}
 
 	private JButton getEditButton() {
-		if (jEditButton == null) {
-			jEditButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
-			jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
-			jEditButton.addActionListener(actionEvent -> {
-				if (movTable.getSelectedRow() < 0) {
-					MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
-				} else {
-					selectedRow = movTable.getSelectedRow();
-					death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
-					MortuaryEdit editRecord = new MortuaryEdit(MY_FRAME, death, false);
-					editRecord.addMortuaryListener(MortuaryBrowser.this);
-					editRecord.setVisible(true);
-				}
-			});
+		if (jEditButton != null) {
+			return jEditButton;
 		}
+		jEditButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
+		jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
+		jEditButton.addActionListener(actionEvent -> {
+			if (movTable.getSelectedRow() < 0) {
+				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
+			} else {
+				selectedRow = movTable.getSelectedRow();
+				death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
+				MortuaryEdit editRecord = new MortuaryEdit(this, death, false);
+				editRecord.addMortuaryListener(MortuaryBrowser.this);
+				editRecord.setVisible(true);
+			}
+		});
 		return jEditButton;
 	}
 
 	private JButton getDeleteButton() {
-		if (jDeleteButton == null) {
-			jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
-			jDeleteButton.addActionListener(actionEvent -> {
-				if (movTable.getSelectedRow() < 0) {
-					MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
-				} else {
-					selectedRow = movTable.getSelectedRow();
-					death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
-					int answer = MessageDialog.yesNo(this, "angal.mortuary.deletemortuaryentrancepatient.fmt.msg", death.getPatient().getName());
-					try {
-						if (answer == JOptionPane.YES_OPTION) {
-							mortuaryBrowserManager.delete(death);
-							mortuaries.remove(movTable.getSelectedRow());
-							model.fireTableDataChanged();
-							movTable.updateUI();
-						}
-					} catch (OHServiceException e) {
-						MessageDialog.info(this, "angal.common.suppressionfailed.msg");
-					}
-				}
-			});
+		if (jDeleteButton != null) {
+			return jDeleteButton;
 		}
+		jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
+		jDeleteButton.addActionListener(actionEvent -> {
+			if (movTable.getSelectedRow() < 0) {
+				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
+			} else {
+				selectedRow = movTable.getSelectedRow();
+				death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
+				int answer = MessageDialog.yesNo(this, "angal.mortuary.deletemortuaryentrancepatient.fmt.msg", death.getPatient().getName());
+				try {
+					if (answer == JOptionPane.YES_OPTION) {
+						mortuaryBrowserManager.delete(death);
+						mortuaries.remove(movTable.getSelectedRow());
+						model.fireTableDataChanged();
+						movTable.updateUI();
+					}
+				} catch (OHServiceException e) {
+					MessageDialog.info(this, "angal.common.suppressionfailed.msg");
+				}
+			}
+		});
 		return jDeleteButton;
 	}
 
@@ -507,49 +508,52 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	}
 
 	private JButton getPrevButton() {
-		if (prevButton == null) {
-			prevButton = new JButton("<");
-			prevButton.setEnabled(CURRENT_PAGE > 0);
-			prevButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE > 0) {
-					CURRENT_PAGE--;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
-				}
-			});
+		if (prevButton != null) {
+			return prevButton;
 		}
+		prevButton = new JButton("<");
+		prevButton.setEnabled(CURRENT_PAGE > 0);
+		prevButton.addActionListener(actionEvent -> {
+			if (CURRENT_PAGE > 0) {
+				CURRENT_PAGE--;
+				pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+			}
+		});
 		return prevButton;
 	}
 
 	private JButton getNextButton() {
-		if (nextButton == null) {
-			nextButton = new JButton(">");
-			nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
-			nextButton.addActionListener(actionEvent -> {
-				if (CURRENT_PAGE < TOTAL_PAGES - 1) {
-					CURRENT_PAGE++;
-					pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
-				}
-			});
+		if (nextButton != null) {
+			return nextButton;
 		}
+		nextButton = new JButton(">");
+		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
+		nextButton.addActionListener(actionEvent -> {
+			if (CURRENT_PAGE < TOTAL_PAGES - 1) {
+				CURRENT_PAGE++;
+				pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
+			}
+		});
 		return nextButton;
 	}
 
 	private JComboBox<Integer> getPagesCombo() {
-		if (pagesCombo == null) {
-			pagesCombo = new JComboBox<>();
-			pagesCombo.setPreferredSize(new Dimension(100, 25));
-			for (int i = 0; i <= TOTAL_PAGES; i++) {
-				pagesCombo.addItem(i + 1);
-			}
-			pagesCombo.addActionListener(actionEvent -> {
-				if (pagesCombo.getItemCount() != 0) {
-					if (pagesCombo.getSelectedItem() != null) {
-						CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
-						applyFilter(true);
-					}
-				}
-			});
+		if (pagesCombo != null) {
+			return pagesCombo;
 		}
+		pagesCombo = new JComboBox<>();
+		pagesCombo.setPreferredSize(new Dimension(100, 25));
+		for (int i = 0; i <= TOTAL_PAGES; i++) {
+			pagesCombo.addItem(i + 1);
+		}
+		pagesCombo.addActionListener(actionEvent -> {
+			if (pagesCombo.getItemCount() != 0) {
+				if (pagesCombo.getSelectedItem() != null) {
+					CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
+					applyFilter(true);
+				}
+			}
+		});
 		return pagesCombo;
 	}
 
@@ -596,7 +600,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		}
 
 		if (!isNextOrPrevButton) {
-			totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+			totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalMortuaries);
 			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			CURRENT_PAGE = 0;
 
@@ -627,7 +631,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 
 	private JLabel getTotalMortuaryLabel() {
 		if (totalMortuaryLabel == null) {
-			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + TOTAL_MORTUARIES);
+			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalMortuaries);
 		}
 		return totalMortuaryLabel;
 	}
@@ -680,7 +684,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 				PAGE_SIZE
 			);
 			mortuaries = new ArrayList<>(mortuariesPages.getContent());
-			TOTAL_MORTUARIES = mortuariesPages.getTotalElements();
+			totalMortuaries = mortuariesPages.getTotalElements();
 			TOTAL_PAGES = mortuariesPages.getTotalPages();
 		}
 
