@@ -90,7 +90,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		MessageBundle.getMessage("angal.mortuary.provenance.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.indate.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.outdate.col").toUpperCase(),
-		MessageBundle.getMessage("angal.mortuary.deathreason.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.causeofdeath.col").toUpperCase(),
 	};
 	private final int[] columnAlignment = { SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER,
 		SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT
@@ -309,7 +309,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 
 	private JPanel getDeathReasonPanel() {
 		JPanel provenancePanel = new JPanel();
-		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathreason.border")));
+		provenancePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.causeofdeath.border")));
 		provenancePanel.add(getDeathReasonCombo());
 		return provenancePanel;
 	}
@@ -565,7 +565,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 			}
 		}
 		if (!(deathReasonCombo.getSelectedItem() instanceof String)) {
-			deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getCode();
+			deathReasonSelected = ((DeathReason) Objects.requireNonNull(deathReasonCombo.getSelectedItem())).getTitle();
 		} else {
 			deathReasonSelected = (String) deathReasonCombo.getSelectedItem();
 			if (deathReasonSelected.equals(TEXT_ALL)) {
@@ -734,7 +734,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 			} else if (c == 6) {
 				return mortuary.getEstimatedDischargeDate().toLocalDate();
 			} else if (c == 7) {
-				return deathReason.getDescription();
+				return deathReason.getTitle();
 			}
 			return null;
 		}
