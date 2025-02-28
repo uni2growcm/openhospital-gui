@@ -31,8 +31,14 @@ import java.awt.Insets;
 import java.io.Serial;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -65,8 +71,10 @@ import org.isf.reductionplan.model.MedicalReduction;
 import org.isf.reductionplan.model.OperationReduction;
 import org.isf.reductionplan.model.PriceOtherReduction;
 import org.isf.reductionplan.model.ReductionPlan;
+import org.isf.utils.exception.OHDataValidationException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.exception.model.OHExceptionMessage;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 
@@ -451,19 +459,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 		panel.add(tabbedPane, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-		buttonPanel.setBorder(new EmptyBorder(22, 0, 0, 0));
+		buttonPanel.setBorder(new EmptyBorder(22, 3, 0, 0));
 
 		JButton addButton = getJAddButton();
 		JButton removeButton = getJRemoveButton();
 		JButton removeAllButton = getJRemoveAllButton();
 		JButton[] buttons = { addButton, removeButton, removeAllButton};
 
-		Dimension maxSize = new Dimension(0, 0);
-		for (JButton b : buttons) {
-			Dimension d = b.getPreferredSize();
-			maxSize.width = Math.max(maxSize.width, d.width);
-			maxSize.height = Math.max(maxSize.height, d.height);
-		}
+		Dimension maxSize = new Dimension(130, 35);
 
 		for (JButton b : buttons) {
 			b.setPreferredSize(maxSize);
@@ -649,15 +652,21 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 
 					if (loadDataInObject()) {
-						if (isInsert) {
-							reductionPlanManager.add(reductionPlan);
+						List<OHExceptionMessage> errors = validateReductionPlan(reductionPlan);
+						if (errors.isEmpty()) {
+							if (isInsert) {
+								reductionPlanManager.add(reductionPlan);
+							} else {
+								reductionPlanManager.update(reductionPlan);
+							}
 						} else {
-							reductionPlanManager.update(reductionPlan);
+							throw new OHDataValidationException(errors);
 						}
+
+						fireReductionPlanInserted();
+						jCloseButton.doClick();
 					}
 
-					fireReductionPlanInserted();
-					jCloseButton.doClick();
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
@@ -779,12 +788,23 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 				return false;
 			}
+			try {
+				double examRate = Double.parseDouble(textExamRate.getText());
+				double medicalRate = Double.parseDouble(textMedicalRate.getText());
+				double operationRate = Double.parseDouble(textOperationRate.getText());
+				double priceOtherRate = Double.parseDouble(textPriceOtherRate.getText());
 
-			reductionPlan.setDescription(textDescription.getText());
-			reductionPlan.setExamRate(BigDecimal.valueOf(Double.parseDouble(textExamRate.getText())));
-			reductionPlan.setMedicalRate(BigDecimal.valueOf(Double.parseDouble(textMedicalRate.getText())));
-			reductionPlan.setOperationRate(BigDecimal.valueOf(Double.parseDouble(textOperationRate.getText())));
-			reductionPlan.setOtherRate(BigDecimal.valueOf(Double.parseDouble(textPriceOtherRate.getText())));
+				reductionPlan.setDescription(textDescription.getText());
+				reductionPlan.setExamRate(BigDecimal.valueOf(examRate));
+				reductionPlan.setMedicalRate(BigDecimal.valueOf(medicalRate));
+				reductionPlan.setOperationRate(BigDecimal.valueOf(operationRate));
+				reductionPlan.setOtherRate(BigDecimal.valueOf(priceOtherRate));
+
+			} catch (Exception ex) {
+				throw new OHDataValidationException(
+					new OHExceptionMessage(MessageBundle.getMessage("angal.reductionplan.invalidrateformat.msg"))
+				);
+			}
 
 			return true;
 		} catch (OHServiceException e) {
@@ -1002,6 +1022,147 @@ public class ReductionPlanEdit extends ModalJFrame {
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
+	}
+
+	public List<OHExceptionMessage> validateReductionPlan(ReductionPlan reductionPlan) {
+		List<OHExceptionMessage> errors = new ArrayList<>();
+
+		if (reductionPlan.getExamReductions() != null && !reductionPlan.getExamReductions().isEmpty()) {
+			Set<Exam> duplicates = reductionPlan.getExamReductions().stream()
+				.collect(Collectors.groupingBy(ExamReduction::getExam, Collectors.counting()))
+				.entrySet().stream()
+				.filter(entry -> entry.getValue() > 1)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+
+			if (!duplicates.isEmpty()) {
+				errors.add(
+					new OHExceptionMessage(MessageBundle.getMessage("angal.reductionplan.duplicateexamfound.msg"))
+				);
+			}
+		}
+
+		if (reductionPlan.getMedicalReductions() != null && !reductionPlan.getDescription().isEmpty()) {
+			Set<Medical> duplicates = reductionPlan.getMedicalReductions().stream()
+				.collect(Collectors.groupingBy(MedicalReduction::getMedical, Collectors.counting()))
+				.entrySet().stream()
+				.filter(entry -> entry.getValue() > 1)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+
+			if (!duplicates.isEmpty()) {
+				errors.add(
+					new OHExceptionMessage(MessageBundle.getMessage("angal.reductionplan.duplicatemedicalfound.msg"))
+				);
+			}
+		}
+
+		if (reductionPlan.getMedicalReductions() != null && !reductionPlan.getMedicalReductions().isEmpty()) {
+			Set<Operation> duplicates = reductionPlan.getOperationReductions().stream()
+				.collect(Collectors.groupingBy(OperationReduction::getOperation, Collectors.counting()))
+				.entrySet().stream()
+				.filter(entry -> entry.getValue() > 1)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+
+			if (!duplicates.isEmpty()) {
+				errors.add(
+					new OHExceptionMessage(MessageBundle.getMessage(
+						"angal.reductionplan.duplicateoperationfound.msg"))
+				);
+			}
+		}
+
+		if (reductionPlan.getPriceOtherReductions() != null && !reductionPlan.getPriceOtherReductions().isEmpty()) {
+			Set<PricesOthers> duplicates = reductionPlan.getPriceOtherReductions().stream()
+				.collect(Collectors.groupingBy(PriceOtherReduction::getPricesOthers, Collectors.counting()))
+				.entrySet().stream()
+				.filter(entry -> entry.getValue() > 1)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+
+			if (!duplicates.isEmpty()) {
+				errors.add(
+					new OHExceptionMessage(MessageBundle.getMessage(
+						"angal.reductionplan.duplicatepriceotherfound.msg"))
+				);
+			}
+		}
+
+		errors.addAll(validateReductionRates(reductionPlan));
+
+		return errors;
+	}
+
+	private boolean isValidRate(BigDecimal rate) {
+		return rate.compareTo(BigDecimal.ZERO) > 0 && rate.compareTo(BigDecimal.valueOf(100)) <= 0;
+	}
+
+	private boolean isValidGlobalRate(BigDecimal rate) {
+		return rate.compareTo(BigDecimal.ZERO) >= 0 && rate.compareTo(BigDecimal.valueOf(100)) <= 0;
+	}
+
+	private <T> List<OHExceptionMessage> validateRates(Collection<T> reductions,
+		Function<T, BigDecimal> rateExtractor, String errorMsg) {
+		if (reductions == null || reductions.isEmpty()) {
+			return Collections.emptyList();
+		}
+		boolean anyInvalid = reductions.stream()
+			.anyMatch(r -> !isValidRate(rateExtractor.apply(r)));
+		if (anyInvalid) {
+			return Collections.singletonList(
+				new OHExceptionMessage(errorMsg)
+			);
+		}
+		return Collections.emptyList();
+	}
+
+	public List<OHExceptionMessage> validateReductionRates(ReductionPlan reductionPlan) {
+		List<OHExceptionMessage> errors = new ArrayList<>();
+		String errorMsg = MessageBundle.getMessage("angal.reductionplan.invalidglobalreductionrate.msg");
+
+		if (!isValidGlobalRate(reductionPlan.getExamRate())) {
+			errors.add(new OHExceptionMessage(errorMsg));
+		}
+
+		if (!isValidGlobalRate(reductionPlan.getMedicalRate())) {
+			errors.add(new OHExceptionMessage(errorMsg));
+		}
+
+		if (!isValidGlobalRate(reductionPlan.getOperationRate())) {
+			errors.add(new OHExceptionMessage(errorMsg));
+		}
+
+		if (!isValidGlobalRate(reductionPlan.getOtherRate())) {
+			errors.add(new OHExceptionMessage(errorMsg));
+		}
+
+		errors.addAll(validateRates(
+			reductionPlan.getExamReductions(),
+			ExamReduction::getReductionRate,
+			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidexamreductionrate.msg"))
+		);
+
+		errors.addAll(
+			validateRates(
+				reductionPlan.getMedicalReductions(),
+				MedicalReduction::getReductionRate,
+				MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidmedicalreductionrate.msg"))
+		);
+
+		errors.addAll(validateRates(
+			reductionPlan.getOperationReductions(),
+			OperationReduction::getReductionRate,
+			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidoperationreductionrate.msg"))
+		);
+
+		errors.addAll(validateRates(
+			reductionPlan.getPriceOtherReductions(),
+			PriceOtherReduction::getReductionRate,
+			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidotherreductionrate.msg"))
+		);
+
+		return errors;
 	}
 }
 
