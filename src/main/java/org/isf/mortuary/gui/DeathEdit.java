@@ -53,7 +53,7 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.BodyCompartmentManager;
 import org.isf.mortuary.manager.DeathReasonManager;
-import org.isf.mortuary.manager.MortuaryBrowserManager;
+import org.isf.mortuary.manager.DeathManager;
 import org.isf.mortuary.model.BodyCompartment;
 import org.isf.mortuary.model.Death;
 import org.isf.mortuary.model.DeathReason;
@@ -66,15 +66,15 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 
-public class MortuaryEdit extends JDialog {
+public class DeathEdit extends JDialog {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
-	private final MortuaryBrowserManager mortuaryBrowserManager = Context.getApplicationContext().getBean(MortuaryBrowserManager.class);
+	private final DeathManager deathManager = Context.getApplicationContext().getBean(DeathManager.class);
 	private final DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
-	private final EventListenerList mortuaryListeners = new EventListenerList();
+	private final EventListenerList deathListeners = new EventListenerList();
 	private JPanel buttonPanel;
 	private JPanel jContentPanel;
 	private JPanel dataPanel;
@@ -98,42 +98,42 @@ public class MortuaryEdit extends JDialog {
 	private GoodDateChooser estimatedDischargeDate;
 	private Patient patientParent;
 	private final boolean insert;
-	private final Death mortuary;
+	private final Death death;
 
-	public MortuaryEdit(JFrame parent, Death old, boolean inserting) {
+	public DeathEdit(JFrame parent, Death old, boolean inserting) {
 		super(parent, true);
 		insert = inserting;
-		mortuary = old;
+		death = old;
 		initialize();
 	}
 
-	public void addMortuaryListener(MortuaryEdit.MortuaryListener l) {
-		mortuaryListeners.add(MortuaryEdit.MortuaryListener.class, l);
+	public void addDeathListener(DeathListener l) {
+		deathListeners.add(DeathListener.class, l);
 	}
 
-	private void fireMortuaryInserted() {
+	private void fireDeathInserted() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
 
 			@Serial
 			private static final long serialVersionUID = 1L;
 		};
 
-		EventListener[] listeners = mortuaryListeners.getListeners(MortuaryEdit.MortuaryListener.class);
+		EventListener[] listeners = deathListeners.getListeners(DeathListener.class);
 		for (EventListener listener : listeners) {
-			((MortuaryEdit.MortuaryListener) listener).mortuaryInserted(event);
+			((DeathListener) listener).deathInserted(event);
 		}
 	}
 
-	private void fireMortuaryUpdated() {
+	private void fireDeathUpdated() {
 		AWTEvent event = new AWTEvent(new Object(), AWTEvent.RESERVED_ID_MAX + 1) {
 
 			@Serial
 			private static final long serialVersionUID = 1L;
 		};
 
-		EventListener[] listeners = mortuaryListeners.getListeners(MortuaryEdit.MortuaryListener.class);
+		EventListener[] listeners = deathListeners.getListeners(DeathListener.class);
 		for (EventListener listener : listeners) {
-			((MortuaryEdit.MortuaryListener) listener).mortuaryUpdated(event);
+			((DeathListener) listener).deathUpdated(event);
 		}
 	}
 
@@ -152,11 +152,13 @@ public class MortuaryEdit extends JDialog {
 		if (jContentPanel != null) {
 			return jContentPanel;
 		}
+
 		jContentPanel = new JPanel();
 		jContentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		jContentPanel.setLayout(new BorderLayout());
 		jContentPanel.add(getDataPanel(), BorderLayout.CENTER);
 		jContentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
+
 		return jContentPanel;
 	}
 
@@ -171,17 +173,17 @@ public class MortuaryEdit extends JDialog {
 
 	private JPanel getLeftPanel() {
 		JPanel leftPanel = new JPanel(new BorderLayout());
-		leftPanel.add(getMortuaryNewsPanel(), BorderLayout.NORTH);
+		leftPanel.add(getDeathNewsPanel(), BorderLayout.NORTH);
 		leftPanel.add(getLiftPanel(), BorderLayout.SOUTH);
 		return leftPanel;
 	}
 
-	private JPanel getMortuaryNewsPanel() {
-		JPanel mortuaryNewsPanel = new JPanel();
-		mortuaryNewsPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathinformation.border")));
-		GridBagLayout gblMortuaryNewsPanel = new GridBagLayout();
-		gblMortuaryNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
-		mortuaryNewsPanel.setLayout(gblMortuaryNewsPanel);
+	private JPanel getDeathNewsPanel() {
+		JPanel deathNewsPanel = new JPanel();
+		deathNewsPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.deathinformation.border")));
+		GridBagLayout gblDeathNewsPanel = new GridBagLayout();
+		gblDeathNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
+		deathNewsPanel.setLayout(gblDeathNewsPanel);
 
 		JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.searchpatient.label"));
 		GridBagConstraints gbcPatientLabel = new GridBagConstraints();
@@ -189,13 +191,13 @@ public class MortuaryEdit extends JDialog {
 		gbcPatientLabel.insets = new Insets(0, 0, 5, 5);
 		gbcPatientLabel.gridx = 0;
 		gbcPatientLabel.gridy = 0;
-		mortuaryNewsPanel.add(patientLabel, gbcPatientLabel);
+		deathNewsPanel.add(patientLabel, gbcPatientLabel);
 		GridBagConstraints gbcPatientPanel = new GridBagConstraints();
 		gbcPatientPanel.fill = GridBagConstraints.HORIZONTAL;
 		gbcPatientPanel.insets = new Insets(0, 0, 5, 0);
 		gbcPatientPanel.gridx = 1;
 		gbcPatientPanel.gridy = 0;
-		mortuaryNewsPanel.add(getPatientPanel(), gbcPatientPanel);
+		deathNewsPanel.add(getPatientPanel(), gbcPatientPanel);
 
 		JLabel provenanceLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.provenance.label"));
 		GridBagConstraints gbcProvenanceLabel = new GridBagConstraints();
@@ -203,13 +205,13 @@ public class MortuaryEdit extends JDialog {
 		gbcProvenanceLabel.insets = new Insets(0, 0, 5, 5);
 		gbcProvenanceLabel.gridx = 0;
 		gbcProvenanceLabel.gridy = 1;
-		mortuaryNewsPanel.add(provenanceLabel, gbcProvenanceLabel);
+		deathNewsPanel.add(provenanceLabel, gbcProvenanceLabel);
 		GridBagConstraints gbcProvenanceCombo = new GridBagConstraints();
 		gbcProvenanceCombo.fill = GridBagConstraints.HORIZONTAL;
 		gbcProvenanceCombo.insets = new Insets(0, 0, 5, 0);
 		gbcProvenanceCombo.gridx = 1;
 		gbcProvenanceCombo.gridy = 1;
-		mortuaryNewsPanel.add(getProvenanceCombo(), gbcProvenanceCombo);
+		deathNewsPanel.add(getProvenanceCombo(), gbcProvenanceCombo);
 
 		JLabel deathDateLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathdate.label"));
 		GridBagConstraints gbcDeathDateLabel = new GridBagConstraints();
@@ -217,13 +219,13 @@ public class MortuaryEdit extends JDialog {
 		gbcDeathDateLabel.insets = new Insets(0, 0, 5, 5);
 		gbcDeathDateLabel.gridx = 0;
 		gbcDeathDateLabel.gridy = 2;
-		mortuaryNewsPanel.add(deathDateLabel, gbcDeathDateLabel);
+		deathNewsPanel.add(deathDateLabel, gbcDeathDateLabel);
 		GridBagConstraints gbcDeathDate = new GridBagConstraints();
 		gbcDeathDate.fill = GridBagConstraints.HORIZONTAL;
 		gbcDeathDate.insets = new Insets(0, 0, 5, 0);
 		gbcDeathDate.gridx = 1;
 		gbcDeathDate.gridy = 2;
-		mortuaryNewsPanel.add(getDeathDate(), gbcDeathDate);
+		deathNewsPanel.add(getDeathDate(), gbcDeathDate);
 
 		JLabel deathPlaceLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.deathplace.label"));
 		GridBagConstraints gbcDeathPlaceLabel = new GridBagConstraints();
@@ -231,13 +233,13 @@ public class MortuaryEdit extends JDialog {
 		gbcDeathPlaceLabel.insets = new Insets(0, 0, 5, 5);
 		gbcDeathPlaceLabel.gridx = 0;
 		gbcDeathPlaceLabel.gridy = 3;
-		mortuaryNewsPanel.add(deathPlaceLabel, gbcDeathPlaceLabel);
+		deathNewsPanel.add(deathPlaceLabel, gbcDeathPlaceLabel);
 		GridBagConstraints gbcDeathPlaceTextField = new GridBagConstraints();
 		gbcDeathPlaceTextField.fill = GridBagConstraints.HORIZONTAL;
 		gbcDeathPlaceTextField.insets = new Insets(0, 0, 5, 0);
 		gbcDeathPlaceTextField.gridx = 1;
 		gbcDeathPlaceTextField.gridy = 3;
-		mortuaryNewsPanel.add(getDeathPlaceTextField(), gbcDeathPlaceTextField);
+		deathNewsPanel.add(getDeathPlaceTextField(), gbcDeathPlaceTextField);
 
 		JLabel admissionDateLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.admissiondate.label"));
 		GridBagConstraints gbcAdmissionDateLabel = new GridBagConstraints();
@@ -245,13 +247,13 @@ public class MortuaryEdit extends JDialog {
 		gbcAdmissionDateLabel.insets = new Insets(0, 0, 5, 5);
 		gbcAdmissionDateLabel.gridx = 0;
 		gbcAdmissionDateLabel.gridy = 4;
-		mortuaryNewsPanel.add(admissionDateLabel, gbcAdmissionDateLabel);
+		deathNewsPanel.add(admissionDateLabel, gbcAdmissionDateLabel);
 		GridBagConstraints gbcAdmissionDate = new GridBagConstraints();
 		gbcAdmissionDate.fill = GridBagConstraints.HORIZONTAL;
 		gbcAdmissionDate.insets = new Insets(0, 0, 5, 0);
 		gbcAdmissionDate.gridx = 1;
 		gbcAdmissionDate.gridy = 4;
-		mortuaryNewsPanel.add(getAdmissionDate(), gbcAdmissionDate);
+		deathNewsPanel.add(getAdmissionDate(), gbcAdmissionDate);
 
 		JLabel dischargeDateLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.dischargedate.label"));
 		GridBagConstraints gbcDischargeDateLabel = new GridBagConstraints();
@@ -259,13 +261,13 @@ public class MortuaryEdit extends JDialog {
 		gbcDischargeDateLabel.insets = new Insets(0, 0, 5, 5);
 		gbcDischargeDateLabel.gridx = 0;
 		gbcDischargeDateLabel.gridy = 5;
-		mortuaryNewsPanel.add(dischargeDateLabel, gbcDischargeDateLabel);
+		deathNewsPanel.add(dischargeDateLabel, gbcDischargeDateLabel);
 		GridBagConstraints gbcEstimatedDischargeDate = new GridBagConstraints();
 		gbcEstimatedDischargeDate.fill = GridBagConstraints.HORIZONTAL;
 		gbcEstimatedDischargeDate.insets = new Insets(0, 0, 5, 0);
 		gbcEstimatedDischargeDate.gridx = 1;
 		gbcEstimatedDischargeDate.gridy = 5;
-		mortuaryNewsPanel.add(getEstimatedDischargeDate(), gbcEstimatedDischargeDate);
+		deathNewsPanel.add(getEstimatedDischargeDate(), gbcEstimatedDischargeDate);
 
 		JLabel deathReasonLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.causeofdeath.label"));
 		GridBagConstraints gbcDeathReasonLabel = new GridBagConstraints();
@@ -273,15 +275,15 @@ public class MortuaryEdit extends JDialog {
 		gbcDeathReasonLabel.insets = new Insets(0, 0, 5, 5);
 		gbcDeathReasonLabel.gridx = 0;
 		gbcDeathReasonLabel.gridy = 6;
-		mortuaryNewsPanel.add(deathReasonLabel, gbcDeathReasonLabel);
+		deathNewsPanel.add(deathReasonLabel, gbcDeathReasonLabel);
 		GridBagConstraints gbcDeathReasonCombo = new GridBagConstraints();
 		gbcDeathReasonCombo.fill = GridBagConstraints.HORIZONTAL;
 		gbcDeathReasonCombo.insets = new Insets(0, 0, 5, 0);
 		gbcDeathReasonCombo.gridx = 1;
 		gbcDeathReasonCombo.gridy = 6;
-		mortuaryNewsPanel.add(getDeathReasonCombo(), gbcDeathReasonCombo);
+		deathNewsPanel.add(getDeathReasonCombo(), gbcDeathReasonCombo);
 
-		return mortuaryNewsPanel;
+		return deathNewsPanel;
 	}
 
 	private JPanel getPatientPanel() {
@@ -289,7 +291,7 @@ public class MortuaryEdit extends JDialog {
 		patientTextField = new JTextField();
 		patientTextField.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			patientTextField.setText(mortuary.getPatient().getName());
+			patientTextField.setText(death.getPatient().getName());
 			patientTextField.setEnabled(false);
 		}
 		patientPanel.add(patientTextField);
@@ -301,6 +303,7 @@ public class MortuaryEdit extends JDialog {
 		if (pickPatientButton != null) {
 			return pickPatientButton;
 		}
+
 		pickPatientButton = new JButton();
 		pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
 		pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
@@ -311,13 +314,14 @@ public class MortuaryEdit extends JDialog {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				SelectPatient selectPatient = new SelectPatient(MortuaryEdit.this, false, true);
-				selectPatient.addSelectionListener(MortuaryEdit.this);
+				SelectPatient selectPatient = new SelectPatient(DeathEdit.this, false, true);
+				selectPatient.addSelectionListener(DeathEdit.this);
 				selectPatient.setVisible(true);
 				Patient pat = selectPatient.getPatient();
 				patientSelected(pat);
 			}
 		});
+
 		return pickPatientButton;
 	}
 
@@ -342,7 +346,7 @@ public class MortuaryEdit extends JDialog {
 			provenanceCombo.addItem(ward);
 		}
 		if (!insert) {
-			provenanceCombo.setSelectedItem(mortuary.getWard());
+			provenanceCombo.setSelectedItem(death.getWard());
 		}
 		return provenanceCombo;
 	}
@@ -351,7 +355,7 @@ public class MortuaryEdit extends JDialog {
 		if (deathDate == null) {
 			deathDate = new GoodDateChooser();
 			if (!insert) {
-				deathDate.setDate(mortuary.getDate().toLocalDate());
+				deathDate.setDate(death.getDate().toLocalDate());
 			}
 		}
 		return deathDate;
@@ -364,7 +368,7 @@ public class MortuaryEdit extends JDialog {
 		deathPlace = new JTextField();
 		deathPlace.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			deathPlace.setText(mortuary.getPlace());
+			deathPlace.setText(death.getPlace());
 		}
 		return deathPlace;
 	}
@@ -373,7 +377,7 @@ public class MortuaryEdit extends JDialog {
 		if (admissionDate == null) {
 			admissionDate = new GoodDateChooser();
 			if (!insert) {
-				admissionDate.setDate(mortuary.getAdmissionDate().toLocalDate());
+				admissionDate.setDate(death.getAdmissionDate().toLocalDate());
 			}
 		}
 		return admissionDate;
@@ -383,7 +387,7 @@ public class MortuaryEdit extends JDialog {
 		if (estimatedDischargeDate == null) {
 			estimatedDischargeDate = new GoodDateChooser();
 			if (!insert) {
-				estimatedDischargeDate.setDate(mortuary.getEstimatedDischargeDate().toLocalDate());
+				estimatedDischargeDate.setDate(death.getEstimatedDischargeDate().toLocalDate());
 			}
 		}
 		return estimatedDischargeDate;
@@ -394,21 +398,24 @@ public class MortuaryEdit extends JDialog {
 			deathReasonCombo = new JComboBox<Object>();
 			deathReasonCombo.setPreferredSize(new Dimension(270, 27));
 		}
+
 		List<DeathReason> deathReasons = new ArrayList<>();
 		try {
 			deathReasons = deathReasonManager.getAll();
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
+
 		deathReasonCombo.addItem("");
 		for (DeathReason deathReason : deathReasons) {
 			deathReasonCombo.addItem(deathReason);
 			if (!insert) {
-				if (Objects.equals(deathReason.getTitle(), mortuary.getDeathReason().getTitle())) {
+				if (Objects.equals(deathReason.getTitle(), death.getDeathReason().getTitle())) {
 					deathReasonCombo.setSelectedItem(deathReason);
 				}
 			}
 		}
+
 		return deathReasonCombo;
 	}
 
@@ -417,9 +424,11 @@ public class MortuaryEdit extends JDialog {
 		liftPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.bodylift.border")));
 		JLabel bodyLiftLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.bodyliftperformed.label"));
 		bodyLiftCheckBox = new JCheckBox();
-		if (!insert && mortuary.getDischargeDate() != null) {
+
+		if (!insert && death.getDischargeDate() != null) {
 			bodyLiftCheckBox.setSelected(true);
 		}
+
 		liftPanel.add(bodyLiftCheckBox);
 		liftPanel.add(bodyLiftLabel);
 		pack();
@@ -443,9 +452,9 @@ public class MortuaryEdit extends JDialog {
 	private JPanel getDeclaringSubPanel() {
 		JPanel declaringSubPanel = new JPanel();
 		declaringSubPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.declaringinformation.border")));
-		GridBagLayout gblMortuaryNewsPanel = new GridBagLayout();
-		gblMortuaryNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
-		declaringSubPanel.setLayout(gblMortuaryNewsPanel);
+		GridBagLayout gblDeathNewsPanel = new GridBagLayout();
+		gblDeathNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
+		declaringSubPanel.setLayout(gblDeathNewsPanel);
 
 		JLabel declaringNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.declaringfullname.label"));
 		GridBagConstraints gbcDeclaringNameLabel = new GridBagConstraints();
@@ -496,11 +505,13 @@ public class MortuaryEdit extends JDialog {
 		if (declaringName != null) {
 			return declaringName;
 		}
+
 		declaringName = new JTextField();
 		declaringName.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			declaringName.setText(mortuary.getDeclaringName());
+			declaringName.setText(death.getDeclaringName());
 		}
+
 		return declaringName;
 	}
 
@@ -508,11 +519,13 @@ public class MortuaryEdit extends JDialog {
 		if (declaringPhoneNumber != null) {
 			return declaringPhoneNumber;
 		}
+
 		declaringPhoneNumber = new JTextField();
 		declaringPhoneNumber.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			declaringPhoneNumber.setText(mortuary.getDeclaringPhone());
+			declaringPhoneNumber.setText(death.getDeclaringPhone());
 		}
+
 		return declaringPhoneNumber;
 	}
 
@@ -520,20 +533,22 @@ public class MortuaryEdit extends JDialog {
 		if (declaringNid != null) {
 			return declaringNid;
 		}
+
 		declaringNid = new JTextField();
 		declaringNid.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			declaringNid.setText(mortuary.getDeclaringNid());
+			declaringNid.setText(death.getDeclaringNid());
 		}
+
 		return declaringNid;
 	}
 
 	private JPanel getFamilyPanel() {
 		JPanel FamilyPanel = new JPanel();
 		FamilyPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.familyinformation.border")));
-		GridBagLayout gblMortuaryNewsPanel = new GridBagLayout();
-		gblMortuaryNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
-		FamilyPanel.setLayout(gblMortuaryNewsPanel);
+		GridBagLayout gblDeathNewsPanel = new GridBagLayout();
+		gblDeathNewsPanel.columnWeights = new double[] { 0.0, 1.0 };
+		FamilyPanel.setLayout(gblDeathNewsPanel);
 
 		JLabel familyNameLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.familyfullname.label"));
 		GridBagConstraints gbcFamilyNameLabel = new GridBagConstraints();
@@ -584,11 +599,13 @@ public class MortuaryEdit extends JDialog {
 		if (familyName != null) {
 			return familyName;
 		}
+
 		familyName = new JTextField();
 		familyName.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			familyName.setText(mortuary.getFamilyName());
+			familyName.setText(death.getFamilyName());
 		}
+
 		return familyName;
 	}
 
@@ -596,11 +613,13 @@ public class MortuaryEdit extends JDialog {
 		if (familyPhoneNumber != null) {
 			return familyPhoneNumber;
 		}
+
 		familyPhoneNumber = new JTextField();
 		familyPhoneNumber.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			familyPhoneNumber.setText(mortuary.getFamilyPhone());
+			familyPhoneNumber.setText(death.getFamilyPhone());
 		}
+
 		return familyPhoneNumber;
 	}
 
@@ -608,11 +627,13 @@ public class MortuaryEdit extends JDialog {
 		if (familyNid != null) {
 			return familyNid;
 		}
+
 		familyNid = new JTextField();
 		familyNid.setPreferredSize(new Dimension(270,27));
 		if (!insert) {
-			familyNid.setText(mortuary.getFamilyNid());
+			familyNid.setText(death.getFamilyNid());
 		}
+
 		return familyNid;
 	}
 
@@ -630,21 +651,24 @@ public class MortuaryEdit extends JDialog {
 			bodyCompartmentCombo = new JComboBox<Object>();
 			bodyCompartmentCombo.setPreferredSize(new Dimension(270, 27));
 		}
+
 		List<BodyCompartment> bodyCompartments = new ArrayList<>();
 		try {
 			bodyCompartments = bodyCompartmentManager.getBodyCompartments();
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
+
 		bodyCompartmentCombo.addItem("");
 		for (BodyCompartment bodyCompartment : bodyCompartments) {
 			bodyCompartmentCombo.addItem(bodyCompartment);
 			if (!insert) {
-				if (bodyCompartment.getLabel().equals(mortuary.getLockerNumber().getLabel())) {
+				if (bodyCompartment.getLabel().equals(death.getBodyCompartment().getLabel())) {
 					bodyCompartmentCombo.setSelectedItem(bodyCompartment);
 				}
 			}
 		}
+
 		return bodyCompartmentCombo;
 	}
 
@@ -670,6 +694,7 @@ public class MortuaryEdit extends JDialog {
 		if (okButton != null) {
 			return okButton;
 		}
+
 		okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
 		okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 		okButton.addActionListener(actionEvent -> {
@@ -687,7 +712,7 @@ public class MortuaryEdit extends JDialog {
 			String familyFullName = familyName.getText().trim();
 			String familyPhone = familyPhoneNumber.getText().trim();
 			String familyNum = familyNid.getText();
-			BodyCompartment locker = null;
+			BodyCompartment bodyCompartment = null;
 
 			if (!(provenanceCombo.getSelectedItem() instanceof String)) {
 				provenanceWard = (Ward) provenanceCombo.getSelectedItem();
@@ -696,7 +721,7 @@ public class MortuaryEdit extends JDialog {
 				deathReason = (DeathReason) deathReasonCombo.getSelectedItem();
 			}
 			if (!(bodyCompartmentCombo.getSelectedItem() instanceof String)) {
-				locker = (BodyCompartment) bodyCompartmentCombo.getSelectedItem();
+				bodyCompartment = (BodyCompartment) bodyCompartmentCombo.getSelectedItem();
 			}
 			if (insert) {
 				if (patient == null || patientName.isEmpty()) {
@@ -740,67 +765,74 @@ public class MortuaryEdit extends JDialog {
 				MessageDialog.error(this, "angal.mortuary.pleaseinsertadeclaringnid.msg");
 				return;
 			}
-			if (locker == null) {
+			if (bodyCompartment == null) {
 				MessageDialog.error(this, "angal.mortuary.pleaseinsertalockernumber.msg");
 				return;
 			}
 
 			if (insert) {
-				mortuary.setPatient(patient);
+				death.setPatient(patient);
 			}
-			mortuary.setDate(date);
-			mortuary.setAdmissionDate(dateAdmission);
+
+			death.setDate(date);
+			death.setAdmissionDate(dateAdmission);
+
 			if (bodyLiftCheckBox.isSelected()) {
-				mortuary.setDischargeDate(LocalDateTime.now());
+				death.setDischargeDate(LocalDateTime.now());
+			} else {
+				death.setDischargeDate(null);
 			}
-			mortuary.setEstimatedDischargeDate(dateEstimatedToDischarge);
-			mortuary.setDeathReason(deathReason);
-			mortuary.setWard(provenanceWard);
-			mortuary.setPlace(place);
-			mortuary.setDeclaringName(declaringFullName);
-			mortuary.setDeclaringPhone(declaringPhone);
-			mortuary.setDeclaringNid(declaringNum);
-			mortuary.setFamilyName(familyFullName);
-			mortuary.setFamilyNid(familyNum);
-			mortuary.setFamilyPhone(familyPhone);
-			mortuary.setLockerNumber(locker);
+
+			death.setEstimatedDischargeDate(dateEstimatedToDischarge);
+			death.setDeathReason(deathReason);
+			death.setWard(provenanceWard);
+			death.setPlace(place);
+			death.setDeclaringName(declaringFullName);
+			death.setDeclaringPhone(declaringPhone);
+			death.setDeclaringNid(declaringNum);
+			death.setFamilyName(familyFullName);
+			death.setFamilyNid(familyNum);
+			death.setFamilyPhone(familyPhone);
+			death.setBodyCompartment(bodyCompartment);
 
 			boolean result = false;
-			Death savedMortuary;
+			Death savedDeath;
 			if (insert) {
 				try {
-					savedMortuary = mortuaryBrowserManager.add(mortuary);
-					result = (savedMortuary != null);
+					savedDeath = deathManager.add(death);
+					result = (savedDeath != null);
 				} catch (OHServiceException ex) {
 					OHServiceExceptionUtil.showMessages(ex);
 				}
 				if (result) {
-					fireMortuaryInserted();
+					fireDeathInserted();
 				}
 			} else {
 				try {
-					savedMortuary = mortuaryBrowserManager.update(mortuary);
-					result = (savedMortuary != null);
+					savedDeath = deathManager.update(death);
+					result = (savedDeath != null);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
 				if (result) {
-					fireMortuaryUpdated();
+					fireDeathUpdated();
 				}
 			}
+
 			if (!result) {
 				MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
 			} else {
 				dispose();
 			}
 		});
+
 		return okButton;
 	}
 
-	public interface MortuaryListener extends EventListener {
+	public interface DeathListener extends EventListener {
 
-		void mortuaryUpdated(AWTEvent e);
+		void deathUpdated(AWTEvent e);
 
-		void mortuaryInserted(AWTEvent e);
+		void deathInserted(AWTEvent e);
 	}
 }

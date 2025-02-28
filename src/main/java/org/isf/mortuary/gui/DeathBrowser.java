@@ -56,11 +56,11 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.mortuary.manager.DeathManager;
 import org.isf.mortuary.manager.DeathReasonManager;
-import org.isf.mortuary.manager.MortuaryBrowserManager;
 import org.isf.mortuary.model.Death;
 import org.isf.mortuary.model.DeathReason;
-import org.isf.mortuary.service.MortuaryIoOperations;
+import org.isf.mortuary.service.DeathIoOperations;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
@@ -73,7 +73,7 @@ import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.springframework.data.domain.Page;
 
-public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.MortuaryListener {
+public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener {
 
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
@@ -95,12 +95,12 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	};
 	private final boolean[] pColumnBold = { true, false, false, false, false, false, false, false };
 	private final boolean[] pColumnVisible = { true, true, true, true, true, true, true, true };
-	private final MortuaryBrowserManager mortuaryBrowserManager = Context.getApplicationContext().getBean(MortuaryBrowserManager.class);
+	private final DeathManager deathManager = Context.getApplicationContext().getBean(DeathManager.class);
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private final DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
 	private long TOTAL_PAGES;
 	private int CURRENT_PAGE = 0;
-	private long totalMortuaries;
+	private long totalDeaths;
 	private JPanel jContainPanel;
 	private JPanel jButtonPanel;
 	private JButton jNewButton;
@@ -119,21 +119,21 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	private JComboBox<Object> deathReasonCombo;
 	private JTextField patientTextField;
 	private Patient patientParent;
-	private MortuaryBrowserModel model;
-	private JTable movTable;
-	private List<Death> mortuaries;
+	private DeathBrowserModel model;
+	private JTable deathTable;
+	private List<Death> deaths;
 	private GoodDateChooser dateFrom;
 	private GoodDateChooser dateTo;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JComboBox<Integer> pagesCombo;
 	private JLabel underLabel;
-	private JLabel totalMortuaryLabel;
+	private JLabel totalDeathLabel;
 	private boolean isEnter = true;
 	private Death death;
 	private int selectedRow;
 
-	public MortuaryBrowser() {
+	public DeathBrowser() {
 		super();
 		initialize();
 		filterButton.doClick();
@@ -199,8 +199,8 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					SelectPatient selectPatient = new SelectPatient(MortuaryBrowser.this, false, true);
-					selectPatient.addSelectionListener(MortuaryBrowser.this);
+					SelectPatient selectPatient = new SelectPatient(DeathBrowser.this, false, true);
+					selectPatient.addSelectionListener(DeathBrowser.this);
 					selectPatient.setVisible(true);
 					Patient pat = selectPatient.getPatient();
 					patientSelected(pat);
@@ -348,6 +348,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		if (jButtonPanel != null) {
 			return jButtonPanel;
 		}
+
 		jButtonPanel = new JPanel();
 		jButtonPanel.add(getNewButton());
 		jButtonPanel.add(getEditButton());
@@ -356,6 +357,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		jButtonPanel.add(getMortuaryStayButton());
 		jButtonPanel.add(getRapportButton());
 		jButtonPanel.add(getCloseButton());
+
 		return jButtonPanel;
 	}
 
@@ -367,14 +369,16 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		if (jNewButton != null) {
 			return jNewButton;
 		}
+
 		jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		jNewButton.addActionListener(actionEvent -> {
 			death = new Death();
-			MortuaryEdit newRecord = new MortuaryEdit(this, death, true);
-			newRecord.addMortuaryListener(MortuaryBrowser.this);
+			DeathEdit newRecord = new DeathEdit(this, death, true);
+			newRecord.addDeathListener(DeathBrowser.this);
 			newRecord.setVisible(true);
 		});
+
 		return jNewButton;
 	}
 
@@ -382,19 +386,21 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		if (jEditButton != null) {
 			return jEditButton;
 		}
+
 		jEditButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
 		jEditButton.setMnemonic(MessageBundle.getMnemonic("angal.common.edit.btn.key"));
 		jEditButton.addActionListener(actionEvent -> {
-			if (movTable.getSelectedRow() < 0) {
+			if (deathTable.getSelectedRow() < 0) {
 				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
 			} else {
-				selectedRow = movTable.getSelectedRow();
-				death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
-				MortuaryEdit editRecord = new MortuaryEdit(this, death, false);
-				editRecord.addMortuaryListener(MortuaryBrowser.this);
+				selectedRow = deathTable.getSelectedRow();
+				death = (Death) model.getValueAt(deathTable.getSelectedRow(), -1);
+				DeathEdit editRecord = new DeathEdit(this, death, false);
+				editRecord.addDeathListener(DeathBrowser.this);
 				editRecord.setVisible(true);
 			}
 		});
+
 		return jEditButton;
 	}
 
@@ -402,26 +408,28 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		if (jDeleteButton != null) {
 			return jDeleteButton;
 		}
+
 		jDeleteButton = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
 		jDeleteButton.addActionListener(actionEvent -> {
-			if (movTable.getSelectedRow() < 0) {
+			if (deathTable.getSelectedRow() < 0) {
 				MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
 			} else {
-				selectedRow = movTable.getSelectedRow();
-				death = (Death) model.getValueAt(movTable.getSelectedRow(), -1);
+				selectedRow = deathTable.getSelectedRow();
+				death = (Death) model.getValueAt(deathTable.getSelectedRow(), -1);
 				int answer = MessageDialog.yesNo(this, "angal.mortuary.deletemortuaryentrancepatient.fmt.msg", death.getPatient().getName());
 				try {
 					if (answer == JOptionPane.YES_OPTION) {
-						mortuaryBrowserManager.delete(death);
-						mortuaries.remove(movTable.getSelectedRow());
+						deathManager.delete(death);
+						deaths.remove(deathTable.getSelectedRow());
 						model.fireTableDataChanged();
-						movTable.updateUI();
+						deathTable.updateUI();
 					}
 				} catch (OHServiceException e) {
 					MessageDialog.info(this, "angal.common.suppressionfailed.msg");
 				}
 			}
 		});
+
 		return jDeleteButton;
 	}
 
@@ -467,7 +475,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 	}
 
 	private JScrollPane getTable() {
-		JScrollPane scrollPane = new JScrollPane(getMovTable());
+		JScrollPane scrollPane = new JScrollPane(getDeathTable());
 		int totWidth = 0;
 		for (int colWidth : pColumnWidth) {
 			totWidth += colWidth;
@@ -476,25 +484,25 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		return scrollPane;
 	}
 
-	private JTable getMovTable() {
+	private JTable getDeathTable() {
 
 		try {
-			model = new MortuaryBrowserModel();
+			model = new DeathBrowserModel();
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
-		movTable = new JTable(model);
+		deathTable = new JTable(model);
 
 		for (int i = 0; i < pColumns.length; i++) {
-			movTable.getColumnModel().getColumn(i).setCellRenderer(new EnabledTableCellRenderer());
-			movTable.getColumnModel().getColumn(i).setPreferredWidth(pColumnWidth[i]);
+			deathTable.getColumnModel().getColumn(i).setCellRenderer(new EnabledTableCellRenderer());
+			deathTable.getColumnModel().getColumn(i).setPreferredWidth(pColumnWidth[i]);
 			if (!pColumnVisible[i]) {
-				movTable.getColumnModel().getColumn(i).setMinWidth(0);
-				movTable.getColumnModel().getColumn(i).setMaxWidth(0);
-				movTable.getColumnModel().getColumn(i).setWidth(0);
+				deathTable.getColumnModel().getColumn(i).setMinWidth(0);
+				deathTable.getColumnModel().getColumn(i).setMaxWidth(0);
+				deathTable.getColumnModel().getColumn(i).setWidth(0);
 			}
 		}
-		return movTable;
+		return deathTable;
 	}
 
 	private JPanel getPaginationPanel() {
@@ -503,7 +511,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		jPaginationPanel.add(getPagesCombo());
 		jPaginationPanel.add(getUnderLabel());
 		jPaginationPanel.add(getNextButton());
-		jPaginationPanel.add(getTotalMortuaryLabel());
+		jPaginationPanel.add(getTotalDeathLabel());
 		return jPaginationPanel;
 	}
 
@@ -587,7 +595,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		isEnter = !outputRadioButton.isSelected();
 
 		try {
-			model = new MortuaryBrowserModel(
+			model = new DeathBrowserModel(
 				patientTextField.getText().trim(),
 				wardSelected,
 				dateFrom.getDateStartOfDay(),
@@ -600,7 +608,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		}
 
 		if (!isNextOrPrevButton) {
-			totalMortuaryLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalMortuaries);
+			totalDeathLabel.setText(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalDeaths);
 			underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 			CURRENT_PAGE = 0;
 
@@ -612,9 +620,9 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 			pagesCombo.setSelectedItem(1);
 		}
 
-		if (mortuaries != null) {
+		if (deaths != null) {
 			model.fireTableDataChanged();
-			movTable.updateUI();
+			deathTable.updateUI();
 		}
 
 		nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES - 1 && TOTAL_PAGES != 1);
@@ -629,43 +637,43 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 		return underLabel;
 	}
 
-	private JLabel getTotalMortuaryLabel() {
-		if (totalMortuaryLabel == null) {
-			totalMortuaryLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalMortuaries);
+	private JLabel getTotalDeathLabel() {
+		if (totalDeathLabel == null) {
+			totalDeathLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.totalmortuary.txt") + ": " + totalDeaths);
 		}
-		return totalMortuaryLabel;
+		return totalDeathLabel;
 	}
 
 	@Override
-	public void mortuaryUpdated(AWTEvent e) {
-		mortuaries.set(selectedRow, death);
-		((MortuaryBrowser.MortuaryBrowserModel) movTable.getModel()).fireTableDataChanged();
-		movTable.updateUI();
-		if (movTable.getRowCount() > 0 && selectedRow > -1) {
-			movTable.setRowSelectionInterval(selectedRow, selectedRow);
+	public void deathUpdated(AWTEvent e) {
+		deaths.set(selectedRow, death);
+		((DeathBrowserModel) deathTable.getModel()).fireTableDataChanged();
+		deathTable.updateUI();
+		if (deathTable.getRowCount() > 0 && selectedRow > -1) {
+			deathTable.setRowSelectionInterval(selectedRow, selectedRow);
 		}
 	}
 
 	@Override
-	public void mortuaryInserted(AWTEvent e) {
+	public void deathInserted(AWTEvent e) {
 		applyFilter(false);
-		if (movTable.getRowCount() > 0) {
-			movTable.setRowSelectionInterval(0, 0);
+		if (deathTable.getRowCount() > 0) {
+			deathTable.setRowSelectionInterval(0, 0);
 		}
 	}
 
-	class MortuaryBrowserModel extends DefaultTableModel {
+	class DeathBrowserModel extends DefaultTableModel {
 
 		@Serial()
 		private static final long serialVersionUID = 1L;
 
-		public MortuaryBrowserModel() throws OHServiceException {
+		public DeathBrowserModel() throws OHServiceException {
 			LocalDateTime now = TimeTools.getNow();
 			LocalDateTime old = now.minusWeeks(1);
-			model = new MortuaryBrowserModel("", "", old, now, isEnter,"");
+			model = new DeathBrowserModel("", "", old, now, isEnter,"");
 		}
 
-		public MortuaryBrowserModel(
+		public DeathBrowserModel(
 			String patientName,
 			String wardCode,
 			LocalDateTime dateFrom,
@@ -673,7 +681,7 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 			boolean isEnter,
 			String deathReasonCode
 		) throws OHServiceException {
-			Page<Death> mortuariesPages = mortuaryBrowserManager.getMortuariesPageable(
+			Page<Death> deathsPages = deathManager.getMortuariesPageable(
 				patientName,
 				wardCode,
 				dateFrom,
@@ -683,17 +691,17 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 				CURRENT_PAGE,
 				PAGE_SIZE
 			);
-			mortuaries = new ArrayList<>(mortuariesPages.getContent());
-			totalMortuaries = mortuariesPages.getTotalElements();
-			TOTAL_PAGES = mortuariesPages.getTotalPages();
+			deaths = new ArrayList<>(deathsPages.getContent());
+			totalDeaths = deathsPages.getTotalElements();
+			TOTAL_PAGES = deathsPages.getTotalPages();
 		}
 
 		@Override
 		public int getRowCount() {
-			if (mortuaries == null) {
+			if (deaths == null) {
 				return 0;
 			}
-			return mortuaries.size();
+			return deaths.size();
 		}
 
 		@Override
@@ -708,35 +716,35 @@ public class MortuaryBrowser extends ModalJFrame implements MortuaryEdit.Mortuar
 
 		/**
 		 * Note: We must get the objects in a reversed way because of the query
-		 * @see MortuaryIoOperations
+		 * @see DeathIoOperations
 		 */
 		@Override
 		public Object getValueAt(int r, int c) {
-			if (mortuaries == null) {
+			if (deaths == null) {
 				return null;
 			}
 
-			Death mortuary = mortuaries.get(r);
-			Patient patient = mortuary.getPatient();
-			Ward ward = mortuary.getWard();
-			DeathReason deathReason = mortuary.getDeathReason();
+			Death death = deaths.get(r);
+			Patient patient = death.getPatient();
+			Ward ward = death.getWard();
+			DeathReason deathReason = death.getDeathReason();
 
 			if (c == -1) {
-				return mortuary;
+				return death;
 			} else if (c == 0) {
-				return mortuary.getId();
+				return death.getId();
 			} else if (c == 1) {
 				return patient.getName();
 			} else if (c == 2) {
 				return patient.getSex();
 			} else if (c == 3) {
-				return mortuary.getDeclaringName();
+				return death.getDeclaringName();
 			} else if (c == 4) {
 				return ward.getDescription();
 			} else if (c == 5) {
-				return mortuary.getAdmissionDate().toLocalDate();
+				return death.getAdmissionDate().toLocalDate();
 			} else if (c == 6) {
-				return mortuary.getEstimatedDischargeDate().toLocalDate();
+				return death.getEstimatedDischargeDate().toLocalDate();
 			} else if (c == 7) {
 				return deathReason.getTitle();
 			}
