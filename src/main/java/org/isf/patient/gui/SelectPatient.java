@@ -276,6 +276,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(abbleAddPatient);
 	}
 
+	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
+		this(owner, keywords);
+		buttonNew.setVisible(enablePatientAdd);
+	}
+
 	private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);

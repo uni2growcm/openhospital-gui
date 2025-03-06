@@ -314,7 +314,11 @@ public class DeathEdit extends JDialog {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				SelectPatient selectPatient = new SelectPatient(DeathEdit.this, false, true);
+				SelectPatient selectPatient = new SelectPatient(
+					DeathEdit.this,
+					patientTextField.getText().trim(),
+					true
+				);
 				selectPatient.addSelectionListener(DeathEdit.this);
 				selectPatient.setVisible(true);
 				Patient pat = selectPatient.getPatient();
