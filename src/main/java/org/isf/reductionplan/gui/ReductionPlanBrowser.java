@@ -132,7 +132,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 
 			jNewButton.addActionListener(actionEvent -> {
-				ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(new ReductionPlan(), true);
+				ReductionPlanEdit reductionPlanEdit = new ReductionPlanEdit(null, true);
 				reductionPlanEdit.addReductionPlanListener(ReductionPlanBrowser.this);
 				reductionPlanEdit.showAsModal(ReductionPlanBrowser.this);
 			});

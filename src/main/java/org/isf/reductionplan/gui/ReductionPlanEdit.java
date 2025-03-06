@@ -104,8 +104,8 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
 	private final EventListenerList reductionPlanListener = new EventListenerList();
-	private final ReductionPlan reductionPlan;
-	private final boolean isInsert;
+	private ReductionPlan reductionPlan;
+	private boolean isInsert = false;
 	private JPanel contentPane;
 	private JButton jCloseButton;
 	private JPanel buttonPanel;
@@ -135,15 +135,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	public ReductionPlanEdit(ReductionPlan reductionPlan, boolean isInsert) {
 		this.isInsert = isInsert;
-		if (isInsert){
-			reductionPlan.setExamReductions(examReductionList);
-			reductionPlan.setMedicalReductions(medicalReductionList);
-			reductionPlan.setOperationReductions(operationReductionList);
-			reductionPlan.setPriceOtherReductions(priceOtherReductionList);
+		if (this.isInsert) {
+			this.reductionPlan = new ReductionPlan();
+			initialize();
+		} else {
+			this.reductionPlan = reductionPlan;
+			initialize();
+			loadDataFromObject();
 		}
-		this.reductionPlan = reductionPlan;
-		initialize();
-		loadDataFromObject();
 	}
 
 	public void addReductionPlanListener(ReductionPlanListener l) {
@@ -164,7 +163,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private void initialize() {
 
-		setTitle(isInsert ? MessageBundle.getMessage("angal.reductionplan.createreductionplan.title")
+		setTitle(this.isInsert ? MessageBundle.getMessage("angal.reductionplan.createreductionplan.title")
 			: MessageBundle.getMessage("angal.reductionplan.editreductionplan.title"));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 600, 350);
@@ -336,7 +335,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		examReductionPanel.add(scrollPane, BorderLayout.CENTER);
 
 		examReductionTable = new JTable();
-		examReductionTable.setModel(new ExamReductionModel());
+		examReductionTable.setModel(new ExamReductionModel(this.isInsert));
 
 		scrollPane.setViewportView(examReductionTable);
 		return examReductionPanel;
@@ -378,15 +377,14 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private JTextField getTextFieldPriceOtherRate() {
 		if (textPriceOtherRate == null) {
-			textPriceOtherRate = new JTextField();
+			textPriceOtherRate = new JTextField("0.00");
 		}
-
 		return textPriceOtherRate;
 	}
 
 	private JTextField getTextFieldExamRate() {
 		if (textExamRate == null) {
-			textExamRate = new JTextField();
+			textExamRate = new JTextField("0.00");
 		}
 
 		return textExamRate;
@@ -426,7 +424,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private JTextField getJTextFieldMedicalRate() {
 		if (textMedicalRate == null) {
-			textMedicalRate = new JTextField();
+			textMedicalRate = new JTextField("0.00");
 		}
 
 		return textMedicalRate;
@@ -434,7 +432,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 	private JTextField getJTextFieldOperationRate() {
 		if (textOperationRate == null) {
-			textOperationRate = new JTextField();
+			textOperationRate = new JTextField("0.00");
 		}
 
 		return textOperationRate;
@@ -654,7 +652,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 					if (loadDataInObject()) {
 						List<OHExceptionMessage> errors = validateReductionPlan(reductionPlan);
 						if (errors.isEmpty()) {
-							if (isInsert) {
+							if (this.isInsert) {
 								reductionPlanManager.add(reductionPlan);
 							} else {
 								reductionPlanManager.update(reductionPlan);
@@ -823,9 +821,9 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		try {
 			medicalReductionList = reductionPlanManager.getMedicalReductionsByReductionPlanId(this.reductionPlan.getId());
-			examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(this.reductionPlan.getId());
 			operationReductionList = reductionPlanManager.getOperationReductionsByReductionPlanId(this.reductionPlan.getId());
 			priceOtherReductionList = reductionPlanManager.getPriceOtherReductionsByReductionPlanId(this.reductionPlan.getId());
+			examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(this.reductionPlan.getId());
 
 			((ExamReductionModel) examReductionTable.getModel()).fireTableDataChanged();
 			examReductionTable.updateUI();
@@ -859,9 +857,11 @@ public class ReductionPlanEdit extends ModalJFrame {
 		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public ExamReductionModel() {
+		public ExamReductionModel(boolean isInsert) {
 			try {
-				examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(reductionPlan.getId());
+				if (!isInsert){
+					examReductionList = reductionPlanManager.getExamReductionsByReductionPlanId(reductionPlan.getId());
+				}
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
