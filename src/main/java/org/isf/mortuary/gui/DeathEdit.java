@@ -442,7 +442,7 @@ public class DeathEdit extends JDialog {
 	private JPanel getRightPanel() {
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(getDeclaringPanel(), BorderLayout.NORTH);
-		rightPanel.add(getLockerPanel(), BorderLayout.SOUTH);
+		rightPanel.add(getBodyCompartmentPanel(), BorderLayout.SOUTH);
 		return rightPanel;
 	}
 
@@ -641,13 +641,13 @@ public class DeathEdit extends JDialog {
 		return familyNid;
 	}
 
-	private JPanel getLockerPanel() {
-		JPanel lockerPanel = new JPanel();
-		lockerPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.locker.border")));
-		JLabel lockerNumberLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.lockerNumber.label"));
-		lockerPanel.add(lockerNumberLabel);
-		lockerPanel.add(getBodyCompartmentCombo());
-		return lockerPanel;
+	private JPanel getBodyCompartmentPanel() {
+		JPanel bodyCompartmentPanel = new JPanel();
+		bodyCompartmentPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.bodycompartment.border")));
+		JLabel bodyCompartmentLabel = new JLabel(MessageBundle.getMessage("angal.mortuary.bodycompartment.label"));
+		bodyCompartmentPanel.add(bodyCompartmentLabel);
+		bodyCompartmentPanel.add(getBodyCompartmentCombo());
+		return bodyCompartmentPanel;
 	}
 
 	private JComboBox<Object> getBodyCompartmentCombo() {
@@ -770,7 +770,7 @@ public class DeathEdit extends JDialog {
 				return;
 			}
 			if (bodyCompartment == null) {
-				MessageDialog.error(this, "angal.mortuary.pleaseinsertalockernumber.msg");
+				MessageDialog.error(this, "angal.mortuary.pleaseinsertabodycompartment.msg");
 				return;
 			}
 
