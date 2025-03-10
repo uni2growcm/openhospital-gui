@@ -175,6 +175,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (contentPane == null) {
 			contentPane = new JPanel();
 		}
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 100 };
 		gridBagLayout.rowHeights = new int[] { 20, 20, 20 };
@@ -379,6 +380,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (textPriceOtherRate == null) {
 			textPriceOtherRate = new JTextField("0.00");
 		}
+
 		return textPriceOtherRate;
 	}
 
@@ -677,13 +679,8 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addMedicalReduction() throws OHServiceException {
 		List<Medical> medicalList = medicalBrowsingManager.getMedicals();
 
-		Medical medical = (Medical) MessageDialog.inputDialog(
-			ReductionPlanEdit.this,
-			new ImageIcon(""),
-			medicalList.toArray(),
-			"",
-			"angal.newbill.selectamedical.txt",
-			"angal.newbill.medical.title"
+		Medical medical = (Medical) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), medicalList.toArray(), "",
+			"angal.newbill.selectamedical.txt", "angal.newbill.medical.title"
 		);
 
 		if (medical == null) {
@@ -1200,38 +1197,16 @@ public class ReductionPlanEdit extends ModalJFrame {
 		return rate.compareTo(BigDecimal.ZERO) >= 0 && rate.compareTo(BigDecimal.valueOf(100)) <= 0;
 	}
 
-	private <T> List<OHExceptionMessage> validateRates(Collection<T> reductions,
-		Function<T, BigDecimal> rateExtractor, String errorMsg) {
-		if (reductions == null || reductions.isEmpty()) {
-			return Collections.emptyList();
-		}
-		boolean anyInvalid = reductions.stream()
-			.anyMatch(r -> !isValidRate(rateExtractor.apply(r)));
-		if (anyInvalid) {
-			return Collections.singletonList(
-				new OHExceptionMessage(errorMsg)
-			);
-		}
-		return Collections.emptyList();
-	}
-
 	public List<OHExceptionMessage> validateReductionRates(ReductionPlan reductionPlan) {
 		List<OHExceptionMessage> errors = new ArrayList<>();
 		String errorMsg = MessageBundle.getMessage("angal.reductionplan.invalidglobalreductionrate.msg");
 
-		if (!isValidGlobalRate(reductionPlan.getExamRate())) {
-			errors.add(new OHExceptionMessage(errorMsg));
-		}
-
-		if (!isValidGlobalRate(reductionPlan.getMedicalRate())) {
-			errors.add(new OHExceptionMessage(errorMsg));
-		}
-
-		if (!isValidGlobalRate(reductionPlan.getOperationRate())) {
-			errors.add(new OHExceptionMessage(errorMsg));
-		}
-
-		if (!isValidGlobalRate(reductionPlan.getOtherRate())) {
+		if (
+			!isValidGlobalRate(reductionPlan.getExamRate()) ||
+			!isValidGlobalRate(reductionPlan.getMedicalRate()) ||
+			!isValidGlobalRate(reductionPlan.getOperationRate()) ||
+			!isValidGlobalRate(reductionPlan.getOtherRate())
+		) {
 			errors.add(new OHExceptionMessage(errorMsg));
 		}
 
