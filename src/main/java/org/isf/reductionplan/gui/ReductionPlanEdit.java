@@ -677,27 +677,59 @@ public class ReductionPlanEdit extends ModalJFrame {
 	private void addMedicalReduction() throws OHServiceException {
 		List<Medical> medicalList = medicalBrowsingManager.getMedicals();
 
-		Medical medical = (Medical) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), medicalList.toArray(), "",
-		"angal.newbill.selectamedical.txt", "angal.newbill.medical.title");
+		Medical medical = (Medical) MessageDialog.inputDialog(
+			ReductionPlanEdit.this,
+			new ImageIcon(""),
+			medicalList.toArray(),
+			"",
+			"angal.newbill.selectamedical.txt",
+			"angal.newbill.medical.title"
+		);
 
-		if (medical != null) {
-			double rate = 0;
-			String stringRate = (String) MessageDialog.inputDialog(ReductionPlanEdit.this, new ImageIcon(""), null, rate,
-				"angal.reductionplan.reductionrate.txt", "angal.reductionplan.reductionrate.title");
+		if (medical == null) {
+			return;
+		}
 
-			if (stringRate == null || stringRate.isEmpty()) {
-				return;
+		String stringRate = (String) MessageDialog.inputDialog(
+			ReductionPlanEdit.this,
+			new ImageIcon(""),
+			null,
+			null,
+			"angal.reductionplan.reductionrate.txt",
+			"angal.reductionplan.reductionrate.title"
+		);
+
+		if (stringRate == null || stringRate.isEmpty()) {
+			return;
+		}
+
+		try {
+			double rate;
+			rate = Double.parseDouble(stringRate);
+
+			if (!isValidRate(BigDecimal.valueOf(rate))) {
+				throw new OHDataValidationException(new OHExceptionMessage(
+					MessageBundle.getMessage("angal.reductionplan.oneinvalidmedicalreductionrate.msg")
+				));
 			}
 
-			try {
-				rate = Double.parseDouble(stringRate);
-				MedicalReduction medicalReduction = new MedicalReduction(reductionPlan, medical, BigDecimal.valueOf(rate));
-				medicalReductionList.add(medicalReduction);
-				MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-				medicalReductionModel.fireTableDataChanged();
-			} catch (Exception ex) {
-				MessageDialog.error(ReductionPlanEdit.this, "angal.newbill.invalidquantitypleasetryagain.msg");
+			MedicalReduction medicalReduction = new MedicalReduction(reductionPlan, medical, BigDecimal.valueOf(rate));
+
+			if (medicalReductionList != null && !medicalReductionList.isEmpty() &&
+				medicalReductionList.stream().anyMatch(existing ->
+					existing.getMedical().equals(medicalReduction.getMedical()))) {
+				throw new OHDataValidationException(new OHExceptionMessage(
+					MessageBundle.getMessage("angal.reductionplan.duplicatemedicalfound.msg")
+				));
 			}
+
+			medicalReductionList.add(medicalReduction);
+			((MedicalReductionModel) medicalReductionTable.getModel()).fireTableDataChanged();
+
+		} catch (OHDataValidationException validationEx) {
+			throw validationEx;
+		}  catch (Exception ex) {
+			MessageDialog.error(ReductionPlanEdit.this, "angal.newbill.invalidquantitypleasetryagain.msg");
 		}
 	}
 
@@ -718,10 +750,32 @@ public class ReductionPlanEdit extends ModalJFrame {
 				}
 				rate = Double.parseDouble(stringRate);
 				ExamReduction exaReduction = new ExamReduction(reductionPlan, exam, BigDecimal.valueOf(rate));
-				examReductionList.add(exaReduction);
+				if (!isValidRate(exaReduction.getReductionRate())) {
+					throw new OHDataValidationException(new OHExceptionMessage(
+						MessageBundle.getMessage("angal.reductionplan.oneinvalidexamreductionrate.msg")
+					));
+				} else {
+					if (examReductionList != null && !examReductionList.isEmpty()) {
+						boolean duplicateFound = examReductionList.stream()
+							.anyMatch(existing -> existing.getExam().equals(exaReduction.getExam()));
+
+						if (duplicateFound) {
+							throw new OHDataValidationException(new OHExceptionMessage(
+								MessageBundle.getMessage("angal.reductionplan.duplicateexamfound.msg")
+							));
+						} else {
+							examReductionList.add(exaReduction);
+						}
+					} else {
+						examReductionList.add(exaReduction);
+					}
+				}
+
 				ExamReductionModel examModel = (ExamReductionModel) examReductionTable.getModel();
 				examModel.fireTableDataChanged();
-			} catch (Exception ex) {
+			} catch (OHDataValidationException validationEx) {
+				throw validationEx;
+			}  catch (Exception ex) {
 				MessageDialog.error(ReductionPlanEdit.this, "angal.newbill.invalidquantitypleasetryagain.msg");
 			}
 		}
@@ -743,10 +797,32 @@ public class ReductionPlanEdit extends ModalJFrame {
 				}
 				rate = Double.parseDouble(stringRate);
 				OperationReduction opeReduction = new OperationReduction(reductionPlan, operation, BigDecimal.valueOf(rate));
-				operationReductionList.add(opeReduction);
+				if (!isValidRate(opeReduction.getReductionRate())) {
+					throw new OHDataValidationException(new OHExceptionMessage(
+						MessageBundle.getMessage("angal.reductionplan.oneinvalidoperationreductionrate.msg")
+					));
+				} else {
+					if (operationReductionList != null && !operationReductionList.isEmpty()) {
+						boolean duplicateFound = operationReductionList.stream()
+							.anyMatch(existing -> existing.getOperation().equals(opeReduction.getOperation()));
+
+						if (duplicateFound) {
+							throw new OHDataValidationException(new OHExceptionMessage(
+								MessageBundle.getMessage("angal.reductionplan.duplicateoperationfound.msg")
+							));
+						} else {
+							operationReductionList.add(opeReduction);
+						}
+					} else {
+						operationReductionList.add(opeReduction);
+					}
+				}
+
 				OperationReductionModel opeModel = (OperationReductionModel) operationReductionTable.getModel();
 				opeModel.fireTableDataChanged();
-			} catch (Exception eee) {
+			} catch (OHDataValidationException validationEx) {
+				throw validationEx;
+			}  catch (Exception ex) {
 				MessageDialog.error(ReductionPlanEdit.this, "angal.newbill.invalidquantitypleasetryagain.msg");
 			}
 		}
@@ -768,11 +844,33 @@ public class ReductionPlanEdit extends ModalJFrame {
 				}
 				rate = Double.parseDouble(strRate);
 				PriceOtherReduction priceOtherReduction = new PriceOtherReduction(reductionPlan, pricesOthers, BigDecimal.valueOf(rate));
-				priceOtherReductionList.add(priceOtherReduction);
+				if (!isValidRate(priceOtherReduction.getReductionRate())) {
+					throw new OHDataValidationException(new OHExceptionMessage(
+						MessageBundle.getMessage("angal.reductionplan.oneinvalidotherreductionrate.msg")
+					));
+				} else {
+					if (priceOtherReductionList != null && !priceOtherReductionList.isEmpty()) {
+						boolean duplicateFound = priceOtherReductionList.stream()
+							.anyMatch(existing -> existing.getPricesOthers().equals(priceOtherReduction.getPricesOthers()));
+
+						if (duplicateFound) {
+							throw new OHDataValidationException(new OHExceptionMessage(
+								MessageBundle.getMessage("angal.reductionplan.duplicatepriceotherfound.msg")
+							));
+						} else {
+							priceOtherReductionList.add(priceOtherReduction);
+						}
+					} else {
+						priceOtherReductionList.add(priceOtherReduction);
+					}
+				}
+
 				PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
 				priceOtherReductionModel.fireTableDataChanged();
 
-			} catch (Exception ex) {
+			} catch (OHDataValidationException validationEx) {
+				throw validationEx;
+			}  catch (Exception ex) {
 				MessageDialog.error(ReductionPlanEdit.this, "angal.newbill.invalidquantitypleasetryagain.msg");
 			}
 		}
@@ -1136,31 +1234,6 @@ public class ReductionPlanEdit extends ModalJFrame {
 		if (!isValidGlobalRate(reductionPlan.getOtherRate())) {
 			errors.add(new OHExceptionMessage(errorMsg));
 		}
-
-		errors.addAll(validateRates(
-			reductionPlan.getExamReductions(),
-			ExamReduction::getReductionRate,
-			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidexamreductionrate.msg"))
-		);
-
-		errors.addAll(
-			validateRates(
-				reductionPlan.getMedicalReductions(),
-				MedicalReduction::getReductionRate,
-				MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidmedicalreductionrate.msg"))
-		);
-
-		errors.addAll(validateRates(
-			reductionPlan.getOperationReductions(),
-			OperationReduction::getReductionRate,
-			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidoperationreductionrate.msg"))
-		);
-
-		errors.addAll(validateRates(
-			reductionPlan.getPriceOtherReductions(),
-			PriceOtherReduction::getReductionRate,
-			MessageBundle.getMessage("angal.reductionplan.oneormoreinvalidotherreductionrate.msg"))
-		);
 
 		return errors;
 	}
