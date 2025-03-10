@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -172,10 +172,11 @@ public class ReductionPlanEdit extends ModalJFrame {
 	}
 
 	private JPanel getMainContentPane() {
-		if (contentPane == null) {
-			contentPane = new JPanel();
+		if (contentPane != null) {
+			return contentPane;
 		}
 
+		contentPane = new JPanel();
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 100 };
 		gridBagLayout.rowHeights = new int[] { 20, 20, 20 };
@@ -492,186 +493,194 @@ public class ReductionPlanEdit extends ModalJFrame {
 	}
 
 	private JButton getJAddButton() {
-		if (jAddButton == null) {
-			jAddButton = new JButton();
-			Dimension uniformSize = new Dimension(70, jAddButton.getPreferredSize().height);
-			jAddButton.setPreferredSize(uniformSize);
-			jAddButton.setText(MessageBundle.getMessage("angal.reductionplan.add.btn"));
-			jAddButton.setMnemonic(MessageBundle.getMnemonic("angal.reductionplan.add.btn.key"));
-			jAddButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
-			jAddButton.addActionListener(actionEvent -> {
-				int tabSelected = tabbedPane.getSelectedIndex();
-				try {
-					switch (tabSelected) {
-						case 0 -> addMedicalReduction();
-						case 1 -> addExamReduction();
-						case 2 -> addOperationReduction();
-						case 3 -> addPriceOtherReduction();
-						default -> {}
-					}
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-			});
+		if (jAddButton != null) {
+			return jAddButton;
 		}
+
+		jAddButton = new JButton();
+		Dimension uniformSize = new Dimension(70, jAddButton.getPreferredSize().height);
+		jAddButton.setPreferredSize(uniformSize);
+		jAddButton.setText(MessageBundle.getMessage("angal.reductionplan.add.btn"));
+		jAddButton.setMnemonic(MessageBundle.getMnemonic("angal.reductionplan.add.btn.key"));
+		jAddButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+		jAddButton.addActionListener(actionEvent -> {
+			int tabSelected = tabbedPane.getSelectedIndex();
+			try {
+				switch (tabSelected) {
+				case 0 -> addMedicalReduction();
+				case 1 -> addExamReduction();
+				case 2 -> addOperationReduction();
+				case 3 -> addPriceOtherReduction();
+				default -> {}
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		});
 
 		return jAddButton;
 	}
 
 	private JButton getJRemoveButton() {
-		if (jRemoveButton == null) {
-			jRemoveButton = new JButton();
-			Dimension uniformSize = new Dimension(70, jRemoveButton.getPreferredSize().height);
-			jRemoveButton.setPreferredSize(uniformSize);
-			jRemoveButton.setText(MessageBundle.getMessage("angal.common.remove.btn"));
-			jRemoveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.remove.btn.key"));
-			jRemoveButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
-			jRemoveButton.addActionListener(actionEvent -> {
-				int index;
-				int tabSelected = tabbedPane.getSelectedIndex();
-				switch (tabSelected) {
-					case 0 -> {
-						index = medicalReductionTable.getSelectedRow();
-						if (index < 0) {
-							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-						} else {
-							medicalReductionList.remove(index);
-							MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-							medicalReductionModel.fireTableDataChanged();
-						}
-					}
-
-					case 1 -> {
-						index = examReductionTable.getSelectedRow();
-						if (index < 0) {
-							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-						} else {
-							examReductionList.remove(index);
-							ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
-							examReductionModel.fireTableDataChanged();
-						}
-					}
-
-					case 2 -> {
-						index = operationReductionTable.getSelectedRow();
-						if (index < 0) {
-							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-						} else {
-							operationReductionList.remove(index);
-							OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
-							operationReductionModel.fireTableDataChanged();
-						}
-					}
-
-					case 3 -> {
-						index = priceOtherReductionTable.getSelectedRow();
-						if (index < 0) {
-							MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-						} else {
-							priceOtherReductionList.remove(index);
-							PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
-							priceOtherReductionModel.fireTableDataChanged();
-						}
-					}
-
-					default -> {
-					}
-				}
-			});
+		if (jRemoveButton != null) {
+			return jRemoveButton;
 		}
+
+		jRemoveButton = new JButton();
+		Dimension uniformSize = new Dimension(70, jRemoveButton.getPreferredSize().height);
+		jRemoveButton.setPreferredSize(uniformSize);
+		jRemoveButton.setText(MessageBundle.getMessage("angal.common.remove.btn"));
+		jRemoveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.remove.btn.key"));
+		jRemoveButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
+		jRemoveButton.addActionListener(actionEvent -> {
+			int index;
+			int tabSelected = tabbedPane.getSelectedIndex();
+			switch (tabSelected) {
+			case 0 -> {
+				index = medicalReductionTable.getSelectedRow();
+				if (index < 0) {
+					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					medicalReductionList.remove(index);
+					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+					medicalReductionModel.fireTableDataChanged();
+				}
+			}
+
+			case 1 -> {
+				index = examReductionTable.getSelectedRow();
+				if (index < 0) {
+					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					examReductionList.remove(index);
+					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+					examReductionModel.fireTableDataChanged();
+				}
+			}
+
+			case 2 -> {
+				index = operationReductionTable.getSelectedRow();
+				if (index < 0) {
+					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					operationReductionList.remove(index);
+					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+					operationReductionModel.fireTableDataChanged();
+				}
+			}
+
+			case 3 -> {
+				index = priceOtherReductionTable.getSelectedRow();
+				if (index < 0) {
+					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+				} else {
+					priceOtherReductionList.remove(index);
+					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+					priceOtherReductionModel.fireTableDataChanged();
+				}
+			}
+
+			default -> {
+			}
+			}
+		});
 
 		return jRemoveButton;
 	}
 
 	private JButton getJRemoveAllButton() {
-		if (jRemoveAllButton == null) {
-			jRemoveAllButton = new JButton();
-			Dimension uniformSize = new Dimension(70, jRemoveAllButton.getPreferredSize().height);
-			jRemoveButton.setPreferredSize(uniformSize);
-			jRemoveAllButton.setText(MessageBundle.getMessage("angal.common.removeall.btn"));
-			jRemoveAllButton.setMnemonic(MessageBundle.getMnemonic("angal.common.removeall.btn.key"));
-			jRemoveAllButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
-			jRemoveAllButton.addActionListener(actionEvent -> {
-				int tabSelected = tabbedPane.getSelectedIndex();
-				switch (tabSelected) {
-				case 0 -> {
-					medicalReductionList.clear();
-					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-					medicalReductionModel.fireTableDataChanged();
-				}
-
-				case 1 -> {
-					examReductionList.clear();
-					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
-					examReductionModel.fireTableDataChanged();
-				}
-
-				case 2 -> {
-					operationReductionList.clear();
-					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
-					operationReductionModel.fireTableDataChanged();
-				}
-
-				case 3 -> {
-					priceOtherReductionList.clear();
-					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
-					priceOtherReductionModel.fireTableDataChanged();
-				}
-
-				default -> {
-				}
-				}
-			});
+		if (jRemoveAllButton != null) {
+			return jRemoveAllButton;
 		}
+
+		jRemoveAllButton = new JButton();
+		Dimension uniformSize = new Dimension(70, jRemoveAllButton.getPreferredSize().height);
+		jRemoveButton.setPreferredSize(uniformSize);
+		jRemoveAllButton.setText(MessageBundle.getMessage("angal.common.removeall.btn"));
+		jRemoveAllButton.setMnemonic(MessageBundle.getMnemonic("angal.common.removeall.btn.key"));
+		jRemoveAllButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
+		jRemoveAllButton.addActionListener(actionEvent -> {
+			int tabSelected = tabbedPane.getSelectedIndex();
+			switch (tabSelected) {
+			case 0 -> {
+				medicalReductionList.clear();
+				MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+				medicalReductionModel.fireTableDataChanged();
+			}
+
+			case 1 -> {
+				examReductionList.clear();
+				ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+				examReductionModel.fireTableDataChanged();
+			}
+
+			case 2 -> {
+				operationReductionList.clear();
+				OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+				operationReductionModel.fireTableDataChanged();
+			}
+
+			case 3 -> {
+				priceOtherReductionList.clear();
+				PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+				priceOtherReductionModel.fireTableDataChanged();
+			}
+
+			default -> {
+			}
+			}
+		});
 
 		return jRemoveAllButton;
 	}
 
 	private JButton getJSaveButton() {
-		if (jSaveButton == null) {
-			jSaveButton = new JButton();
-			jSaveButton.setText(MessageBundle.getMessage("angal.common.save.btn"));
-			jSaveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.save.btn.key"));
-			jSaveButton.addActionListener(actionEvent -> {
-				try {
-					if (!examReductionList.isEmpty()) {
-						reductionPlan.setExamReductions(examReductionList);
-					}
-
-					if (!medicalReductionList.isEmpty()) {
-						reductionPlan.setMedicalReductions(medicalReductionList);
-					}
-
-					if(!operationReductionList.isEmpty()) {
-						reductionPlan.setOperationReductions(operationReductionList);
-					}
-
-					if (!priceOtherReductionList.isEmpty()) {
-						reductionPlan.setPriceOtherReductions(priceOtherReductionList);
-					}
-
-
-					if (loadDataInObject()) {
-						List<OHExceptionMessage> errors = validateReductionPlan(reductionPlan);
-						if (errors.isEmpty()) {
-							if (this.isInsert) {
-								reductionPlanManager.add(reductionPlan);
-							} else {
-								reductionPlanManager.update(reductionPlan);
-							}
-						} else {
-							throw new OHDataValidationException(errors);
-						}
-
-						fireReductionPlanInserted();
-						jCloseButton.doClick();
-					}
-
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-			});
+		if (jSaveButton != null) {
+			return jSaveButton;
 		}
+
+		jSaveButton = new JButton();
+		jSaveButton.setText(MessageBundle.getMessage("angal.common.save.btn"));
+		jSaveButton.setMnemonic(MessageBundle.getMnemonic("angal.common.save.btn.key"));
+		jSaveButton.addActionListener(actionEvent -> {
+			try {
+				if (!examReductionList.isEmpty()) {
+					reductionPlan.setExamReductions(examReductionList);
+				}
+
+				if (!medicalReductionList.isEmpty()) {
+					reductionPlan.setMedicalReductions(medicalReductionList);
+				}
+
+				if (!operationReductionList.isEmpty()) {
+					reductionPlan.setOperationReductions(operationReductionList);
+				}
+
+				if (!priceOtherReductionList.isEmpty()) {
+					reductionPlan.setPriceOtherReductions(priceOtherReductionList);
+				}
+
+
+				if (loadDataInObject()) {
+					List<OHExceptionMessage> errors = validateReductionPlan(reductionPlan);
+					if (errors.isEmpty()) {
+						if (this.isInsert) {
+							reductionPlanManager.add(reductionPlan);
+						} else {
+							reductionPlanManager.update(reductionPlan);
+						}
+					} else {
+						throw new OHDataValidationException(errors);
+					}
+
+					fireReductionPlanInserted();
+					jCloseButton.doClick();
+				}
+
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		});
 
 		return jSaveButton;
 	}
@@ -777,6 +786,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			}
 		}
 	}
+
 	private void addOperationReduction() throws OHServiceException {
 		List<Operation> operationList = operationBrowserManager.getOperation();
 
@@ -824,6 +834,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 			}
 		}
 	}
+
 	private void addPriceOtherReduction() throws OHServiceException {
 		List<PricesOthers> pricesOthersList = pricesOthersManager.getOthers();
 
@@ -944,6 +955,7 @@ public class ReductionPlanEdit extends ModalJFrame {
 
 		return jCloseButton;
 	}
+
 	public interface ReductionPlanListener extends EventListener {
 		void ReductionPlanInserted(AWTEvent aEvent);
 	}

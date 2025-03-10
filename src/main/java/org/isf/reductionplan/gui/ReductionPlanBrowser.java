@@ -106,6 +106,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			contentPane.add(scrollPane, BorderLayout.CENTER);
 			contentPane.add(getButtonPane(), BorderLayout.SOUTH);
 		}
+
 		return contentPane;
 	}
 
@@ -137,6 +138,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 				reductionPlanEdit.showAsModal(ReductionPlanBrowser.this);
 			});
 		}
+
 		return jNewButton;
 	}
 
@@ -160,6 +162,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 				}
 			});
 		}
+
 		return jEditButton;
 	}
 
@@ -192,6 +195,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 				}
 			});
 		}
+
 		return jDeleteButton;
 	}
 
@@ -205,8 +209,10 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			jCloseButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
+
 		return jCloseButton;
 	}
+
 	@Override
 	public void ReductionPlanInserted(AWTEvent aEvent) {
 		table.setModel(new ReductionPlanModel());
@@ -253,6 +259,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 			} else if (c == 5) {
 				return reductionplansList.get(r).getOtherRate();
 			}
+
 			return null;
 		}
 
