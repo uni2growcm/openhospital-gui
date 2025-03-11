@@ -1739,9 +1739,10 @@ public class PatientInsertExtended extends JDialog {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 			jReductionPlanComboBox.addItem(new ReductionPlan());
-			assert reductionPlanList != null;
-			for (ReductionPlan reductionPlan: reductionPlanList) {
-				jReductionPlanComboBox.addItem(reductionPlan);
+			if (reductionPlanList != null) {
+				for (ReductionPlan reductionPlan: reductionPlanList) {
+					jReductionPlanComboBox.addItem(reductionPlan);
+				}
 			}
 
 			if (!insert) {

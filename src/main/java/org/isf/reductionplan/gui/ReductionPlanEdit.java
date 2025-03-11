@@ -536,52 +536,52 @@ public class ReductionPlanEdit extends ModalJFrame {
 			int index;
 			int tabSelected = tabbedPane.getSelectedIndex();
 			switch (tabSelected) {
-			case 0 -> {
-				index = medicalReductionTable.getSelectedRow();
-				if (index < 0) {
-					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-				} else {
-					medicalReductionList.remove(index);
-					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-					medicalReductionModel.fireTableDataChanged();
+				case 0 -> {
+					index = medicalReductionTable.getSelectedRow();
+					if (index < 0) {
+						MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+					} else {
+						medicalReductionList.remove(index);
+						MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+						medicalReductionModel.fireTableDataChanged();
+					}
 				}
-			}
 
-			case 1 -> {
-				index = examReductionTable.getSelectedRow();
-				if (index < 0) {
-					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-				} else {
-					examReductionList.remove(index);
-					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
-					examReductionModel.fireTableDataChanged();
+				case 1 -> {
+					index = examReductionTable.getSelectedRow();
+					if (index < 0) {
+						MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+					} else {
+						examReductionList.remove(index);
+						ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+						examReductionModel.fireTableDataChanged();
+					}
 				}
-			}
 
-			case 2 -> {
-				index = operationReductionTable.getSelectedRow();
-				if (index < 0) {
-					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-				} else {
-					operationReductionList.remove(index);
-					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
-					operationReductionModel.fireTableDataChanged();
+				case 2 -> {
+					index = operationReductionTable.getSelectedRow();
+					if (index < 0) {
+						MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+					} else {
+						operationReductionList.remove(index);
+						OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+						operationReductionModel.fireTableDataChanged();
+					}
 				}
-			}
 
-			case 3 -> {
-				index = priceOtherReductionTable.getSelectedRow();
-				if (index < 0) {
-					MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-				} else {
-					priceOtherReductionList.remove(index);
-					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
-					priceOtherReductionModel.fireTableDataChanged();
+				case 3 -> {
+					index = priceOtherReductionTable.getSelectedRow();
+					if (index < 0) {
+						MessageDialog.error(ReductionPlanEdit.this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+					} else {
+						priceOtherReductionList.remove(index);
+						PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+						priceOtherReductionModel.fireTableDataChanged();
+					}
 				}
-			}
 
-			default -> {
-			}
+				default -> {
+				}
 			}
 		});
 
@@ -602,32 +602,32 @@ public class ReductionPlanEdit extends ModalJFrame {
 		jRemoveAllButton.addActionListener(actionEvent -> {
 			int tabSelected = tabbedPane.getSelectedIndex();
 			switch (tabSelected) {
-			case 0 -> {
-				medicalReductionList.clear();
-				MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
-				medicalReductionModel.fireTableDataChanged();
-			}
+				case 0 -> {
+					medicalReductionList.clear();
+					MedicalReductionModel medicalReductionModel = (MedicalReductionModel) medicalReductionTable.getModel();
+					medicalReductionModel.fireTableDataChanged();
+				}
 
-			case 1 -> {
-				examReductionList.clear();
-				ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
-				examReductionModel.fireTableDataChanged();
-			}
+				case 1 -> {
+					examReductionList.clear();
+					ExamReductionModel examReductionModel = (ExamReductionModel) examReductionTable.getModel();
+					examReductionModel.fireTableDataChanged();
+				}
 
-			case 2 -> {
-				operationReductionList.clear();
-				OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
-				operationReductionModel.fireTableDataChanged();
-			}
+				case 2 -> {
+					operationReductionList.clear();
+					OperationReductionModel operationReductionModel = (OperationReductionModel) operationReductionTable.getModel();
+					operationReductionModel.fireTableDataChanged();
+				}
 
-			case 3 -> {
-				priceOtherReductionList.clear();
-				PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
-				priceOtherReductionModel.fireTableDataChanged();
-			}
+				case 3 -> {
+					priceOtherReductionList.clear();
+					PriceOtherReductionModel priceOtherReductionModel = (PriceOtherReductionModel) priceOtherReductionTable.getModel();
+					priceOtherReductionModel.fireTableDataChanged();
+				}
 
-			default -> {
-			}
+				default -> {
+				}
 			}
 		});
 
