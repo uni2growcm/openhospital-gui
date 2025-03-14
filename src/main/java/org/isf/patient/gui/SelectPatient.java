@@ -57,7 +57,8 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
-import org.isf.mortuary.gui.MortuaryBrowser;
+import org.isf.mortuary.gui.DeathBrowser;
+import org.isf.mortuary.gui.DeathEdit;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -275,6 +276,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(abbleAddPatient);
 	}
 
+	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
+		this(owner, keywords);
+		buttonNew.setVisible(enablePatientAdd);
+	}
+	
 	private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
@@ -655,12 +661,18 @@ public class SelectPatient extends JDialog implements PatientListener {
 		billBrowserListeners.add(l);
 	}
 
-	List<MortuaryBrowser> mortuaryBrowsersListeners = new ArrayList<>();
+	List<DeathBrowser> deathBrowsersListeners = new ArrayList<>();
 
-	public void addSelectionListener(MortuaryBrowser l) {
-		mortuaryBrowsersListeners.add(l);
+	public void addSelectionListener(DeathBrowser l) {
+		deathBrowsersListeners.add(l);
 	}
 
+	List<DeathEdit> mortuaryEditsListeners = new ArrayList<>();
+	
+	public void addSelectionListener(DeathEdit l) {
+		mortuaryEditsListeners.add(l);
+	}
+	
 	@Override
 	public void patientUpdated(AWTEvent e) {
 	}
