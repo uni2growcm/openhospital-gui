@@ -280,11 +280,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		this(owner, keywords);
 		buttonNew.setVisible(enablePatientAdd);
 	}
-<<<<<<< HEAD
-	
-=======
 
->>>>>>> 12a77114b28f658cb4cf6ac008a355865b395a38
 	private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
@@ -669,19 +665,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public void addSelectionListener(DeathBrowser l) {
 		deathBrowsersListeners.add(l);
-<<<<<<< HEAD
-=======
 	}
 
 	List<DeathEdit> mortuaryEditsListeners = new ArrayList<>();
 
-	public void addSelectionListener(DeathEdit l) {
-		mortuaryEditsListeners.add(l);
->>>>>>> 12a77114b28f658cb4cf6ac008a355865b395a38
-	}
-
-	List<DeathEdit> mortuaryEditsListeners = new ArrayList<>();
-	
 	public void addSelectionListener(DeathEdit l) {
 		mortuaryEditsListeners.add(l);
 	}
