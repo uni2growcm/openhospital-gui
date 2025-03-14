@@ -261,7 +261,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 			} else {
 				selectedRow = deathReasonsTable.getSelectedRow();
 				deathReason = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
-				DeathReasonDetails detailsRecord = new DeathReasonDetails(this, deathReason);
+				DeathReasonDetails detailsRecord = new DeathReasonDetails(null, deathReason);
 				detailsRecord.setVisible(true);
 			}
 		});
