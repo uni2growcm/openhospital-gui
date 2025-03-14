@@ -86,7 +86,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	};
 	private final int[] columnWidths = {50, 50, 70};
 	private final Class[] columnClasses = {int.class, String.class, String.class};
-	private DeathReason deathReason;
+	private DeathReason deathReason = null;
 	private int selectedRow;
 	private long totalDeathReasons;
 
@@ -183,7 +183,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 		jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		jNewButton.addActionListener(actionEvent -> {
-			DeathReasonEdit newRecord = new DeathReasonEdit(this, null, true);
+			DeathReasonEdit newRecord = new DeathReasonEdit(this, deathReason, true);
 			newRecord.addDeathReasonListener(DeathReasonBrowser.this);
 			newRecord.setVisible(true);
 		});
@@ -261,7 +261,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 			} else {
 				selectedRow = deathReasonsTable.getSelectedRow();
 				deathReason = (DeathReason) model.getValueAt(deathReasonsTable.getSelectedRow(), -1);
-				DeathReasonDetails detailsRecord = new DeathReasonDetails(null, deathReason);
+				DeathReasonDetails detailsRecord = new DeathReasonDetails(this, deathReason);
 				detailsRecord.setVisible(true);
 			}
 		});

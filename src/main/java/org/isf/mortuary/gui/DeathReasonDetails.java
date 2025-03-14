@@ -43,6 +43,10 @@ import org.isf.mortuary.model.DeathReason;
 
 public class DeathReasonDetails extends JDialog {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane;
 	private JPanel jDataPanel;
 	private JTextArea descriptionTextArea;
