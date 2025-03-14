@@ -271,4 +271,8 @@ public class DeathReasonEdit extends JDialog {
 		}
 		return cancelButton;
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 12a77114b28f658cb4cf6ac008a355865b395a38

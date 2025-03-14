@@ -72,7 +72,7 @@ jobs:
         run: |
           git clone --depth=1 --no-single-branch https://${{ secrets.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git u2g-openhospital-core
           pushd u2g-openhospital-core
-          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout develop
+          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout main
           popd
         
       - name: Install core
