@@ -628,6 +628,7 @@ public class InventoryEdit extends ModalJFrame {
 								}
 							}
 						}
+                        medicalInventoryRow.setId(null);
 						newMedicalInventoryRows.add(medicalInventoryRow);
 					}
 					inventory = medicalInventoryManager.newMedicalInventory(inventory, newMedicalInventoryRows);
@@ -687,6 +688,7 @@ public class InventoryEdit extends ModalJFrame {
 							medicalInventoryRow.setInventory(inventory);
 							int id = medicalInventoryRow.getId();
 							if (id == 0) {
+                                medicalInventoryRow.setId(null);
 								MedicalInventoryRow savedRow = medicalInventoryRowManager.newMedicalInventoryRow(medicalInventoryRow);
 								inventoryRowSearchListIterator.set(savedRow);
 							} else {
