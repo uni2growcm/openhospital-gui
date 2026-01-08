@@ -1549,7 +1549,7 @@ public class InventoryWardEdit extends ModalJFrame {
 		return getMedicalInventoryRowsByMedicalType(medicalType);
 	}
 
-    private List<MedicalInventoryRow> getMedicalInventoryRows(String code) throws OHServiceException {
+    private List<MedicalInventoryRow> getMedicalInventoryRows(String text) throws OHServiceException {
 
         List<MedicalInventoryRow> inventoryRowsList = new ArrayList<>();
 
@@ -1558,16 +1558,16 @@ public class InventoryWardEdit extends ModalJFrame {
 
         List<MedicalWard> medicalWardList = new ArrayList<>();
 
-        if (code != null) {
-            Medical medical = medicalBrowsingManager.getMedicalByMedicalCode(code);
+        if (text != null) {
+            Medical medical = medicalBrowsingManager.getMedicalByMedicalCode(text);
             if (medical == null) {
-                medical = chooseMedical(code);
+                medical = chooseMedical(text);
             }
             if (medical != null) {
-                // récupérer uniquement les MedicalWard correspondant au médical
-                for (MedicalWard medW : medicalsWard) {
-                    if (medW.getMedical().equals(medical)) {
-                        medicalWardList.add(medW);
+                // retrieve only MedicalWards corresponding to medical
+                for (MedicalWard medicalWard : medicalsWard) {
+                    if (medicalWard.getMedical().equals(medical)) {
+                        medicalWardList.add(medicalWard);
                     }
                 }
             }
@@ -1575,15 +1575,15 @@ public class InventoryWardEdit extends ModalJFrame {
             medicalWardList = medicalsWard;
         }
 
-        for (MedicalWard med : medicalWardList) {
-//            int lotQuantityInWard = movWardBrowserManager.getCurrentQuantityInWard(ward, med.getLot());
+        for (MedicalWard medicalWard : medicalWardList) {
+//            int lotQuantityInWard = movWardBrowserManager.getCurrentQuantityInWard(ward, medicalWard.getLot());
             MedicalInventoryRow inventoryRow = new MedicalInventoryRow(
                     0,
-                    med.getQty(),
-                    med.getQty(),
+                    medicalWard.getQty(),
+                    medicalWard.getQty(),
                     null,
-                    med.getMedical(),
-                    med.getLot()
+                    medicalWard.getMedical(),
+                    medicalWard.getLot()
             );
             if (!existInInventorySearchList(inventoryRow)) {
                 inventoryRowsList.add(inventoryRow);
@@ -1597,14 +1597,14 @@ public class InventoryWardEdit extends ModalJFrame {
 		List<MedicalInventoryRow> inventoryRowsList = new ArrayList<>();
 //		String medTypeDescription = medType.getDescription();
         List<MedicalWard> medicalWardList = new ArrayList<>();
-        for (MedicalWard med: medicalsWard)
-            if (med.getMedical().getType().equals(medType))
-                medicalWardList.add(med);
+        for (MedicalWard medicalWard: medicalsWard)
+            if (medicalWard.getMedical().getType().equals(medType))
+                medicalWardList.add(medicalWard);
 		MedicalInventoryRow inventoryRowTemp = null;
 		wardCode = ((Ward) Objects.requireNonNull(wardComboBox.getSelectedItem())).getCode();
 //		Ward ward = wardManager.findWard(wardCode);
-        for (MedicalWard medW: medicalWardList) {
-            inventoryRowTemp = new MedicalInventoryRow(0, medW.getQty(), medW.getQty(), null, medW.getMedical(), medW.getLot());
+        for (MedicalWard medicalWard: medicalWardList) {
+            inventoryRowTemp = new MedicalInventoryRow(0, medicalWard.getQty(), medicalWard.getQty(), null, medicalWard.getMedical(), medicalWard.getLot());
             if (!existInInventorySearchList(inventoryRowTemp)) {
                 inventoryRowsList.add(inventoryRowTemp);
             }
@@ -1667,16 +1667,16 @@ public class InventoryWardEdit extends ModalJFrame {
 		return inventoryRowsList;
 	}
 
-    private void addInventoryRow(String code) throws OHServiceException {
+    private void addInventoryRow(String text) throws OHServiceException {
         List<MedicalInventoryRow> inventoryRowsToAdd = new ArrayList<>();
         List<MedicalWard> medicalWardList = new ArrayList<>();
 
         int addedRowsCount = 0;
         Medical lastMedicalProcessed = null;
-        if (code != null) {
-            Medical medical = medicalBrowsingManager.getMedicalByMedicalCode(code);
+        if (text != null) {
+            Medical medical = medicalBrowsingManager.getMedicalByMedicalCode(text);
             if (medical == null)
-                medical = chooseMedical(code);
+                medical = chooseMedical(text);
 
             if (medical != null) {
                 lastMedicalProcessed = medical;
@@ -1724,41 +1724,31 @@ public class InventoryWardEdit extends ModalJFrame {
     }
 
     private Medical chooseMedical(String text) throws OHServiceException {
-        Map<String, Medical> medicalMap;
-        List<MedicalWard> medicalsWard = movWardBrowserManager.getMedicalsWard(wardCode, false);
-        ArrayList<Medical> medicals = new ArrayList<Medical>();
-        for (MedicalWard med : medicalsWard) {
-            medicals.add(med.getMedical());
+        List<Medical> medicals = movWardBrowserManager.getMedicalsWard(wardCode, false)
+                .stream().map(MedicalWard::getMedical)
+                .filter(medical -> NormalizeString.normalizeContains(medical.getDescription().toLowerCase(), text))
+                .collect(HashMap<Integer, Medical>::new, (map, medical) -> map.put(medical.getCode(), medical), HashMap::putAll)
+                .values().stream().sorted().toList();
+        return pickMedical(medicals);
+    }
+
+    private Medical pickMedical(List<Medical> from) {
+        if (from.isEmpty()) {
+            return  null;
         }
-        medicalMap = new HashMap<>();
-        for (Medical med : medicals) {
-            String key = med.getCode().toString().toLowerCase();
-            medicalMap.put(key, med);
-        }
-        List<Medical> medList = new ArrayList<>();
-        for (Medical aMed : medicalMap.values()) {
-            if (NormalizeString.normalizeContains(aMed.getDescription().toLowerCase(), text)) {
-                medList.add(aMed);
-            }
-        }
-        Collections.sort(medList);
-        Medical med = null;
-        if (!medList.isEmpty()) {
-            MedicalPicker framas = new MedicalPicker(new StockMedModel(medList), medList);
-            framas.setSize(300, 400);
-            JDialog dialog = new JDialog();
-            dialog.setLocationRelativeTo(null);
-            dialog.setSize(600, 350);
-            dialog.setLocationRelativeTo(null);
-            dialog.setModal(true);
-            dialog.setTitle(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chooseamedical"));
-            framas.setParentFrame(dialog);
-            dialog.setContentPane(framas);
-            dialog.setVisible(true);
-            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            med = framas.getSelectedMedical();
-        }
-        return med;
+        MedicalPicker framas = new MedicalPicker(new StockMedModel(from), from);
+        framas.setSize(300, 400);
+        JDialog dialog = new JDialog();
+        dialog.setLocationRelativeTo(null);
+        dialog.setSize(600, 350);
+        dialog.setLocationRelativeTo(null);
+        dialog.setModal(true);
+        dialog.setTitle(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chooseamedical"));
+        framas.setParentFrame(dialog);
+        dialog.setContentPane(framas);
+        dialog.setVisible(true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        return framas.getSelectedMedical();
     }
 
 	private JLabel getReferenceLabel() {
