@@ -1693,8 +1693,8 @@ public class InventoryWardEdit extends ModalJFrame {
             );
         }
 
-        for (MedicalWard ward : medicalWardList) {
-            MedicalInventoryRow row = new MedicalInventoryRow(0, ward.getQty(), ward.getQty(), null, ward.getMedical(), ward.getId().getLot());
+        for (MedicalWard medicalWard : medicalWardList) {
+            MedicalInventoryRow row = new MedicalInventoryRow(0, medicalWard.getQty(), medicalWard.getQty(), null, medicalWard.getMedical(), medicalWard.getId().getLot());
 
             if (!existInInventorySearchList(row)) {
                 inventoryRowsToAdd.add(row);
