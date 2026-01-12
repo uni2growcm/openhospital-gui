@@ -1724,9 +1724,10 @@ public class InventoryWardEdit extends ModalJFrame {
     }
 
     private Medical chooseMedical(String text) throws OHServiceException {
+        var searchText = text.toLowerCase();
         List<Medical> medicals = movWardBrowserManager.getMedicalsWard(wardCode, false)
                 .stream().map(MedicalWard::getMedical)
-                .filter(medical -> NormalizeString.normalizeContains(medical.getDescription().toLowerCase(), text))
+                .filter(medical -> NormalizeString.normalizeContains(medical.getDescription().toLowerCase(), searchText))
                 .collect(HashMap<Integer, Medical>::new, (map, medical) -> map.put(medical.getCode(), medical), HashMap::putAll)
                 .values().stream().sorted().toList();
         return pickMedical(medicals);
