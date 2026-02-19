@@ -205,7 +205,9 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.setText(search);
 		if (GeneralData.ENHANCEDSEARCH) {
 			jSearchButton.doClick();
-		}
+		} else {
+            filterPatient();
+        }
 	}
 
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
@@ -281,7 +283,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(enablePatientAdd);
 	}
 
-	private void initComponents() {
+    private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
