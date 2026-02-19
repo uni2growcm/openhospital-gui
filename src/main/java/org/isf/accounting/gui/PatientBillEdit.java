@@ -1364,7 +1364,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				}
 				if (hasNewPayments()) {
 					TxtPrinter.initialize();
-					new GenericReportBill(thisBill.getId(), GeneralData.PATIENTBILL, yes, !TxtPrinter.PRINT_WITHOUT_ASK);
+					new GenericReportBill(thisBill.getId(), GeneralData.PATIENTBILL, false, !TxtPrinter.PRINT_WITHOUT_ASK);
 				}
 				if (paid && GeneralData.RECEIPTPRINTER) {
 					TxtPrinter.initialize();
