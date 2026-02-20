@@ -21,13 +21,7 @@
  */
 package org.isf.patient.gui;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -41,23 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -77,8 +55,11 @@ import org.isf.patconsensus.model.PatientConsensus;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patient.model.PatientProfilePhoto;
+import org.isf.priceslist.manager.PriceListManager;
+import org.isf.priceslist.model.PriceList;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
+import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.image.ImageUtil;
@@ -96,10 +77,11 @@ public class PatientInsertExtended extends JDialog {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PatientInsertExtended.class);
 
-	private PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
-	private PatientConsensusBrowserManager patientConsensusManager = Context.getApplicationContext().getBean(PatientConsensusBrowserManager.class);
+	private final PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
+	private final PatientConsensusBrowserManager patientConsensusManager = Context.getApplicationContext().getBean(PatientConsensusBrowserManager.class);
+   ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 
-	private EventListenerList patientListeners = new EventListenerList();
+	private final EventListenerList patientListeners = new EventListenerList();
 
 	private PatientHistory patientHistory;
 
@@ -248,13 +230,6 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jTelephoneFieldPanel;
 	private JTextField jTelephoneTextField;
 
-	// Billing Components:
-	private JPanel jBilling;
-	private JPanel jBillingPanel;
-	private JComboBox<ReductionPlan> jReductionPlanComboBox;
-	private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
-
-
 	// COMPONENTS: Extension
 	private JPanel jExtensionContent;
 
@@ -317,7 +292,10 @@ public class PatientInsertExtended extends JDialog {
 
 	private PatientPhotoPanel photoPanel;
 
-	/**
+    private JPanel billingPanel;
+    JComboBox<Object> reductionPlanComboBox;
+
+    /**
 	 * This method initializes
 	 *
 	 * @param owner
@@ -506,7 +484,7 @@ public class PatientInsertExtended extends JDialog {
 							}
 						}
 
-						ReductionPlan reductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+						ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
 						if (reductionPlan != null && reductionPlan.getId() != 0) {
 							patient.setReductionPlan(reductionPlan);
 						} else {
@@ -600,7 +578,7 @@ public class PatientInsertExtended extends JDialog {
 						}
 					}
 
-					ReductionPlan reductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+					ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
 					if (reductionPlan != null && reductionPlan.getId() != 0) {
 						patient.setReductionPlan(reductionPlan);
 					} else {
@@ -1149,7 +1127,7 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJCity(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
-			jAnagraphPanel.add(getJBilling(), null);
+			jAnagraphPanel.add(getBillingPanel(), null);
 			jAnagraphPanel.add(getJLabelRequiredFields(), null);
 		}
 		return jAnagraphPanel;
@@ -1704,54 +1682,6 @@ public class PatientInsertExtended extends JDialog {
 			jTelephone.add(getJTelephoneFieldPanel(), BorderLayout.EAST);
 		}
 		return jTelephone;
-	}
-
-	/**
-	 * This method initializes jBilling
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getJBilling() {
-		if (jBilling == null) {
-			jBilling = new JPanel();
-			jBilling.setLayout(new BorderLayout());
-			jBilling.add(getJBillingPanel(),null);
-		}
-		return jBilling;
-	}
-
-	/**
-	 * This method initializes jBillingPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getJBillingPanel() {
-		if (jBillingPanel == null) {
-			jBillingPanel = new JPanel();
-			jBillingPanel = setMyBorder(jBillingPanel, MessageBundle.getMessage("angal.patient.billing.txt"));
-
-			jReductionPlanComboBox = new JComboBox<>();
-			jReductionPlanComboBox.setPreferredSize(new Dimension(200,24));
-			List<ReductionPlan> reductionPlanList = null;
-			try {
-				reductionPlanList = reductionPlanManager.getAll();
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-			jReductionPlanComboBox.addItem(new ReductionPlan());
-			if (reductionPlanList != null) {
-				for (ReductionPlan reductionPlan: reductionPlanList) {
-					jReductionPlanComboBox.addItem(reductionPlan);
-				}
-			}
-
-			if (!insert) {
-				jReductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
-			}
-
-			jBillingPanel.add(jReductionPlanComboBox);
-		}
-		return jBillingPanel;
 	}
 
 	/**
@@ -2329,4 +2259,53 @@ public class PatientInsertExtended extends JDialog {
 		}
 	}
 
+    private JPanel getBillingPanel() {
+
+        if (billingPanel != null) {
+            return billingPanel;
+        }
+
+        billingPanel = new JPanel();
+        billingPanel.setLayout(new BoxLayout(billingPanel, BoxLayout.Y_AXIS));
+        billingPanel = setMyBorder(billingPanel, MessageBundle.getMessage("angal.patient.billing.txt"));
+
+        addReductionSection();
+
+        if (!insert) {
+            if (patient.getReductionPlan() != null) {
+                reductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
+            }
+        }
+
+        return billingPanel;
+    }
+
+    private JPanel centeredPanel(JComponent component) {
+        var panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panel.add(component);
+        return panel;
+    }
+
+    private void addReductionSection() {
+
+        JLabel reductionPlanLabel = new JLabel(
+                MessageBundle.getMessage("angal.patient.reductionplan")
+        );
+
+        billingPanel.add(centeredPanel(reductionPlanLabel));
+
+        reductionPlanComboBox = new JComboBox<>();
+        reductionPlanComboBox.addItem(MessageBundle.getMessage("angal.patient.selectareductionplan"));
+
+        try {
+            List<ReductionPlan> reductions = reductionPlanManager.getAll();
+            for (ReductionPlan reduction : reductions) {
+                reductionPlanComboBox.addItem(reduction);
+            }
+        } catch (OHServiceException e) {
+            throw new RuntimeException(e);
+        }
+
+        billingPanel.add(reductionPlanComboBox);
+    }
 }

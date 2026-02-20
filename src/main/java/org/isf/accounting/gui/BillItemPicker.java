@@ -75,8 +75,8 @@ public class BillItemPicker<T> extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
 
-        JButton btnSelect = new JButton("OK");
-        JButton btnCancel = new JButton("Cancel");
+        JButton btnSelect = new JButton(MessageBundle.getMessage("angal.billbrowser.select"));
+        JButton btnCancel = new JButton(MessageBundle.getMessage("angal.billbrowser.cancel.btn"));
 
         buttonPanel.add(btnSelect);
         buttonPanel.add(btnCancel);

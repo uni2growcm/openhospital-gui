@@ -63,7 +63,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import org.apache.poi.ss.formula.functions.T;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillItems;
@@ -75,7 +74,6 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.generaldata.TxtPrinter;
 import org.isf.hospital.manager.HospitalBrowsingManager;
-import org.isf.medicalstockward.model.MedicalWard;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
@@ -89,6 +87,7 @@ import org.isf.priceslist.model.Price;
 import org.isf.priceslist.model.PriceList;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
+import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -305,6 +304,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	 * thisObject
 	 */
 	private Bill thisBill;
+    private int pbiID = 0;
 
 	// Tables
 	private Object[] billClasses = { Price.class, Integer.class, Double.class };
@@ -329,10 +329,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private List<PricesOthers> othPrices;
 
 	// Items and Payments (ALL)
-	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
-	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
-	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
-	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+	private final BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
+	private final PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+	private final AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+	private final UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+
+    //Reduction plan
+    private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -342,7 +345,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private int billItemsSaved;
 	private int payItemsSaved;
 
-	private String user = UserBrowsingManager.getCurrentUser();
+	private final String user = UserBrowsingManager.getCurrentUser();
 
 	public boolean hasBillGuarantor() {
 		return GeneralData.ALLOWBILLGUARANTOR;
@@ -363,6 +366,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	public PatientBillEdit(JFrame owner, Patient patient) {
 		super(owner, true);
 		thisBill = new Bill();
+        if (patient.getReductionPlan() != null || patient.getReductionPlan().getId() != 0)
+            this.pbiID = patient.getReductionPlan().getId();
 		loadDataset();
 		initData(thisBill, true);
 		initComponents();
@@ -701,9 +706,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                 String text = jTextFieldPatient.getText().trim();
 
                 if (!text.isEmpty()) {
-
-                    Window parent = SwingUtilities.getWindowAncestor(jTextFieldPatient);
-
                     SelectPatient dialog = new SelectPatient(
                         (JDialog) SwingUtilities.getWindowAncestor(jTextFieldPatient),
                         text,
@@ -988,6 +990,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void setPatientSelected(Patient patientSelected) {
 		thisBill.setIsPatient(true);
+        if (patientSelected.getReductionPlan() != null || patientSelected.getReductionPlan().getId() != 0)
+            this.pbiID = patientSelected.getReductionPlan().getId();
 		thisBill.setBillPatient(patientSelected);
 		thisBill.setPatName(patientSelected.getName());
 	}
@@ -1287,20 +1291,21 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 				if (insert) {
 					Bill newBill = new Bill(
-									0, // Bill ID
-									thisBill.getDate(), // from calendar
-									null, // updateDate from most recent payment, will be set later
-									true, // is a PriceList? always true, non-pricelist not managed
-									thisBill.getPriceList(), // List
-									thisBill.getPriceList().getName(), // List name
-									thisBill.isPatient(), // is a Patient?
-									thisBill.getBillPatient(), // Patient
-									thisBill.isPatient() ? thisBill.getBillPatient().getName() : jTextFieldPatient.getText(), // Patient Name
-									paid ? "C" : "O", // CLOSED or OPEN TODO: enumerate bills status
-									total.doubleValue(), // Total
-									balance.doubleValue(), // Balance
-									user, // User
-									thisBill.getAdmission()); // Admission
+                        0, // Bill ID
+                        thisBill.getDate(), // from calendar
+                        null, // updateDate from most recent payment, will be set later
+                        true, // is a PriceList? always true, non-pricelist not managed
+                        thisBill.getPriceList(), // List
+                        thisBill.getPriceList().getName(), // List name
+                        thisBill.isPatient(), // is a Patient?
+                        thisBill.getBillPatient(), // Patient
+                        thisBill.isPatient() ? thisBill.getBillPatient().getName() : jTextFieldPatient.getText(), // Patient Name
+                        paid ? "C" : "O", // CLOSED or OPEN TODO: enumerate bills status
+                        total.doubleValue(), // Total
+                        balance.doubleValue(), // Balance
+                        user, // User
+                        thisBill.getAdmission(),
+                        thisBill.isPatient() ? thisBill.getBillPatient().getReductionPlan().getId() : 0); // Admission
 					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
@@ -1327,20 +1332,21 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 				} else {
 					Bill updateBill = new Bill(
-									thisBill.getId(), // Bill ID
-									thisBill.getDate(), // from calendar
-									null, // updateDate from most recent payment, will be set later
-									true, // is a PriceList? always true, non-pricelist not managed
-									thisBill.getPriceList(), // List
-									thisBill.getPriceList().getName(), // List name
-									thisBill.isPatient(), // is a Patient?
-									thisBill.getBillPatient(), // Patient
-									thisBill.isPatient() ? thisBill.getPatName() : jTextFieldPatient.getText(), // Patient Name
-									paid ? "C" : "O", // CLOSED or OPEN
-									total.doubleValue(), // Total
-									balance.doubleValue(), // Balance
-									user, // User
-									thisBill.getAdmission()); // Admission
+                        thisBill.getId(), // Bill ID
+                        thisBill.getDate(), // from calendar
+                        null, // updateDate from most recent payment, will be set later
+                        true, // is a PriceList? always true, non-pricelist not managed
+                        thisBill.getPriceList(), // List
+                        thisBill.getPriceList().getName(), // List name
+                        thisBill.isPatient(), // is a Patient?
+                        thisBill.getBillPatient(), // Patient
+                        thisBill.isPatient() ? thisBill.getPatName() : jTextFieldPatient.getText(), // Patient Name
+                        paid ? "C" : "O", // CLOSED or OPEN
+                        total.doubleValue(), // Total
+                        balance.doubleValue(), // Balance
+                        user, // User
+                        thisBill.getAdmission(),
+                        thisBill.isPatient() ? thisBill.getBillPatient().getReductionPlan().getId() : 0); // Admission
 					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
@@ -1680,6 +1686,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         icon
                 );
 
+                if (pbiID != 0 && oth != null) {
+                    try {
+                        oth = reductionPlanManager.getOtherPrice(oth, pbiID);
+                    } catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (oth != null) {
 
                     if (othersHashMap.get(Integer.valueOf(oth.getItem())).isUndefined()) {
@@ -1775,6 +1789,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         icon
                 );
 
+                if (pbiID != 0 && exam != null) {
+                    try {
+                        exam = reductionPlanManager.getExamPrice(exam, pbiID);
+                    } catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (exam != null) {
                     int qty = 1;
                     String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
@@ -1818,6 +1840,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         icon
                 );
 
+                if (pbiID != 0 && operation != null) {
+                    try {
+                        operation = reductionPlanManager.getOperationPrice(operation, pbiID);
+                    } catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (operation != null) {
                     addItem(operation, 1, true);
                 }
@@ -1835,22 +1865,31 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonAddMedical.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
             jButtonAddMedical.addActionListener(e -> {
 
-                List<Price> medical = prcListArray.stream()
+                List<Price> medicals
+                        = prcListArray.stream()
                         .filter(p -> "MED".equals(p.getGroup()))
                         .toList();
 
-                OhTableModel<Price> model = new OhTableModel<>(medical);
+                OhTableModel<Price> model = new OhTableModel<>(medicals);
 
                 Icon icon = new ImageIcon("rsc/icons/medical_dialog.png"); //$NON-NLS-1$
 
-                Price selected = BillItemPicker.showPicker(
+                Price medical = BillItemPicker.showPicker(
                         this,
                         MessageBundle.getMessage("angal.newbill.medical.title"),
                         model,
                         icon
                 );
 
-                if (selected != null) {
+                if (pbiID != 0 && medical != null) {
+                    try {
+                        medical = reductionPlanManager.getMedicalPrice(medical, pbiID);
+                    } catch (OHServiceException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                if (medical != null) {
                     int qty = 1;
                     String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
                             MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, qty);
@@ -1860,7 +1899,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                             return;
                         }
                         qty = Integer.parseInt(quantity);
-                        addItem(selected, qty, true);
+                        addItem(medical, qty, true);
                     } catch (Exception eee) {
                         MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
                     }
