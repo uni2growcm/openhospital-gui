@@ -156,6 +156,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		GeneralData.initialize();
 		this.activableModules = retrieveActivatedModulesMap();
 		Locale.setDefault(new Locale(GeneralData.LANGUAGE)); // for all fixed options YES_NO_CANCEL in dialogs
+		Locale.setDefault(Locale.Category.FORMAT, Locale.ROOT); // fix technical formats after SpringBoot 3.4.5
 		singleUser = GeneralData.getGeneralData().getSINGLEUSER();
 		MessageBundle.getBundle();
 		// internalPharmacies=false : no internalPharmacies
@@ -558,9 +559,8 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 		}
 
 		private JPanel getLogoPanel() {
-			JLabel logo_appl = new JLabel(
-					new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_menu_vert.png"))
-							.getImage().getScaledInstance(28, 180, Image.SCALE_SMOOTH)));
+			JLabel logo_appl = new JLabel(new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_menu_vert.png"))
+				.getImage().getScaledInstance(28, 180, Image.SCALE_SMOOTH)));
 			Object checkLogoHospital = getClass().getClassLoader().getResource("logo_hospital.png");
 
 			JPanel logoPanel = new JPanel();
@@ -568,7 +568,9 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 			BoxLayout layout = new BoxLayout(logoPanel, BoxLayout.Y_AXIS);
 			logoPanel.setLayout(layout);
 			logoPanel.setBackground(Color.decode(BACKGROUND_COLOR_HEX));
+			
 			if (checkLogoHospital != null) {
+
 				JLabel logo_hosp = new JLabel(
 						new ImageIcon(new ImageIcon(getClass().getClassLoader().getResource("logo_hospital.png"))
 								.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
@@ -579,7 +581,6 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 				logoPanel.add(Box.createVerticalStrut(100)); // for short menu
 			}
 			logoPanel.add(Box.createVerticalGlue());
-			logoPanel.add(logo_appl);
 			return logoPanel;
 		}
 	}

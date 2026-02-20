@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -1684,6 +1684,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					return;
 				}
 				try {
+					if (opdPatient == null) {
+						MessageDialog.error(this,"angal.common.pleaseselectapatient.msg");
+						return;
+					}
 					PatientHistory ph = new PatientHistory();
 					ph.setPatientId(opdPatient.getCode());
 					Patient patient = this.patientBrowserManager.getPatientById(opdPatient.getCode());

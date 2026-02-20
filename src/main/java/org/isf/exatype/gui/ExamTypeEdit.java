@@ -210,7 +210,7 @@ public class ExamTypeEdit extends JDialog {
 						if (descriptionTextField.getText().equals(lastdescription)) {
 							dispose();
 						} else {
-							examTypeBrowserManager.newExamType(examType);
+							examTypeBrowserManager.updateExamType(examType);
 							fireExamTypeUpdated();
 							dispose();
 						}
