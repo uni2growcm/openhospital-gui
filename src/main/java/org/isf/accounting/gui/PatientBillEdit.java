@@ -1239,6 +1239,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									paid ? "C" : "O", // CLOSED or OPEN
 									total.doubleValue(), // Total
 									balance.doubleValue(), // Balance
+                                    thisBill.getLock(),
 									user, // User
 									thisBill.getAdmission()); // Admission
 
@@ -1821,7 +1822,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private void removeItem(int row) {
-		if (row != -1 && row >= billItemsSaved) {
+		if (row != -1) {
 			billItems.remove(row);
 			updateTotals();
 			updateGUI();
