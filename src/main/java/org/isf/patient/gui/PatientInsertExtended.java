@@ -29,11 +29,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.EventListener;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.StringTokenizer;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -447,49 +444,51 @@ public class PatientInsertExtended extends JDialog {
 					}
 
 					if (ok) {
-						patient.setFirstName(firstName);
-						patient.setSecondName(secondName);
+                        patient.setFirstName(firstName);
+                        patient.setSecondName(secondName);
 
-						if (radiof.isSelected()) {
-							patient.setSex('F');
-						} else if (radiom.isSelected()) {
-							patient.setSex('M');
-						} else {
-							MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
-							return;
-						}
-						patient.setTaxCode(jTaxCodeTextField.getText().trim());
-						patient.setAddress(jAddressTextField.getText().trim());
-						patient.setCity(jCityTextField.getText().trim());
-						patient.setNextKin(jNextKinTextField.getText().trim());
-						patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
-						patient.setMotherName(jMotherNameTextField.getText().trim());
-						if (jMotherAlive.isSelected()) {
-							patient.setMother('A');
-						} else {
-							if (jMotherDead.isSelected()) {
-								patient.setMother('D');
-							} else {
-								patient.setMother('U');
-							}
-						}
-						patient.setFatherName(jFatherNameTextField.getText().trim());
-						if (jFatherAlive.isSelected()) {
-							patient.setFather('A');
-						} else {
-							if (jFatherDead.isSelected()) {
-								patient.setFather('D');
-							} else {
-								patient.setFather('U');
-							}
-						}
+                        if (radiof.isSelected()) {
+                            patient.setSex('F');
+                        } else if (radiom.isSelected()) {
+                            patient.setSex('M');
+                        } else {
+                            MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
+                            return;
+                        }
+                        patient.setTaxCode(jTaxCodeTextField.getText().trim());
+                        patient.setAddress(jAddressTextField.getText().trim());
+                        patient.setCity(jCityTextField.getText().trim());
+                        patient.setNextKin(jNextKinTextField.getText().trim());
+                        patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
+                        patient.setMotherName(jMotherNameTextField.getText().trim());
+                        if (jMotherAlive.isSelected()) {
+                            patient.setMother('A');
+                        } else {
+                            if (jMotherDead.isSelected()) {
+                                patient.setMother('D');
+                            } else {
+                                patient.setMother('U');
+                            }
+                        }
+                        patient.setFatherName(jFatherNameTextField.getText().trim());
+                        if (jFatherAlive.isSelected()) {
+                            patient.setFather('A');
+                        } else {
+                            if (jFatherDead.isSelected()) {
+                                patient.setFather('D');
+                            } else {
+                                patient.setFather('U');
+                            }
+                        }
 
-						ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
-						if (reductionPlan != null && reductionPlan.getId() != 0) {
-							patient.setReductionPlan(reductionPlan);
-						} else {
-							patient.setReductionPlan(null);
-						}
+                        if (!Objects.equals(reductionPlanComboBox.getSelectedItem(), MessageBundle.getMessage("angal.patient.selectareductionplan"))) {
+                            ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
+                            if (reductionPlan != null && reductionPlan.getId() != 0) {
+                                patient.setReductionPlan(reductionPlan);
+                            } else {
+                                patient.setReductionPlan(null);
+                            }
+                        }
 						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));

@@ -88,6 +88,7 @@ import org.isf.priceslist.model.PriceList;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
 import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -483,7 +484,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void updateGUI() {
 		setJButtonTrashPatient();
-		setJLabelWardDescription();
+		setJLabelWard();
 		setJTextFieldPatient();
 		setJButtonPickPatient();
         setJButtonPrintBill();
@@ -809,11 +810,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jLabelWardDescription = new JLabel();
 			jLabelWardDescription.setPreferredSize(WARD_DIMENSION);
 		}
-		setJLabelWardDescription();
+		setJLabelWard();
 		return jLabelWardDescription;
 	}
 
-	private void setJLabelWardDescription() {
+	private void setJLabelWard() {
 		Admission admission = thisBill.getAdmission();
 		if (admission != null) {
 			jLabelWardDescription.setText(admission.getWard().getDescription());
@@ -990,8 +991,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void setPatientSelected(Patient patientSelected) {
 		thisBill.setIsPatient(true);
-        if (patientSelected.getReductionPlan() != null || patientSelected.getReductionPlan().getId() != 0)
-            this.pbiID = patientSelected.getReductionPlan().getId();
+        ReductionPlan reductionPlan = patientSelected.getReductionPlan();
+
+        if (reductionPlan != null && reductionPlan.getId() != 0) {
+            this.pbiID = reductionPlan.getId();
+        }
 		thisBill.setBillPatient(patientSelected);
 		thisBill.setPatName(patientSelected.getName());
 	}
@@ -1305,7 +1309,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         balance.doubleValue(), // Balance
                         user, // User
                         thisBill.getAdmission(),
-                        thisBill.isPatient() ? thisBill.getBillPatient().getReductionPlan().getId() : 0); // Admission
+                        pbiID == 0 ? 0 : thisBill.getBillPatient().getReductionPlan().getId() ); // Admission
 					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
@@ -1400,6 +1404,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                 TxtPrinter.initialize();
 
                 if (thisBill.getStatus().equals("O") && GeneralData.ALLOWPRINTOPENEDBILL) {
+                    new GenericReportBill(thisBill.getId(), GeneralData.PATIENTBILL, false, true);
+                } else if (thisBill.getStatus().equals("C") ) {
                     new GenericReportBill(thisBill.getId(), GeneralData.PATIENTBILL, false, true);
                 } else {
                     MessageDialog.error(this, "angal.billbrowser.thebillisstillopen.msg");
