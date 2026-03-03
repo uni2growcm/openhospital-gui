@@ -366,9 +366,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	 */
 	public PatientBillEdit(JFrame owner, Patient patient) {
 		super(owner, true);
-		thisBill = new Bill();
-        if (patient.getReductionPlan() != null || patient.getReductionPlan().getId() != 0)
-            this.pbiID = patient.getReductionPlan().getId();
+        thisBill = new Bill();
+
+        ReductionPlan reductionPlan =
+                patient != null ? patient.getReductionPlan() : null;
+
+        this.pbiID = (reductionPlan != null && reductionPlan.getId() != 0)
+                ? reductionPlan.getId()
+                : 0;
 		loadDataset();
 		initData(thisBill, true);
 		initComponents();
@@ -376,7 +381,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		setLocationRelativeTo(null);
 		setResizable(false);
 
-		// Workaround to run patientSelected method after the GUI is completed and showing
 		addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -1295,10 +1299,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 				if (insert) {
 					Bill newBill = new Bill(
-                        0, // Bill ID
-                        thisBill.getDate(), // from calendar
-                        null, // updateDate from most recent payment, will be set later
-                        true, // is a PriceList? always true, non-pricelist not managed
+                        0,
+                        thisBill.getDate(),
+                        null,
+                        true,
                         thisBill.getPriceList(), // List
                         thisBill.getPriceList().getName(), // List name
                         thisBill.isPatient(), // is a Patient?
@@ -1306,10 +1310,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         thisBill.isPatient() ? thisBill.getBillPatient().getName() : jTextFieldPatient.getText(), // Patient Name
                         paid ? "C" : "O", // CLOSED or OPEN TODO: enumerate bills status
                         total.doubleValue(), // Total
-                        balance.doubleValue(), // Balance
+                        balance.doubleValue(),
+                        0,// Balance
                         user, // User
                         thisBill.getAdmission(),
-                        pbiID == 0 ? 0 : thisBill.getBillPatient().getReductionPlan().getId() ); // Admission
+                        pbiID != 0 ? thisBill.getBillPatient().getReductionPlan().getId() : 0);
+
 					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
@@ -1348,9 +1354,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                         paid ? "C" : "O", // CLOSED or OPEN
                         total.doubleValue(), // Total
                         balance.doubleValue(), // Balance
+						thisBill.getLock(),
                         user, // User
                         thisBill.getAdmission(),
-                        thisBill.isPatient() ? thisBill.getBillPatient().getReductionPlan().getId() : 0); // Admission
+                        pbiID != 0 ? thisBill.getBillPatient().getReductionPlan().getId() : 0); // Admission
 					if (hasBillGuarantor() && balance.doubleValue() != 0) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (guarantor != null) {
@@ -2054,7 +2061,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private void removeItem(int row) {
-		if (row != -1 && row >= billItemsSaved) {
+		if (row != -1) {
 			billItems.remove(row);
 			updateTotals();
 			updateGUI();
