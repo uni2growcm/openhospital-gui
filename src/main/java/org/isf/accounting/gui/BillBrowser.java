@@ -33,10 +33,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,6 +71,7 @@ import org.isf.accounting.model.BillPayments;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hospital.manager.HospitalBrowsingManager;
+import org.isf.medicalstockward.manager.MovWardBrowserManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
@@ -92,6 +90,7 @@ import org.isf.utils.jobjects.JYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.isf.ward.model.Ward;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +187,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JLabel jLabelGuarantor;
 	private JButton jButtonToday;
 	private JComboBox<User> jComboBoxGuarantor;
-
+    
 	private String[] columnNames = {
 			MessageBundle.getMessage("angal.billbrowser.user.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.id.txt").toUpperCase(),
