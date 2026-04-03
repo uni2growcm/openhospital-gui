@@ -31,7 +31,11 @@ import java.util.List;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.service.AccountingIoOperations;
+import org.isf.medicals.manager.MedicalBrowsingManager;
+import org.isf.medicalstock.manager.MovStockInsertingManager;
+import org.isf.medicalstockward.manager.MovWardBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.priceslist.manager.PriceListManager;
 import org.isf.utils.exception.OHServiceException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -43,6 +47,18 @@ class BillDataLoaderTest {
 	@Mock
 	private AccountingIoOperations accountingIoOperations;
 
+    @Mock
+    private MovWardBrowserManager mvtManager;
+
+    @Mock
+    private PriceListManager priceListManager;
+
+    @Mock
+    private MedicalBrowsingManager medicalBrowsingManager;
+
+    @Mock
+    private MovStockInsertingManager movStockInsertingManager;
+
 	@Test
 	void shouldLoadPendingBillsFromManagerForParentPatient() throws OHServiceException {
 		// given:
@@ -52,7 +68,13 @@ class BillDataLoaderTest {
 						Collections.emptyList(),
 						Collections.emptyList(),
 						patientParent,
-						new BillBrowserManager(accountingIoOperations) {
+						new BillBrowserManager(
+                                accountingIoOperations,
+                                mvtManager,
+                                priceListManager,
+                                medicalBrowsingManager,
+                                movStockInsertingManager
+                        ) {
 
 							@Override
 							public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
@@ -81,7 +103,12 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "C"),
 										TestBill.notDeletedBillWithStatus(3, "O")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(
+                                accountingIoOperations,
+                                mvtManager,
+                                priceListManager,
+                                medicalBrowsingManager,
+                                movStockInsertingManager));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
@@ -101,7 +128,13 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(
+                                accountingIoOperations,
+                                mvtManager,
+                                priceListManager,
+                                medicalBrowsingManager,
+                                movStockInsertingManager
+                        ));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("ALL", NO_USERNAME);
@@ -121,7 +154,13 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(
+                                accountingIoOperations,
+                                mvtManager,
+                                priceListManager,
+                                medicalBrowsingManager,
+                                movStockInsertingManager
+                        ));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("C", NO_USERNAME);
