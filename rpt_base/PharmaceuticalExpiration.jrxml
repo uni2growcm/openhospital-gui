@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final utlizzo versione della libreria JasperReports6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PharmaceuticalExpiration" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="PharmaceuticalExpiration" whenResourceMissingType="Key" uuid="b9099a0c-14d9-4ffe-a517-c8b93d5d8656">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="oh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -29,7 +31,7 @@ JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A
 WHERE MMV_LT_ID_A IN (
 SELECT LT_ID_A
 FROM OH_MEDICALDSRLOT
-WHERE DATE(LT_DUE_DATE) between DATE($P{fromdate}) and DATE($P{todate}) OR DATE(LT_DUE_DATE) < DATE($P{fromdate})
+WHERE DATE(LT_DUE_DATE) between DATE($P{fromdate}) and DATE($P{todate})
 )
 GROUP BY MMV_MDSR_ID, MMV_LT_ID_A
 ORDER BY MDSRT_DESC, MDSR_DESC, LT_DUE_DATE ASC
