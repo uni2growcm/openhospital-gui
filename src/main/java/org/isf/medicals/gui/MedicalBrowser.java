@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,8 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.gui.MedicalEdit.MedicalListener;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
+import org.isf.medicalstock.manager.MovStockInsertingManager;
+import org.isf.medicalstock.model.Lot;
 import org.isf.medtype.manager.MedicalTypeBrowserManager;
 import org.isf.medtype.model.MedicalType;
 import org.isf.menu.gui.MainMenu;
@@ -867,31 +870,89 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 	}
 
+    private boolean highlightexpiringmedical() {
+        return GeneralData.HIGHLIGHTEXPIRINGMEDICAL;
+    }
+
+    private int highlightexpiringmedicaldays() {
+        return GeneralData.HIGHLIGHTEXPIRINGMEDICALDAYS;
+    }
+
 	class ColorTableCellRenderer extends DefaultTableCellRenderer {
 
 		private static final long serialVersionUID = 1L;
 
-		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-						boolean hasFocus, int row, int column) {
-			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			cell.setForeground(Color.BLACK);
-			Medical med = (Medical) table.getValueAt(row, -1);
-			double actualQty = med.getInitialqty() + med.getInqty() - med.getOutqty();
-			if ((boolean) table.getValueAt(row, 6)) {
-				cell.setForeground(Color.GRAY); // out of stock
-			}
-			if (med.getMinqty() != 0 && actualQty <= med.getMinqty()) {
-				cell.setForeground(Color.RED); // under critical level
-			}
-			if (activeSelection.equals(STR_ALL) && med.getDeleted() == 'Y') {
-				Map attributes = cell.getFont().getAttributes();
-				attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-				cell.setFont(new Font(attributes));
-			}
-			return cell;
-		}
-	}
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                       boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            cell.setForeground(Color.BLACK);
+            cell.setBackground(Color.WHITE);
+
+            Medical med = (Medical) table.getValueAt(row, -1);
+            double actualQty = med.getInitialqty() + med.getInqty() - med.getOutqty();
+
+            // Only check expiry if highlighting is enabled
+            if (highlightexpiringmedical()) {
+                LocalDate expiryDate = getNearestExpiryDate(med);
+                LocalDate today = LocalDate.now();
+
+                if (expiryDate != null) {
+                    if (expiryDate.isBefore(today)) {
+                        cell.setBackground(Color.DARK_GRAY);
+                        cell.setForeground(Color.WHITE);
+                    }
+                    else if (ChronoUnit.DAYS.between(today, expiryDate) <= highlightexpiringmedicaldays()) {
+                        cell.setBackground(Color.ORANGE);
+                    }
+                }
+            }
+
+            if ((boolean) table.getValueAt(row, 6)) {
+                cell.setForeground(Color.GRAY); // out of stock
+            }
+            if (med.getMinqty() != 0 && actualQty <= med.getMinqty()) {
+                cell.setForeground(Color.RED); // under critical level
+            }
+
+            if (activeSelection.equals(STR_ALL) && med.getDeleted() == 'Y') {
+                Map attributes = cell.getFont().getAttributes();
+                attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+                cell.setFont(new Font(attributes));
+                cell.setForeground(Color.GRAY);
+            }
+
+            if (isSelected) {
+                cell.setBackground(table.getSelectionBackground());
+                cell.setForeground(table.getSelectionForeground());
+            }
+
+            return cell;
+        }
+    }
+
+    private LocalDate getNearestExpiryDate(Medical medical) {
+        try {
+            // Use MovStockInsertingManager which exists in your code
+            MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
+            List<Lot> lots = movStockInsertingManager.getLotByMedical(medical, false);
+
+            LocalDate nearest = null;
+            for (Lot lot : lots) {
+                if (lot.getDueDate() != null && lot.getMainStoreQuantity() > 0) {
+                    LocalDate expiryDate = lot.getDueDate().toLocalDate();
+                    if (nearest == null || expiryDate.isBefore(nearest)) {
+                        nearest = expiryDate;
+                    }
+                }
+            }
+            return nearest;
+        } catch (Exception e) {
+            LOGGER.error("Error getting expiry date for medical: {}", medical.getDescription(), e);
+            return null;
+        }
+    }
 
 	public void updatePageCombo() {
 		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") +": "+ TOTAL_PAGES);
