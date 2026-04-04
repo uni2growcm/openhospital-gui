@@ -354,7 +354,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private JButton getJButtonOrderList() {
 		JButton buttonOrderList = new JButton(MessageBundle.getMessage("angal.medicals.order.btn"));
 		buttonOrderList.setMnemonic(MessageBundle.getMnemonic("angal.medicals.order.btn.key"));
-		buttonOrderList.addActionListener(actionEvent -> new GenericReportPharmaceuticalOrder(GeneralData.PHARMACEUTICALORDER));
+		buttonOrderList.addActionListener(actionEvent -> {
+            boolean includeNonZeroQty = false;
+            int ok = MessageDialog.yesNoCancel(this, "angal.medicals.excludenonzeroqtyinorder");
+            if (ok == JOptionPane.CANCEL_OPTION) return;
+            if (ok == JOptionPane.YES_OPTION) {
+                includeNonZeroQty = true;
+            }
+            new GenericReportPharmaceuticalOrder(GeneralData.PHARMACEUTICALORDER, includeNonZeroQty);
+        });
 		return buttonOrderList;
 	}
 
@@ -387,6 +395,17 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 							lotOptions.toArray(),
 							lotOptions.get(0),
 							"angal.medicals.pleaseselectareport.msg");
+
+            if (lotOption == null ) return;
+
+            boolean includeZeroQuantity = true;
+            if (lotOptions.indexOf(lotOption) == 0) {
+                int ok = MessageDialog.yesNoCancel(this, "angal.medicals.includezeroqtyinstock");
+                if (ok == JOptionPane.CANCEL_OPTION) return;
+                if (ok == JOptionPane.NO_OPTION) {
+                    includeZeroQuantity=false;
+                }
+            }
 
 			/* Getting Report parameters */
 			String sortBy;
@@ -421,8 +440,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 			int i = 0;
 			if (lotOptions.indexOf(lotOption) == i) {
-				report = GeneralData.PHARMACEUTICALSTOCK;
-			}
+                report = includeZeroQuantity ? GeneralData.PHARMACEUTICALSTOCK : GeneralData.PHARMACEUTICALSTOCKNOZERO;
+            }
 			if (lotOptions.indexOf(lotOption) == ++i) {
 				report = GeneralData.PHARMACEUTICALSTOCKLOT;
 			}
