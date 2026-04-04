@@ -36,6 +36,7 @@ import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -679,91 +680,114 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return pbox;
 	}
 
-	protected void launchExpiringReport() {
+    protected void launchExpiringReport() {
 
-		List<String> options = new ArrayList<>();
-		options.add(MessageBundle.getMessage("angal.medicals.today"));
-		options.add(MessageBundle.getMessage("angal.medicals.thismonth"));
-		options.add(MessageBundle.getMessage("angal.medicals.nextmonth"));
-		options.add(MessageBundle.getMessage("angal.medicals.nexttwomonths"));
-		options.add(MessageBundle.getMessage("angal.medicals.nextthreemonths"));
-		options.add(MessageBundle.getMessage("angal.medicals.othermonth"));
+        List<String> options = new ArrayList<>();
+        options.add(MessageBundle.getMessage("angal.medicals.today"));
+        options.add(MessageBundle.getMessage("angal.medicals.thismonth"));
+        options.add(MessageBundle.getMessage("angal.medicals.nextmonth"));
+        options.add(MessageBundle.getMessage("angal.medicals.nexttwomonths"));
+        options.add(MessageBundle.getMessage("angal.medicals.nextthreemonths"));
+        options.add(MessageBundle.getMessage("angal.medicals.othermonth"));
 
-		Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
-		String option = (String) MessageDialog.inputDialog(this,
-						icon,
-						options.toArray(),
-						options.get(0),
-						"angal.medicals.pleaseselectperiod.msg");
+        Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png");
+        String option = (String) MessageDialog.inputDialog(
+                this,
+                icon,
+                options.toArray(),
+                options.get(0),
+                "angal.medicals.pleaseselectperiod.msg"
+        );
 
-		if (option == null) {
-			return;
-		}
+        if (option == null) return;
 
-		String from = null;
-		String to = null;
+        String from = null;
+        String to = null;
 
-		int i = 0;
+        int index = options.indexOf(option);
+        LocalDate today = LocalDate.now();
 
-		if (options.indexOf(option) == i) {
-			from = TimeTools.formatDateTime(TimeTools.getNow(), DATE_FORMAT_DD_MM_YYYY);
-			to = from;
-		}
-		if (options.indexOf(option) == ++i) {
-			// this month
-			LocalDate gc = getFromDate();
-			from = TimeTools.formatDateTime(gc.atStartOfDay(), DATE_FORMAT_DD_MM_YYYY);
+        switch (index) {
 
-			LocalDate toDate = getToDatePlusMonth(0);
-			to = TimeTools.formatDateTime(toDate.atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY);
-		}
-		if (options.indexOf(option) == ++i) {
-			from = TimeTools.formatDateTime(getFromDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY);
-			// next month
-			to = TimeTools.formatDateTime(getToDatePlusMonth(1).atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY);
-		}
-		if (options.indexOf(option) == ++i) {
-			from = TimeTools.formatDateTime(getFromDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY);
-			// next two month
-			to = TimeTools.formatDateTime(getToDatePlusMonth(2).atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY);
-		}
-		if (options.indexOf(option) == ++i) {
-			from = TimeTools.formatDateTime(getFromDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY);
-			// next three month
-			to = TimeTools.formatDateTime(getToDatePlusMonth(3).atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY);
-		}
-		if (options.indexOf(option) == ++i) {
-			LocalDate monthYear;
-			icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
-			JMonthYearChooser monthYearChooser = new JMonthYearChooser();
-			int r = JOptionPane.showConfirmDialog(this,
-							monthYearChooser,
-							MessageBundle.getMessage("angal.billbrowser.month.txt"),
-							JOptionPane.OK_CANCEL_OPTION,
-							JOptionPane.PLAIN_MESSAGE,
-							icon);
+            case 0: // TODAY
+                from = format(today.atStartOfDay());
+                to = from;
+                break;
 
-			if (r == JOptionPane.OK_OPTION) {
-				monthYear = monthYearChooser.getLocalDate();
-			} else {
-				return;
-			}
+            case 1: // THIS MONTH
+                LocalDate startThisMonth = today.withDayOfMonth(1);
+                LocalDate endThisMonth = today.with(TemporalAdjusters.lastDayOfMonth());
 
-			LocalDate fromDate = getFromDate();
-			from = TimeTools.formatDateTime(fromDate.atStartOfDay(), DATE_FORMAT_DD_MM_YYYY);
-			LocalDate toDate = monthYear;
-			toDate = toDate.with(TemporalAdjusters.lastDayOfMonth());
-			to = TimeTools.formatDateTime(toDate.atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY);
-		}
+                from = format(startThisMonth.atStartOfDay());
+                to = format(endThisMonth.atTime(LocalTime.MAX));
+                break;
 
-		new GenericReportFromDateToDate(
-						from,
-						to,
-						"rpt_base",
-						"PharmaceuticalExpiration",
-						MessageBundle.getMessage("angal.medicals.expiringreport"),
-						false);
-	}
+            case 2: // NEXT MONTH
+                setMonthRange(today, 1);
+                from = monthFrom;
+                to = monthTo;
+                break;
+
+            case 3: // NEXT TWO MONTHS
+                setMonthRange(today, 2);
+                from = monthFrom;
+                to = monthTo;
+                break;
+
+            case 4: // NEXT THREE MONTHS
+                setMonthRange(today, 3);
+                from = monthFrom;
+                to = monthTo;
+                break;
+
+            case 5: // CUSTOM MONTH
+                JMonthYearChooser chooser = new JMonthYearChooser();
+                int r = JOptionPane.showConfirmDialog(
+                        this,
+                        chooser,
+                        MessageBundle.getMessage("angal.billbrowser.month.txt"),
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE,
+                        icon
+                );
+
+                if (r != JOptionPane.OK_OPTION) return;
+
+                LocalDate selectedMonth = chooser.getLocalDate();
+
+                LocalDate start = selectedMonth.withDayOfMonth(1);
+                LocalDate end = selectedMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+                from = format(start.atStartOfDay());
+                to = format(end.atTime(LocalTime.MAX));
+                break;
+        }
+
+        new GenericReportFromDateToDate(
+                from,
+                to,
+                "rpt_base",
+                "PharmaceuticalExpiration",
+                MessageBundle.getMessage("angal.medicals.expiringreport"),
+                false
+        );
+    }
+
+    private String format(LocalDateTime dateTime) {
+        return TimeTools.formatDateTime(dateTime, DATE_FORMAT_DD_MM_YYYY);
+    }
+
+    private String monthFrom;
+    private String monthTo;
+
+    private void setMonthRange(LocalDate today, int monthsAhead) {
+        LocalDate start = today.plusMonths(1).withDayOfMonth(1);
+        LocalDate end = today.plusMonths(monthsAhead)
+                .with(TemporalAdjusters.lastDayOfMonth());
+
+        monthFrom = format(start.atStartOfDay());
+        monthTo = format(end.atTime(LocalTime.MAX));
+    }
 
 	private LocalDate getToDatePlusMonth(int monthsToMove) {
 		LocalDate plusMonth = LocalDate.now().plusMonths(monthsToMove);
