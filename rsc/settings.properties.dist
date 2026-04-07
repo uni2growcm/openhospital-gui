@@ -54,8 +54,13 @@ AUTOMATICLOT_IN=no
 AUTOMATICLOT_OUT=no
 AUTOMATICLOTWARD_TOWARD=no
 LOTWITHCOST=yes
+# Enable/disable expiring medical highlighting (yes/no)
+HIGHLIGHTEXPIRINGMEDICAL=yes
+# Days before expiry to highlight in orange (expired = gray)
+HIGHLIGHTEXPIRINGMEDICALDAYS=30
 PHARMACEUTICALORDER=PharmaceuticalOrder
 PHARMACEUTICALSTOCK=PharmaceuticalStock_ver4
+PHARMACEUTICALSTOCKNOZERO=PharmaceuticalStock_ver4_1
 PHARMACEUTICALSTOCKLOT=PharmaceuticalStock_ver5
 PHARMACEUTICALAMC=PharmaceuticalAMC_ver2
 

@@ -360,7 +360,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonOrderList.setMnemonic(MessageBundle.getMnemonic("angal.medicals.order.btn.key"));
 		buttonOrderList.addActionListener(actionEvent -> {
             boolean includeNonZeroQty = false;
-            int ok = MessageDialog.yesNoCancel(this, "angal.medicals.excludenonzeroqtyinorder");
+            int ok = MessageDialog.yesNoCancel(this, "angal.medicals.showonlycriticalstock.msg");
             if (ok == JOptionPane.CANCEL_OPTION) return;
             if (ok == JOptionPane.YES_OPTION) {
                 includeNonZeroQty = true;
