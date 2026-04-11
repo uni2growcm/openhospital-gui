@@ -233,23 +233,33 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return scrollPane;
 	}
 
-	private JTable getJTable() {
-		if (table == null) {
-			model = new MedicalBrowsingModel("", "",true, CURRENT_PAGE, PAGE_SIZE);
-			table = new JTable(model);
-			table.setAutoCreateRowSorter(true);
-			table.setAutoCreateColumnsFromModel(false);
-			table.setDefaultRenderer(Object.class, new ColorTableCellRenderer());
-			for (int i = 0; i < pColumnWidth.length; i++) {
-				table.getColumnModel().getColumn(i).setMinWidth(pColumnWidth[i]);
-				if (!pColumnResizable[i]) {
-					table.getColumnModel().getColumn(i).setMaxWidth(pColumnWidth[i]);
-				}
-			}
-			updatePageCombo();
-		}
-		return table;
-	}
+    private JTable getJTable() {
+        if (table == null) {
+            model = new MedicalBrowsingModel("", "", true, CURRENT_PAGE, PAGE_SIZE);
+            table = new JTable(model);
+            table.setAutoCreateRowSorter(true);
+            table.setAutoCreateColumnsFromModel(false);
+
+            // Create one instance of the renderer
+            ColorTableCellRenderer renderer = new ColorTableCellRenderer();
+
+            // Apply the same renderer to ALL column types
+            table.setDefaultRenderer(Object.class, renderer);
+            table.setDefaultRenderer(Integer.class, renderer);
+            table.setDefaultRenderer(Double.class, renderer);
+            table.setDefaultRenderer(Boolean.class, renderer);
+            table.setDefaultRenderer(String.class, renderer);
+
+            for (int i = 0; i < pColumnWidth.length; i++) {
+                table.getColumnModel().getColumn(i).setMinWidth(pColumnWidth[i]);
+                if (!pColumnResizable[i]) {
+                    table.getColumnModel().getColumn(i).setMaxWidth(pColumnWidth[i]);
+                }
+            }
+            updatePageCombo();
+        }
+        return table;
+    }
 
 	private JPanel getJButtonPanel() {
 		JPanel buttonPanel = new JPanel(new WrapLayout());
@@ -911,11 +921,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
                        boolean hasFocus, int row, int column) {
             Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            cell.setForeground(Color.BLACK);
-            cell.setBackground(Color.WHITE);
+            // Make sure the cell is opaque to show background color
+            ((JLabel) cell).setOpaque(true);
 
             Medical med = (Medical) table.getValueAt(row, -1);
             double actualQty = med.getInitialqty() + med.getInqty() - med.getOutqty();
+
+            // Default colors
+            Color bgColor = Color.WHITE;
+            Color fgColor = Color.BLACK;
 
             // Only check expiry if highlighting is enabled
             if (highlightexpiringmedical()) {
@@ -924,14 +938,19 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
                 if (expiryDate != null) {
                     if (expiryDate.isBefore(today)) {
-                        cell.setBackground(Color.DARK_GRAY);
-                        cell.setForeground(Color.WHITE);
+                        bgColor = Color.DARK_GRAY;
+                        fgColor = Color.WHITE;
                     }
                     else if (ChronoUnit.DAYS.between(today, expiryDate) <= highlightexpiringmedicaldays()) {
-                        cell.setBackground(Color.ORANGE);
+                        bgColor = Color.ORANGE;
+                        fgColor = Color.BLACK;
                     }
                 }
             }
+
+            // Apply background color to the entire cell
+            cell.setBackground(bgColor);
+            cell.setForeground(fgColor);
 
             if ((boolean) table.getValueAt(row, 6)) {
                 cell.setForeground(Color.GRAY); // out of stock
