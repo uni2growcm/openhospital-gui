@@ -1448,7 +1448,7 @@ public class InventoryEdit extends ModalJFrame {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						code = medicalCodeTextField.getText().trim();
+						code = medicalCodeTextField.getText();
 						code = code.toLowerCase();
 						try {
 							addInventoryRow(code);

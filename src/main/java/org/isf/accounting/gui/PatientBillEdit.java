@@ -440,50 +440,46 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		}
 	}
 
-	private void initData(Bill bill, boolean inserting) {
-		insert = inserting;
-		if (insert) {
-			thisBill = new Bill();
-			LocalDateTime date = RememberDates.getLastBillDate();
-			if (date != null) {
-				thisBill.setDate(today);
-			}
-			thisBill.setPriceList(lstArray.get(0));
-		} else {
-			try {
-				thisBill = (Bill) bill.clone();
+    private void initData(Bill bill, boolean inserting) {
+        insert = inserting;
+        if (insert) {
+            thisBill = new Bill();
+
+            thisBill.setDate(today);
+            thisBill.setPriceList(lstArray.get(0));
+        } else {
+            try {
+                thisBill = (Bill) bill.clone();
                 selectedPatient = thisBill.getBillPatient();
-				if (insert) {
-					LocalDateTime date = RememberDates.getLastBillDate();
-					if (date != null) {
-						thisBill.setDate(date);
-					}
-				} else {
-					thisBill.setDate(bill.getDate());
-					thisBill.setAdmission(bill.getAdmission());
-					thisBill.setBillPatient(bill.getBillPatient());
-					thisBill.setPriceList(bill.getPriceList());
 
-					try {
-						billItems = billBrowserManager.getItems(thisBill.getId());
-						payItems = billBrowserManager.getPayments(thisBill.getId());
-                        applyReductionToBillItems();
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e, this);
-					}
-				}
+                jCalendarDate = new GoodDateTimeToggleChooser(thisBill.getDate(), false);
+                jCalendarDate.setDateTime(thisBill.getDate());
+                today = thisBill.getDate();
+
+                thisBill.setDate(bill.getDate());
+                thisBill.setAdmission(bill.getAdmission());
+                thisBill.setBillPatient(bill.getBillPatient());
+                thisBill.setPriceList(bill.getPriceList());
+
+                try {
+                    billItems = billBrowserManager.getItems(thisBill.getId());
+                    payItems = billBrowserManager.getPayments(thisBill.getId());
+                    applyReductionToBillItems();
+                } catch (OHServiceException e) {
+                    OHServiceExceptionUtil.showMessages(e, this);
+                }
                 originalBillItems = billItems;
-				billItemsSaved = billItems.size();
-				payItemsSaved = payItems.size();
+                billItemsSaved = billItems.size();
+                payItemsSaved = payItems.size();
 
-			} catch (CloneNotSupportedException cnse) {
-				LOGGER.debug("CloneNotSupportedException", cnse);
-			}
-		}
-		setPriceListArray();
-		setCurrencyCode();
-		updateTotals();
-	}
+            } catch (CloneNotSupportedException cnse) {
+                LOGGER.debug("CloneNotSupportedException", cnse);
+            }
+        }
+        setPriceListArray();
+        setCurrencyCode();
+        updateTotals();
+    }
 
     private void applyReductionToBillItems() {
 
@@ -1783,6 +1779,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						updateBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
 					}
 
+                    if (balance.doubleValue() == 0 && !paid) {
+                        int result = MessageDialog.yesNo(this,"angal.newbill.billsave.msg");
+                        updateBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : updateBill.getStatus());
+                    }
+
 					try {
 						billBrowserManager.updateBill(updateBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
 					} catch (OHServiceException ex) {
@@ -2005,49 +2006,50 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonAddPayment.setMaximumSize(BUTTON_PAYMENT_SIZE);
 			jButtonAddPayment.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonAddPayment.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
-			jButtonAddPayment.addActionListener(actionEvent -> {
+            jButtonAddPayment.addActionListener(actionEvent -> {
 
-				Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
-				BigDecimal amount = new BigDecimal(0);
+                Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
+                BigDecimal amount = BigDecimal.valueOf(balance.doubleValue());
 
-				LocalDateTime datePay;
+                // STEP 1: Ask for amount
+                String quantity = (String) JOptionPane.showInputDialog(
+                        this,
+                        MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+                        MessageBundle.getMessage("angal.common.quantity.txt"),
+                        JOptionPane.PLAIN_MESSAGE,
+                        icon,
+                        null,
+                        amount
+                );
 
-				String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
-								MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, amount);
-				if (quantity != null) {
-					try {
-						amount = new BigDecimal(quantity);
-						if (amount.equals(new BigDecimal(0))) {
-							return;
-						}
-					} catch (Exception eee) {
-						MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
-						return;
-					}
-				} else {
-					return;
-				}
+                if (quantity == null) return;
 
-				if (thisBill.getDate().isBefore(today)) { // if is a bill in the past the user will be asked for date of payment
+                try {
+                    amount = new BigDecimal(quantity);
+                    if (amount.equals(BigDecimal.ZERO)) return;
+                } catch (Exception e) {
+                    MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+                    return;
+                }
 
-					GoodDateTimeSpinnerChooser datePayChooser = new GoodDateTimeSpinnerChooser(TimeTools.getNow());
-					int r = JOptionPane.showConfirmDialog(this, datePayChooser, MessageBundle.getMessage("angal.newbill.dateofpayment.title"),
-									JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                GoodDateTimeSpinnerChooser datePayChooser =
+                        new GoodDateTimeSpinnerChooser(TimeTools.getNow());
 
-					if (r == JOptionPane.OK_OPTION) {
-						datePay = datePayChooser.getLocalDateTime();
-					} else {
-						return;
-					}
+                int r = JOptionPane.showConfirmDialog(
+                    this,
+                    datePayChooser,
+                    MessageBundle.getMessage("angal.newbill.dateofpayment.title"),
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+                );
 
-					if (isValidPaymentDate(datePay)) {
-						addPayment(datePay, amount.doubleValue());
-					}
-				} else {
-					datePay = TimeTools.getNow();
-					addPayment(datePay, amount.doubleValue());
-				}
-			});
+                if (r != JOptionPane.OK_OPTION) return;
+
+                LocalDateTime datePay = datePayChooser.getLocalDateTime();
+
+                if (!isValidPaymentDate(datePay)) return;
+                addPayment(datePay, amount.doubleValue());
+            });
 		}
 		return jButtonAddPayment;
 	}
@@ -2504,6 +2506,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
                     //$NON-NLS-2$
 					try {
+                        qty = Integer.parseInt(quantity);
 						amount = Double.parseDouble(price);
 					} catch (Exception eee) {
 						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
