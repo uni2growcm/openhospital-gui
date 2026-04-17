@@ -22,6 +22,7 @@
 package org.isf.lab.gui.elements;
 
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamTarget;
 import org.isf.exatype.model.ExamType;
 
 public class TestExam {
@@ -31,6 +32,7 @@ public class TestExam {
 		exam.setCode(code);
 		exam.setDescription("test");
 		exam.setExamtype(type());
+		exam.setTarget(ExamTarget.both);
 		return exam;
 	}
 

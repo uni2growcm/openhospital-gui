@@ -1427,6 +1427,7 @@ public class WardPharmacy extends ModalJFrame implements
 				return mov.getUnits();
 			}
 			if (c == 8) {
+                System.out.println("Mov: " + mov);
 				return mov.getLot().getCode();
 			}
 			if (c == 9) {

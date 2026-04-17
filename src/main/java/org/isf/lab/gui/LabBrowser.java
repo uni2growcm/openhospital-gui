@@ -45,8 +45,10 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+import net.sf.jasperreports.engine.JRException;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamTarget;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
@@ -287,7 +289,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			buttonNew.addActionListener(actionEvent -> {
 				laboratory = new Laboratory(0, new Exam("", "",
-						new ExamType("", ""), 0, ""),
+						new ExamType("", ""), 0, "", ExamTarget.no),
 						TimeTools.getNow(), "P", "", new Patient(), "");
 				if (GeneralData.LABEXTENDED) {
 					if (GeneralData.LABMULTIPLEINSERT) {
@@ -448,7 +450,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (comboExams == null) {
 			comboExams = new JComboBox();
 			comboExams.setPreferredSize(new Dimension(225, 30));
-			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, ""));
+			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, "", ExamTarget.no));
 			List<Exam> type;
 			try {
 				type = examBrowsingManager.getExams();

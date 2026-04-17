@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -57,6 +57,8 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.mortuary.gui.DeathBrowser;
+import org.isf.mortuary.gui.DeathEdit;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -67,7 +69,7 @@ import org.isf.utils.jobjects.VoLimitedTextField;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
-//LISTENER INTERFACE --------------------------------------------------------
+	//LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList selectionListener = new EventListenerList();
 
 	public interface SelectionListener extends EventListener {
@@ -91,7 +93,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 	}
 
-//---------------------------------------------------------------------------	
+	//---------------------------------------------------------------------------
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelButtons;
 	private JPanel jPanelTop;
@@ -113,7 +115,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JButton buttonNew;
 	private PatientSummary ps;
 	private String[] patColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
+		MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
 	private int[] patColumnsWidth = { 100, 250 };
 	private boolean[] patColumnsResizable = { false, true };
 
@@ -203,7 +205,9 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.setText(search);
 		if (GeneralData.ENHANCEDSEARCH) {
 			jSearchButton.doClick();
-		}
+		} else {
+            filterPatient();
+        }
 	}
 
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
@@ -274,7 +278,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(abbleAddPatient);
 	}
 
-	private void initComponents() {
+	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
+		this(owner, keywords);
+		buttonNew.setVisible(enablePatientAdd);
+	}
+
+    private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
@@ -654,6 +663,18 @@ public class SelectPatient extends JDialog implements PatientListener {
 		billBrowserListeners.add(l);
 	}
 
+	List<DeathBrowser> deathBrowsersListeners = new ArrayList<>();
+
+	public void addSelectionListener(DeathBrowser l) {
+		deathBrowsersListeners.add(l);
+	}
+
+	List<DeathEdit> mortuaryEditsListeners = new ArrayList<>();
+
+	public void addSelectionListener(DeathEdit l) {
+		mortuaryEditsListeners.add(l);
+	}
+	
 	@Override
 	public void patientUpdated(AWTEvent e) {
 	}
