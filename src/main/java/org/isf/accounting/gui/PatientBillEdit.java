@@ -542,7 +542,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				this.currencyCod = thisBill.getPriceList().getCurrency();
 
 			} else if (!lstArray.get(0).getCurrency().equals("")) {
-				// if bill is not defined (inserting), then currency is the one of the first pricelist (default)
 				this.currencyCod = lstArray.get(0).getCurrency();
 
 			} else {
@@ -2307,7 +2306,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                     return;
                 }
 
-                // 🔹 Get medical prices
                 List<Price> medicals = prcListArray.stream()
                         .filter(p -> "MED".equals(p.getGroup()))
                         .toList();
