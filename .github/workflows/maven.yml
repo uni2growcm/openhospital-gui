@@ -30,16 +30,16 @@ jobs:
           # Set default FORK_REPO and BRANCH_NAME values.
           BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
           
-          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REPOSITORY" == "uni2growcm/u2g-openhospital-gui" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REPOSITORY" == "informatici/openhospital-gui" ]]; then
             # For pushes to the main repository, default to the main core repo
-            FORK_REPO="uni2growcm/u2g-openhospital-core"
+            FORK_REPO="informatici/openhospital-core"
           else
             # For pull requests or other pushes, use the contributor fork if applicable
             if [[ -n "$GITHUB_HEAD_REPOSITORY" ]]; then
               FORK_REPO="$GITHUB_HEAD_REPOSITORY"
             else
               # Check if the actor's repo exists with the branch
-              FORK_REPO="${GITHUB_ACTOR}/u2g-openhospital-core"
+              FORK_REPO="${GITHUB_ACTOR}/openhospital-core"
               CHECK_BRANCH_URL="https://github.com/$FORK_REPO/tree/$BRANCH_NAME"
               echo "Checking branch existence with: curl -s -o /dev/null -w \"%{http_code}\" $CHECK_BRANCH_URL"
 
@@ -47,7 +47,7 @@ jobs:
                 echo "Branch $BRANCH_NAME exists in $FORK_REPO."
               else
                 # Fallback to the main repository if the branch doesn’t exist in the fork
-                FORK_REPO="uni2growcm/u2g-openhospital-core"
+                FORK_REPO="informatici/openhospital-core"
               fi
             fi
           fi
@@ -70,14 +70,14 @@ jobs:
 
       - name: Checkout core
         run: |
-          git clone --depth=1 --no-single-branch https://${{ secrets.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git u2g-openhospital-core
-          pushd u2g-openhospital-core
-          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout main
+          git clone --depth=1 --no-single-branch https://github.com/${{ env.FORK_REPO }}.git openhospital-core
+          pushd openhospital-core
+          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout develop
           popd
         
       - name: Install core
         run: |
-          pushd u2g-openhospital-core
+          pushd openhospital-core
           mvn install -DskipTests=true
           popd
 
