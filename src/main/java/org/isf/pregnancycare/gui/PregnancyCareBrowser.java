@@ -27,8 +27,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
@@ -39,7 +37,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -50,24 +47,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.isf.admission.manager.AdmissionBrowserManager;
-import org.isf.admission.model.Admission;
 import org.isf.generaldata.MessageBundle;
-import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
-import org.springframework.data.domain.Page;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -95,10 +86,8 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
     private final int[] vColumnWidths = { 80, 100, 100, 300 };
 
     private final PregnancyCareBrowser myFrame;
-    List<Admission> patientList = new ArrayList<>();
-    List<Object> visitList = new ArrayList<>(); // Replace with your actual visit model
-
-    private final AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+    List<Patient> patientList = new ArrayList<>();
+    List<Object> visitList = new ArrayList<>();
 
     private JTable patientTable;
     private JTable visitTable;
@@ -113,7 +102,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
     private long TOTAL_PATIENTS = 0;
     private final int PAGE_SIZE = 100;
 
-    // Filter components
     private JTextField patientCodeFilter;
     private GoodDateChooser dateFrom;
     private GoodDateChooser dateTo;
@@ -160,17 +148,9 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
     private void initComponents() throws OHServiceException {
         setLayout(new BorderLayout());
-
-        // Top Panel with Patient list and filters
         add(getTopPanel(), BorderLayout.NORTH);
-
-        // Middle Panel with Visits
         add(getMiddlePanel(), BorderLayout.CENTER);
-
-        // Bottom Panel with Buttons
         add(getButtonPanel(), BorderLayout.SOUTH);
-
-        // Load initial data
         if (selectedPatient != null) {
             loadPatientData();
         } else {
@@ -180,13 +160,8 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
     private JPanel getTopPanel() throws OHServiceException {
         JPanel topPanel = new JPanel(new BorderLayout());
-
-        // Left filter panel
         topPanel.add(getFilterPanel(), BorderLayout.WEST);
-
-        // Center patient list panel with pagination
         topPanel.add(getPatientListPanel(), BorderLayout.CENTER);
-
         return topPanel;
     }
 
@@ -196,14 +171,12 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
         filterPanel.setPreferredSize(new Dimension(300, 400));
 
-        // Patient Code Filter
         JPanel codePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         codePanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
         patientCodeFilter = new JTextField(10);
         codePanel.add(patientCodeFilter);
         filterPanel.add(codePanel);
 
-        // Date Interval Filter
         JPanel datePanel = new JPanel(new GridLayout(2, 2, 5, 5));
         datePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.dateinterval.label")));
         dateFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
@@ -214,7 +187,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         datePanel.add(dateTo);
         filterPanel.add(datePanel);
 
-        // Age Interval Filter
         JPanel agePanel = new JPanel(new GridLayout(2, 2, 5, 5));
         agePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.ageinterval.label")));
         ageFromField = new VoLimitedTextField(3, 3);
@@ -227,7 +199,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         agePanel.add(ageToField);
         filterPanel.add(agePanel);
 
-        // Delivery Status Filter
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.pregnancy.deliverystatus.label")));
         deliveryStatusCombo = new JComboBox<>(new String[]{
@@ -238,7 +209,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         statusPanel.add(deliveryStatusCombo);
         filterPanel.add(statusPanel);
 
-        // Search and Reset buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
         searchButton.addActionListener(e -> performSearch());
@@ -259,14 +229,9 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
     }
 
     private JScrollPane getPatientTablePanel() {
-        try {
-            model = new PatientsTableModel("");
-            patientTable = new JTable(model);
-            patientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
-        }
-
+        model = new PatientsTableModel();
+        patientTable = new JTable(model);
+        patientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         patientTable.setAutoCreateRowSorter(true);
 
         for (int i = 0; i < columnHeaders.length; i++) {
@@ -352,13 +317,8 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
     private JPanel getMiddlePanel() {
         JPanel middlePanel = new JPanel(new BorderLayout());
-
-        // Left filter panel for visits
         middlePanel.add(getVisitFilterPanel(), BorderLayout.WEST);
-
-        // Center visit list panel
         middlePanel.add(getVisitListPanel(), BorderLayout.CENTER);
-
         return middlePanel;
     }
 
@@ -383,7 +343,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         filterPanel.add(postnatalRadio);
         filterPanel.add(allVisitsRadio);
 
-        // Add listeners
         prenatalRadio.addActionListener(e -> filterVisits());
         postnatalRadio.addActionListener(e -> filterVisits());
         allVisitsRadio.addActionListener(e -> filterVisits());
@@ -519,27 +478,15 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             int ageTo = Integer.parseInt(ageToField.getText());
             String deliveryStatus = (String) deliveryStatusCombo.getSelectedItem();
 
-            // Validate dates
             if (fromDate.isAfter(toDate)) {
                 MessageDialog.error(this, "angal.common.datefrommustbebeforedateto.msg");
                 return;
             }
 
-            // Validate ages
             if (ageFrom > ageTo) {
                 MessageDialog.error(this, "angal.common.agefrommustbelowerthanageto.msg");
                 return;
             }
-
-            // Call your service method with all filters
-            // For now, using existing method - you'll need to update your manager
-            Page<Admission> pagedResult = admissionBrowserManager.getAdmittedPatientsBySexAndNamePaged(
-                    'F', patientCode, PAGE_SIZE, CURRENT_PAGE - 1
-            );
-
-            patientList = pagedResult.getContent();
-            TOTAL_PATIENTS = pagedResult.getTotalElements();
-            TOTAL_PAGES = pagedResult.getTotalPages();
 
             updatePaginationUI();
             model.fireTableDataChanged();
@@ -547,8 +494,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
         } catch (NumberFormatException ex) {
             MessageDialog.error(this, "angal.common.pleaseentervalidnumbers.msg");
-        } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
         }
     }
 
@@ -580,18 +525,15 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
     }
 
     private void filterVisits() {
-        // Implement visit filtering based on prenatal/postnatal selection
         ((PregnancyVisitsTableModel) visitTable.getModel()).fireTableDataChanged();
     }
 
     private void loadPatientData() {
-        // Load data for specific patient
         CURRENT_PAGE = 1;
         performSearch();
     }
 
     private void newPregnancy() {
-        // Implement new pregnancy
     }
 
     private void updatePregnancy() {
@@ -600,7 +542,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        // Implement update pregnancy
     }
 
     private void deletePregnancy() {
@@ -609,7 +550,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        // Implement delete pregnancy
     }
 
     private void newVisit() {
@@ -617,7 +557,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement new visit
     }
 
     private void updateVisit() {
@@ -626,7 +565,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        // Implement update visit
     }
 
     private void deleteVisit() {
@@ -635,7 +573,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        // Implement delete visit
     }
 
     private void newDelivery() {
@@ -643,15 +580,12 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement new delivery
     }
 
     private void updateDelivery() {
-        // Implement update delivery
     }
 
     private void deleteDelivery() {
-        // Implement delete delivery
     }
 
     private void admission() {
@@ -659,7 +593,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement admission
     }
 
     private void exams() {
@@ -667,7 +600,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement exams
     }
 
     private void vaccins() {
@@ -675,7 +607,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement vaccins
     }
 
     private void therapy() {
@@ -683,7 +614,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
             MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
             return;
         }
-        // Implement therapy
     }
 
     class PregnancyVisitsTableModel extends DefaultTableModel {
@@ -699,12 +629,10 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         }
 
         public int getRowCount() {
-            // Return filtered count based on radio selection
-            return 0; // Implement with actual data
+            return 0;
         }
 
         public Object getValueAt(int r, int c) {
-            // Return visit data
             return null;
         }
 
@@ -717,10 +645,6 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
     class PatientsTableModel extends DefaultTableModel {
         @Serial
         private static final long serialVersionUID = 1L;
-
-        public PatientsTableModel(String keywords) throws OHServiceException {
-            // Data is loaded in performSearch()
-        }
 
         public int getRowCount() {
             if (patientList == null) {
@@ -742,11 +666,10 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
                 return null;
             }
 
-            Admission admission = patientList.get(r);
-            Patient patient = admission.getPatient();
+            Patient patient = patientList.get(r);
 
             if (c == -1) {
-                return admission;
+                return patient;
             } else if (c == 0) {
                 return patient.getCode();
             } else if (c == 1) {
@@ -780,8 +703,7 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         public void valueChanged(ListSelectionEvent arg0) {
             int row = patientTable.getSelectedRow();
             if (!arg0.getValueIsAdjusting() && row > -1) {
-                Admission admission = (Admission) patientTable.getValueAt(row, -1);
-                selectedPatient = admission.getPatient();
+                selectedPatient = (Patient) patientTable.getValueAt(row, -1);
                 filterVisits();
             }
         }
