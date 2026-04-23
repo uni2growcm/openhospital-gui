@@ -77,10 +77,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private final int[] columnWidths = { 50, 200, 50, 200 };
 
     private final String[] vColumns = {
-            MessageBundle.getMessage("angal.pregnancy.pregnancynumber.col").toUpperCase(),
-            MessageBundle.getMessage("angal.pregnancy.visitdate.col").toUpperCase(),
-            MessageBundle.getMessage("angal.pregnancy.visittype.col").toUpperCase(),
-            MessageBundle.getMessage("angal.pregnancy.visitnote.col").toUpperCase()
+            MessageBundle.getMessage("angal.maternity.number.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.visittype.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
     };
 
     private final int[] vColumnWidths = { 80, 100, 100, 300 };
@@ -116,7 +116,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private Patient selectedPatient;
 
     public MaternityBrowser() throws OHServiceException {
-        setTitle(MessageBundle.getMessage("angal.pregnancy.patientsbrowser.title"));
+        setTitle(MessageBundle.getMessage("angal.maternity.browser.title"));
         myFrame = this;
         initComponents();
         pack();
@@ -131,7 +131,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     public MaternityBrowser(Patient admission) throws OHServiceException {
-        setTitle(MessageBundle.getMessage("angal.pregnancy.patientsbrowser.title"));
+        setTitle(MessageBundle.getMessage("angal.maternity.browser.title"));
         myFrame = this;
         this.selectedPatient = admission;
         initComponents();
@@ -200,11 +200,11 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         filterPanel.add(agePanel);
 
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.pregnancy.deliverystatus.label")));
+        statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.deliverystatus.label")));
         deliveryStatusCombo = new JComboBox<>(new String[]{
                 MessageBundle.getMessage("angal.common.all.txt"),
-                MessageBundle.getMessage("angal.pregnancy.delivered.label"),
-                MessageBundle.getMessage("angal.pregnancy.notdelivered.label")
+                MessageBundle.getMessage("angal.maternity.delivered.label"),
+                MessageBundle.getMessage("angal.maternity.notdelivered.label")
         });
         statusPanel.add(deliveryStatusCombo);
         filterPanel.add(statusPanel);
@@ -310,7 +310,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private JLabel getTotalPatientsLabel() {
         if (totalPatientsLabel == null) {
-            totalPatientsLabel = new JLabel(MessageBundle.getMessage("angal.pregnancy.totalpatient.label") + ": 0");
+            totalPatientsLabel = new JLabel(MessageBundle.getMessage("angal.maternity.total.label") + ": 0");
         }
         return totalPatientsLabel;
     }
@@ -325,12 +325,12 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private JPanel getVisitFilterPanel() {
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
-        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.pregnancy.visitfilter.label")));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.visitfilter.label")));
         filterPanel.setPreferredSize(new Dimension(200, 300));
 
         ButtonGroup visitTypeGroup = new ButtonGroup();
-        prenatalRadio = new JRadioButton(MessageBundle.getMessage("angal.pregnancy.prenatal.label"));
-        postnatalRadio = new JRadioButton(MessageBundle.getMessage("angal.pregnancy.postnatal.label"));
+        prenatalRadio = new JRadioButton(MessageBundle.getMessage("angal.maternity.prenatal.label"));
+        postnatalRadio = new JRadioButton(MessageBundle.getMessage("angal.maternity.postnatal.label"));
         JRadioButton allVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.common.all.label"));
 
         allVisitsRadio.setSelected(true);
@@ -351,7 +351,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JScrollPane getVisitListPanel() {
-        visitTable = new JTable(new PregnancyVisitsTableModel());
+        visitTable = new JTable(new MaternityVisitsTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         for (int i = 0; i < vColumns.length; i++) {
@@ -367,9 +367,9 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
 
-        buttonPanel.add(getJNewPregnancyButton());
-        buttonPanel.add(getJUpdatePregnancyButton());
-        buttonPanel.add(getJDeletePregnancyButton());
+        buttonPanel.add(getJNewMaternityButton());
+        buttonPanel.add(getJUpdateMaternityButton());
+        buttonPanel.add(getJDeleteMaternityButton());
         buttonPanel.add(getJNewVisitButton());
         buttonPanel.add(getJUpdateVisitButton());
         buttonPanel.add(getJDeleteVisitButton());
@@ -385,62 +385,62 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         return buttonPanel;
     }
 
-    private JButton getJNewPregnancyButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.newpregnancy.btn"));
-        button.addActionListener(e -> newPregnancy());
+    private JButton getJNewMaternityButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.new.btn"));
+        button.addActionListener(e -> newMaternity());
         return button;
     }
 
-    private JButton getJUpdatePregnancyButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.updatepregnancy.btn"));
-        button.addActionListener(e -> updatePregnancy());
+    private JButton getJUpdateMaternityButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.update.btn"));
+        button.addActionListener(e -> updateMaternity());
         return button;
     }
 
-    private JButton getJDeletePregnancyButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.deletepregnancy.btn"));
-        button.addActionListener(e -> deletePregnancy());
+    private JButton getJDeleteMaternityButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.delete.btn"));
+        button.addActionListener(e -> deleteMaternity());
         return button;
     }
 
     private JButton getJNewVisitButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.newvisit.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.newvisit.btn"));
         button.addActionListener(e -> newVisit());
         return button;
     }
 
     private JButton getJUpdateVisitButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.updatevisit.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.updatevisit.btn"));
         button.addActionListener(e -> updateVisit());
         return button;
     }
 
     private JButton getJDeleteVisitButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.deletevisit.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.deletevisit.btn"));
         button.addActionListener(e -> deleteVisit());
         return button;
     }
 
     private JButton getJNewDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.newdelivery.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.newdelivery.btn"));
         button.addActionListener(e -> newDelivery());
         return button;
     }
 
     private JButton getJUpdateDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.updatedelivery.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.updatedelivery.btn"));
         button.addActionListener(e -> updateDelivery());
         return button;
     }
 
     private JButton getJDeleteDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.deletedelivery.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.deletedelivery.btn"));
         button.addActionListener(e -> deleteDelivery());
         return button;
     }
 
     private JButton getJAdmissionButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.admission.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.admission.btn"));
         button.addActionListener(e -> admission());
         return button;
     }
@@ -458,7 +458,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JButton getJTherapyButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.pregnancy.therapy.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.therapy.btn"));
         button.addActionListener(e -> therapy());
         return button;
     }
@@ -499,7 +499,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void updatePaginationUI() {
         underLabel.setText("/ " + TOTAL_PAGES + " " + MessageBundle.getMessage("angal.common.page.label"));
-        totalPatientsLabel.setText(MessageBundle.getMessage("angal.pregnancy.totalpatient.label") + ": " + TOTAL_PATIENTS);
+        totalPatientsLabel.setText(MessageBundle.getMessage("angal.maternity.total.label") + ": " + TOTAL_PATIENTS);
 
         pagesCombo.removeAllItems();
         for (int i = 1; i <= TOTAL_PAGES; i++) {
@@ -525,7 +525,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private void filterVisits() {
-        ((PregnancyVisitsTableModel) visitTable.getModel()).fireTableDataChanged();
+        ((MaternityVisitsTableModel) visitTable.getModel()).fireTableDataChanged();
     }
 
     private void loadPatientData() {
@@ -533,10 +533,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         performSearch();
     }
 
-    private void newPregnancy() {
+    private void newMaternity() {
     }
 
-    private void updatePregnancy() {
+    private void updateMaternity() {
         int row = patientTable.getSelectedRow();
         if (row < 0) {
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
@@ -544,7 +544,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
-    private void deletePregnancy() {
+    private void deleteMaternity() {
         int row = patientTable.getSelectedRow();
         if (row < 0) {
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
@@ -616,7 +616,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
-    class PregnancyVisitsTableModel extends DefaultTableModel {
+    class MaternityVisitsTableModel extends DefaultTableModel {
         @Serial
         private static final long serialVersionUID = 1L;
 
