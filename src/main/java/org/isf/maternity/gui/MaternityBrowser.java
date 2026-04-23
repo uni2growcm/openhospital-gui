@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.isf.pregnancycare.gui;
+package org.isf.maternity.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -62,7 +62,7 @@ import org.isf.utils.jobjects.VoLimitedTextField;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
-public class PregnancyCareBrowser extends JFrame implements PatientInsert.PatientListener, PatientInsertExtended.PatientListener {
+public class MaternityBrowser extends JFrame implements PatientInsert.PatientListener, PatientInsertExtended.PatientListener {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -85,7 +85,7 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
     private final int[] vColumnWidths = { 80, 100, 100, 300 };
 
-    private final PregnancyCareBrowser myFrame;
+    private final MaternityBrowser myFrame;
     List<Patient> patientList = new ArrayList<>();
     List<Object> visitList = new ArrayList<>();
 
@@ -115,7 +115,7 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
 
     private Patient selectedPatient;
 
-    public PregnancyCareBrowser() throws OHServiceException {
+    public MaternityBrowser() throws OHServiceException {
         setTitle(MessageBundle.getMessage("angal.pregnancy.patientsbrowser.title"));
         myFrame = this;
         initComponents();
@@ -130,7 +130,7 @@ public class PregnancyCareBrowser extends JFrame implements PatientInsert.Patien
         });
     }
 
-    public PregnancyCareBrowser(Patient admission) throws OHServiceException {
+    public MaternityBrowser(Patient admission) throws OHServiceException {
         setTitle(MessageBundle.getMessage("angal.pregnancy.patientsbrowser.title"));
         myFrame = this;
         this.selectedPatient = admission;
