@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="opdtherapies" pageWidth="94" pageHeight="37" orientation="Landscape" whenNoDataType="NoPages" columnWidth="94" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="bed31860-8db1-4d01-af36-bd5234f26e8d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="idPatient" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="opdDate" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="idOpd" class="java.lang.Integer" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select  GROUP_CONCAT(MDSR_DESC) 
+from    oh_medicaldsr
+where   MDSR_ID IN (
+		      select THR_MDSR_ID
+		      from oh_therapies
+                      where  THR_PAT_ID = $P{idPatient} 
+                             and DATE_FORMAT(THR_CREATED_DATE, '%d/%m/%Y') = $P{opdDate}
+		     )]]>
+	</queryString>
+	<field name="GROUP_CONCAT(MDSR_DESC)" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="0" y="0" width="93" height="28" uuid="a7fa9daf-370f-4263-8b08-bec228990935"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{GROUP_CONCAT(MDSR_DESC)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
