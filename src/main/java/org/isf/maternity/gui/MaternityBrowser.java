@@ -31,31 +31,23 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
+import org.isf.maternity.model.Pregnancy;
+import org.isf.maternity.model.PregnancyVisit;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
@@ -552,26 +544,112 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
+
     private void newVisit() {
-        if (selectedPatient == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapatientfirst.msg");
-            return;
-        }
+        Patient tempPatient = new Patient();
+        tempPatient.setCode(1);
+        tempPatient.setFirstName("Test");
+        tempPatient.setSecondName("Patient");
+
+        Pregnancy tempPregnancy = new Pregnancy();
+        tempPregnancy.setPatient(tempPatient);
+
+        MaternityVisitEdit edit = new MaternityVisitEdit(this, tempPregnancy, true);
+        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+            @Override
+            public void visitInserted(AWTEvent e, PregnancyVisit visit) {
+                filterVisits();
+            }
+
+            @Override
+            public void visitUpdated(AWTEvent e, PregnancyVisit visit) {
+                filterVisits();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void updateVisit() {
-        int row = visitTable.getSelectedRow();
-        if (row < 0) {
+        // Vérifier qu'une ligne est sélectionnée dans la table des visites
+        int visitRow = visitTable.getSelectedRow();
+        if (visitRow < 0) {
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
+
+        // Vérifier qu'une grossesse est sélectionnée
+        int pregnancyRow = patientTable.getSelectedRow();
+        if (pregnancyRow < 0) {
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+            return;
+        }
+
+        // TODO: Récupérer la vraie visite sélectionnée
+        // PregnancyVisit selectedVisit = (PregnancyVisit) visitTable.getValueAt(visitRow, -1);
+
+        // Pour l'instant, créer une visite temporaire pour tester
+        PregnancyVisit selectedVisit = new PregnancyVisit();
+        selectedVisit.setId(1);
+        selectedVisit.setVisitDate(LocalDateTime.now());
+
+        Patient selectedPatient = (Patient) patientTable.getValueAt(pregnancyRow, -1);
+        Pregnancy pregnancy = new Pregnancy();
+        pregnancy.setPatient(selectedPatient);
+        selectedVisit.setPregnancy(pregnancy);
+
+        MaternityVisitEdit edit = new MaternityVisitEdit(this, selectedVisit, false);
+        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+            @Override
+            public void visitInserted(AWTEvent e, PregnancyVisit visit) {
+                filterVisits();
+            }
+
+            @Override
+            public void visitUpdated(AWTEvent e, PregnancyVisit visit) {
+                filterVisits();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void deleteVisit() {
-        int row = visitTable.getSelectedRow();
-        if (row < 0) {
+        // Vérifier qu'une ligne est sélectionnée dans la table des visites
+        int visitRow = visitTable.getSelectedRow();
+        if (visitRow < 0) {
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
+        }
+
+        // Vérifier qu'une grossesse est sélectionnée
+        int pregnancyRow = patientTable.getSelectedRow();
+        if (pregnancyRow < 0) {
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+            return;
+        }
+
+        // TODO: Récupérer la vraie visite sélectionnée
+        // PregnancyVisit selectedVisit = (PregnancyVisit) visitTable.getValueAt(visitRow, -1);
+
+        // Message de confirmation
+        String confirmMessage = MessageBundle.getMessage("angal.maternity.deletevisit.confirm.msg");
+        int answer = MessageDialog.yesNo(this, confirmMessage);
+
+        if (answer == JOptionPane.YES_OPTION) {
+            // TODO: Appeler le manager pour supprimer
+            // try {
+            //     visitManager.deleteVisit(selectedVisit);
+            // } catch (OHServiceException ex) {
+            //     OHServiceExceptionUtil.showMessages(ex);
+            //     return;
+            // }
+
+            // Rafraîchir la liste des visites
+            filterVisits();
+
+            // Message de succès
+            MessageDialog.info(this,
+                    MessageBundle.getMessage("angal.common.info.title"),
+                    MessageBundle.getMessage("angal.maternity.deletevisit.success.msg"));
         }
     }
 
