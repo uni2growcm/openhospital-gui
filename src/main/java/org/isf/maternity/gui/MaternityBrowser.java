@@ -65,6 +65,8 @@ import org.isf.maternity.model.RiskLevel;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
+import org.isf.patient.gui.SelectPatient;
+import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -77,7 +79,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
-public class MaternityBrowser extends JFrame implements PatientInsert.PatientListener, PatientInsertExtended.PatientListener {
+public class MaternityBrowser extends JFrame implements PatientInsert.PatientListener, PatientInsertExtended.PatientListener, SelectionListener {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -394,7 +396,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         visitTable = new JTable(new MaternityVisitsTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Ajouter un listener pour capturer la sélection
         visitTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 selectedVisitRow = visitTable.getSelectedRow();
@@ -627,7 +628,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private void newPregnancy() {
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement New Pregnancy");
+        SelectPatient sp = new SelectPatient(this, null);
+        sp.addSelectionListener(this);
+        sp.pack();
+        sp.setVisible(true);
     }
 
     private void updatePregnancy() {
@@ -636,7 +640,22 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Update Pregnancy");
+
+        Pregnancy selectedPregnancy = (Pregnancy) pregnancyTable.getValueAt(row, -1);
+
+        MaternityPregnancyEdit edit = new MaternityPregnancyEdit(this, selectedPregnancy, false);
+        edit.addMaternityPregnancyListener(new MaternityPregnancyEdit.MaternityPregnancyListener() {
+            @Override
+            public void pregnancyInserted(AWTEvent e, Pregnancy pregnancy) {
+                performSearch();
+            }
+
+            @Override
+            public void pregnancyUpdated(AWTEvent e, Pregnancy pregnancy) {
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void deletePregnancy() {
@@ -645,7 +664,23 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Delete Pregnancy");
+
+        Pregnancy selectedPregnancy = (Pregnancy) pregnancyTable.getValueAt(row, -1);
+
+        String confirmMessage = MessageBundle.getMessage("angal.maternity.deletepregnancy.confirm.msg");
+        int answer = MessageDialog.yesNo(this, confirmMessage);
+
+        if (answer == JOptionPane.YES_OPTION) {
+            try {
+                pregnancyManager.deletePregnancy(selectedPregnancy);
+                performSearch();
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.maternity.deletepregnancy.success.msg"));
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+        }
     }
 
     private void newVisit() {
@@ -772,6 +807,25 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
         MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Therapy");
+    }
+
+    @Override
+    public void patientSelected(Patient patient) {
+        if (patient != null) {
+            MaternityPregnancyEdit edit = new MaternityPregnancyEdit(this, patient, true);
+            edit.addMaternityPregnancyListener(new MaternityPregnancyEdit.MaternityPregnancyListener() {
+                @Override
+                public void pregnancyInserted(AWTEvent e, Pregnancy pregnancy) {
+                    performSearch();
+                }
+
+                @Override
+                public void pregnancyUpdated(AWTEvent e, Pregnancy pregnancy) {
+                    performSearch();
+                }
+            });
+            edit.setVisible(true);
+        }
     }
 
     class MaternityVisitsTableModel extends DefaultTableModel {
