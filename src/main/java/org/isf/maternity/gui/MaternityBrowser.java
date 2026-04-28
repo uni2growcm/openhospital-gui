@@ -83,8 +83,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private static final long serialVersionUID = 1L;
 
     private final String[] columnHeaders = {
-            MessageBundle.getMessage("angal.maternity.pregnancy.id").toUpperCase(),
-            MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
+            MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
