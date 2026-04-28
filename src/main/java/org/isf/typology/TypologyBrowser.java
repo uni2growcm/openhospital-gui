@@ -47,9 +47,9 @@ public class TypologyBrowser extends ModalJFrame implements TypologyEdit.Typolog
     private final JFrame parentFrame;
 
     private final String[] columns = {
-            MessageBundle.getMessage("angal.typology.code.col"),
-            MessageBundle.getMessage("angal.typology.description.col"),
-            MessageBundle.getMessage("angal.typology.family.col")
+        MessageBundle.getMessage("angal.typology.code.col"),
+        MessageBundle.getMessage("angal.typology.description.col"),
+        MessageBundle.getMessage("angal.typology.family.col")
     };
 
     public TypologyBrowser() {
