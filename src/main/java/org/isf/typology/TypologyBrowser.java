@@ -36,7 +36,7 @@ public class TypologyBrowser extends ModalJFrame implements TypologyEdit.Typolog
     private JLabel totalLabel;
 
     private int currentPage = 0;
-    private final int PAGE_SIZE = 5;
+    private final int PAGE_SIZE = 100;
     private int totalPages = 0;
 
     private List<Typology> typologies;
