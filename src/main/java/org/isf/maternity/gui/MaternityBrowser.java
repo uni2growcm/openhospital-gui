@@ -119,8 +119,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private GoodDateChooser dateTo;
     private VoLimitedTextField ageFromField;
     private VoLimitedTextField ageToField;
-    private JComboBox<String> pregnancyStatusCombo;
-    private JComboBox<String> riskLevelCombo;
+    private JComboBox<Object> pregnancyStatusCombo;
+    private JComboBox<Object> riskLevelCombo;
     private JRadioButton prenatalRadio;
     private JRadioButton postnatalRadio;
     private JButton searchButton;
@@ -189,10 +189,28 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void initComponents() throws OHServiceException {
         setLayout(new BorderLayout());
+        initializeStatusCombo();
+        initializeRiskLevelCombo();
         add(getTopPanel(), BorderLayout.NORTH);
         add(getMiddlePanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
         performSearch();
+    }
+
+    private void initializeStatusCombo() {
+        pregnancyStatusCombo = new JComboBox<>();
+        pregnancyStatusCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
+        for (PregnancyStatus status : PregnancyStatus.values()) {
+            pregnancyStatusCombo.addItem(status);
+        }
+    }
+
+    private void initializeRiskLevelCombo() {
+        riskLevelCombo = new JComboBox<>();
+        riskLevelCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
+        for (RiskLevel risk : RiskLevel.values()) {
+            riskLevelCombo.addItem(risk);
+        }
     }
 
     private JPanel getTopPanel() throws OHServiceException {
@@ -238,23 +256,11 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.status.label")));
-        pregnancyStatusCombo = new JComboBox<>(new String[]{
-                MessageBundle.getMessage("angal.common.all.label"),
-                "ONGOING",
-                "COMPLETED",
-                "TERMINATED"
-        });
         statusPanel.add(pregnancyStatusCombo);
         filterPanel.add(statusPanel);
 
         JPanel riskPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         riskPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.risklevel.label")));
-        riskLevelCombo = new JComboBox<>(new String[]{
-                MessageBundle.getMessage("angal.common.all.label"),
-                "LOW",
-                "MEDIUM",
-                "HIGH"
-        });
         riskPanel.add(riskLevelCombo);
         filterPanel.add(riskPanel);
 
@@ -391,12 +397,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         filterPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Filtre par typologie
         JPanel typologyFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         typologyFilterPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.typology.filter") + ":"));
         typologyFilterCombo = new JComboBox<>();
 
-        // Ajouter l'option "Tous"
         typologyFilterCombo.addItem(null);
 
         if (typologyList != null) {
@@ -405,7 +409,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             }
         }
 
-        // Personnaliser l'affichage pour null
         typologyFilterCombo.setRenderer(new javax.swing.DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -560,8 +563,9 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             LocalDate toD = dateTo.getDate();
             int ageFrom = Integer.parseInt(ageFromField.getText());
             int ageTo = Integer.parseInt(ageToField.getText());
-            String statusStr = (String) pregnancyStatusCombo.getSelectedItem();
-            String riskStr = (String) riskLevelCombo.getSelectedItem();
+
+            Object selectedStatus = pregnancyStatusCombo.getSelectedItem();
+            Object selectedRisk = riskLevelCombo.getSelectedItem();
 
             if (fromD.isAfter(toD)) {
                 MessageDialog.error(this, "angal.common.datefrommustbebeforedateto.msg");
@@ -574,13 +578,13 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             }
 
             PregnancyStatus status = null;
-            if (statusStr != null && !statusStr.equals(MessageBundle.getMessage("angal.common.all.label"))) {
-                status = PregnancyStatus.valueOf(statusStr);
+            if (selectedStatus != null && !selectedStatus.equals(MessageBundle.getMessage("angal.common.all.label"))) {
+                status = (PregnancyStatus) selectedStatus;
             }
 
             RiskLevel risk = null;
-            if (riskStr != null && !riskStr.equals(MessageBundle.getMessage("angal.common.all.label"))) {
-                risk = RiskLevel.valueOf(riskStr);
+            if (selectedRisk != null && !selectedRisk.equals(MessageBundle.getMessage("angal.common.all.label"))) {
+                risk = (RiskLevel) selectedRisk;
             }
 
             LocalDateTime fromDateTime = fromD.atStartOfDay();
