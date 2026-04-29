@@ -72,8 +72,6 @@ import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -653,8 +651,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        MaternityVisitEdit edit = new MaternityVisitEdit(this, selectedPregnancy, true);
-        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+        VisitEdit edit = new VisitEdit(this, selectedPregnancy, true);
+        edit.addMaternityVisitListener(new VisitEdit.MaternityVisitListener() {
             @Override
             public void visitInserted(AWTEvent e, PregnancyVisit visit) {
                 filterVisits();
@@ -681,8 +679,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         PregnancyVisit selectedVisit = visitList.get(selectedVisitRow);
 
-        MaternityVisitEdit edit = new MaternityVisitEdit(this, selectedVisit, false);
-        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+        VisitEdit edit = new VisitEdit(this, selectedVisit, false);
+        edit.addMaternityVisitListener(new VisitEdit.MaternityVisitListener() {
             @Override
             public void visitInserted(AWTEvent e, PregnancyVisit visit) {
                 filterVisits();

@@ -76,13 +76,13 @@ public class TypologyEdit extends JDialog {
 
     private final Typology typology;
     private final boolean insert;
-    private String lastDescription;
+    private String description;
 
     public TypologyEdit(JFrame owner, Typology typology, boolean insert) {
         super(owner, true);
         this.typology = typology;
         this.insert = insert;
-        this.lastDescription = typology.getDescription();
+        this.description = typology.getDescription();
         initialize();
     }
 
@@ -134,8 +134,6 @@ public class TypologyEdit extends JDialog {
         return familyCombo;
     }
 
-    // ---------------- BUTTONS ----------------
-
     private JPanel getButtonPanel() {
         JPanel panel = new JPanel();
 
@@ -149,8 +147,6 @@ public class TypologyEdit extends JDialog {
         panel.add(cancel);
         return panel;
     }
-
-    // ---------------- FIELDS ----------------
 
     private JTextField getDescriptionField() {
         if (descriptionField == null) {
@@ -173,8 +169,6 @@ public class TypologyEdit extends JDialog {
         return codeField;
     }
 
-    // ---------------- SAVE ----------------
-
     private void onSave() {
         try {
             typology.setCode(codeField.getText().trim().toUpperCase());
@@ -185,7 +179,7 @@ public class TypologyEdit extends JDialog {
                 manager.newTypology(typology);
                 fireInserted();
             } else {
-                if (!descriptionField.getText().equals(lastDescription)) {
+                if (!descriptionField.getText().equals(description)) {
                     manager.updateTypology(typology);
                     fireUpdated();
                 }

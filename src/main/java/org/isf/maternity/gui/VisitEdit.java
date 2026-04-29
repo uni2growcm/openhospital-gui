@@ -57,7 +57,7 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
 
-public class MaternityVisitEdit extends JDialog {
+public class VisitEdit extends JDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -127,7 +127,7 @@ public class MaternityVisitEdit extends JDialog {
     private PregnancyVisitBrowserManager visitManager;
     private List<Typology> visitTypes;
 
-    public MaternityVisitEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
+    public VisitEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
         super(owner, true);
         this.pregnancy = pregnancy;
         this.visit = new PregnancyVisit();
@@ -139,7 +139,7 @@ public class MaternityVisitEdit extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    public MaternityVisitEdit(JFrame owner, PregnancyVisit existingVisit, boolean inserting) {
+    public VisitEdit(JFrame owner, PregnancyVisit existingVisit, boolean inserting) {
         super(owner, true);
         this.visit = existingVisit;
         this.pregnancy = existingVisit.getPregnancy();
