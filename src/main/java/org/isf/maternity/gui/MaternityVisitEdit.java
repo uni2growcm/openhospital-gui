@@ -43,11 +43,12 @@ import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
-import org.isf.maternity.manager.PregnancyVisitTypeBrowserManager;
+import org.isf.menu.manager.Context;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.maternity.model.Pregnancy;
 import org.isf.maternity.model.PregnancyVisit;
-import org.isf.maternity.model.PregnancyVisitType;
-import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -102,7 +103,7 @@ public class MaternityVisitEdit extends JDialog {
     private JButton cancelButton;
 
     private GoodDateTimeSpinnerChooser visitDateField;
-    private JComboBox<PregnancyVisitType> visitTypeCombo;
+    private JComboBox<Typology> typologyCombo;
     private JTextField gestationalWeeksField;
     private JTextField gestationalDaysField;
     private JTextField maternalWeightField;
@@ -124,7 +125,7 @@ public class MaternityVisitEdit extends JDialog {
     private boolean insert;
 
     private PregnancyVisitBrowserManager visitManager;
-    private List<PregnancyVisitType> visitTypes;
+    private List<Typology> typologies;
 
     public MaternityVisitEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
         super(owner, true);
@@ -152,12 +153,12 @@ public class MaternityVisitEdit extends JDialog {
 
     private void initManagers() {
         visitManager = Context.getApplicationContext().getBean(PregnancyVisitBrowserManager.class);
-        PregnancyVisitTypeBrowserManager visitTypeManager = Context.getApplicationContext().getBean(PregnancyVisitTypeBrowserManager.class);
+        TypologyBrowserManager typologyManager = Context.getApplicationContext().getBean(TypologyBrowserManager.class);
         try {
-            visitTypes = visitTypeManager.getVisitTypes();
+            typologies = typologyManager.getTypologies(Family.VISITTYPE);
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e);
-            visitTypes = new java.util.ArrayList<>();
+            typologies = new java.util.ArrayList<>();
         }
     }
 
@@ -180,7 +181,7 @@ public class MaternityVisitEdit extends JDialog {
                 visitDateField.setDateTime(visit.getVisitDate());
             }
             if (visit.getVisitType() != null) {
-                visitTypeCombo.setSelectedItem(visit.getVisitType());
+                typologyCombo.setSelectedItem(visit.getVisitType());
             }
             if (visit.getGestationalWeeks() != null) {
                 gestationalWeeksField.setText(String.valueOf(visit.getGestationalWeeks()));
@@ -261,9 +262,9 @@ public class MaternityVisitEdit extends JDialog {
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.visit.date") + " *"));
             dataPanel.add(getVisitDateField());
 
-            // Visit Type (mandatory) - Row 3
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.visit.type") + " *"));
-            dataPanel.add(getVisitTypeCombo());
+            // Typology (mandatory) - Row 3
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.typology") + " *"));
+            dataPanel.add(getTypologyCombo());
 
             // Gestational Age - Row 4
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.gestational.age")));
@@ -271,7 +272,7 @@ public class MaternityVisitEdit extends JDialog {
             gestationalPanel.add(getGestationalWeeksField());
             gestationalPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.common.weeks.txt") + " "));
             gestationalPanel.add(getGestationalDaysField());
-            gestationalPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.common.day.txt")));
+            gestationalPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.common.days.txt")));
             dataPanel.add(gestationalPanel);
 
             // Maternal Weight - Row 5
@@ -354,17 +355,17 @@ public class MaternityVisitEdit extends JDialog {
         return visitDateField;
     }
 
-    private JComboBox<PregnancyVisitType> getVisitTypeCombo() {
-        if (visitTypeCombo == null) {
-            visitTypeCombo = new JComboBox<>();
-            if (visitTypes != null) {
-                for (PregnancyVisitType type : visitTypes) {
-                    visitTypeCombo.addItem(type);
+    private JComboBox<Typology> getTypologyCombo() {
+        if (typologyCombo == null) {
+            typologyCombo = new JComboBox<>();
+            if (typologies != null) {
+                for (Typology typology : typologies) {
+                    typologyCombo.addItem(typology);
                 }
             }
-            visitTypeCombo.setPreferredSize(new Dimension(200, 25));
+            typologyCombo.setPreferredSize(new Dimension(200, 25));
         }
-        return visitTypeCombo;
+        return typologyCombo;
     }
 
     private JTextField getGestationalWeeksField() {
@@ -533,14 +534,14 @@ public class MaternityVisitEdit extends JDialog {
                 return;
             }
 
-            PregnancyVisitType visitType = (PregnancyVisitType) visitTypeCombo.getSelectedItem();
-            if (visitType == null) {
-                MessageDialog.error(this, "angal.maternity.visit.type.required");
+            Typology typology = (Typology) typologyCombo.getSelectedItem();
+            if (typology == null) {
+                MessageDialog.error(this, "angal.maternity.typology.required");
                 return;
             }
 
             visit.setVisitDate(visitDate);
-            visit.setVisitType(visitType);
+            visit.setVisitType(typology);
 
             if (!gestationalWeeksField.getText().trim().isEmpty()) {
                 visit.setGestationalWeeks(Integer.parseInt(gestationalWeeksField.getText()));

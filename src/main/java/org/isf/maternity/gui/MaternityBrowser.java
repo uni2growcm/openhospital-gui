@@ -37,20 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -68,6 +55,9 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -75,7 +65,6 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -99,7 +88,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private final String[] vColumns = {
             MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.visittype.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.typology.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
     };
 
@@ -137,6 +126,9 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private JButton searchButton;
     private JButton resetButton;
 
+    private JComboBox<Typology> typologyFilterCombo;
+    private List<Typology> typologyList;
+
     private Pregnancy selectedPregnancy;
     private int selectedVisitRow = -1;
 
@@ -144,6 +136,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         setTitle(MessageBundle.getMessage("angal.maternity.browser.title"));
         myFrame = this;
         initManagers();
+        loadTypologies();
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -160,6 +153,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         setTitle(MessageBundle.getMessage("angal.maternity.browser.title"));
         myFrame = this;
         initManagers();
+        loadTypologies();
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -181,6 +175,16 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private void initManagers() {
         pregnancyManager = Context.getApplicationContext().getBean(PregnancyBrowserManager.class);
         visitManager = Context.getApplicationContext().getBean(PregnancyVisitBrowserManager.class);
+    }
+
+    private void loadTypologies() {
+        try {
+            TypologyBrowserManager typologyManager = Context.getApplicationContext().getBean(TypologyBrowserManager.class);
+            typologyList = typologyManager.getTypologies(Family.VISITTYPE);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            typologyList = new ArrayList<>();
+        }
     }
 
     private void initComponents() throws OHServiceException {
@@ -368,7 +372,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
         filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.visitfilter.label")));
-        filterPanel.setPreferredSize(new Dimension(200, 150));
+        filterPanel.setPreferredSize(new Dimension(220, 250));
 
         ButtonGroup visitTypeGroup = new ButtonGroup();
         prenatalRadio = new JRadioButton(MessageBundle.getMessage("angal.maternity.prenatal.label"));
@@ -385,9 +389,41 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         filterPanel.add(postnatalRadio);
         filterPanel.add(allVisitsRadio);
 
+        filterPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // Filtre par typologie
+        JPanel typologyFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        typologyFilterPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.typology.filter") + ":"));
+        typologyFilterCombo = new JComboBox<>();
+
+        // Ajouter l'option "Tous"
+        typologyFilterCombo.addItem(null);
+
+        if (typologyList != null) {
+            for (Typology typology : typologyList) {
+                typologyFilterCombo.addItem(typology);
+            }
+        }
+
+        // Personnaliser l'affichage pour null
+        typologyFilterCombo.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value == null) {
+                    return super.getListCellRendererComponent(list, MessageBundle.getMessage("angal.common.all.label"), index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+
+        typologyFilterCombo.setPreferredSize(new Dimension(180, 25));
+        typologyFilterPanel.add(typologyFilterCombo);
+        filterPanel.add(typologyFilterPanel);
+
         prenatalRadio.addActionListener(e -> filterVisits());
         postnatalRadio.addActionListener(e -> filterVisits());
         allVisitsRadio.addActionListener(e -> filterVisits());
+        typologyFilterCombo.addActionListener(e -> filterVisits());
 
         return filterPanel;
     }
@@ -550,15 +586,32 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             LocalDateTime fromDateTime = fromD.atStartOfDay();
             LocalDateTime toDateTime = toD.atTime(23, 59, 59);
 
-            Pageable pageable = PageRequest.of(CURRENT_PAGE - 1, PAGE_SIZE);
             Integer patientCodeInt = patientCode.isEmpty() ? null : Integer.parseInt(patientCode);
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
-                    patientCodeInt, status, risk, fromDateTime, toDateTime, pageable);
+                    patientCodeInt, status, risk, fromDateTime, toDateTime,
+                    CURRENT_PAGE - 1, PAGE_SIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();
             TOTAL_PAGES = pagedResult.getTotalPages();
+
+            List<Pregnancy> filteredByAge = new ArrayList<>();
+            for (Pregnancy pregnancy : pregnancyList) {
+                Patient patient = pregnancy.getPatient();
+                if (patient != null) {
+                    int age = patient.getAge();
+                    if (age >= ageFrom && age <= ageTo) {
+                        filteredByAge.add(pregnancy);
+                    }
+                }
+            }
+
+            if (ageFrom > 0 || ageTo < 200) {
+                pregnancyList = filteredByAge;
+                TOTAL_PREGNANCIES = filteredByAge.size();
+                TOTAL_PAGES = (int) Math.ceil((double) TOTAL_PREGNANCIES / PAGE_SIZE);
+            }
 
             updatePaginationUI();
             model.fireTableDataChanged();
@@ -604,6 +657,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         ageToField.setText("200");
         pregnancyStatusCombo.setSelectedIndex(0);
         riskLevelCombo.setSelectedIndex(0);
+        typologyFilterCombo.setSelectedIndex(0);
         CURRENT_PAGE = 1;
         performSearch();
     }
@@ -616,10 +670,31 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
 
         try {
-            List<PregnancyVisit> visits = visitManager.getVisitsByPregnancy(selectedPregnancy.getId());
+            List<PregnancyVisit> visits = new ArrayList<>();
+            String selectedTypologyCode = null;
+
+            Object selectedItem = typologyFilterCombo.getSelectedItem();
+            if (selectedItem != null && selectedItem instanceof Typology) {
+                selectedTypologyCode = ((Typology) selectedItem).getCode();
+            }
+
+            if (selectedTypologyCode != null) {
+                visits = visitManager.getVisitsByFilters(
+                        selectedPregnancy.getId(), null, null, selectedTypologyCode);
+            } else if (prenatalRadio.isSelected()) {
+                visits = visitManager.getVisitsByFilters(
+                        selectedPregnancy.getId(), null, null, "ANC");
+            } else if (postnatalRadio.isSelected()) {
+                visits = visitManager.getVisitsByFilters(
+                        selectedPregnancy.getId(), null, null, "PNC");
+            } else {
+                visits = visitManager.getVisitsByPregnancy(selectedPregnancy.getId());
+            }
+
             visitList = visits != null ? visits : new ArrayList<>();
             ((MaternityVisitsTableModel) visitTable.getModel()).fireTableDataChanged();
             selectedVisitRow = -1;
+
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
             visitList = new ArrayList<>();
