@@ -58,10 +58,7 @@ import javax.swing.table.DefaultTableModel;
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.PregnancyBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
-import org.isf.maternity.model.Pregnancy;
-import org.isf.maternity.model.PregnancyStatus;
-import org.isf.maternity.model.PregnancyVisit;
-import org.isf.maternity.model.RiskLevel;
+import org.isf.maternity.model.*;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
@@ -392,7 +389,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         visitTable = new JTable(new MaternityVisitsTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Ajouter un listener pour capturer la sélection
         visitTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 selectedVisitRow = visitTable.getSelectedRow();
@@ -728,9 +724,25 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement New Delivery");
-    }
 
+        DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy, true);
+
+        edit.addDeliveryListener(new DeliveryEdit.DeliveryListener() {
+
+            @Override
+            public void deliveryInserted(AWTEvent e, PregnancyDelivery delivery) {
+                filterVisits(); // or rename later to refreshPregnancyView()
+            }
+
+            @Override
+            public void deliveryUpdated(AWTEvent e, PregnancyDelivery delivery) {
+                filterVisits();
+            }
+        });
+
+        edit.setVisible(true);
+    }
+    
     private void updateDelivery() {
         MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Update Delivery");
     }
