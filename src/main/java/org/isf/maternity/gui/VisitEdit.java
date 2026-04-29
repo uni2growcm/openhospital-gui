@@ -43,11 +43,12 @@ import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
-import org.isf.maternity.manager.PregnancyVisitTypeBrowserManager;
 import org.isf.maternity.model.Pregnancy;
 import org.isf.maternity.model.PregnancyVisit;
-import org.isf.maternity.model.PregnancyVisitType;
 import org.isf.menu.manager.Context;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -56,7 +57,7 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
 
-public class MaternityVisitEdit extends JDialog {
+public class VisitEdit extends JDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -102,7 +103,7 @@ public class MaternityVisitEdit extends JDialog {
     private JButton cancelButton;
 
     private GoodDateTimeSpinnerChooser visitDateField;
-    private JComboBox<PregnancyVisitType> visitTypeCombo;
+    private JComboBox<Typology> visitTypeCombo;
     private JTextField gestationalWeeksField;
     private JTextField gestationalDaysField;
     private JTextField maternalWeightField;
@@ -119,14 +120,14 @@ public class MaternityVisitEdit extends JDialog {
     private GoodDateChooser nextAppointmentDateField;
     private JTextArea clinicalNotesArea;
 
-    private PregnancyVisit visit;
-    private Pregnancy pregnancy;
-    private boolean insert;
+    private final PregnancyVisit visit;
+    private final Pregnancy pregnancy;
+    private final boolean insert;
 
     private PregnancyVisitBrowserManager visitManager;
-    private List<PregnancyVisitType> visitTypes;
+    private List<Typology> visitTypes;
 
-    public MaternityVisitEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
+    public VisitEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
         super(owner, true);
         this.pregnancy = pregnancy;
         this.visit = new PregnancyVisit();
@@ -138,7 +139,7 @@ public class MaternityVisitEdit extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    public MaternityVisitEdit(JFrame owner, PregnancyVisit existingVisit, boolean inserting) {
+    public VisitEdit(JFrame owner, PregnancyVisit existingVisit, boolean inserting) {
         super(owner, true);
         this.visit = existingVisit;
         this.pregnancy = existingVisit.getPregnancy();
@@ -152,9 +153,9 @@ public class MaternityVisitEdit extends JDialog {
 
     private void initManagers() {
         visitManager = Context.getApplicationContext().getBean(PregnancyVisitBrowserManager.class);
-        PregnancyVisitTypeBrowserManager visitTypeManager = Context.getApplicationContext().getBean(PregnancyVisitTypeBrowserManager.class);
+        TypologyBrowserManager typologyBrowserManager = Context.getApplicationContext().getBean(TypologyBrowserManager.class);
         try {
-            visitTypes = visitTypeManager.getVisitTypes();
+            visitTypes = typologyBrowserManager.getTypologies(Family.VISITTYPE);
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e);
             visitTypes = new java.util.ArrayList<>();
@@ -354,11 +355,11 @@ public class MaternityVisitEdit extends JDialog {
         return visitDateField;
     }
 
-    private JComboBox<PregnancyVisitType> getVisitTypeCombo() {
+    private JComboBox<Typology> getVisitTypeCombo() {
         if (visitTypeCombo == null) {
             visitTypeCombo = new JComboBox<>();
             if (visitTypes != null) {
-                for (PregnancyVisitType type : visitTypes) {
+                for (Typology type : visitTypes) {
                     visitTypeCombo.addItem(type);
                 }
             }
@@ -533,7 +534,7 @@ public class MaternityVisitEdit extends JDialog {
                 return;
             }
 
-            PregnancyVisitType visitType = (PregnancyVisitType) visitTypeCombo.getSelectedItem();
+            Typology visitType = (Typology) visitTypeCombo.getSelectedItem();
             if (visitType == null) {
                 MessageDialog.error(this, "angal.maternity.visit.type.required");
                 return;
