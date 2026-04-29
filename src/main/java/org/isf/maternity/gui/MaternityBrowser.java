@@ -589,8 +589,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             Integer patientCodeInt = patientCode.isEmpty() ? null : Integer.parseInt(patientCode);
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
-                    patientCodeInt, status, risk, fromDateTime, toDateTime,
-                    CURRENT_PAGE - 1, PAGE_SIZE);
+                    patientCodeInt, status, risk, fromDateTime, toDateTime, CURRENT_PAGE-1, PAGE_SIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();
@@ -764,8 +763,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        MaternityVisitEdit edit = new MaternityVisitEdit(this, selectedPregnancy, true);
-        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+        VisitEdit edit = new VisitEdit(this, selectedPregnancy, true);
+        edit.addMaternityVisitListener(new VisitEdit.MaternityVisitListener() {
             @Override
             public void visitInserted(AWTEvent e, PregnancyVisit visit) {
                 filterVisits();
@@ -792,8 +791,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         PregnancyVisit selectedVisit = visitList.get(selectedVisitRow);
 
-        MaternityVisitEdit edit = new MaternityVisitEdit(this, selectedVisit, false);
-        edit.addMaternityVisitListener(new MaternityVisitEdit.MaternityVisitListener() {
+        VisitEdit edit = new VisitEdit(this, selectedVisit, false);
+        edit.addMaternityVisitListener(new VisitEdit.MaternityVisitListener() {
             @Override
             public void visitInserted(AWTEvent e, PregnancyVisit visit) {
                 filterVisits();
