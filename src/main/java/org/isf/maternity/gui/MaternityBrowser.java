@@ -546,7 +546,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             Integer patientCodeInt = patientCode.isEmpty() ? null : Integer.parseInt(patientCode);
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
-                    patientCodeInt, status, risk, fromDateTime, toDateTime, CURRENT_PAGE-1, PAGE_SIZE);
+                    patientCodeInt, status, risk, fromDateTime, toDateTime, LocalDateTime.now(), LocalDateTime.now(), CURRENT_PAGE-1, PAGE_SIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();

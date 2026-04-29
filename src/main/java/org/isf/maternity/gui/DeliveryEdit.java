@@ -175,56 +175,57 @@ public class DeliveryEdit extends JDialog {
 
     // ================= NEWBORN TABLE =================
     private JPanel newbornPanel() {
-
         JPanel p = new JPanel(new BorderLayout());
-        p.setBorder(BorderFactory.createTitledBorder("Newborns"));
+        p.setBorder(BorderFactory.createTitledBorder("Newborns Registration"));
 
+        // Define columns
         String[] cols = {
-                "First Name", "Last Name", "Sex",
+                "First Name", "Second Name", "Sex",
                 "Weight", "Length", "Head Circ",
-                "APGAR1", "APGAR5",
-                "Birth DateTime",
-                "CryTime", "HIV", "Neonatal",
-                "Resuscitation", "Anomalies"
+                "APGAR1", "APGAR5", "Birth DateTime"
         };
 
-        model = new DefaultTableModel(cols, 1);
+        // Initialize model with 0 rows to start empty
+        model = new DefaultTableModel(cols, 0);
         table = new JTable(model);
+        table.setRowHeight(25);
+        table.getTableHeader().setReorderingAllowed(false);
 
-        table.setRowHeight(30);
-
-        // ENUM EDITORS
-        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(sexCombo()));
-        table.getColumnModel().getColumn(9).setCellEditor(new DefaultCellEditor(enumCombo(CryTime.values())));
-        table.getColumnModel().getColumn(10).setCellEditor(new DefaultCellEditor(enumCombo(HivStatus.values())));
-        table.getColumnModel().getColumn(11).setCellEditor(new DefaultCellEditor(enumCombo(NeonatalStatus.values())));
-        table.getColumnModel().getColumn(12).setCellEditor(new DefaultCellEditor(booleanCombo()));
+        // Apply specific editors for the table
+        setupTableEditors();
 
         JScrollPane sp = new JScrollPane(table);
+        sp.setPreferredSize(new Dimension(1200, 200));
 
-        JPanel btn = new JPanel();
-        JButton add = new JButton("+");
-        JButton del = new JButton("-");
+        // Bottom toolbar for the "+" button
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton addButton = new JButton("+");
+        addButton.setPreferredSize(new Dimension(50, 25));
 
-        add.addActionListener(e -> {
-            model.addRow(new Object[cols.length]);
-            resize();
+        addButton.addActionListener(e -> {
+            // Add a row with default values
+            model.addRow(new Object[]{
+                    "", "", "M", "0.0", "0.0", "0.0", "10", "10", LocalDateTime.now().toString()
+            });
         });
 
-        del.addActionListener(e -> {
-            int r = table.getSelectedRow();
-            if (r >= 0) model.removeRow(r);
-            resize();
-        });
-
-        btn.add(add);
-        btn.add(del);
+        toolbar.add(addButton);
 
         p.add(sp, BorderLayout.CENTER);
-        p.add(btn, BorderLayout.SOUTH);
+        p.add(toolbar, BorderLayout.SOUTH);
 
-        resize();
         return p;
+    }
+
+    private void setupTableEditors() {
+        // Sex Column (Index 2)
+        JComboBox<String> sexCombo = new JComboBox<>(new String[]{"M", "F"});
+        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(sexCombo));
+
+        // Optional: Set specific widths for columns
+        table.getColumnModel().getColumn(0).setPreferredWidth(150); // First Name
+        table.getColumnModel().getColumn(1).setPreferredWidth(150); // Second Name
+        table.getColumnModel().getColumn(2).setPreferredWidth(50);  // Sex
     }
 
     // ================= DYNAMIC HEIGHT =================
