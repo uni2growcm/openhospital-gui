@@ -42,7 +42,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.admission.gui.AdmissionBrowser;
+import org.isf.admission.manager.AdmissionBrowserManager;
+import org.isf.admission.model.Admission;
+import org.isf.admission.model.AdmittedPatient;
 import org.isf.generaldata.MessageBundle;
+import org.isf.lab.gui.LabBrowser;
 import org.isf.maternity.manager.PregnancyBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
 import org.isf.maternity.model.Pregnancy;
@@ -55,6 +60,8 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
+import org.isf.patvac.gui.PatVacBrowser;
+import org.isf.therapy.gui.TherapyEdit;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
@@ -63,6 +70,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.isf.vaccine.gui.VaccineBrowser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -860,7 +868,17 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Admission");
+
+        Patient patient = selectedPregnancy.getPatient();
+
+        AdmissionBrowserManager admissionManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+        Admission currentAdmission = admissionManager.getCurrentAdmission(patient);
+
+        AdmittedPatient admittedPatient = new AdmittedPatient(patient, currentAdmission);
+        boolean editing = (currentAdmission != null);
+
+        AdmissionBrowser admissionBrowser = new AdmissionBrowser(this, admittedPatient, editing);
+        admissionBrowser.setVisible(true);
     }
 
     private void exams() {
@@ -868,7 +886,15 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Exams");
+
+        Patient patient = selectedPregnancy.getPatient();
+        if (patient == null) {
+            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
+            return;
+        }
+
+        LabBrowser labBrowser = new LabBrowser();
+        labBrowser.setVisible(true);
     }
 
     private void vaccins() {
@@ -876,7 +902,15 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Vaccins");
+
+        Patient patient = selectedPregnancy.getPatient();
+        if (patient == null) {
+            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
+            return;
+        }
+
+        PatVacBrowser patVacBrowser = new PatVacBrowser();
+        patVacBrowser.setVisible(true);
     }
 
     private void therapy() {
@@ -884,7 +918,19 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Therapy");
+
+        Patient patient = selectedPregnancy.getPatient();
+        if (patient == null) {
+            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
+            return;
+        }
+
+        AdmissionBrowserManager admissionManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+        Admission currentAdmission = admissionManager.getCurrentAdmission(patient);
+        boolean isAdmitted = (currentAdmission != null);
+
+        TherapyEdit therapyEdit = new TherapyEdit(this, patient, isAdmitted);
+        therapyEdit.setVisible(true);
     }
 
     @Override

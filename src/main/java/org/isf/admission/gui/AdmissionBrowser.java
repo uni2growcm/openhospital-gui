@@ -362,7 +362,9 @@ public class AdmissionBrowser extends ModalJFrame {
 		super();
 		setTitle(editing ? MessageBundle.getMessage("angal.admission.editadmissionrecord.title")
 						: MessageBundle.getMessage("angal.admission.newadmission.title"));
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		this.editing = editing;
 		patient = admPatient.getPatient();
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
@@ -421,7 +423,9 @@ public class AdmissionBrowser extends ModalJFrame {
 		super();
 		setTitle(MessageBundle.getMessage("angal.admission.editadmissionrecord.title"));
 		addAdmissionListener((AdmissionListener) parentParentFrame);
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		editing = true;
 		patient = aPatient;
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
