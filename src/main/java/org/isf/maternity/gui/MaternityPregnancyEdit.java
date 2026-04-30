@@ -28,40 +28,51 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.event.EventListenerList;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.PregnancyBrowserManager;
 import org.isf.maternity.model.Pregnancy;
 import org.isf.maternity.model.PregnancyStatus;
 import org.isf.maternity.model.RiskLevel;
 import org.isf.menu.manager.Context;
+import org.isf.patient.gui.PatientInsert;
+import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
+import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
+import org.isf.utils.time.TimeTools;
 
-public class MaternityPregnancyEdit extends JDialog implements SelectionListener {
+public class MaternityPregnancyEdit extends JDialog implements SelectionListener, PatientInsert.PatientListener, PatientInsertExtended.PatientListener {
 
     private static final long serialVersionUID = 1L;
 
@@ -101,15 +112,20 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     }
 
     private JPanel mainPanel;
+    private JPanel datePanel;
     private JPanel patientPanel;
     private JPanel dataPanel;
     private JPanel buttonPanel;
     private JButton okButton;
     private JButton cancelButton;
 
+    private JLabel jLabelDate;
+    private GoodDateTimeSpinnerChooser jCalendarDate;
+
+    private JTextField patientSearchField;
+    private JButton pickPatientButton;
+    private JButton trashPatientButton;
     private JTextField patientCodeField;
-    private JTextField patientNameField;
-    private JButton searchPatientButton;
 
     private GoodDateChooser lmpDateField;
     private GoodDateChooser eddLmpDateField;
@@ -125,6 +141,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     private boolean insert;
 
     private PregnancyBrowserManager pregnancyManager;
+    private PatientBrowserManager patientManager;
 
     public MaternityPregnancyEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
         super(owner, true);
@@ -136,6 +153,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         if (!insert) {
             loadExistingData();
         }
+        updatePatientDisplay();
         pack();
         setLocationRelativeTo(owner);
     }
@@ -151,15 +169,14 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         this.insert = inserting;
         initManagers();
         initialize();
-        if (selectedPatient != null) {
-            updatePatientDisplay();
-        }
+        updatePatientDisplay();
         pack();
         setLocationRelativeTo(owner);
     }
 
     private void initManagers() {
         pregnancyManager = Context.getApplicationContext().getBean(PregnancyBrowserManager.class);
+        patientManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
     }
 
     private void initialize() {
@@ -169,8 +186,8 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         } else {
             setTitle(MessageBundle.getMessage("angal.maternity.editpregnancy.title"));
         }
-        setMinimumSize(new Dimension(550, 520));
-        setPreferredSize(new Dimension(600, 540));
+        setMinimumSize(new Dimension(550, 550));
+        setPreferredSize(new Dimension(600, 570));
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
@@ -201,14 +218,88 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             if (pregnancy.getStatus() != null) {
                 statusCombo.setSelectedItem(pregnancy.getStatus());
             }
-            updatePatientDisplay();
         }
     }
 
     private void updatePatientDisplay() {
         if (selectedPatient != null) {
             patientCodeField.setText(String.valueOf(selectedPatient.getCode()));
-            patientNameField.setText(selectedPatient.getSecondName() + " " + selectedPatient.getFirstName());
+            patientSearchField.setText(selectedPatient.getSecondName() + " " + selectedPatient.getFirstName());
+            patientSearchField.setEditable(false);
+            pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.changepatient"));
+            pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.changethepatientassociatedwiththisexams"));
+            trashPatientButton.setEnabled(true);
+        } else {
+            patientCodeField.setText("");
+            patientSearchField.setText("");
+            patientSearchField.setEditable(true);
+            pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
+            pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
+            trashPatientButton.setEnabled(false);
+        }
+    }
+
+    private void clearPatientDisplay() {
+        selectedPatient = null;
+        pregnancy.setPatient(null);
+        patientCodeField.setText("");
+        patientSearchField.setText("");
+        patientSearchField.setEditable(true);
+        pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
+        pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
+        trashPatientButton.setEnabled(false);
+    }
+
+    private void searchPatientByName(String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            List<Patient> patients = null;
+            String trimmedText = searchText.trim();
+
+            if (trimmedText.matches("\\d+")) {
+                Integer patientCode = Integer.parseInt(trimmedText);
+                Patient patient = patientManager.getPatientById(patientCode);
+                if (patient != null) {
+                    patients = new ArrayList<>();
+                    patients.add(patient);
+                }
+            } else {
+                patients = patientManager.getPatientsByOneOfFieldsLike(trimmedText);
+            }
+
+            if (patients != null && !patients.isEmpty()) {
+                if (patients.size() == 1) {
+                    patientSelected(patients.get(0));
+                } else {
+                    openPatientSearch();
+                }
+            } else {
+                int response = MessageDialog.yesNo(this,
+                        MessageBundle.formatMessage("angal.maternity.patient.not.found.create.new.msg", searchText),
+                        MessageBundle.getMessage("angal.common.question.title"));
+                if (response == JOptionPane.YES_OPTION) {
+                    createNewPatient(searchText);
+                }
+            }
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+        }
+    }
+
+    private void createNewPatient(String name) {
+        Patient newPatient = new Patient();
+        newPatient.setFirstName(name);
+        if (GeneralData.PATIENTEXTENDED) {
+            PatientInsertExtended dialog = new PatientInsertExtended(this, newPatient, true);
+            dialog.addPatientListener(this);
+            dialog.setVisible(true);
+        } else {
+            PatientInsert dialog = new PatientInsert(this, newPatient, true);
+            dialog.addPatientListener(this);
+            dialog.setVisible(true);
         }
     }
 
@@ -216,10 +307,28 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         if (mainPanel == null) {
             mainPanel = new JPanel();
             mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+            mainPanel.add(getDatePanel());
             mainPanel.add(getPatientPanel());
             mainPanel.add(getDataPanel());
         }
         return mainPanel;
+    }
+
+    private JPanel getDatePanel() {
+        if (datePanel == null) {
+            datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            datePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.date.txt")));
+            datePanel.add(getJCalendarDate());
+        }
+        return datePanel;
+    }
+
+    private GoodDateTimeSpinnerChooser getJCalendarDate() {
+        if (jCalendarDate == null) {
+            LocalDateTime dateTime = TimeTools.getNow();
+            jCalendarDate = new GoodDateTimeSpinnerChooser(dateTime);
+        }
+        return jCalendarDate;
     }
 
     private JPanel getPatientPanel() {
@@ -231,9 +340,46 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             gbc.insets = new Insets(5, 5, 5, 5);
             gbc.fill = GridBagConstraints.HORIZONTAL;
 
-            // Code Patient
+            // Patient Search Field (editable)
             gbc.gridx = 0;
             gbc.gridy = 0;
+            patientPanel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ":"), gbc);
+
+            gbc.gridx = 1;
+            gbc.gridwidth = 2;
+            patientSearchField = new JTextField(25);
+            patientSearchField.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
+            patientSearchField.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        searchPatientByName(patientSearchField.getText());
+                    }
+                }
+            });
+            patientPanel.add(patientSearchField, gbc);
+
+            // Pick Patient Button
+            gbc.gridx = 3;
+            gbc.gridwidth = 1;
+            pickPatientButton = new JButton();
+            pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
+            pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
+            pickPatientButton.addActionListener(e -> openPatientSearch());
+            patientPanel.add(pickPatientButton, gbc);
+
+            // Trash Button
+            gbc.gridx = 4;
+            trashPatientButton = new JButton();
+            trashPatientButton.setIcon(new ImageIcon("rsc/icons/remove_patient_button.png"));
+            trashPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.removepatientassociationwiththisexam"));
+            trashPatientButton.setEnabled(selectedPatient != null);
+            trashPatientButton.addActionListener(e -> clearPatientDisplay());
+            patientPanel.add(trashPatientButton, gbc);
+
+            // Code Patient
+            gbc.gridx = 0;
+            gbc.gridy = 1;
             patientPanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"), gbc);
 
             gbc.gridx = 1;
@@ -241,24 +387,6 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             patientCodeField.setEditable(false);
             patientPanel.add(patientCodeField, gbc);
 
-            // Nom Patient
-            gbc.gridx = 2;
-            patientPanel.add(new JLabel(MessageBundle.getMessage("angal.common.name.txt") + ":"), gbc);
-
-            gbc.gridx = 3;
-            patientNameField = new JTextField(15);
-            patientNameField.setEditable(false);
-            patientPanel.add(patientNameField, gbc);
-
-            // Bouton Search
-            gbc.gridx = 4;
-            searchPatientButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
-            searchPatientButton.addActionListener(e -> openPatientSearch());
-            patientPanel.add(searchPatientButton, gbc);
-
-            if (selectedPatient != null) {
-                updatePatientDisplay();
-            }
         }
         return patientPanel;
     }
@@ -279,13 +407,25 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         }
     }
 
+    @Override
+    public void patientUpdated(AWTEvent e) {
+        Patient updatedPatient = (Patient) e.getSource();
+        patientSelected(updatedPatient);
+    }
+
+    @Override
+    public void patientInserted(AWTEvent e) {
+        Patient newPatient = (Patient) e.getSource();
+        patientSelected(newPatient);
+    }
+
     private JPanel getDataPanel() {
         if (dataPanel == null) {
             dataPanel = new JPanel(new SpringLayout());
             dataPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.pregnancy.data.border")));
 
-            // LMP (Last Menstrual Period)
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.lmp.col") + ":"));
+            // LMP (Last Menstrual Period) - Obligatoire
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.lmp.col") + " * :"));
             dataPanel.add(getLmpDateField());
 
             // EDD LMP (Estimated Delivery Date from LMP)
@@ -332,10 +472,12 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     private GoodDateChooser getLmpDateField() {
         if (lmpDateField == null) {
-            LocalDate date = insert ? LocalDate.now().minusWeeks(12) : null;
-            if (date == null && pregnancy.getLmp() != null) {
+            LocalDate date = null;
+
+            if (!insert && pregnancy.getLmp() != null) {
                 date = pregnancy.getLmp().toLocalDate();
             }
+
             lmpDateField = new GoodDateChooser(date);
             lmpDateField.addDateChangeListener(e -> calculateEddFromLmp());
         }
@@ -448,11 +590,20 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 return;
             }
 
+            LocalDate lmpDate = lmpDateField.getDate();
+            if (lmpDate == null) {
+                MessageDialog.error(this, "angal.maternity.lmp.required.msg");
+                return;
+            }
+
             if (selectedPatient != null) {
                 pregnancy.setPatient(selectedPatient);
             }
 
-            LocalDate lmpDate = lmpDateField.getDate();
+            if (insert) {
+                pregnancy.setDate(LocalDateTime.now());
+            }
+
             if (lmpDate != null) {
                 pregnancy.setLmp(lmpDate.atStartOfDay());
             }

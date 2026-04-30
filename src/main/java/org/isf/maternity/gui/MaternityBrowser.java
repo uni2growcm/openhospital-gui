@@ -86,13 +86,14 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.creationdate.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.status.col").toUpperCase()
     };
 
-    private final int[] columnWidths = { 50, 70, 150, 50, 100, 100, 80, 100 };
+    private final int[] columnWidths = { 50, 70, 150, 50, 120, 100, 100, 80, 100 };
 
     private final String[] vColumns = {
             MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
@@ -123,8 +124,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private final int PAGE_SIZE = 3;
 
     private JTextField patientCodeFilter;
-    private GoodDateChooser dateFrom;
-    private GoodDateChooser dateTo;
+    private GoodDateChooser creationDateFrom;
+    private GoodDateChooser creationDateTo;
+    private GoodDateChooser lmpDateFrom;
+    private GoodDateChooser lmpDateTo;
     private VoLimitedTextField ageFromField;
     private VoLimitedTextField ageToField;
     private JComboBox<Object> pregnancyStatusCombo;
@@ -232,7 +235,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
         filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
-        filterPanel.setPreferredSize(new Dimension(350, 500));
+        filterPanel.setPreferredSize(new Dimension(350, 650));
 
         JPanel codePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         codePanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
@@ -240,16 +243,29 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         codePanel.add(patientCodeFilter);
         filterPanel.add(codePanel);
 
-        JPanel datePanel = new JPanel(new GridLayout(2, 2, 5, 5));
-        datePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.lmpinterval.label")));
-        dateFrom = new GoodDateChooser(LocalDate.now().minusMonths(12));
-        dateTo = new GoodDateChooser(LocalDate.now());
-        datePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label") + ":"));
-        datePanel.add(dateFrom);
-        datePanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label") + ":"));
-        datePanel.add(dateTo);
-        filterPanel.add(datePanel);
+        // Filtre par date de création
+        JPanel creationDatePanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        creationDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.creationdate.interval.label")));
+        creationDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
+        creationDateTo = new GoodDateChooser(LocalDate.now());
+        creationDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label") + ":"));
+        creationDatePanel.add(creationDateFrom);
+        creationDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label") + ":"));
+        creationDatePanel.add(creationDateTo);
+        filterPanel.add(creationDatePanel);
 
+        // Filtre par LMP
+        JPanel lmpDatePanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        lmpDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.lmpinterval.label")));
+        lmpDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(12));
+        lmpDateTo = new GoodDateChooser(LocalDate.now());
+        lmpDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label") + ":"));
+        lmpDatePanel.add(lmpDateFrom);
+        lmpDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label") + ":"));
+        lmpDatePanel.add(lmpDateTo);
+        filterPanel.add(lmpDatePanel);
+
+        // Filtre par âge
         JPanel agePanel = new JPanel(new GridLayout(2, 2, 5, 5));
         agePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.ageinterval.label")));
         ageFromField = new VoLimitedTextField(3, 3);
@@ -262,16 +278,19 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         agePanel.add(ageToField);
         filterPanel.add(agePanel);
 
+        // Filtre par statut
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.status.label")));
         statusPanel.add(pregnancyStatusCombo);
         filterPanel.add(statusPanel);
 
+        // Filtre par niveau de risque
         JPanel riskPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         riskPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.risklevel.label")));
         riskPanel.add(riskLevelCombo);
         filterPanel.add(riskPanel);
 
+        // Boutons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
         searchButton.addActionListener(e -> performSearch());
@@ -567,15 +586,24 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private void performSearch() {
         try {
             String patientCode = patientCodeFilter.getText().trim();
-            LocalDate fromD = dateFrom.getDate();
-            LocalDate toD = dateTo.getDate();
+
+            LocalDate creationFrom = creationDateFrom.getDate();
+            LocalDate creationTo = creationDateTo.getDate();
+            LocalDate lmpFrom = lmpDateFrom.getDate();
+            LocalDate lmpTo = lmpDateTo.getDate();
+
             int ageFrom = Integer.parseInt(ageFromField.getText());
             int ageTo = Integer.parseInt(ageToField.getText());
 
             Object selectedStatus = pregnancyStatusCombo.getSelectedItem();
             Object selectedRisk = riskLevelCombo.getSelectedItem();
 
-            if (fromD.isAfter(toD)) {
+            if (creationFrom.isAfter(creationTo)) {
+                MessageDialog.error(this, "angal.common.datefrommustbebeforedateto.msg");
+                return;
+            }
+
+            if (lmpFrom.isAfter(lmpTo)) {
                 MessageDialog.error(this, "angal.common.datefrommustbebeforedateto.msg");
                 return;
             }
@@ -595,13 +623,24 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
                 risk = (RiskLevel) selectedRisk;
             }
 
-            LocalDateTime fromDateTime = fromD.atStartOfDay();
-            LocalDateTime toDateTime = toD.atTime(23, 59, 59);
+            LocalDateTime creationFromDateTime = creationFrom.atStartOfDay();
+            LocalDateTime creationToDateTime = creationTo.atTime(23, 59, 59);
+            LocalDateTime lmpFromDateTime = lmpFrom.atStartOfDay();
+            LocalDateTime lmpToDateTime = lmpTo.atTime(23, 59, 59);
 
-            Integer patientCodeInt = patientCode.isEmpty() ? null : Integer.parseInt(patientCode);
+            Integer patientCodeInt = null;
+            if (!patientCode.isEmpty()) {
+                try {
+                    patientCodeInt = Integer.parseInt(patientCode);
+                } catch (NumberFormatException e) {
+                    MessageDialog.error(this, "angal.common.pleaseinsertavalidnumber.msg");
+                    return;
+                }
+            }
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
-                    patientCodeInt, status, risk, fromDateTime, toDateTime, CURRENT_PAGE-1, PAGE_SIZE);
+                    patientCodeInt, status, risk, creationFromDateTime, creationToDateTime,
+                    lmpFromDateTime, lmpToDateTime, CURRENT_PAGE - 1, PAGE_SIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();
@@ -627,6 +666,12 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             updatePaginationUI();
             model.fireTableDataChanged();
             pregnancyTable.updateUI();
+
+            if (pregnancyList.isEmpty()) {
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.common.nodatatoshow.msg"));
+            }
 
         } catch (NumberFormatException ex) {
             MessageDialog.error(this, "angal.common.pleaseentervalidnumbers.msg");
@@ -662,8 +707,10 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void resetFilters() {
         patientCodeFilter.setText("");
-        dateFrom.setDate(LocalDate.now().minusMonths(12));
-        dateTo.setDate(LocalDate.now());
+        creationDateFrom.setDate(LocalDate.now().minusMonths(6));
+        creationDateTo.setDate(LocalDate.now());
+        lmpDateFrom.setDate(LocalDate.now().minusMonths(12));
+        lmpDateTo.setDate(LocalDate.now());
         ageFromField.setText("0");
         ageToField.setText("200");
         pregnancyStatusCombo.setSelectedIndex(0);
@@ -714,10 +761,19 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private void newPregnancy() {
-        SelectPatient sp = new SelectPatient(this, null);
-        sp.addSelectionListener(this);
-        sp.pack();
-        sp.setVisible(true);
+        MaternityPregnancyEdit edit = new MaternityPregnancyEdit(this, (Patient) null, true);
+        edit.addMaternityPregnancyListener(new MaternityPregnancyEdit.MaternityPregnancyListener() {
+            @Override
+            public void pregnancyInserted(AWTEvent e, Pregnancy pregnancy) {
+                performSearch();
+            }
+
+            @Override
+            public void pregnancyUpdated(AWTEvent e, Pregnancy pregnancy) {
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void updatePregnancy() {
@@ -887,12 +943,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        Patient patient = selectedPregnancy.getPatient();
-        if (patient == null) {
-            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
-            return;
-        }
-
         LabBrowser labBrowser = new LabBrowser();
         labBrowser.setVisible(true);
     }
@@ -900,12 +950,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private void vaccins() {
         if (selectedPregnancy == null) {
             MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
-            return;
-        }
-
-        Patient patient = selectedPregnancy.getPatient();
-        if (patient == null) {
-            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
             return;
         }
 
@@ -1002,6 +1046,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         @Serial
         private static final long serialVersionUID = 1L;
         private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         public int getRowCount() {
             return pregnancyList != null ? pregnancyList.size() : 0;
@@ -1034,12 +1079,14 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             } else if (c == 3) {
                 return patient != null ? patient.getAge() : "";
             } else if (c == 4) {
-                return pregnancy.getLmp() != null ? pregnancy.getLmp().format(formatter) : "";
+                return pregnancy.getDate() != null ? pregnancy.getDate().format(dateTimeFormatter) : "";
             } else if (c == 5) {
-                return pregnancy.getEddLmp() != null ? pregnancy.getEddLmp().format(formatter) : "";
+                return pregnancy.getLmp() != null ? pregnancy.getLmp().format(formatter) : "";
             } else if (c == 6) {
-                return pregnancy.getRiskLevel() != null ? pregnancy.getRiskLevel().getDescription() : "";
+                return pregnancy.getEddLmp() != null ? pregnancy.getEddLmp().format(formatter) : "";
             } else if (c == 7) {
+                return pregnancy.getRiskLevel() != null ? pregnancy.getRiskLevel().getDescription() : "";
+            } else if (c == 8) {
                 return pregnancy.getStatus() != null ? pregnancy.getStatus().toString() : "";
             }
             return null;
