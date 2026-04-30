@@ -448,7 +448,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (comboExams == null) {
 			comboExams = new JComboBox();
 			comboExams.setPreferredSize(new Dimension(225, 30));
-			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, ""));
+			comboExams.addItem(MessageBundle.getMessage("angal.common.all.txt"));
 			List<Exam> type;
 			try {
 				type = examBrowsingManager.getExams();

@@ -194,6 +194,7 @@ public class AdmissionBrowser extends ModalJFrame {
 	private JTextArea textArea;
 
 	private JTabbedPane jTabbedPaneAdmission;
+	private boolean openOperationTab;
 
 	private JPanel jPanelAdmission;
 
@@ -359,11 +360,18 @@ public class AdmissionBrowser extends ModalJFrame {
 	 * from AdmittedPatientBrowser
 	 */
 	public AdmissionBrowser(JFrame parentFrame, AdmittedPatient admPatient, boolean editing) {
+		this(parentFrame, admPatient, editing, false);
+	}
+
+	public AdmissionBrowser(JFrame parentFrame, AdmittedPatient admPatient, boolean editing, boolean openOperationTab) {
 		super();
 		setTitle(editing ? MessageBundle.getMessage("angal.admission.editadmissionrecord.title")
 						: MessageBundle.getMessage("angal.admission.newadmission.title"));
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentFrame instanceof AdmissionListener admissionListener) {
+			addAdmissionListener(admissionListener);
+		}
 		this.editing = editing;
+		this.openOperationTab = openOperationTab;
 		patient = admPatient.getPatient();
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
 			enablePregnancy = true;
@@ -518,6 +526,9 @@ public class AdmissionBrowser extends ModalJFrame {
 				}
 			}
 			jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.common.note.title"), getJPanelNote());
+			if (openOperationTab) {
+				jTabbedPaneAdmission.setSelectedIndex(1);
+			}
 		}
 		return jTabbedPaneAdmission;
 	}
