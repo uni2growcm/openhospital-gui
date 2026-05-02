@@ -65,6 +65,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
+
 import org.springframework.data.domain.Page;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
@@ -890,23 +891,11 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void viewPregnancyDetails(Pregnancy pregnancy) {
         if (pregnancy == null) {
-            MessageDialog.error(this, "Veuillez sélectionner une grossesse");
+            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
             return;
         }
 
-        MaternityPregnancyEdit edit = new MaternityPregnancyEdit(this, pregnancy, false);
-        edit.addMaternityPregnancyListener(new MaternityPregnancyEdit.MaternityPregnancyListener() {
-            @Override
-            public void pregnancyInserted(AWTEvent e, Pregnancy p) {
-                performSearch();
-            }
-
-            @Override
-            public void pregnancyUpdated(AWTEvent e, Pregnancy p) {
-                performSearch();
-            }
-        });
-        edit.setVisible(true);
+        new PregnancyDetailsView(this, pregnancy);
     }
 
     private void newVisit() {
