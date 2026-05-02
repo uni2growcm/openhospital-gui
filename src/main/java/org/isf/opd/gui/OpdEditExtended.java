@@ -1278,22 +1278,32 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		for (Patient elem : pat) {
 			if (key != null) {
-				s1 = key.split(" ");
-				String name = elem.getSearchString();
-				int a = 0;
-				for (String value : s1) {
-					if (name.contains(value.toLowerCase())) {
-						a++;
+
+				boolean isIdSearch = key.trim().matches("\\d+");
+
+				if (isIdSearch) {
+					//search  exactly by ID
+					int searchId = Integer.parseInt(key.trim());
+					if (elem.getCode() == searchId) {
+						jComboPatResult.addItem(elem);
+					}
+				} else {
+					//search  exactly name/text
+					s1 = key.toLowerCase().split(" ");
+					String name = elem.getSearchString().toLowerCase();
+					int a = 0;
+					for (String value : s1) {
+						if (name.contains(value)) {
+							a++;
+						}
+					}
+					if (a == s1.length) {
+						jComboPatResult.addItem(elem);
 					}
 				}
-				if (a == s1.length) {
-					jComboPatResult.addItem(elem);
-				}
-			} else {
-				jComboPatResult.addItem(elem);
 			}
 		}
-		//ADDED: Workaround for no items
+
 		if (jComboPatResult.getItemCount() == 0) {
 			opdPatient = null;
 			if (jPanelPatient != null) {
@@ -1301,15 +1311,12 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 			jPatientEditButton.setEnabled(true);
 		}
-		//ADDED: Workaround for one item only
 		if (jComboPatResult.getItemCount() == 1) {
 			opdPatient = (Patient) jComboPatResult.getSelectedItem();
 			setPatient(opdPatient);
 			jPatientEditButton.setEnabled(true);
 		}
-		//ADDED: Workaround for first item
 		if (jComboPatResult.getItemCount() > 0) {
-
 			if (jComboPatResult.getItemAt(0) instanceof Patient) {
 				opdPatient = (Patient) jComboPatResult.getItemAt(0);
 				setPatient(opdPatient);
