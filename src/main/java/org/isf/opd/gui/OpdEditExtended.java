@@ -118,6 +118,10 @@ import org.slf4j.LoggerFactory;
 public class OpdEditExtended extends ModalJFrame implements PatientInsertExtended.PatientListener, PatientListener, ActionListener {
 
 	private static final long serialVersionUID = 1L;
+	private JCheckBox referralToCheckBox;
+	private JCheckBox referralFromCheckBox;
+	private JTextField referralFromTextField;
+	private JTextField referralToTextField;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OpdEditExtended.class);
 
@@ -203,8 +207,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JButton jAnamnesisButton;
 	private JRadioButton rePatientButton;
 	private JRadioButton newPatientButton;
-	private JCheckBox referralToCheckBox;
-	private JCheckBox referralFromCheckBox;
 
 	private JPanel jPanelPatient;
 
@@ -311,6 +313,14 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
+		}
+		referralFromTextField = new JTextField(20);
+		referralToTextField = new JTextField(20);
+		if (referralFromCheckBox == null) {
+			referralFromCheckBox = new JCheckBox();
+		}
+		if (referralToCheckBox == null) {
+			referralToCheckBox = new JCheckBox();
 		}
 		initialize();
 	}
@@ -459,9 +469,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 */
 	private JPanel getjPanelNorth() {
 		if (jPanelNorth == null) {
-			String referralTo;
-			String referralFrom;
-			jPanelNorth = new JPanel(new FlowLayout());
+			jPanelNorth = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
 
 			rePatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.reattendance.txt"));
 			newPatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.newattendance.txt"));
@@ -478,32 +487,90 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					rePatientButton.setSelected(true);
 				}
 			}
-			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
-			jPanelNorth.add(referralFromCheckBox);
+
+
+
+			referralFromCheckBox.setText(MessageBundle.getMessage("angal.opd.referral.txt"));
+
+			referralFromTextField.setColumns(20);
+			referralFromTextField.setEnabled(false);
+
 			if (!insert) {
-				referralFrom = opd.getReferralFrom();
-				if (referralFrom == null) {
-					referralFrom = "";
-				}
-				if (referralFrom.equals("R")) {
+
+				referralFromTextField.setEnabled(true);
+				referralFromCheckBox.setEnabled(true);
+
+				String fromVal = opd.getReferralFrom();
+				if (fromVal != null && !fromVal.isEmpty() && !fromVal.equals("R")) {
 					referralFromCheckBox.setSelected(true);
+					referralFromTextField.setText(fromVal);
+				} else {
+					referralFromCheckBox.setSelected(false);
+					referralFromTextField.setText("");
 				}
+			} else {
+
+				referralFromCheckBox.setSelected(false);
+				referralFromTextField.setText("");
+				referralFromTextField.setEnabled(false);
+
+				for (ActionListener al : referralFromCheckBox.getActionListeners()) {
+					referralFromCheckBox.removeActionListener(al);
+				}
+				referralFromCheckBox.addActionListener(e -> {
+					if (referralFromCheckBox.isSelected()) {
+						referralFromTextField.setEnabled(true);
+						referralFromTextField.requestFocus();
+					} else {
+						referralFromTextField.setEnabled(false);
+						referralFromTextField.setText("");
+					}
+				});
 			}
-			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
-			jPanelNorth.add(referralToCheckBox);
+
+			referralToCheckBox.setText(MessageBundle.getMessage("angal.opd.referralto.txt"));
+			referralToTextField.setColumns(20);
+			referralToTextField.setEnabled(false);
+
 			if (!insert) {
-				referralTo = opd.getReferralTo();
-				if (referralTo == null) {
-					referralTo = "";
-				}
-				if (referralTo.equals("R")) {
+
+				referralToTextField.setEnabled(true);
+				referralToCheckBox.setEnabled(true);
+
+				String toVal = opd.getReferralTo();
+				if (toVal != null && !toVal.isEmpty() && !toVal.equals("R")) {
 					referralToCheckBox.setSelected(true);
+					referralToTextField.setText(toVal);
+				} else {
+					referralToCheckBox.setSelected(false);
+					referralToTextField.setText("");
 				}
+			} else {
+
+				referralToCheckBox.setSelected(false);
+				referralToTextField.setText("");
+
+				for (ActionListener al : referralToCheckBox.getActionListeners()) {
+					referralToCheckBox.removeActionListener(al);
+				}
+				referralToCheckBox.addActionListener(e -> {
+					if (referralToCheckBox.isSelected()) {
+						referralToTextField.setEnabled(true);
+						referralToTextField.requestFocus();
+					} else {
+						referralToTextField.setEnabled(false);
+						referralToTextField.setText("");
+					}
+				});
 			}
+
+			jPanelNorth.add(referralFromCheckBox);
+			jPanelNorth.add(referralFromTextField);
+			jPanelNorth.add(referralToCheckBox);
+			jPanelNorth.add(referralToTextField);
 		}
 		return jPanelNorth;
 	}
-
 	/**
 	 * @return the jPanelCentral
 	 */
@@ -1758,15 +1825,22 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				} else {
 					newPatient = 'R';
 				}
-				if (referralToCheckBox.isSelected()) {
-					referralTo = "R";
-				} else {
-					referralTo = "";
-				}
+
+
+				// Referral FROM
 				if (referralFromCheckBox.isSelected()) {
-					referralFrom = "R";
+					String txt = referralFromTextField.getText();
+					referralFrom = (txt == null || txt.trim().isEmpty()) ? null : txt.trim();
 				} else {
-					referralFrom = "";
+					referralFrom = null;
+				}
+
+				// Referral TO
+				if (referralToCheckBox.isSelected()) {
+					String txt = referralToTextField.getText();
+					referralTo = (txt == null || txt.trim().isEmpty()) ? null : txt.trim();
+				} else {
+					referralTo = null;
 				}
 				// disease
 				if (diseaseBox1.getSelectedIndex() > 0) {

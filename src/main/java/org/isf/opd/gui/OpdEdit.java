@@ -75,6 +75,9 @@ import org.isf.ward.model.Ward;
  * OpdEdit - add/edit an OPD registration
  */
 public class OpdEdit extends JDialog {
+
+	private JTextField referralFromTextField;
+	private JTextField referralToTextField;
 	
 	private static final long serialVersionUID = -7369841416710920082L;
 
@@ -446,16 +449,20 @@ public class OpdEdit extends JDialog {
 							newPatient = 'R';
 						}
 
-						if (referralToCheckBox.isSelected()) {
-							referralTo = "R";
+						// Referral From
+						if (referralFromCheckBox.isSelected()) {
+							String fromText = referralFromTextField.getText().trim();
+							referralFrom = fromText.isEmpty() ? null : fromText;
 						} else {
-							referralTo = "";
+							referralFrom = null;
 						}
 
-						if (referralFromCheckBox.isSelected()) {
-							referralFrom = "R";
+						// Referral To
+						if (referralToCheckBox.isSelected()) {
+							String toText = referralToTextField.getText().trim();
+							referralTo = toText.isEmpty() ? null : toText;
 						} else {
-							referralFrom = "";
+							referralTo = null;
 						}
 
 						// disease
@@ -855,40 +862,84 @@ public class OpdEdit extends JDialog {
 	}
 
 	private JPanel getJNewPatientPanel() {
-		String referralTo;
-		String referralFrom;
-
 		if (jNewPatientPanel == null) {
-			jNewPatientPanel = new JPanel();
+			jNewPatientPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
 			newPatientCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.newattendance.txt"));
 			jNewPatientPanel.add(newPatientCheckBox);
+
 			if (!insert) {
 				if (opd.getNewPatient() == 'N') {
 					newPatientCheckBox.setSelected(true);
 				}
 			}
+
+
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
-			jNewPatientPanel.add(referralFromCheckBox);
+			referralFromTextField = new JTextField(15);
+			referralFromTextField.setEnabled(false);
+
 			if (!insert) {
-				referralFrom = opd.getReferralFrom();
-				if (referralFrom == null) {
-					referralFrom = "";
-				}
-				if (referralFrom.equals("R")) {
+				// Mode édition : tout grisé
+				referralFromTextField.setEnabled(false);
+				referralFromCheckBox.setEnabled(false);
+				String referralFrom = opd.getReferralFrom();
+				if (referralFrom != null && !referralFrom.isEmpty() && !referralFrom.equals("")) {
 					referralFromCheckBox.setSelected(true);
+					referralFromTextField.setText(referralFrom);
+				} else {
+					referralFromCheckBox.setSelected(false);
+					referralFromTextField.setText("");
 				}
+			} else {
+				referralFromCheckBox.setSelected(false);
+				referralFromTextField.setText("");
+				referralFromTextField.setEnabled(false);
+
+				referralFromCheckBox.addActionListener(e -> {
+					if (referralFromCheckBox.isSelected()) {
+						referralFromTextField.setEnabled(true);
+					} else {
+						referralFromTextField.setEnabled(false);
+						referralFromTextField.setText("");
+					}
+				});
 			}
+
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
-			jNewPatientPanel.add(referralToCheckBox);
+			referralToTextField = new JTextField(15);
+			referralToTextField.setEnabled(false);
+
 			if (!insert) {
-				referralTo = opd.getReferralTo();
-				if (referralTo == null) {
-					referralTo="";
-				}
-				if (referralTo.equals("R")) {
+				referralToTextField.setEnabled(false);
+				referralToCheckBox.setEnabled(false);
+				String referralTo = opd.getReferralTo();
+				if (referralTo != null && !referralTo.isEmpty() && !referralTo.equals("")) {
 					referralToCheckBox.setSelected(true);
+					referralToTextField.setText(referralTo);
+				} else {
+					referralToCheckBox.setSelected(false);
+					referralToTextField.setText("");
 				}
+			} else {
+				referralToCheckBox.setSelected(false);
+				referralToTextField.setText("");
+				referralToTextField.setEnabled(false);
+
+				referralToCheckBox.addActionListener(e -> {
+					if (referralToCheckBox.isSelected()) {
+						referralToTextField.setEnabled(true);
+					} else {
+						referralToTextField.setEnabled(false);
+						referralToTextField.setText("");
+					}
+				});
 			}
+
+			jNewPatientPanel.add(referralFromCheckBox);
+			jNewPatientPanel.add(referralFromTextField);
+			jNewPatientPanel.add(referralToCheckBox);
+			jNewPatientPanel.add(referralToTextField);
 		}
 		return jNewPatientPanel;
 	}
