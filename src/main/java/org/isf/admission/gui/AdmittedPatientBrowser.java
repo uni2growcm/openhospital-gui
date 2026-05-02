@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright � 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -361,25 +361,78 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		});
 	}
 
-	private void loadPage() {
-		SwingUtilities.invokeLater(() -> {
-			try {
-				Page<AdmittedPatient> patientPage = admissionBrowserManager.getAdmittedPatientsPaginated(
-						CURRENT_PAGE, PAGE_SIZE
-				);
+    private void loadPage() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // Texte de recherche
+                String search = searchString != null ? searchString.getText() : "";
 
-				pPatient = new ArrayList<>(patientPage.getContent());
-				TOTAL_PATIENTS = patientPage.getTotalElements();
-				PAGES = patientPage.getTotalPages();
+                // Statut admission
+                String admissionStatus = "all";
+                if (patientClassBox.getSelectedItem().equals(patientClassItems[1])) {
+                    admissionStatus = "admitted";
+                } else if (patientClassBox.getSelectedItem().equals(patientClassItems[2])) {
+                    admissionStatus = "notAdmitted";
+                }
 
-				updateTable();
-				updatePaginationControls();
+                // Wards sélectionnés
 
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		});
-	}
+				List<String> wardCodes = new ArrayList<>();
+				if (wardList != null && wardCheck != null) {
+					for (int i = 0; i < wardList.size(); i++) {
+						if (wardCheck[i].isSelected()) {
+							wardCodes.add(wardList.get(i).getCode());
+						}
+					}
+				}
+
+				if (wardCodes.isEmpty()) {
+					wardCodes = null;
+				}
+
+                // Dates
+                LocalDateTime[] admissionRange = new LocalDateTime[2];
+                LocalDateTime[] dischargeRange = new LocalDateTime[2];
+                if (dateChoosers[0] != null) admissionRange[0] = dateChoosers[0].getDateStartOfDay();
+                if (dateChoosers[1] != null) admissionRange[1] = dateChoosers[1].getDateEndOfDay();
+                if (dateChoosers[2] != null) dischargeRange[0] = dateChoosers[2].getDateStartOfDay();
+                if (dateChoosers[3] != null) dischargeRange[1] = dateChoosers[3].getDateEndOfDay();
+
+                // Âge
+                Integer ageFrom = null;
+                Integer ageTo = null;
+                String ageFromText = patientAgeFromTextField != null ? patientAgeFromTextField.getText() : "";
+                String ageToText = patientAgeToTextField != null ? patientAgeToTextField.getText() : "";
+                if (DIGIT_PATTERN.matcher(ageFromText).matches()) ageFrom = Integer.parseInt(ageFromText);
+                if (DIGIT_PATTERN.matcher(ageToText).matches()) ageTo = Integer.parseInt(ageToText);
+
+                // Sexe
+                Character sex = switch (patientSexBox.getSelectedIndex()) {
+                    case 1 -> 'M';
+                    case 2 -> 'F';
+                    default -> null;
+                };
+
+                Page<AdmittedPatient> patientPage = admissionBrowserManager.getAdmittedPatientsPaginated(
+                        CURRENT_PAGE, PAGE_SIZE,
+                        search, admissionStatus, wardCodes,
+                        admissionRange, dischargeRange,
+                        ageFrom, ageTo, sex
+                );
+
+
+                pPatient = new ArrayList<>(patientPage.getContent());
+                TOTAL_PATIENTS = patientPage.getTotalElements();
+                PAGES = patientPage.getTotalPages();
+
+                updateTable();
+                updatePaginationControls();
+
+            } catch (OHServiceException e) {
+                OHServiceExceptionUtil.showMessages(e);
+            }
+        });
+    }
 
 	private void updateTable() {
 		if (table != null && table.getModel() instanceof AdmittedPatientBrowserModel) {
@@ -389,7 +442,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	}
 
 	private void updatePaginationControls() {
-		updatingPagination = true; // on bloque les réactions
+		updatingPagination = true;
 		try {
 			pagesCombo.removeAllItems();
 			for (int i = 1; i <= PAGES; i++) {
@@ -404,10 +457,12 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			nextButton.setEnabled(CURRENT_PAGE < PAGES - 1);
 
 			if (underLabel != null) {
-				underLabel.setText("/ " + PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+//				underLabel.setText("/ " + PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+				underLabel.setText("/ " + PAGES);
 			}
 			if (totalPatientsLabel != null) {
-				totalPatientsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + TOTAL_PATIENTS);
+				totalPatientsLabel.setText(": " + TOTAL_PATIENTS);
+//				totalPatientsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + TOTAL_PATIENTS);
 			}
 		} finally {
 			updatingPagination = false;
@@ -474,7 +529,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		for (int i = 0; i < wardList.size(); i++) {
 			checkPanel[i] = new JPanel(new BorderLayout());
 			wardCheck[i] = new JCheckBox();
-			wardCheck[i].setSelected(true);
+			wardCheck[i].setSelected(false);
 			if (!GeneralData.ENHANCEDSEARCH) {
 				wardCheck[i].addActionListener(listener);
 			}
@@ -724,7 +779,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JPanel getPaginatePanel() {
 		JPanel paginatePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-		// Bouton précédent
+		// Bouton pr�c�dent
 		prevButton = new JButton("<");
 		prevButton.addActionListener(actionEvent -> {
 			if (CURRENT_PAGE > 0) {
@@ -738,7 +793,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		pagesCombo = new JComboBox<>();
 		pagesCombo.setPreferredSize(new Dimension(80, 25));
 		pagesCombo.addActionListener(actionEvent -> {
-			if (updatingPagination) return; // ← on ignore si c'est nous qui mettons à jour
+			if (updatingPagination) return; // ? on ignore si c'est nous qui mettons � jour
 			if (pagesCombo.getItemCount() != 0 && pagesCombo.getSelectedItem() != null) {
 				CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
 				loadPage();
