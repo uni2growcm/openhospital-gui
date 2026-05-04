@@ -57,8 +57,13 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.PregnancyBrowserManager;
+import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
-import org.isf.maternity.model.*;
+import org.isf.maternity.model.Pregnancy;
+import org.isf.maternity.model.PregnancyDelivery;
+import org.isf.maternity.model.PregnancyStatus;
+import org.isf.maternity.model.PregnancyVisit;
+import org.isf.maternity.model.RiskLevel;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
@@ -546,7 +551,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             Integer patientCodeInt = patientCode.isEmpty() ? null : Integer.parseInt(patientCode);
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
-                    patientCodeInt, status, risk, fromDateTime, toDateTime, LocalDateTime.now(), LocalDateTime.now(), CURRENT_PAGE-1, PAGE_SIZE);
+                    patientCodeInt, status, risk, fromDateTime, toDateTime, null, null, CURRENT_PAGE-1, PAGE_SIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();
@@ -622,6 +627,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private void newPregnancy() {
         MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement New Pregnancy");
     }
+
 
     private void updatePregnancy() {
         int row = pregnancyTable.getSelectedRow();
@@ -725,30 +731,66 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy, true);
-
-        edit.addDeliveryListener(new DeliveryEdit.DeliveryListener() {
-
-            @Override
-            public void deliveryInserted(AWTEvent e, PregnancyDelivery delivery) {
-                filterVisits(); // or rename later to refreshPregnancyView()
-            }
-
-            @Override
-            public void deliveryUpdated(AWTEvent e, PregnancyDelivery delivery) {
-                filterVisits();
-            }
-        });
+        DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
 
         edit.setVisible(true);
     }
     
     private void updateDelivery() {
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Update Delivery");
+        if (selectedPregnancy == null) {
+            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            return;
+        }
+
+        try {
+            PregnancyDelivery delivery = Context.getApplicationContext()
+                    .getBean(PregnancyDeliveryBrowserManager.class)
+                    .getDeliveryByPregnancy(selectedPregnancy.getId());
+
+            if (delivery == null) {
+                MessageDialog.error(this, "No delivery found for selected pregnancy");
+                return;
+            }
+
+            DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
+            edit.setVisible(true);
+
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+        }
     }
 
     private void deleteDelivery() {
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Delete Delivery");
+        if (selectedPregnancy == null) {
+            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            return;
+        }
+
+        try {
+            PregnancyDeliveryBrowserManager deliveryManager = 
+                    Context.getApplicationContext()
+                    .getBean(PregnancyDeliveryBrowserManager.class);
+
+            PregnancyDelivery delivery = deliveryManager.getDeliveryByPregnancy(selectedPregnancy.getId());
+
+            if (delivery == null) {
+                MessageDialog.error(this, "No delivery found for selected pregnancy");
+                return;
+            }
+
+            String confirmMessage = MessageBundle.getMessage("angal.maternity.delivery.deletedelivery.confirm.msg");
+            int answer = MessageDialog.yesNo(this, confirmMessage);
+
+            if (answer == JOptionPane.YES_OPTION) {
+                deliveryManager.deleteDelivery(delivery);
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.maternity.delivery.deletedelivery.success.msg"));
+            }
+
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+        }
     }
 
     private void admission() {

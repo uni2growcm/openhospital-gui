@@ -21,11 +21,46 @@
  */
 package org.isf.maternity.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.function.Function;
+
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.NewBornBrowserManager;
 import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
-import org.isf.maternity.manager.PregnancyVisitBrowserManager;
-import org.isf.maternity.model.*;
+import org.isf.maternity.model.CryTime;
+import org.isf.maternity.model.DeliveryMode;
+import org.isf.maternity.model.HivStatus;
+import org.isf.maternity.model.NeonatalStatus;
+import org.isf.maternity.model.Newborn;
+import org.isf.maternity.model.PerinealIntegrity;
+import org.isf.maternity.model.Pregnancy;
+import org.isf.maternity.model.PregnancyDelivery;
 import org.isf.menu.manager.Context;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -33,24 +68,13 @@ import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 public class DeliveryEdit extends JDialog {
 
-    // ================= CORE =================
     private final Pregnancy pregnancy;
-    private final PregnancyDelivery delivery;
-    private final boolean insert;
+    private PregnancyDelivery delivery;
 
     private final PregnancyDeliveryBrowserManager deliveryManager =
             Context.getApplicationContext().getBean(PregnancyDeliveryBrowserManager.class);
@@ -61,70 +85,70 @@ public class DeliveryEdit extends JDialog {
     private final PatientBrowserManager patientManager =
             Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
-    private final PregnancyVisitBrowserManager visitManager =
-            Context.getApplicationContext().getBean(PregnancyVisitBrowserManager.class);
-
-    // ================= LISTENER =================
-    public interface DeliveryListener {
-        void deliveryInserted(AWTEvent e, PregnancyDelivery delivery);
-        void deliveryUpdated(AWTEvent e, PregnancyDelivery delivery);
-    }
-
-    private final List<DeliveryListener> listeners = new ArrayList<>();
-
-    public void addDeliveryListener(DeliveryListener l) {
-        listeners.add(l);
-    }
-
-    private void fireInserted(PregnancyDelivery d) {
-        AWTEvent ev = new AWTEvent(this, AWTEvent.RESERVED_ID_MAX + 1) {};
-        for (DeliveryListener l : listeners) l.deliveryInserted(ev, d);
-    }
-
-    private void fireUpdated(PregnancyDelivery d) {
-        AWTEvent ev = new AWTEvent(this, AWTEvent.RESERVED_ID_MAX + 2) {};
-        for (DeliveryListener l : listeners) l.deliveryUpdated(ev, d);
-    }
-
-    // ================= UI =================
     private JComboBox<Typology> deliveryTypeCombo;
     private GoodDateTimeSpinnerChooser deliveryDateField;
 
-    // father info
-    private JTextField fatherName, fatherAge, fatherAddress, fatherPhone, fatherProfession;
+    private JTextField anesthesiaField;
+    private JComboBox<PerinealIntegrity> perinealCombo;
+    private JCheckBox placentaCompleteCheck;
+    private JTextField clinicianField;
 
-    // newborn table
-    private JTable table;
-    private DefaultTableModel model;
+    private JTextField fatherName, fatherPhone, fatherAddress;
+    private JTextField fatherAge, fatherBirthplace, fatherProfession;
+    private JCheckBox fatherAliveCheck, motherAliveCheck;
+    private JComboBox<String> deliveryModeCombo;
 
-    private JButton newVisitButton;
-    private JButton viewVisitsButton;
+    private JTable newbornTable;
+    private DefaultTableModel tableModel;
+    private JScrollPane tableScroll;
+    private java.util.Map<Integer, Newborn> existingNewborns = new java.util.HashMap<>();
 
-    public DeliveryEdit(JFrame owner, Pregnancy pregnancy, boolean insert) {
+    public DeliveryEdit(JFrame owner, Pregnancy pregnancy) {
         super(owner, true);
         this.pregnancy = pregnancy;
-        this.delivery = new PregnancyDelivery();
-        this.delivery.setPregnancy(pregnancy);
-        this.insert = insert;
         init();
     }
 
-    // ================= INIT =================
     private void init() {
-        setTitle("Delivery - Newborn Registration");
-        setSize(1300, 780);
+
+        loadOrCreateDelivery();
+
+        setTitle(MessageBundle.getMessage("angal.maternity.delivery.title.txt"));
+        setSize(1600, 850);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         add(topPanel(), BorderLayout.NORTH);
         add(centerPanel(), BorderLayout.CENTER);
         add(bottomPanel(), BorderLayout.SOUTH);
+
+        loadDeliveryData();
+        resizeTable();
     }
 
-    // ================= TOP =================
+    private void loadOrCreateDelivery() {
+        try {
+            PregnancyDelivery existing =
+                    deliveryManager.getDeliveryByPregnancy(pregnancy.getId());
+
+            if (existing != null) {
+                delivery = existing;
+            } else {
+                delivery = new PregnancyDelivery();
+                delivery.setPregnancy(pregnancy);
+            }
+
+        } catch (Exception e) {
+            MessageDialog.error(this, e.getMessage());
+        }
+    }
+
     private JPanel topPanel() {
-        JPanel p = new JPanel(new GridLayout(2, 2, 10, 10));
-        p.setBorder(BorderFactory.createTitledBorder("Delivery"));
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.maternity.delivery.info.txt")));
 
         deliveryDateField = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
 
@@ -136,174 +160,303 @@ public class DeliveryEdit extends JDialog {
                     .forEach(deliveryTypeCombo::addItem);
         } catch (Exception ignored) {}
 
-        p.add(new JLabel("Delivery Date"));
-        p.add(deliveryDateField);
+        panel.add(row(
+                MessageBundle.getMessage("angal.maternity.delivery.date.label"),
+                deliveryDateField));
 
-        p.add(new JLabel("Delivery Type"));
-        p.add(deliveryTypeCombo);
+        panel.add(row(
+                MessageBundle.getMessage("angal.maternity.delivery.type.label"),
+                deliveryTypeCombo));
 
-        return p;
+        return panel;
     }
 
-    // ================= CENTER =================
     private JPanel centerPanel() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.add(fatherPanel(), BorderLayout.NORTH);
-        p.add(newbornPanel(), BorderLayout.CENTER);
-        return p;
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JPanel fatherOtherPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        fatherOtherPanel.add(fatherPanel());
+        fatherOtherPanel.add(otherInfoPanel());
+
+        panel.add(fatherOtherPanel);
+        panel.add(newbornPanel());
+
+        return panel;
     }
 
-    // ================= FATHER =================
     private JPanel fatherPanel() {
-        JPanel p = new JPanel(new GridLayout(2, 5, 10, 10));
-        p.setBorder(BorderFactory.createTitledBorder("Father Information"));
 
-        fatherName = new JTextField();
-        fatherAge = new JTextField();
-        fatherAddress = new JTextField();
-        fatherPhone = new JTextField();
-        fatherProfession = new JTextField();
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.maternity.delivery.father.txt")));
 
-        p.add(new JLabel("Name")); p.add(fatherName);
-        p.add(new JLabel("Age")); p.add(fatherAge);
-        p.add(new JLabel("Address")); p.add(fatherAddress);
-        p.add(new JLabel("Phone")); p.add(fatherPhone);
-        p.add(new JLabel("Profession")); p.add(fatherProfession);
+        fatherName = new JTextField(50);
+        fatherAge = new JTextField(50);
+        fatherPhone = new JTextField(50);
+        fatherBirthplace = new JTextField(50);
+        fatherAddress = new JTextField(50);
+        fatherProfession = new JTextField(50);
 
-        return p;
+        fatherAliveCheck = new JCheckBox(MessageBundle.getMessage("angal.maternity.delivery.fatheralive.label"), true);
+
+        motherAliveCheck = new JCheckBox(MessageBundle.getMessage("angal.maternity.delivery.motheralive.label"), true);
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fathername.label"), fatherName));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherage.label"), fatherAge));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherphone.label"), fatherPhone));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherbirthplace.label"), fatherBirthplace));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.address.label"), fatherAddress));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherprofession.label"), fatherProfession));
+
+        JPanel checks = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        checks.add(fatherAliveCheck);
+        checks.add(motherAliveCheck);
+
+        panel.add(checks);
+
+        return panel;
     }
 
-    // ================= NEWBORN TABLE =================
-    private JPanel newbornPanel() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBorder(BorderFactory.createTitledBorder("Newborns Registration"));
+    private JPanel otherInfoPanel() {
 
-        // Define columns
-        String[] cols = {
-                "First Name", "Second Name", "Sex",
-                "Weight", "Length", "Head Circ",
-                "APGAR1", "APGAR5", "Birth DateTime"
-        };
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.maternity.delivery.other.txt")));
 
-        // Initialize model with 0 rows to start empty
-        model = new DefaultTableModel(cols, 0);
-        table = new JTable(model);
-        table.setRowHeight(25);
-        table.getTableHeader().setReorderingAllowed(false);
+        anesthesiaField = new JTextField();
+        perinealCombo = new JComboBox<>(PerinealIntegrity.values());
+        deliveryModeCombo = new JComboBox<>();
+        
+        for (DeliveryMode mode : DeliveryMode.values()) {
+            deliveryModeCombo.addItem(mode.name());
+        }
 
-        // Apply specific editors for the table
-        setupTableEditors();
+        perinealCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                JList<?> list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
 
-        JScrollPane sp = new JScrollPane(table);
-        sp.setPreferredSize(new Dimension(1200, 200));
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        // Bottom toolbar for the "+" button
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton addButton = new JButton("+");
-        addButton.setPreferredSize(new Dimension(50, 25));
+                if (value instanceof PerinealIntegrity pi) {
+                    setText(MessageBundle.getMessage(pi.getKey()));
+                }
 
-        addButton.addActionListener(e -> {
-            // Add a row with default values
-            model.addRow(new Object[]{
-                    "", "", "M", "0.0", "0.0", "0.0", "10", "10", LocalDateTime.now().toString()
-            });
+                return this;
+            }
         });
 
-        toolbar.add(addButton);
+        placentaCompleteCheck = new JCheckBox();
+        clinicianField = new JTextField(50);
+        JTextField indicationField = new JTextField(50);
+        JTextField laborOnsetField = new JTextField(50);
+        JTextField romField = new JTextField(50);
+        JTextField placentaWeightField = new JTextField(50);
+        JTextField bloodLossField = new JTextField(50);
 
-        p.add(sp, BorderLayout.CENTER);
-        p.add(toolbar, BorderLayout.SOUTH);
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.mode.label"), deliveryModeCombo));
 
-        return p;
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.indication.label"), indicationField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.laboronset.label"), laborOnsetField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.rom.label"), romField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.anasthesia.label"), anesthesiaField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.perineal.label"), perinealCombo));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.placentacomplete.label"), placentaCompleteCheck));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.placentaweight.label"), placentaWeightField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.estimatedbloodloss.label"), bloodLossField));
+
+        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.clinician.label"), clinicianField));
+
+        return panel;
     }
 
-    private void setupTableEditors() {
-        // Sex Column (Index 2)
-        JComboBox<String> sexCombo = new JComboBox<>(new String[]{"M", "F"});
-        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(sexCombo));
+    private JPanel newbornPanel() {
 
-        // Optional: Set specific widths for columns
-        table.getColumnModel().getColumn(0).setPreferredWidth(150); // First Name
-        table.getColumnModel().getColumn(1).setPreferredWidth(150); // Second Name
-        table.getColumnModel().getColumn(2).setPreferredWidth(50);  // Sex
+        JPanel newbornPanel = new JPanel(new BorderLayout());
+        newbornPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.maternity.delivery.newborns.txt")));
+
+        String[] cols = {
+            MessageBundle.getMessage("angal.maternity.delivery.firstname.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.lastname.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.sex.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.birthorder.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.birthdate.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.weight.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.birthlength.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.headcircumference.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.apgarscore1min.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.apgarscore5min.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.crytime.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.resuscitation.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.congenitalanomalies.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.neonatalstatus.col"),
+            MessageBundle.getMessage("angal.maternity.delivery.hiv.col")
+        };
+
+        tableModel = new DefaultTableModel(cols, 1);
+        newbornTable = new JTable(tableModel);
+        newbornTable.setRowHeight(40);
+
+        tableScroll = new JScrollPane(newbornTable);
+
+        setupEditors();
+
+        JButton add = new JButton("+");
+        JButton remove = new JButton("-");
+
+        add.addActionListener(e -> {
+            tableModel.addRow(new Object[cols.length]);
+            resizeTable();
+        });
+
+        remove.addActionListener(e -> {
+            int r = newbornTable.getSelectedRow();
+            if (r >= 0) {
+                tableModel.removeRow(r);
+                resizeTable();
+            }
+        });
+
+        JPanel addRemoveButtonPanel = new JPanel();
+        addRemoveButtonPanel.add(add);
+        addRemoveButtonPanel.add(remove);
+
+        newbornPanel.add(tableScroll, BorderLayout.CENTER);
+        newbornPanel.add(addRemoveButtonPanel, BorderLayout.SOUTH);
+
+        return newbornPanel;
     }
 
-    // ================= DYNAMIC HEIGHT =================
-    private void resize() {
-        int rows = model.getRowCount();
-        table.setPreferredScrollableViewportSize(
-                new Dimension(1200, Math.max(200, rows * 35))
+    private void setupEditors() {
+
+        newbornTable.getColumnModel().getColumn(2)
+                .setCellEditor(new DefaultCellEditor(
+                    new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.common.male.txt"),
+                        MessageBundle.getMessage("angal.common.female.txt")
+                    })
+                ));
+
+        newbornTable.getColumnModel().getColumn(4).setCellEditor(new DateTimeCellEditor());
+
+        newbornTable.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(createNumberSpinner(0, 10)));
+
+        newbornTable.getColumnModel().getColumn(9).setCellEditor(new DefaultCellEditor(createNumberSpinner(0, 10)));
+
+        newbornTable.getColumnModel().getColumn(10).setCellEditor(new DefaultCellEditor(createCryTimeCombo()));
+
+        newbornTable.getColumnModel().getColumn(11).setCellEditor(
+            new DefaultCellEditor(new JComboBox<>(new String[]{
+                MessageBundle.getMessage("angal.common.yes.txt"),
+                MessageBundle.getMessage("angal.common.no.txt")
+            }))
         );
-        table.revalidate();
+
+        newbornTable.getColumnModel().getColumn(13).setCellEditor(new DefaultCellEditor(createNeonatalStatusCombo()));
+
+        newbornTable.getColumnModel().getColumn(14).setCellEditor(new DefaultCellEditor(createHivStatusCombo()));
     }
 
-    // ================= SAVE =================
+    private JComboBox<String> createCryTimeCombo() {
+        JComboBox<String> combo = new JComboBox<>();
+        for (CryTime value : CryTime.values()) {
+            combo.addItem(MessageBundle.getMessage(value.getKey()));
+        }
+        return combo;
+    }
+
+    private JComboBox<String> createNeonatalStatusCombo() {
+        JComboBox<String> combo = new JComboBox<>();
+        for (NeonatalStatus value : NeonatalStatus.values()) {
+            combo.addItem(MessageBundle.getMessage(value.getKey()));
+        }
+        return combo;
+    }
+
+    private JComboBox<String> createHivStatusCombo() {
+        JComboBox<String> combo = new JComboBox<>();
+        for (HivStatus value : HivStatus.values()) {
+            combo.addItem(MessageBundle.getMessage(value.getKey()));
+        }
+        return combo;
+    }
+
+    private JComboBox<Integer> createNumberSpinner(int min, int max) {
+        JComboBox<Integer> combo = new JComboBox<>();
+        for (int i = min; i <= max; i++) {
+            combo.addItem(i);
+        }
+        return combo;
+    }
+
+    private void resizeTable() {
+        int rows = tableModel.getRowCount();
+        int tableHeight = newbornTable.getTableHeader().getHeight() + (rows * newbornTable.getRowHeight());
+        int maxHeight = 300;
+        int preferredHeight = Math.min(Math.max(tableHeight, 150), maxHeight);
+        tableScroll.setPreferredSize(new Dimension(1400, preferredHeight));
+        pack();
+    }
+
     private void save() {
-
         try {
-            if (deliveryDateField.getLocalDateTime() == null)
-                throw new RuntimeException("Delivery date required");
-
-            if (deliveryTypeCombo.getSelectedItem() == null)
-                throw new RuntimeException("Delivery type required");
-
+            validateDelivery();
+            
             delivery.setDeliveryDate(deliveryDateField.getLocalDateTime());
             delivery.setDeliveryType((Typology) deliveryTypeCombo.getSelectedItem());
-
             delivery.setFatherName(fatherName.getText());
+            
+            if (!fatherAge.getText().isEmpty()) {
+                try {
+                    delivery.setFatherAge(Integer.parseInt(fatherAge.getText()));
+                } catch (NumberFormatException e) {
+                    MessageDialog.error(this, e.getMessage());
+                }
+            }
+            
+            delivery.setFatherBirthplace(!fatherBirthplace.getText().isEmpty() ? fatherBirthplace.getText() : "");
+            delivery.setFatherProfession(!fatherProfession.getText().isEmpty() ? fatherProfession.getText() : "");
+            delivery.setFatherAddress(!fatherAddress.getText().isEmpty() ? fatherAddress.getText() : "");
+            delivery.setAnesthesiaUsed(!anesthesiaField.getText().isEmpty() ? anesthesiaField.getText() : "");
+            delivery.setPerinealIntegrity((PerinealIntegrity) perinealCombo.getSelectedItem());
+            delivery.setPlacentaComplete(placentaCompleteCheck.isSelected());
+            delivery.setDeliveryMode(DeliveryMode.valueOf((String) deliveryModeCombo.getSelectedItem()));
+            delivery.setAttendingClinicianId(!clinicianField.getText().isEmpty() ? clinicianField.getText() : "");
 
-            PregnancyDelivery saved = deliveryManager.newDelivery(delivery);
-
-            Patient mother = pregnancy.getPatient();
-
-            for (int i = 0; i < model.getRowCount(); i++) {
-
-                String fn = val(i,0);
-                String ln = val(i,1);
-
-                if (fn == null || ln == null)
-                    throw new RuntimeException("Baby name required");
-
-                Patient baby = new Patient();
-                baby.setFirstName(fn);
-                baby.setSecondName(ln);
-                baby.setSex(parseChar(val(i,2)));
-
-                baby.setBirthDate(LocalDate.now());
-
-                // inherit mother
-                baby.setAddress(mother.getAddress());
-                baby.setCity(mother.getCity());
-                baby.setTelephone(mother.getTelephone());
-                baby.setMotherName(mother.getName());
-                baby.setFatherName(fatherName.getText());
-
-                Patient savedBaby = patientManager.savePatient(baby);
-
-                Newborn nb = new Newborn();
-                nb.setDelivery(saved);
-                nb.setBabyPatient(savedBaby);
-
-                nb.setBirthDate(parseDateTime(val(i,8)));
-                nb.setBirthWeight(parseD(val(i,3)));
-                nb.setBirthLength(parseD(val(i,4)));
-                nb.setHeadCircumference(parseD(val(i,5)));
-
-                nb.setApgarScore1Min(parseI(val(i,6)));
-                nb.setApgarScore5Min(parseI(val(i,7)));
-
-                nb.setCryTime(parseEnum(val(i,9), CryTime.class));
-                nb.setHivStatus(parseEnum(val(i,10), HivStatus.class));
-                nb.setNeonatalStatus(parseEnum(val(i,11), NeonatalStatus.class));
-
-                nb.setResuscitationRequired(Boolean.parseBoolean(val(i,12)));
-                nb.setCongenitalAnomalies(val(i,13));
-
-                newbornManager.newNewborn(nb);
+            if (delivery.getId() == null) {
+                deliveryManager.newDelivery(delivery);
+                saveNewborns();
+                MessageDialog.info(
+                    this,
+                    MessageBundle.getMessage("angal.maternity.delivery.deliverysuccessfullycreated")
+                );
+            } else {
+                deliveryManager.updateDelivery(delivery);
+                updateNewborns();
+                MessageDialog.info(
+                    this,
+                    MessageBundle.getMessage("angal.maternity.delivery.deliverysuccessfullyupdated.msg")
+                );
             }
 
-            MessageDialog.info(this, "Saved successfully");
-            fireInserted(saved);
             dispose();
 
         } catch (Exception e) {
@@ -311,54 +464,430 @@ public class DeliveryEdit extends JDialog {
         }
     }
 
-    // ================= VISITS =================
-    private void newVisit() { /* unchanged */ }
-    private void viewVisits() { /* unchanged */ }
-
-    // ================= HELPERS =================
-    private String val(int r,int c){Object o=model.getValueAt(r,c);return o==null?null:o.toString();}
-    private Double parseD(String v){try{return v==null?null:Double.parseDouble(v);}catch(Exception e){return null;}}
-    private Integer parseI(String v){try{return v==null?null:Integer.parseInt(v);}catch(Exception e){return null;}}
-    private LocalDateTime parseDateTime(String v){try{return LocalDateTime.parse(v);}catch(Exception e){return LocalDateTime.now();}}
-    private char parseChar(String v){return "F".equalsIgnoreCase(v)?'F':'M';}
-
-    private <T extends Enum<T>> T parseEnum(String v, Class<T> c){
-        try { return v==null?null:Enum.valueOf(c,v); }
-        catch(Exception e){ return null; }
+    private void saveNewborns() {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Newborn newborn = buildNewborn(i);
+            if (newborn != null) {
+                try {
+                    newbornManager.newNewborn(newborn);
+                } catch (OHServiceException e) {
+                    MessageDialog.error(this, e.getMessage());
+                }
+            }
+        }
     }
 
-    private JComboBox<String> sexCombo(){
-        return new JComboBox<>(new String[]{"M","F"});
+    private void updateNewborns() {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Newborn newborn;
+            if (existingNewborns.containsKey(i)) {
+                // Update existing newborn
+                newborn = buildNewborn(i, existingNewborns.get(i));
+                if (newborn != null) {
+                    newborn.setId(existingNewborns.get(i).getId());
+                    try {
+                        newbornManager.updateNewborn(newborn);
+                    } catch (OHServiceException e) {
+                        MessageDialog.error(this, e.getMessage());
+                    }
+                }
+            } else {
+                // Create new newborn
+                newborn = buildNewborn(i);
+                if (newborn != null) {
+                    try {
+                        newbornManager.newNewborn(newborn);
+                    } catch (OHServiceException e) {
+                        MessageDialog.error(this, e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
-    private JComboBox<String> enumCombo(Enum<?>[] vals){
-        JComboBox<String> c = new JComboBox<>();
-        for(Enum<?> v:vals) c.addItem(v.name());
-        return c;
+    private Newborn buildNewborn(int row) {
+        try {
+            String first = getString(row, 0);
+            String last = getString(row, 1);
+            String sex = getString(row, 2);
+            String birthOrder = getString(row, 3);
+            LocalDateTime birth = getDateTime(row, 4);
+            Double weight = getDouble(row, 5);
+            Double length = getDouble(row, 6);
+            Double headCirc = getDouble(row, 7);
+            Integer apgar1 = getInteger(row, 8);
+            Integer apgar5 = getInteger(row, 9);
+            String newbornCryTime = getString(row, 10);
+            Boolean resuscitation = getBoolean(row, 11);
+            String anomalies = getString(row, 12);
+            String neonatalStatusStr = getString(row, 13);
+            String hivStatusStr = getString(row, 14);
+
+            validateNewborn(first, last, sex, weight, birth);
+
+            Patient babyPatient = new Patient();
+            babyPatient.setFirstName(first);
+            babyPatient.setSecondName(last);
+            babyPatient.setName(first + " " + last);
+            babyPatient.setSex((sex != null && sex.equals(MessageBundle.getMessage("angal.common.male.txt"))) ? 'M' : 'F');
+            babyPatient.setBirthDate(birth != null ? birth.toLocalDate() : LocalDate.now());
+            babyPatient.setAddress(pregnancy.getPatient().getAddress());
+            babyPatient.setCity(pregnancy.getPatient().getCity());
+            babyPatient.setTelephone(pregnancy.getPatient().getTelephone());
+            babyPatient.setMotherName(pregnancy.getPatient().getName());
+            babyPatient.setFatherName(!fatherName.getText().isEmpty() ? fatherName.getText() : "");
+            babyPatient.setMother(motherAliveCheck.isSelected() ? 'A' : 'D');
+            babyPatient.setFather(fatherAliveCheck.isSelected() ? 'A' : 'D');
+
+            try {
+                patientManager.savePatient(babyPatient);
+            } catch (OHServiceException e) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.babypatientnotcreated.msg"));
+                return null;
+            }
+
+            CryTime cryTime = findCryTimeByDisplayString(newbornCryTime);
+            NeonatalStatus neonatalStatus = findNeonatalStatusByDisplayString(neonatalStatusStr);
+            HivStatus hivStatus = findHivStatusByDisplayString(hivStatusStr);
+
+            Newborn nb = new Newborn();
+            nb.setBabyPatient(babyPatient);
+            nb.setDelivery(delivery);
+            nb.setBirthDate(birth);
+            nb.setBirthWeight(weight);
+            nb.setBirthLength(length);
+            nb.setHeadCircumference(headCirc);
+            nb.setApgarScore1Min(apgar1);
+            nb.setApgarScore5Min(apgar5);
+            nb.setCryTime(cryTime);
+            nb.setResuscitationRequired(resuscitation);
+            nb.setCongenitalAnomalies(anomalies);
+            nb.setNeonatalStatus(neonatalStatus);
+            nb.setHivStatus(hivStatus);
+            nb.setBirthOrder(birthOrder);
+
+            return nb;
+
+        } catch (Exception e) {
+            MessageDialog.error(this, e.getMessage());
+            return null;
+        }
     }
 
-    private JComboBox<String> booleanCombo(){
-        return new JComboBox<>(new String[]{"true","false"});
+    private Newborn buildNewborn(int row, Newborn existingNewborn) {
+        try {
+            String first = getString(row, 0);
+            String last = getString(row, 1);
+            String sex = getString(row, 2);
+            String birthOrder = getString(row, 3);
+            LocalDateTime birth = getDateTime(row, 4);
+            Double weight = getDouble(row, 5);
+            Double length = getDouble(row, 6);
+            Double headCirc = getDouble(row, 7);
+            Integer apgar1 = getInteger(row, 8);
+            Integer apgar5 = getInteger(row, 9);
+            String newbornCryTime = getString(row, 10);
+            Boolean resuscitation = getBoolean(row, 11);
+            String anomalies = getString(row, 12);
+            String neonatalStatusStr = getString(row, 13);
+            String hivStatusStr = getString(row, 14);
+
+            validateNewborn(first, last, sex, weight, birth);
+
+            Patient babyPatient = existingNewborn.getBabyPatient();
+            babyPatient.setFirstName(first);
+            babyPatient.setSecondName(last);
+            babyPatient.setName(first + " " + last);
+            babyPatient.setSex((sex != null && sex.equals(MessageBundle.getMessage("angal.common.male.txt"))) ? 'M' : 'F');
+            babyPatient.setBirthDate(birth != null ? birth.toLocalDate() : LocalDate.now());
+
+            CryTime cryTime = findCryTimeByDisplayString(newbornCryTime);
+            NeonatalStatus neonatalStatus = findNeonatalStatusByDisplayString(neonatalStatusStr);
+            HivStatus hivStatus = findHivStatusByDisplayString(hivStatusStr);
+
+            Newborn nb = existingNewborn;
+            nb.setDelivery(delivery);
+            nb.setBirthDate(birth);
+            nb.setBirthWeight(weight);
+            nb.setBirthLength(length);
+            nb.setHeadCircumference(headCirc);
+            nb.setApgarScore1Min(apgar1);
+            nb.setApgarScore5Min(apgar5);
+            nb.setCryTime(cryTime);
+            nb.setResuscitationRequired(resuscitation);
+            nb.setCongenitalAnomalies(anomalies);
+            nb.setNeonatalStatus(neonatalStatus);
+            nb.setHivStatus(hivStatus);
+            nb.setBirthOrder(birthOrder);
+
+            return nb;
+
+        } catch (Exception e) {
+            MessageDialog.error(this, e.getMessage());
+            return null;
+        }
     }
 
-    // ================= BOTTOM =================
+    private void validateDelivery() {
+        if (deliveryDateField.getLocalDateTime() == null) {
+           MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.daterequired.msg"));
+        }
+        if (deliveryTypeCombo.getSelectedItem() == null) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.typerequired.msg"));
+        }
+    }
+
+    private void validateNewborn(String first, String last, String sex, Double weight, LocalDateTime birth) {
+        if (first == null || first.isBlank()) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.firstnamerequired.msg"));
+        }
+        if (last == null || last.isBlank()) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.lastnamerequired.msg"));
+        }
+        if (sex == null) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.sexisrequired.msg"));
+        }
+        if (birth == null) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.birthdateisrequired.msg"));
+        }
+        if (weight == null) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.weightisrequired.msg"));
+        }
+    }
+
+    private String getString(int row, int col) {
+        Object val = tableModel.getValueAt(row, col);
+        return val != null ? val.toString() : "";
+    }
+
+    private Double getDouble(int row, int col) {
+        Object val = tableModel.getValueAt(row, col);
+        if (val == null) return null;
+        if (val instanceof Double) return (Double) val;
+        try {
+            return Double.parseDouble(val.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Integer getInteger(int row, int col) {
+        Object val = tableModel.getValueAt(row, col);
+        if (val == null) return null;
+        if (val instanceof Integer) return (Integer) val;
+        try {
+            return Integer.parseInt(val.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Boolean getBoolean(int row, int col) {
+        Object val = tableModel.getValueAt(row, col);
+        if (val == null) return false;
+        if (val instanceof Boolean) return (Boolean) val;
+        return Boolean.parseBoolean(val.toString());
+    }
+
+    private LocalDateTime getDateTime(int row, int col) {
+        Object val = tableModel.getValueAt(row, col);
+        if (val instanceof LocalDateTime) return (LocalDateTime) val;
+        return null;
+    }
+
+    private JPanel row(String label, Component field) {
+        JPanel r = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        r.add(new JLabel(label));
+        r.add(field);
+        return r;
+    }
+
+    private <E> JComboBox<E> createEnumComboBox(E[] values, Function<E, String> key) {
+        JComboBox<E> combo = new JComboBox<>(values);
+        combo.setRenderer(enumRenderer(e -> MessageBundle.getMessage(key.apply(e))));
+        return combo;
+    }
+
+    private <E> ListCellRenderer<E> enumRenderer(java.util.function.Function<E, String> mapper) {
+
+        return new ListCellRenderer<>() {
+
+            private final DefaultListCellRenderer delegate = new DefaultListCellRenderer();
+
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<? extends E> list, E value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+
+                Component c = delegate.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+
+                if (value != null) {
+                    ((JLabel) c).setText(mapper.apply(value));
+                }
+
+                return c;
+            }
+        };
+    }
+
+    static class DateTimeCellEditor extends AbstractCellEditor implements TableCellEditor {
+
+        private final GoodDateTimeSpinnerChooser chooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
+
+        @Override
+        public Object getCellEditorValue() {
+            return chooser.getLocalDateTime();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column) {
+            return chooser;
+        }
+    }
+
     private JPanel bottomPanel(){
         JPanel p = new JPanel();
 
-        newVisitButton = new JButton("New Visit");
-        viewVisitsButton = new JButton("View Visits");
-
-        JButton save = new JButton("Save");
-        JButton cancel = new JButton("Cancel");
+        JButton save = new JButton(MessageBundle.getMessage("angal.common.save.btn"));
+        JButton cancel = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
 
         save.addActionListener(e -> save());
         cancel.addActionListener(e -> dispose());
 
-        p.add(newVisitButton);
-        p.add(viewVisitsButton);
         p.add(save);
         p.add(cancel);
 
         return p;
+    }
+
+    private void loadDeliveryData() {
+        if (delivery == null || delivery.getId() == null) {
+            return; // New delivery, nothing to load
+        }
+
+        // Load basic delivery information
+        deliveryDateField.setDateTime(delivery.getDeliveryDate());
+        
+        if (delivery.getDeliveryType() != null) {
+            deliveryTypeCombo.setSelectedItem(delivery.getDeliveryType());
+        }
+        
+        if (delivery.getFatherName() != null) {
+            fatherName.setText(delivery.getFatherName());
+        }
+        
+        if (delivery.getFatherAge() != null && delivery.getFatherAge() > 0) {
+            fatherAge.setText(String.valueOf(delivery.getFatherAge()));
+        }
+        
+        if (delivery.getFatherBirthplace() != null) {
+            fatherBirthplace.setText(delivery.getFatherBirthplace());
+        }
+        
+        if (delivery.getFatherProfession() != null) {
+            fatherProfession.setText(delivery.getFatherProfession());
+        }
+        
+        if (delivery.getFatherAddress() != null) {
+            fatherAddress.setText(delivery.getFatherAddress());
+        }
+        
+        if (delivery.getAnesthesiaUsed() != null) {
+            anesthesiaField.setText(delivery.getAnesthesiaUsed());
+        }
+        
+        if (delivery.getPerinealIntegrity() != null) {
+            perinealCombo.setSelectedItem(delivery.getPerinealIntegrity());
+        }
+        
+        placentaCompleteCheck.setSelected(delivery.isPlacentaComplete());
+        
+        if (delivery.getDeliveryMode() != null) {
+            deliveryModeCombo.setSelectedItem(delivery.getDeliveryMode().name());
+        }
+        
+        if (delivery.getAttendingClinicianId() != null) {
+            clinicianField.setText(delivery.getAttendingClinicianId());
+        }
+
+        try {
+            fatherAliveCheck.setSelected(newbornManager.getNewbornsByDelivery(delivery.getId()).get(0).getBabyPatient().getFather() == 'A');
+            motherAliveCheck.setSelected(newbornManager.getNewbornsByDelivery(delivery.getId()).get(0).getBabyPatient().getMother() == 'A');
+        } catch (OHServiceException e) {
+            MessageDialog.error(this, e.getMessage());
+        }
+
+        try {
+            java.util.List<Newborn> newborns = newbornManager.getNewbornsByDelivery(delivery.getId());
+            tableModel.setRowCount(0);
+            existingNewborns.clear();
+            
+            for (int i = 0; i < newborns.size(); i++) {
+                Newborn newborn = newborns.get(i);
+                existingNewborns.put(i, newborn);
+                
+                Object[] row = new Object[15];
+                row[0] = newborn.getBabyPatient().getFirstName();
+                row[1] = newborn.getBabyPatient().getSecondName();
+                row[2] = newborn.getBabyPatient().getSex() == 'M' ? 
+                    MessageBundle.getMessage("angal.common.male.txt") : 
+                    MessageBundle.getMessage("angal.common.female.txt");
+                row[3] = newborn.getBirthOrder();
+                row[4] = newborn.getBirthDate();
+                row[5] = newborn.getBirthWeight();
+                row[6] = newborn.getBirthLength();
+                row[7] = newborn.getHeadCircumference();
+                row[8] = newborn.getApgarScore1Min();
+                row[9] = newborn.getApgarScore5Min();
+                row[10] = newborn.getCryTime() != null ? MessageBundle.getMessage(newborn.getCryTime().getKey()) : "";
+                row[11] = newborn.getResuscitationRequired() ? 
+                    MessageBundle.getMessage("angal.common.yes.txt") : 
+                    MessageBundle.getMessage("angal.common.no.txt");
+                row[12] = newborn.getCongenitalAnomalies();
+                row[13] = newborn.getNeonatalStatus() != null ? MessageBundle.getMessage(newborn.getNeonatalStatus().getKey()) : "";
+                row[14] = newborn.getHivStatus() != null ? MessageBundle.getMessage(newborn.getHivStatus().getKey()) : "";
+                tableModel.addRow(row);
+            }
+        } catch (Exception e) {
+            MessageDialog.error(this, "Error loading newborns: " + e.getMessage());
+        }
+    }
+
+    private CryTime findCryTimeByDisplayString(String displayString) {
+        if (displayString == null || displayString.isEmpty()) {
+            return null;
+        }
+        for (CryTime value : CryTime.values()) {
+            if (MessageBundle.getMessage(value.getKey()).equals(displayString)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private NeonatalStatus findNeonatalStatusByDisplayString(String displayString) {
+        if (displayString == null || displayString.isEmpty()) {
+            return null;
+        }
+        for (NeonatalStatus value : NeonatalStatus.values()) {
+            if (MessageBundle.getMessage(value.getKey()).equals(displayString)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private HivStatus findHivStatusByDisplayString(String displayString) {
+        if (displayString == null || displayString.isEmpty()) {
+            return HivStatus.UNKNOWN;
+        }
+        for (HivStatus value : HivStatus.values()) {
+            if (MessageBundle.getMessage(value.getKey()).equals(displayString)) {
+                return value;
+            }
+        }
+        return HivStatus.UNKNOWN;
     }
 }
