@@ -81,6 +81,32 @@ public class GoodDateChooser extends Panel {
 		add(datePicker);
 	}
 
+	public GoodDateChooser(LocalDate date, boolean futureDates, boolean emptyAllowed, LocalDate minDate) {
+		BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
+		this.setLayout(layout);
+		DatePickerSettings dateSettings = new DatePickerSettings();
+		dateSettings.setLocale(new Locale(GeneralData.LANGUAGE));
+		dateSettings.setFormatForDatesCommonEra(DATE_FORMAT_DD_MM_YYYY);
+		dateSettings.setAllowEmptyDates(emptyAllowed);
+		datePicker = new DatePicker(dateSettings);
+
+		LocalDate lowerBound = minDate != null ? minDate : LocalDate.of(999, 12, 31);
+
+		if (futureDates) {
+			dateSettings.setDateRangeLimits(lowerBound, null);
+		} else {
+			dateSettings.setDateRangeLimits(lowerBound, LocalDate.now().plusDays(1));
+		}
+		if (date != null) {
+			datePicker.setDate(date);
+		}
+		ImageIcon calendarIcon = new ImageIcon("rsc/icons/calendar_button.png");
+		JButton datePickerButton = datePicker.getComponentToggleCalendarButton();
+		datePickerButton.setText("");
+		datePickerButton.setIcon(calendarIcon);
+		add(datePicker);
+	}
+
 	public LocalDate getDate() {
 		return datePicker.getDate();
 	}

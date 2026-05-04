@@ -793,7 +793,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		pagesCombo = new JComboBox<>();
 		pagesCombo.setPreferredSize(new Dimension(80, 25));
 		pagesCombo.addActionListener(actionEvent -> {
-			if (updatingPagination) return; // ? on ignore si c'est nous qui mettons � jour
+			if (updatingPagination) return;
 			if (pagesCombo.getItemCount() != 0 && pagesCombo.getSelectedItem() != null) {
 				CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem() - 1;
 				loadPage();
