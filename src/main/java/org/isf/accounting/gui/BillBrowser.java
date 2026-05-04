@@ -221,6 +221,34 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private String user = UserBrowsingManager.getCurrentUser();
 	private List<String> users;
 
+
+// All Bills tab for pargination
+	private int all_start_index = 0;
+	private int all_items_per_page = 50;
+	private JButton allPaginationPrevBtn;
+	private JButton allPaginationNextBtn;
+	private JComboBox<Integer> allPaginationCombo;
+	private JLabel allPaginationLabel = new JLabel();
+	private int allBillsCount;
+
+	// Closed Bills tab for pargination
+	private int closed_start_index = 0;
+	private int closed_items_per_page = 50;
+	private JButton closedPaginationPrevBtn;
+	private JButton closedPaginationNextBtn;
+	private JComboBox<Integer> closedPaginationCombo;
+	private JLabel closedPaginationLabel = new JLabel();
+	private int closedBillsCount;
+
+	// Pending Bills tab for pargination
+	private int pending_start_index = 0;
+	private int pending_items_per_page = 50;
+	private JButton pendingPaginationPrevBtn;
+	private JButton pendingPaginationNextBtn;
+	private JComboBox<Integer> pendingPaginationCombo;
+	private JLabel pendingPaginationLabel = new JLabel();
+	private int pendingBillsCount;
+
 	public BillBrowser() {
 		try {
 			this.currencyCod = Context.getApplicationContext().getBean(HospitalBrowsingManager.class).getHospitalCurrencyCod();
@@ -1001,6 +1029,387 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jTableBills;
 	}
 
+	/**
+	 * Get All Bills Pagination Panel
+	 */
+	private JPanel getAllPaginationPanel() {
+		JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		paginationPanel.add(getAllPaginationPrevButton());
+		paginationPanel.add(getAllPaginationCombo());
+		paginationPanel.add(allPaginationLabel);
+		paginationPanel.add(getAllPaginationNextButton());
+
+		return paginationPanel;
+	}
+
+	/**
+	 * Get All Bills Previous Button
+	 */
+	private JButton getAllPaginationPrevButton() {
+		if (allPaginationPrevBtn == null) {
+			allPaginationPrevBtn = new JButton("<");
+			allPaginationPrevBtn.setEnabled(false);
+			allPaginationPrevBtn.addActionListener(e -> {
+				if (all_start_index - all_items_per_page >= 0) {
+					all_start_index -= all_items_per_page;
+					applyAllBillsFilters();
+					updateAllPaginationButtons();
+					allPaginationCombo.setSelectedItem(all_start_index / all_items_per_page + 1);
+				}
+			});
+		}
+		return allPaginationPrevBtn;
+	}
+
+	/**
+	 * Get All Bills Next Button
+	 */
+	private JButton getAllPaginationNextButton() {
+		if (allPaginationNextBtn == null) {
+			allPaginationNextBtn = new JButton(">");
+			allPaginationNextBtn.setEnabled(false);
+			allPaginationNextBtn.addActionListener(e -> {
+				if ((all_start_index + all_items_per_page) < allBillsCount) {
+					all_start_index += all_items_per_page;
+					applyAllBillsFilters();
+					updateAllPaginationButtons();
+					allPaginationCombo.setSelectedItem(all_start_index / all_items_per_page + 1);
+				}
+			});
+		}
+		return allPaginationNextBtn;
+	}
+
+	/**
+	 * Get All Bills Pagination Combo
+	 */
+	private JComboBox<Integer> getAllPaginationCombo() {
+		if (allPaginationCombo == null) {
+			allPaginationCombo = new JComboBox<>();
+			allPaginationCombo.addActionListener(e -> {
+				if (allPaginationCombo.getSelectedItem() != null) {
+					int page = (Integer) allPaginationCombo.getSelectedItem();
+					all_start_index = (page - 1) * all_items_per_page;
+					applyAllBillsFilters();
+					updateAllPaginationButtons();
+				}
+			});
+		}
+		return allPaginationCombo;
+	}
+
+	/**
+	 * Initialize All Bills Pagination
+	 */
+	private void initializeAllPagination() {
+		allPaginationCombo.removeAllItems();
+		int totalPages = (int) Math.ceil((double) allBillsCount / all_items_per_page);
+
+		for (int i = 1; i <= totalPages; i++) {
+			allPaginationCombo.addItem(i);
+		}
+
+		int currentPage = all_start_index / all_items_per_page + 1;
+		if (currentPage <= totalPages && currentPage > 0) {
+			allPaginationCombo.setSelectedItem(currentPage);
+		}
+
+		allPaginationLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		updateAllPaginationButtons();
+	}
+
+	/**
+	 * Update All Bills Pagination Buttons State
+	 */
+	private void updateAllPaginationButtons() {
+		int currentPage = all_start_index / all_items_per_page + 1;
+		int totalPages = (int) Math.ceil((double) allBillsCount / all_items_per_page);
+
+		allPaginationPrevBtn.setEnabled(currentPage > 1);
+		allPaginationNextBtn.setEnabled(currentPage < totalPages);
+	}
+
+	/**
+	 * Apply filters and load All Bills
+	 */
+	private void applyAllBillsFilters() {
+		try {
+			List<Bill> bills;
+			if (patientParent != null) {
+				bills = billBrowserManager.getBills(null, dateFrom, dateTo, patientParent, all_items_per_page, all_start_index);
+			} else {
+				bills = billBrowserManager.getBills(null, dateFrom, dateTo, null, all_items_per_page, all_start_index);
+			}
+			allBillsCount = (int) billBrowserManager.countBills(null, dateFrom, dateTo, patientParent);
+
+			jTableBills.setModel(new BillTableModel(bills));
+
+
+			initializeAllPagination();
+
+			jTableBills.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+
+
+	/**
+	 * Get Closed Bills Pagination Panel
+	 */
+	private JPanel getClosedPaginationPanel() {
+		JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		paginationPanel.add(getClosedPaginationPrevButton());
+		paginationPanel.add(getClosedPaginationCombo());
+		paginationPanel.add(closedPaginationLabel);
+		paginationPanel.add(getClosedPaginationNextButton());
+
+		return paginationPanel;
+	}
+
+	/**
+	 * Get Closed Bills Previous Button
+	 */
+	private JButton getClosedPaginationPrevButton() {
+		if (closedPaginationPrevBtn == null) {
+			closedPaginationPrevBtn = new JButton("<");
+			closedPaginationPrevBtn.setEnabled(false);
+			closedPaginationPrevBtn.addActionListener(e -> {
+				if (closed_start_index - closed_items_per_page >= 0) {
+					closed_start_index -= closed_items_per_page;
+					applyClosedBillsFilters();
+					updateClosedPaginationButtons();
+					closedPaginationCombo.setSelectedItem(closed_start_index / closed_items_per_page + 1);
+				}
+			});
+		}
+		return closedPaginationPrevBtn;
+	}
+
+	/**
+	 * Get Closed Bills Next Button
+	 */
+	private JButton getClosedPaginationNextButton() {
+		if (closedPaginationNextBtn == null) {
+			closedPaginationNextBtn = new JButton(">");
+			closedPaginationNextBtn.setEnabled(false);
+			closedPaginationNextBtn.addActionListener(e -> {
+				if ((closed_start_index + closed_items_per_page) < closedBillsCount) {
+					closed_start_index += closed_items_per_page;
+					applyClosedBillsFilters();
+					updateClosedPaginationButtons();
+					closedPaginationCombo.setSelectedItem(closed_start_index / closed_items_per_page + 1);
+				}
+			});
+		}
+		return closedPaginationNextBtn;
+	}
+
+	/**
+	 * Get Closed Bills Pagination Combo
+	 */
+	private JComboBox<Integer> getClosedPaginationCombo() {
+		if (closedPaginationCombo == null) {
+			closedPaginationCombo = new JComboBox<>();
+			closedPaginationCombo.addActionListener(e -> {
+				if (closedPaginationCombo.getSelectedItem() != null) {
+					int page = (Integer) closedPaginationCombo.getSelectedItem();
+					closed_start_index = (page - 1) * closed_items_per_page;
+					applyClosedBillsFilters();
+					updateClosedPaginationButtons();
+				}
+			});
+		}
+		return closedPaginationCombo;
+	}
+
+	/**
+	 * Initialize Closed Bills Pagination
+	 */
+	private void initializeClosedPagination() {
+		closedPaginationCombo.removeAllItems();
+		int totalPages = (int) Math.ceil((double) closedBillsCount / closed_items_per_page);
+
+		for (int i = 1; i <= totalPages; i++) {
+			closedPaginationCombo.addItem(i);
+		}
+
+		int currentPage = closed_start_index / closed_items_per_page + 1;
+		if (currentPage <= totalPages && currentPage > 0) {
+			closedPaginationCombo.setSelectedItem(currentPage);
+		}
+
+		closedPaginationLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		updateClosedPaginationButtons();
+	}
+
+	/**
+	 * Update Closed Bills Pagination Buttons State
+	 */
+	private void updateClosedPaginationButtons() {
+		int currentPage = closed_start_index / closed_items_per_page + 1;
+		int totalPages = (int) Math.ceil((double) closedBillsCount / closed_items_per_page);
+
+		closedPaginationPrevBtn.setEnabled(currentPage > 1);
+		closedPaginationNextBtn.setEnabled(currentPage < totalPages);
+	}
+
+	/**
+	 * Apply filters and load Closed Bills
+	 */
+	private void applyClosedBillsFilters() {
+		try {
+			List<Bill> bills;
+			if (patientParent != null) {
+				bills = billBrowserManager.getBills("C", dateFrom, dateTo, patientParent, closed_items_per_page, closed_start_index);
+			} else {
+				bills = billBrowserManager.getBills("C", dateFrom, dateTo, null, closed_items_per_page, closed_start_index);
+			}
+
+			closedBillsCount = (int) billBrowserManager.countBills("C", dateFrom, dateTo, patientParent);
+
+			jTableClosed.setModel(new BillTableModel(bills));
+
+			if (closedPaginationCombo != null && closedPaginationCombo.getItemCount() > 0) {
+				initializeClosedPagination();
+			}
+
+			jTableClosed.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+
+
+	/**
+	 * Get Pending Bills Pagination Panel
+	 */
+	private JPanel getPendingPaginationPanel() {
+		JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		paginationPanel.add(getPendingPaginationPrevButton());
+		paginationPanel.add(getPendingPaginationCombo());
+		paginationPanel.add(pendingPaginationLabel);
+		paginationPanel.add(getPendingPaginationNextButton());
+
+		return paginationPanel;
+	}
+
+	/**
+	 * Get Pending Bills Previous Button
+	 */
+	private JButton getPendingPaginationPrevButton() {
+		if (pendingPaginationPrevBtn == null) {
+			pendingPaginationPrevBtn = new JButton("<");
+			pendingPaginationPrevBtn.setEnabled(false);
+			pendingPaginationPrevBtn.addActionListener(e -> {
+				if (pending_start_index - pending_items_per_page >= 0) {
+					pending_start_index -= pending_items_per_page;
+					applyPendingBillsFilters();
+					updatePendingPaginationButtons();
+					pendingPaginationCombo.setSelectedItem(pending_start_index / pending_items_per_page + 1);
+				}
+			});
+		}
+		return pendingPaginationPrevBtn;
+	}
+
+	/**
+	 * Get Pending Bills Next Button
+	 */
+	private JButton getPendingPaginationNextButton() {
+		if (pendingPaginationNextBtn == null) {
+			pendingPaginationNextBtn = new JButton(">");
+			pendingPaginationNextBtn.setEnabled(false);
+			pendingPaginationNextBtn.addActionListener(e -> {
+				if ((pending_start_index + pending_items_per_page) < pendingBillsCount) {
+					pending_start_index += pending_items_per_page;
+					applyPendingBillsFilters();
+					updatePendingPaginationButtons();
+					pendingPaginationCombo.setSelectedItem(pending_start_index / pending_items_per_page + 1);
+				}
+			});
+		}
+		return pendingPaginationNextBtn;
+	}
+
+	/**
+	 * Get Pending Bills Pagination Combo
+	 */
+	private JComboBox<Integer> getPendingPaginationCombo() {
+		if (pendingPaginationCombo == null) {
+			pendingPaginationCombo = new JComboBox<>();
+			pendingPaginationCombo.addActionListener(e -> {
+				if (pendingPaginationCombo.getSelectedItem() != null) {
+					int page = (Integer) pendingPaginationCombo.getSelectedItem();
+					pending_start_index = (page - 1) * pending_items_per_page;
+					applyPendingBillsFilters();
+					updatePendingPaginationButtons();
+				}
+			});
+		}
+		return pendingPaginationCombo;
+	}
+
+	/**
+	 * Initialize Pending Bills Pagination
+	 */
+	private void initializePendingPagination() {
+		pendingPaginationCombo.removeAllItems();
+		int totalPages = (int) Math.ceil((double) pendingBillsCount / pending_items_per_page);
+
+		for (int i = 1; i <= totalPages; i++) {
+			pendingPaginationCombo.addItem(i);
+		}
+
+		int currentPage = pending_start_index / pending_items_per_page + 1;
+		if (currentPage <= totalPages && currentPage > 0) {
+			pendingPaginationCombo.setSelectedItem(currentPage);
+		}
+
+		pendingPaginationLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		updatePendingPaginationButtons();
+	}
+
+	/**
+	 * Update Pending Bills Pagination Buttons State
+	 */
+	private void updatePendingPaginationButtons() {
+		int currentPage = pending_start_index / pending_items_per_page + 1;
+		int totalPages = (int) Math.ceil((double) pendingBillsCount / pending_items_per_page);
+
+		pendingPaginationPrevBtn.setEnabled(currentPage > 1);
+		pendingPaginationNextBtn.setEnabled(currentPage < totalPages);
+	}
+
+	/**
+	 * Apply filters and load Pending Bills
+	 */
+	private void applyPendingBillsFilters() {
+		try {
+			List<Bill> bills;
+			if (patientParent != null) {
+				bills = billBrowserManager.getBills("O", dateFrom, dateTo, patientParent, pending_items_per_page, pending_start_index);
+			} else {
+				bills = billBrowserManager.getBills("O", dateFrom, dateTo, null, pending_items_per_page, pending_start_index);
+			}
+
+			pendingBillsCount = (int) billBrowserManager.countBills("O", dateFrom, dateTo, patientParent);
+
+			jTablePending.setModel(new BillTableModel(bills));
+
+			if (pendingPaginationCombo != null && pendingPaginationCombo.getItemCount() > 0) {
+				initializePendingPagination();
+			}
+
+			jTablePending.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+
 	private void decorateTable(JTable table) {
 		IntStream.range(0, columnsWidth.length).forEach(idx -> {
 			table.getColumnModel().getColumn(idx).setMinWidth(columnsWidth[idx]);
@@ -1024,9 +1433,36 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTabbedPane getJTabbedPaneBills() {
 		if (jTabbedPaneBills == null) {
 			jTabbedPaneBills = new JTabbedPane();
-			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.bills.title"), getJScrollPaneBills());
-			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.pending.title"), getJScrollPanePending());
-			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.closed.title"), getJScrollPaneClosed());
+
+			// Panel ALL BILLS whith pagination
+			JPanel allPanel = new JPanel(new BorderLayout());
+			allPanel.add(getJScrollPaneBills(), BorderLayout.CENTER);
+			allPanel.add(getAllPaginationPanel(), BorderLayout.SOUTH);
+			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.bills.title"), allPanel);
+
+			// Panel CLOSED BILLS whith pagination
+			JPanel closedPanel = new JPanel(new BorderLayout());
+			closedPanel.add(getJScrollPaneClosed(), BorderLayout.CENTER);
+			closedPanel.add(getClosedPaginationPanel(), BorderLayout.SOUTH);
+			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.closed.title"), closedPanel);
+
+			// Panel PENDING BILLS whith pagination
+			JPanel pendingPanel = new JPanel(new BorderLayout());
+			pendingPanel.add(getJScrollPanePending(), BorderLayout.CENTER);
+			pendingPanel.add(getPendingPaginationPanel(), BorderLayout.SOUTH);
+			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.pending.title"), pendingPanel);
+
+			// Change listener
+			jTabbedPaneBills.addChangeListener(e -> {
+				int selectedIndex = jTabbedPaneBills.getSelectedIndex();
+				if (selectedIndex == 0) {
+					applyAllBillsFilters();
+				} else if (selectedIndex == 1) {
+					applyClosedBillsFilters();
+				} else if (selectedIndex == 2) {
+					applyPendingBillsFilters();
+				}
+			});
 		}
 		return jTabbedPaneBills;
 	}
@@ -1313,6 +1749,11 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return false;
+		}
+
+
+		public BillTableModel(List<Bill> bills) {
+			this.tableArray = bills;
 		}
 
 	}
