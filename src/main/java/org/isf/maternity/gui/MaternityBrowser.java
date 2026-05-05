@@ -57,7 +57,6 @@ import org.isf.maternity.model.RiskLevel;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
-import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.gui.PatVacBrowser;
@@ -70,9 +69,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
-import org.isf.vaccine.gui.VaccineBrowser;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
