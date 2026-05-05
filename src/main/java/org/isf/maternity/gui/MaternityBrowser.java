@@ -80,7 +80,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.creationdate.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
             MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
@@ -239,7 +239,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         filterPanel.add(codePanel);
 
         JPanel creationDatePanel = new JPanel(new GridLayout(2, 2, 5, 5));
-        creationDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.creationdate.interval.label")));
+        creationDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.date.interval.label")));
         creationDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
         creationDateTo = new GoodDateChooser(LocalDate.now());
         creationDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label") + ":"));

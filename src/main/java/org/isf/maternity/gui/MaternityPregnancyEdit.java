@@ -119,13 +119,11 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     private JButton okButton;
     private JButton cancelButton;
 
-    private JLabel jLabelDate;
     private GoodDateTimeSpinnerChooser jCalendarDate;
 
     private JTextField patientSearchField;
     private JButton pickPatientButton;
     private JButton trashPatientButton;
-    private JTextField patientCodeField;
 
     private GoodDateChooser lmpDateField;
     private GoodDateChooser eddLmpDateField;
@@ -223,14 +221,12 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     private void updatePatientDisplay() {
         if (selectedPatient != null) {
-            patientCodeField.setText(String.valueOf(selectedPatient.getCode()));
             patientSearchField.setText(selectedPatient.getSecondName() + " " + selectedPatient.getFirstName());
             patientSearchField.setEditable(false);
             pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.changepatient"));
             pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.changethepatientassociatedwiththisexams"));
             trashPatientButton.setEnabled(true);
         } else {
-            patientCodeField.setText("");
             patientSearchField.setText("");
             patientSearchField.setEditable(true);
             pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
@@ -242,7 +238,6 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     private void clearPatientDisplay() {
         selectedPatient = null;
         pregnancy.setPatient(null);
-        patientCodeField.setText("");
         patientSearchField.setText("");
         patientSearchField.setEditable(true);
         pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
@@ -267,7 +262,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                     patients.add(patient);
                 }
             } else {
-                patients = patientManager.getPatientsByOneOfFieldsLike(trimmedText);
+                patients = patientManager.getFemalePatientsByOneOfFieldsLike(trimmedText);
             }
 
             if (patients != null && !patients.isEmpty()) {
@@ -377,24 +372,14 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             trashPatientButton.addActionListener(e -> clearPatientDisplay());
             patientPanel.add(trashPatientButton, gbc);
 
-            // Code Patient
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            patientPanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"), gbc);
-
-            gbc.gridx = 1;
-            patientCodeField = new JTextField(8);
-            patientCodeField.setEditable(false);
-            patientPanel.add(patientCodeField, gbc);
-
         }
         return patientPanel;
     }
 
     private void openPatientSearch() {
-        SelectPatient sp = new SelectPatient(this, selectedPatient);
+        String searchText = patientSearchField.getText();
+        SelectPatient sp = new SelectPatient(this, searchText, true);
         sp.addSelectionListener(this);
-        sp.pack();
         sp.setVisible(true);
     }
 
