@@ -143,6 +143,11 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     public MaternityPregnancyEdit(JFrame owner, Pregnancy pregnancy, boolean inserting) {
         super(owner, true);
+        if (pregnancy == null) {
+           MessageDialog.error(this, "angal.maternity.pregnancycannotbenull.msg");
+           dispose();
+           return;
+        }
         this.pregnancy = pregnancy;
         this.selectedPatient = pregnancy.getPatient();
         this.insert = inserting;
@@ -160,7 +165,9 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         super(owner, true);
         this.selectedPatient = patient;
         this.pregnancy = new Pregnancy();
-        this.pregnancy.setPatient(patient);
+        if (patient != null) {
+            this.pregnancy.setPatient(patient);
+        }
         this.pregnancy.setStatus(PregnancyStatus.ONGOING);
         this.pregnancy.setRiskLevel(RiskLevel.LOW);
         this.pregnancy.setMiscarriages(0);
@@ -245,57 +252,10 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         trashPatientButton.setEnabled(false);
     }
 
-    private void searchPatientByName(String searchText) {
-        if (searchText == null || searchText.trim().isEmpty()) {
-            return;
-        }
-
-        try {
-            List<Patient> patients = null;
-            String trimmedText = searchText.trim();
-
-            if (trimmedText.matches("\\d+")) {
-                Integer patientCode = Integer.parseInt(trimmedText);
-                Patient patient = patientManager.getPatientById(patientCode);
-                if (patient != null) {
-                    patients = new ArrayList<>();
-                    patients.add(patient);
-                }
-            } else {
-                patients = patientManager.getFemalePatientsByOneOfFieldsLike(trimmedText);
-            }
-
-            if (patients != null && !patients.isEmpty()) {
-                if (patients.size() == 1) {
-                    patientSelected(patients.get(0));
-                } else {
-                    openPatientSearch();
-                }
-            } else {
-                int response = MessageDialog.yesNo(this,
-                        MessageBundle.formatMessage("angal.maternity.patient.not.found.create.new.msg", searchText),
-                        MessageBundle.getMessage("angal.common.question.title"));
-                if (response == JOptionPane.YES_OPTION) {
-                    createNewPatient(searchText);
-                }
-            }
-        } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
-        }
-    }
-
-    private void createNewPatient(String name) {
-        Patient newPatient = new Patient();
-        newPatient.setFirstName(name);
-        if (GeneralData.PATIENTEXTENDED) {
-            PatientInsertExtended dialog = new PatientInsertExtended(this, newPatient, true);
-            dialog.addPatientListener(this);
-            dialog.setVisible(true);
-        } else {
-            PatientInsert dialog = new PatientInsert(this, newPatient, true);
-            dialog.addPatientListener(this);
-            dialog.setVisible(true);
-        }
+    private void searchPatient(String searchText) {
+        SelectPatient sp = new SelectPatient(this, searchText, true);
+        sp.addSelectionListener(this);
+        sp.setVisible(true);
     }
 
     private JPanel getMainPanel() {
@@ -335,7 +295,6 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             gbc.insets = new Insets(5, 5, 5, 5);
             gbc.fill = GridBagConstraints.HORIZONTAL;
 
-            // Patient Search Field (editable)
             gbc.gridx = 0;
             gbc.gridy = 0;
             patientPanel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ":"), gbc);
@@ -348,7 +307,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        searchPatientByName(patientSearchField.getText());
+                        searchPatient(patientSearchField.getText());
                     }
                 }
             });
