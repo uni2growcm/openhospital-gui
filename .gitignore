@@ -15,3 +15,5 @@ logs
 /rsc/*.pref
 /rsc/*.xml
 /target/
+*.properties
+LOG_DEST
