@@ -21,13 +21,7 @@
  */
 package org.isf.patient.gui;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -41,23 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -68,6 +46,8 @@ import org.isf.anamnesis.gui.PatientHistoryEdit;
 import org.isf.anamnesis.manager.PatientHistoryManager;
 import org.isf.anamnesis.model.PatientHistory;
 import org.isf.anamnesis.model.PatientPatientHistory;
+import org.isf.country.model.Country;
+import org.isf.country.service.CountryIoOperations;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.generaldata.SmsParameters;
@@ -210,6 +190,32 @@ public class PatientInsertExtended extends JDialog {
 	private JComboBox jAgeMonthsComboBox;
 	private JLabel jAgeMonthsLabel;
 
+
+	// Nouveaux champs
+	private JPanel jBirthPlacePanel;
+	private JTextField jBirthPlaceTextField;
+
+	private JPanel jNumberOfChildrenPanel;
+	private JTextField jNumberOfChildrenTextField;
+
+	private JPanel jGeographicPositionPanel;
+	private JComboBox<String> jGeographicPositionComboBox;
+
+	private JPanel jParentsResidencePanel;
+	private JTextField jParentsResidenceTextField;
+
+	private JPanel jTransportMeansPanel;
+	private JTextField jTransportMeansTextField;
+
+	private JPanel jCountryPanel;
+	private JComboBox<Country> jCountryComboBox;
+
+	private JPanel jAffiliatedPatientPanel;
+	private JCheckBox jAffiliatedCheckBox;
+	private JTextField jAffiliatedPatientTextField;
+	private JButton jAffiliatedPatientSearchButton;
+	private JButton jAffiliatedPatientClearButton;
+
 	// Sex Components:
 	private JPanel jSexPanel;
 	private JPanel jSexLabelPanel;
@@ -303,6 +309,7 @@ public class PatientInsertExtended extends JDialog {
 	private JButton jOkButton;
 	private JButton jAnamnesisButton;
 	private JButton jCancelButton;
+	private JButton jCountryAddButton;
 
 	private JLabel labelRequiredFields;
 
@@ -419,6 +426,215 @@ public class PatientInsertExtended extends JDialog {
 	 *
 	 * @return javax.swing.JButton
 	 */
+//	private JButton getJOkButton() {
+//		if (jOkButton == null) {
+//			jOkButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+//			jOkButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
+//			jOkButton.addActionListener(actionEvent -> {
+//				boolean ok = true;
+//				String firstName = jFirstNameTextField.getText().trim();
+//				String secondName = jSecondNameTextField.getText().trim();
+//
+//				if (firstName.isEmpty()) {
+//					MessageDialog.error(this, "angal.patient.insertfirstname.msg");
+//					return;
+//				}
+//				if (secondName.isEmpty()) {
+//					MessageDialog.error(this, "angal.patient.insertsecondname.msg");
+//					return;
+//				}
+//				if (!checkAge()) {
+//					MessageDialog.error(this, "angal.patient.insertage");
+//					return;
+//				}
+//				if (insert) {
+//					String name = firstName + ' ' + secondName;
+//					try {
+//						if (patientBrowserManager.isNamePresent(name)) {
+//							ok = switch (MessageDialog.yesNo(null, "angal.patient.thepatientisalreadypresent.msg")) {
+//								case JOptionPane.OK_OPTION -> true;
+//								case JOptionPane.NO_OPTION -> false;
+//								default -> ok;
+//							};
+//						}
+//					} catch (OHServiceException ex) {
+//						OHServiceExceptionUtil.showMessages(ex);
+//					}
+//
+//					if (!consensus.isConsensusFlag()) {
+//						MessageDialog.error(null, "angal.patient.consensus.consensus.mandatory.msg");
+//						ok = false;
+//					}
+//
+//					if (ok) {
+//						patient.setFirstName(firstName);
+//						patient.setSecondName(secondName);
+//
+//						if (radiof.isSelected()) {
+//							patient.setSex('F');
+//						} else if (radiom.isSelected()) {
+//							patient.setSex('M');
+//						} else {
+//							MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
+//							return;
+//						}
+//						patient.setTaxCode(jTaxCodeTextField.getText().trim());
+//						patient.setAddress(jAddressTextField.getText().trim());
+//						patient.setCity(jCityTextField.getText().trim());
+//						patient.setNextKin(jNextKinTextField.getText().trim());
+//						patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
+//						patient.setMotherName(jMotherNameTextField.getText().trim());
+//						if (jMotherAlive.isSelected()) {
+//							patient.setMother('A');
+//						} else {
+//							if (jMotherDead.isSelected()) {
+//								patient.setMother('D');
+//							} else {
+//								patient.setMother('U');
+//							}
+//						}
+//						patient.setFatherName(jFatherNameTextField.getText().trim());
+//						if (jFatherAlive.isSelected()) {
+//							patient.setFather('A');
+//						} else {
+//							if (jFatherDead.isSelected()) {
+//								patient.setFather('D');
+//							} else {
+//								patient.setFather('U');
+//							}
+//						}
+//						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
+//						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
+//						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+//						if (jInsuranceYes.isSelected()) {
+//							patient.setHasInsurance('Y');
+//						} else {
+//							if (jInsuranceNo.isSelected()) {
+//								patient.setHasInsurance('N');
+//							} else {
+//								patient.setHasInsurance('U');
+//							}
+//						}
+//
+//						if (jParentYes.isSelected()) {
+//							patient.setParentTogether('Y');
+//						} else {
+//							if (jParentNo.isSelected()) {
+//								patient.setParentTogether('N');
+//							} else {
+//								patient.setParentTogether('U');
+//							}
+//						}
+//
+//						patient.setNote(jNoteTextArea.getText().trim());
+//						try {
+//							patient = patientBrowserManager.savePatient(patient);
+//							consensus.setPatient(patient);
+//							patientConsensusManager.updatePatientConsensus(consensus);
+//							if (patientHistory != null) {
+//								patientHistory.setPatientId(patient.getCode());
+//								patientHistoryManager.saveOrUpdate(patientHistory);
+//							}
+//							firePatientInserted(patient);
+//							if (justSave) {
+//								insert = false;
+//								justSave = false;
+//								this.requestFocus();
+//							} else {
+//								dispose();
+//							}
+//						} catch (OHServiceException ohServiceException) {
+//							OHServiceExceptionUtil.showMessages(ohServiceException);
+//							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+//							LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+//						}
+//					}
+//				} else {// Update
+//					if (!consensus.isConsensusFlag()) {
+//						MessageDialog.error(null, "angal.patient.consensus.consensus.mandatory.msg");
+//						return;
+//					}
+//					patient.setFirstName(firstName);
+//					patient.setSecondName(secondName);
+//					if (radiof.isSelected()) {
+//						patient.setSex('F');
+//					} else if (radiom.isSelected()) {
+//						patient.setSex('M');
+//					} else {
+//						MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
+//						return;
+//					}
+//					patient.setTaxCode(jTaxCodeTextField.getText().trim());
+//					patient.setAddress(jAddressTextField.getText().trim());
+//					patient.setCity(jCityTextField.getText().trim());
+//					patient.setNextKin(jNextKinTextField.getText().trim());
+//					patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
+//					patient.setMotherName(jMotherNameTextField.getText().trim());
+//
+//					if (jMotherAlive.isSelected()) {
+//						patient.setMother('A');
+//					} else {
+//						if (jMotherDead.isSelected()) {
+//							patient.setMother('D');
+//						} else {
+//							patient.setMother('U');
+//						}
+//					}
+//					patient.setFatherName(jFatherNameTextField.getText().trim());
+//					if (jFatherAlive.isSelected()) {
+//						patient.setFather('A');
+//					} else {
+//						if (jFatherDead.isSelected()) {
+//							patient.setFather('D');
+//						} else {
+//							patient.setFather('U');
+//						}
+//					}
+//					patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
+//					patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
+//					patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+//
+//					if (jInsuranceYes.isSelected()) {
+//						patient.setHasInsurance('Y');
+//					} else {
+//						if (jInsuranceNo.isSelected()) {
+//							patient.setHasInsurance('N');
+//						} else {
+//							patient.setHasInsurance('U');
+//						}
+//					}
+//
+//					if (jParentYes.isSelected()) {
+//						patient.setParentTogether('Y');
+//					} else {
+//						if (jParentNo.isSelected()) {
+//							patient.setParentTogether('N');
+//						} else {
+//							patient.setParentTogether('U');
+//						}
+//					}
+//					patient.setNote(jNoteTextArea.getText().trim());
+//					try {
+//						patient = patientBrowserManager.savePatient(patient);
+//						consensus.setPatient(patient);
+//						patientConsensusManager.updatePatientConsensus(consensus);
+//						if (patientHistory != null) {
+//							patientHistory.setPatientId(patient.getCode());
+//							patientHistoryManager.saveOrUpdate(patientHistory);
+//						}
+//						firePatientUpdated(patient);
+//						dispose();
+//					} catch (OHServiceException ex) {
+//						OHServiceExceptionUtil.showMessages(ex);
+//						MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+//					}
+//				}
+//			});
+//
+//		}
+//		return jOkButton;
+//	}
+
 	private JButton getJOkButton() {
 		if (jOkButton == null) {
 			jOkButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
@@ -520,6 +736,43 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setNote(jNoteTextArea.getText().trim());
+
+						// ========== NOUVEAUX CHAMPS - INSERT ==========
+						// Lieu de naissance
+						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
+
+						// Nombre d'enfants
+						try {
+							int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
+							patient.setNumberOfChildren(children);
+						} catch (NumberFormatException e) {
+							patient.setNumberOfChildren(0);
+						}
+
+						// Position géographique
+						String selectedPosition = (String) jGeographicPositionComboBox.getSelectedItem();
+						if ("Dans l'air".equals(selectedPosition)) {
+							patient.setGeographicPosition("dans_l_air");
+						} else if ("Hors de l'air".equals(selectedPosition)) {
+							patient.setGeographicPosition("hors_de_l_air");
+						} else if ("Hors du district".equals(selectedPosition)) {
+							patient.setGeographicPosition("hors_du_district");
+						} else {
+							patient.setGeographicPosition(null);
+						}
+
+						// Résidence des parents
+						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
+
+						// Moyen de transport
+						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
+						// Pays
+						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
+						if (selectedCountry != null) {
+							patient.setCountry(selectedCountry);
+						}
+
+
 						try {
 							patient = patientBrowserManager.savePatient(patient);
 							consensus.setPatient(patient);
@@ -607,6 +860,44 @@ public class PatientInsertExtended extends JDialog {
 						}
 					}
 					patient.setNote(jNoteTextArea.getText().trim());
+
+					// ========== NOUVEAUX CHAMPS - UPDATE ==========
+					// Lieu de naissance
+					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
+
+					// Nombre d'enfants
+					try {
+						int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
+						patient.setNumberOfChildren(children);
+					} catch (NumberFormatException e) {
+						patient.setNumberOfChildren(0);
+					}
+
+					// Position géographique
+					String selectedPosition = (String) jGeographicPositionComboBox.getSelectedItem();
+					if ("Dans l'air".equals(selectedPosition)) {
+						patient.setGeographicPosition("dans_l_air");
+					} else if ("Hors de l'air".equals(selectedPosition)) {
+						patient.setGeographicPosition("hors_de_l_air");
+					} else if ("Hors du district".equals(selectedPosition)) {
+						patient.setGeographicPosition("hors_du_district");
+					} else {
+						patient.setGeographicPosition(null);
+					}
+
+					// Résidence des parents
+					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
+
+					// Moyen de transport
+					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
+
+					// Pays
+					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
+					if (selectedCountry != null) {
+						patient.setCountry(selectedCountry);
+					}
+
+
 					try {
 						patient = patientBrowserManager.savePatient(patient);
 						consensus.setPatient(patient);
@@ -1001,7 +1292,6 @@ public class PatientInsertExtended extends JDialog {
 		}
 		return jTelephoneTextField;
 	}
-
 	/**
 	 * This method initializes jNextKinLabelPanel
 	 *
@@ -1125,8 +1415,16 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJAddressPanel(), null);
 			jAnagraphPanel.add(getJCity(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
+			jAnagraphPanel.add(getJParentsResidencePanel(), null);
+			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
+			jAnagraphPanel.add(getJBirthPlacePanel(), null);
+			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
+			jAnagraphPanel.add(getJGeographicPositionPanel(), null);
+			jAnagraphPanel.add(getJTransportMeansPanel(), null);
+			jAnagraphPanel.add(getJAffiliatedPatientPanel(), null);
 			jAnagraphPanel.add(getJLabelRequiredFields(), null);
+
 		}
 		return jAnagraphPanel;
 	}
@@ -2255,6 +2553,514 @@ public class PatientInsertExtended extends JDialog {
 		} else {
 			patient.setPatientProfilePhoto(null);
 		}
+	}
+
+	// Lieu de naissance
+	private JPanel getJBirthPlacePanel() {
+		if (jBirthPlacePanel == null) {
+			JLabel jBirthPlaceLabel = new JLabel(MessageBundle.getMessage("angal.patient.birthplace"));
+			jBirthPlacePanel = new JPanel();
+			jBirthPlacePanel.setLayout(new BorderLayout());
+			jBirthPlacePanel.add(jBirthPlaceLabel, BorderLayout.WEST);
+			jBirthPlacePanel.add(getJBirthPlaceFieldPanel(), BorderLayout.EAST);
+		}
+		return jBirthPlacePanel;
+	}
+
+	private JPanel getJBirthPlaceFieldPanel() {
+		if (jBirthPlaceTextField == null) {
+			jBirthPlaceTextField = new JTextField(15);
+			if (!insert && patient.getBirthPlace() != null) {
+				jBirthPlaceTextField.setText(patient.getBirthPlace());
+			}
+		}
+		JPanel panel = new JPanel();
+		panel.add(jBirthPlaceTextField);
+		return panel;
+	}
+
+	// Nombre d'enfants
+	private JPanel getJNumberOfChildrenPanel() {
+		if (jNumberOfChildrenPanel == null) {
+			JLabel jNumberOfChildrenLabel = new JLabel(MessageBundle.getMessage("angal.patient.numberofchildren"));
+			jNumberOfChildrenPanel = new JPanel();
+			jNumberOfChildrenPanel.setLayout(new BorderLayout());
+			jNumberOfChildrenPanel.add(jNumberOfChildrenLabel, BorderLayout.WEST);
+			jNumberOfChildrenPanel.add(getJNumberOfChildrenFieldPanel(), BorderLayout.EAST);
+		}
+		return jNumberOfChildrenPanel;
+	}
+
+	private JPanel getJNumberOfChildrenFieldPanel() {
+		if (jNumberOfChildrenTextField == null) {
+			jNumberOfChildrenTextField = new JTextField(15);
+
+			jNumberOfChildrenTextField.setDocument(new javax.swing.text.PlainDocument() {
+				@Override
+				public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+					if (str == null) return;
+					String filtered = str.replaceAll("[^0-9]", "");
+					if (getLength() + filtered.length() <= 2) {
+						super.insertString(offs, filtered, a);
+					}
+				}
+			});
+			if (!insert && patient.getNumberOfChildren() != null) {
+				jNumberOfChildrenTextField.setText(String.valueOf(patient.getNumberOfChildren()));
+			} else {
+				jNumberOfChildrenTextField.setText("0");
+			}
+		}
+		JPanel panel = new JPanel();
+		panel.add(jNumberOfChildrenTextField);
+		return panel;
+	}
+
+	// Position géographique (ComboBox)
+	private JPanel getJGeographicPositionPanel() {
+		if (jGeographicPositionPanel == null) {
+			jGeographicPositionPanel = new JPanel();
+			jGeographicPositionPanel = setMyBorder(jGeographicPositionPanel, MessageBundle.getMessage("angal.patient.geographicposition"));
+			String[] positions = {"", "Dans l'air", "Hors de l'air", "Hors du district"};
+			jGeographicPositionComboBox = new JComboBox<>(positions);
+			jGeographicPositionPanel.add(jGeographicPositionComboBox);
+
+			if (!insert && patient.getGeographicPosition() != null) {
+				String value = patient.getGeographicPosition();
+				if ("dans_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Dans l'air");
+				else if ("hors_de_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors de l'air");
+				else if ("hors_du_district".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors du district");
+			}
+		}
+		return jGeographicPositionPanel;
+	}
+
+	private JComboBox<String> getJGeographicPositionComboBox() {
+		if (jGeographicPositionComboBox == null) {
+			String[] positions = {"inconnu", "Dans l'air", "Hors de l'air", "Hors du district"};
+			jGeographicPositionComboBox = new JComboBox<>(positions);
+
+			if (!insert && patient.getGeographicPosition() != null) {
+				String value = patient.getGeographicPosition();
+				if ("dans_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Dans l'air");
+				else if ("hors_de_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors de l'air");
+				else if ("hors_du_district".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors du district");
+			}
+		}
+		return jGeographicPositionComboBox;
+	}
+
+	// Résidence des parents
+	private JPanel getJParentsResidencePanel() {
+		if (jParentsResidencePanel == null) {
+			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
+			jParentsResidencePanel = new JPanel();
+			jParentsResidencePanel.setLayout(new BorderLayout());
+			jParentsResidencePanel.add(jParentsResidenceLabel, BorderLayout.WEST);
+			jParentsResidencePanel.add(getJParentsResidenceFieldPanel(), BorderLayout.EAST);
+		}
+		return jParentsResidencePanel;
+	}
+
+	private JPanel getJParentsResidenceFieldPanel() {
+		if (jParentsResidenceTextField == null) {
+			jParentsResidenceTextField = new JTextField(15);
+			if (!insert && patient.getParentsResidence() != null) {
+				jParentsResidenceTextField.setText(patient.getParentsResidence());
+			}
+		}
+		JPanel panel = new JPanel();
+		panel.add(jParentsResidenceTextField);
+		return panel;
+	}
+
+	// Moyen de transport
+	private JPanel getJTransportMeansPanel() {
+		if (jTransportMeansPanel == null) {
+			JLabel jTransportMeansLabel = new JLabel(MessageBundle.getMessage("angal.patient.transportmeans"));
+			jTransportMeansPanel = new JPanel();
+			jTransportMeansPanel.setLayout(new BorderLayout());
+			jTransportMeansPanel.add(jTransportMeansLabel, BorderLayout.WEST);
+			jTransportMeansPanel.add(getJTransportMeansFieldPanel(), BorderLayout.EAST);
+		}
+		return jTransportMeansPanel;
+	}
+
+	private JPanel getJTransportMeansFieldPanel() {
+		if (jTransportMeansTextField == null) {
+			jTransportMeansTextField = new JTextField(15);
+			if (!insert && patient.getTransportMeans() != null) {
+				jTransportMeansTextField.setText(patient.getTransportMeans());
+			}
+		}
+		JPanel panel = new JPanel();
+		panel.add(jTransportMeansTextField);
+		return panel;
+	}
+
+	// Pays
+	private JPanel getJCountryPanel() {
+		if (jCountryPanel == null) {
+			jCountryPanel = new JPanel();
+			jCountryPanel = setMyBorder(jCountryPanel, MessageBundle.getMessage("angal.patient.country"));
+
+			// Panel pour le ComboBox + bouton
+			JPanel comboPanel = new JPanel(new BorderLayout(5, 0));
+			comboPanel.add(getJCountryComboBox(), BorderLayout.CENTER);
+			comboPanel.add(getJCountryAddButton(), BorderLayout.EAST);
+
+			jCountryPanel.add(comboPanel);
+		}
+		return jCountryPanel;
+	}
+
+	private JButton getJCountryAddButton() {
+		if (jCountryAddButton == null) {
+			ImageIcon addIcon = new ImageIcon("rsc/icons/plus_dialog.png");
+			jCountryAddButton = new JButton(addIcon);
+			jCountryAddButton.setToolTipText("Ajouter un nouveau pays");
+
+			jCountryAddButton.setContentAreaFilled(false);
+			jCountryAddButton.setBorderPainted(false);
+			jCountryAddButton.setFocusPainted(false);
+			jCountryAddButton.setOpaque(false);
+
+			jCountryAddButton.addActionListener(e -> showCountryDialog());
+		}
+		return jCountryAddButton;
+	}
+
+	private void showCountryDialog() {
+		// Crée un dialogue modal
+		JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Nouvel enregistrement pays", ModalityType.APPLICATION_MODAL);
+		dialog.setLayout(new BorderLayout());
+		dialog.setSize(400, 250);
+		dialog.setLocationRelativeTo(this);
+
+		// Panel principal
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(8, 5, 8, 5);
+
+		// Ligne 1: Code ISO (max 2 caractères, seulement des lettres)
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0.3;
+		JLabel isoLabel = new JLabel("Code ISO (max 2 caractères) *");
+		panel.add(isoLabel, gbc);
+
+		gbc.gridx = 1;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0.7;
+		JTextField isoCodeField = new JTextField(20);
+//		isoCodeField.setPreferredSize(new Dimension(200, 28));
+		// Filtre : seulement des lettres, max 2 caractères
+		isoCodeField.setDocument(new javax.swing.text.PlainDocument() {
+			@Override
+			public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+				if (str == null) return;
+				// Vérifie si la saisie ne dépasse pas 2 caractères
+				if (getLength() + str.length() <= 2) {
+					// Ne garde que les lettres A-Z a-z
+					String filtered = str.replaceAll("[^A-Za-z]", "");
+					super.insertString(offs, filtered.toUpperCase(), a);
+				}
+			}
+		});
+		panel.add(isoCodeField, gbc);
+
+		// Ligne 2: Code téléphone (seulement des chiffres)
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0.3;
+		JLabel phoneLabel = new JLabel("Code téléphone *");
+		panel.add(phoneLabel, gbc);
+
+		gbc.gridx = 1;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0.7;
+		JTextField phoneCodeField = new JTextField(20);
+//		phoneCodeField.setPreferredSize(new Dimension(200, 28));
+		// Filtre : seulement des chiffres
+		phoneCodeField.setDocument(new javax.swing.text.PlainDocument() {
+			@Override
+			public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+				if (str == null) return;
+				// Ne garde que les chiffres 0-9
+				String filtered = str.replaceAll("[^0-9]", "");
+				super.insertString(offs, filtered, a);
+			}
+		});
+		panel.add(phoneCodeField, gbc);
+
+		// Ligne 3: Nom du pays
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0.3;
+		JLabel nameLabel = new JLabel("Nom du pays *");
+		panel.add(nameLabel, gbc);
+
+		gbc.gridx = 1;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0.7;
+		JTextField nameField = new JTextField(20);
+//		nameField.setPreferredSize(new Dimension(200, 28));
+		panel.add(nameField, gbc);
+
+		// Ligne 4: Message champs obligatoires
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1;
+		JLabel requiredLabel = new JLabel("* champs obligatoires");
+		requiredLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
+		panel.add(requiredLabel, gbc);
+
+		// Panel des boutons
+// Panel des boutons
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+		JButton okButton = new JButton("OK");
+		JButton cancelButton = new JButton("Annuler");
+
+// Style des boutons comme dans BillBrowser
+		okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
+		cancelButton.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
+
+		okButton.addActionListener(ev -> {
+			String isoCode = isoCodeField.getText().trim().toUpperCase();
+			String phoneCodeStr = phoneCodeField.getText().trim();
+			String name = nameField.getText().trim();
+
+			if (isoCode.isEmpty()) {
+				MessageDialog.error(dialog, "Le code ISO est requis");
+				return;
+			}
+			if (isoCode.length() != 2) {
+				MessageDialog.error(dialog, "Le code ISO doit contenir exactement 2 lettres");
+				return;
+			}
+			if (phoneCodeStr.isEmpty()) {
+				MessageDialog.error(dialog, "Le code téléphone est requis");
+				return;
+			}
+			if (name.isEmpty()) {
+				MessageDialog.error(dialog, "Le nom du pays est requis");
+				return;
+			}
+
+			Integer phoneCode;
+			try {
+				phoneCode = Integer.parseInt(phoneCodeStr);
+			} catch (NumberFormatException ex) {
+				MessageDialog.error(dialog, "Le code téléphone doit être un nombre");
+				return;
+			}
+
+			try {
+				CountryIoOperations countryIoOperations = Context.getApplicationContext().getBean(CountryIoOperations.class);
+
+				if (countryIoOperations.getCountryByIsoCode(isoCode) != null) {
+					MessageDialog.error(dialog, "Ce code ISO existe déjà");
+					return;
+				}
+
+				Country newCountry = new Country(isoCode, phoneCode, name);
+				Country savedCountry = countryIoOperations.saveCountry(newCountry);
+
+				jCountryComboBox.addItem(savedCountry);
+				jCountryComboBox.setSelectedItem(savedCountry);
+				jCountryComboBox.setSelectedIndex(jCountryComboBox.getSelectedIndex());
+
+				dialog.dispose();
+
+			} catch (Exception ex) {
+				MessageDialog.error(dialog, "Erreur lors de l'enregistrement: " + ex.getMessage());
+			}
+		});
+
+		cancelButton.addActionListener(ev -> dialog.dispose());
+
+		buttonPanel.add(okButton);
+		buttonPanel.add(cancelButton);
+
+		dialog.add(panel, BorderLayout.CENTER);
+		dialog.add(buttonPanel, BorderLayout.SOUTH);
+		dialog.setVisible(true);
+	}
+
+	private JComboBox<Country> getJCountryComboBox() {
+		if (jCountryComboBox == null) {
+			jCountryComboBox = new JComboBox<>();
+			jCountryComboBox.addItem(null);
+
+			CountryIoOperations countryIoOperations = Context.getApplicationContext().getBean(CountryIoOperations.class);
+			List<Country> countries = countryIoOperations.getAllCountries();
+			for (Country c : countries) {
+				jCountryComboBox.addItem(c);
+			}
+
+			if (!insert && patient.getCountry() != null) {
+				jCountryComboBox.setSelectedItem(patient.getCountry());
+			}
+
+			jCountryComboBox.addActionListener(e -> {
+				Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
+				if (selectedCountry != null && selectedCountry.getPhoneCode() != null) {
+					String currentPhone = jTelephoneTextField.getText().trim();
+					String phoneCode = selectedCountry.getPhoneCode().toString();
+
+					if (currentPhone.isEmpty() || currentPhone.matches("^\\+?\\d+$")) {
+						jTelephoneTextField.setText(phoneCode);
+					} else {
+						int answer = MessageDialog.yesNo(this,
+								"Le champ téléphone contient déjà des données.\nVoulez-vous les remplacer par le code du pays ?");
+						if (answer == JOptionPane.YES_OPTION) {
+							jTelephoneTextField.setText(phoneCode);
+						}
+					}
+				}
+			});
+		}
+		return jCountryComboBox;
+	}
+
+	// Patient affilié
+	private JPanel getJAffiliatedPatientPanel() {
+		if (jAffiliatedPatientPanel == null) {
+			jAffiliatedPatientPanel = new JPanel();
+			jAffiliatedPatientPanel.setLayout(new BorderLayout());
+
+			// Panel pour la case à cocher
+			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			jAffiliatedCheckBox = new JCheckBox("Est un employé(e) ?");
+			topPanel.add(jAffiliatedCheckBox);
+			jAffiliatedPatientPanel.add(topPanel, BorderLayout.NORTH);
+
+			// Panel pour le champ et les boutons
+			JPanel rightPanel = new JPanel(new BorderLayout(5, 0));
+			rightPanel.add(getJAffiliatedPatientTextField(), BorderLayout.CENTER);
+
+			JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 0));
+			buttonPanel.add(getJAffiliatedPatientSearchButton());
+			buttonPanel.add(getJAffiliatedPatientClearButton());
+			rightPanel.add(buttonPanel, BorderLayout.EAST);
+
+			jAffiliatedPatientPanel.add(rightPanel, BorderLayout.CENTER);
+
+			// Écouteur de la case à cocher - LOGIQUE INVERSÉE
+			jAffiliatedCheckBox.addActionListener(e -> {
+				boolean isEmployee = jAffiliatedCheckBox.isSelected();
+				// Si c'est un employé, on désactive la sélection de patient affilié
+				boolean enabled = !isEmployee;
+				jAffiliatedPatientTextField.setEnabled(enabled);
+				jAffiliatedPatientSearchButton.setEnabled(enabled);
+				jAffiliatedPatientClearButton.setEnabled(enabled);
+
+				if (isEmployee) {
+					// Si c'est un employé, on efface l'affiliation
+					jAffiliatedPatientTextField.setText("");
+					patient.setAffiliatedPatient(null);
+				}
+			});
+
+			// Par défaut, désactivé (case non cochée = peut sélectionner)
+			jAffiliatedPatientTextField.setEnabled(true);
+			jAffiliatedPatientSearchButton.setEnabled(true);
+			jAffiliatedPatientClearButton.setEnabled(true);
+		}
+		return jAffiliatedPatientPanel;
+	}
+
+	private JTextField getJAffiliatedPatientTextField() {
+		if (jAffiliatedPatientTextField == null) {
+			jAffiliatedPatientTextField = new JTextField(15);
+			jAffiliatedPatientTextField.setEditable(true);
+			jAffiliatedPatientTextField.setToolTipText("Saisissez le nom du patient et appuyez sur Entrée");
+
+			jAffiliatedPatientTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+				@Override
+				public void keyPressed(java.awt.event.KeyEvent e) {
+					if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+						String searchText = jAffiliatedPatientTextField.getText().trim();
+						if (!searchText.isEmpty()) {
+							// Appel du NOUVEAU constructeur avec recherche et limite à 100
+							SelectPatient selectPatient = new SelectPatient(
+									PatientInsertExtended.this,  // owner (JDialog)
+									searchText,                  // texte de recherche pré-rempli
+									100                          // limite à 100 résultats
+							);
+							selectPatient.addSelectionListener(selectedPatient -> {
+								patient.setAffiliatedPatient(selectedPatient);
+								jAffiliatedPatientTextField.setText(selectedPatient.getName());
+							});
+							selectPatient.setVisible(true);
+						} else {
+							// Si vide, ouvre le sélecteur normal
+							SelectPatient selectPatient = new SelectPatient(PatientInsertExtended.this, false, false);
+							selectPatient.addSelectionListener(selectedPatient -> {
+								patient.setAffiliatedPatient(selectedPatient);
+								jAffiliatedPatientTextField.setText(selectedPatient.getName());
+							});
+							selectPatient.setVisible(true);
+						}
+					}
+				}
+			});
+
+			if (!insert && patient.getAffiliatedPatient() != null) {
+				jAffiliatedPatientTextField.setText(patient.getAffiliatedPatient().getName());
+				jAffiliatedCheckBox.setSelected(false);
+				jAffiliatedPatientTextField.setEnabled(true);
+				jAffiliatedPatientSearchButton.setEnabled(true);
+				jAffiliatedPatientClearButton.setEnabled(true);
+			}
+		}
+		return jAffiliatedPatientTextField;
+	}
+
+	private void openPatientSelectorWithSearch(String searchText) {
+		// Modification de SelectPatient pour accepter un texte de recherche pré-rempli
+		SelectPatient selectPatient = new SelectPatient(this, searchText);
+		selectPatient.addSelectionListener(selectedPatient -> {
+			patient.setAffiliatedPatient(selectedPatient);
+			jAffiliatedPatientTextField.setText(selectedPatient.getName());
+		});
+		selectPatient.setVisible(true);
+	}
+
+	private JButton getJAffiliatedPatientSearchButton() {
+		if (jAffiliatedPatientSearchButton == null) {
+			ImageIcon searchIcon = new ImageIcon("rsc/icons/pick_patient_button.png");
+			jAffiliatedPatientSearchButton = new JButton("Sélectionner", searchIcon);
+			jAffiliatedPatientSearchButton.setToolTipText("Sélectionner un patient");
+			jAffiliatedPatientSearchButton.addActionListener(e -> {
+				SelectPatient selectPatient = new SelectPatient(this, 100, true);
+				selectPatient.addSelectionListener(selectedPatient -> {
+					patient.setAffiliatedPatient(selectedPatient);
+					jAffiliatedPatientTextField.setText(selectedPatient.getName());
+				});
+				selectPatient.setVisible(true);
+			});
+		}
+		return jAffiliatedPatientSearchButton;
+	}
+
+	private JButton getJAffiliatedPatientClearButton() {
+		if (jAffiliatedPatientClearButton == null) {
+			ImageIcon clearIcon = new ImageIcon("rsc/icons/remove_patient_button.png");
+			jAffiliatedPatientClearButton = new JButton(clearIcon);
+			jAffiliatedPatientClearButton.setToolTipText("Effacer l'affiliation");
+			jAffiliatedPatientClearButton.addActionListener(e -> {
+				jAffiliatedPatientTextField.setText("");
+				patient.setAffiliatedPatient(null);
+			});
+		}
+		return jAffiliatedPatientClearButton;
 	}
 
 }

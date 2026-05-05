@@ -64,6 +64,7 @@ import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.springframework.data.domain.Page;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
@@ -109,6 +110,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 	public Patient getPatient() {
 		return patient;
 	}
+
+	private static final int PAGE_SIZE = 100;
+	private int currentOffset = 0;
+	private long totalCount = 0;
 
 	private JButton buttonNew;
 	private PatientSummary ps;
@@ -176,6 +181,53 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 	}
 
+
+	public SelectPatient(JDialog owner, String searchText, int maxResults) {
+		super(owner, true);
+
+		try {
+			// Charge directement les données paginées
+			Page<Patient> patientPage = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
+					searchText.isEmpty() ? null : searchText,
+					0,
+					maxResults
+			);
+
+			patArray = new ArrayList<>(patientPage.getContent());
+			patSearch = new ArrayList<>(patArray);
+			totalCount = patientPage.getTotalElements();
+
+			if (totalCount > maxResults) {
+				MessageDialog.info(this, "Plus de " + maxResults + " patients trouvés. Seuls les " + maxResults + " premiers sont affichés.");
+			}
+
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+			patArray = new ArrayList<>();
+			patSearch = new ArrayList<>();
+		}
+
+		ps = new PatientSummary(patient);
+		initComponents();
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				patArray.clear();
+				patSearch.clear();
+				dispose();
+			}
+		});
+
+		setLocationRelativeTo(null);
+		buttonNew.setVisible(true);  // Affiche le bouton nouveau patient
+
+		// Pré-remplit le champ de recherche
+		if (searchText != null && !searchText.isEmpty()) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+	}
+
 	public SelectPatient(JDialog owner, String search) {
 		super(owner, true);
 		if (!GeneralData.ENHANCEDSEARCH) {
@@ -203,6 +255,33 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.setText(search);
 		if (GeneralData.ENHANCEDSEARCH) {
 			jSearchButton.doClick();
+		}
+	}
+
+
+	private void performSearch() {
+		String searchText = jTextFieldSearchPatient.getText().trim();
+		try {
+			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
+					searchText.isEmpty() ? null : searchText,
+					0,  // page 0 = première page
+					PAGE_SIZE
+			);
+
+			patArray = new ArrayList<>(page.getContent());
+			patSearch = patArray;
+			totalCount = page.getTotalElements();
+			currentOffset = 0;
+
+			jTablePatient.updateUI();
+
+			if (totalCount > PAGE_SIZE) {
+				MessageDialog.info(this, "Plus de " + PAGE_SIZE + " patients trouvés. Seuls les " + PAGE_SIZE + " premiers sont affichés.");
+			}
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+			patArray = new ArrayList<>();
+			patSearch = patArray;
 		}
 	}
 
@@ -270,6 +349,46 @@ public class SelectPatient extends JDialog implements PatientListener {
 				dispose();
 			}
 		});
+		setLocationRelativeTo(null);
+		buttonNew.setVisible(abbleAddPatient);
+	}
+
+	SelectPatient(JDialog owner, int pageSize, boolean abbleAddPatient) {
+		super(owner, true);
+
+		try {
+			Page<Patient> patientPage = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
+					null,
+					0,
+					pageSize
+			);
+
+			patArray = new ArrayList<>(patientPage.getContent());
+			patSearch = new ArrayList<>(patArray);
+			totalCount = patientPage.getTotalElements();
+
+			if (totalCount > pageSize) {
+				MessageDialog.info(this, "Plus de " + pageSize + " patients trouvés. Seuls les " + pageSize + " premiers sont affichés.");
+			}
+
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+			patArray = new ArrayList<>();
+			patSearch = new ArrayList<>();
+		}
+
+		ps = new PatientSummary(patient);
+		initComponents();
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				patArray.clear();
+				patSearch.clear();
+				dispose();
+			}
+		});
+
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
 	}
@@ -558,6 +677,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 		return jSearchButton;
 	}
+
 	private JButton getButtonNew() {
 		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
