@@ -92,6 +92,12 @@ import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.isf.generaldata.SageConfig;
+import java.time.format.DateTimeFormatter;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JFileChooser;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -174,6 +180,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private LocalDateTime dateTo = TimeTools.getNow();
 	private LocalDateTime dateToday0 = TimeTools.getDateToday0();
 	private LocalDateTime dateToday24 = TimeTools.getDateToday24();
+	private JButton exportSageButton;
 
 	private JButton jButtonToday;
 
@@ -487,6 +494,45 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jButtonReport;
 	}
 
+	private JButton getExportSageButton() {
+		if (exportSageButton == null) {
+			exportSageButton = new JButton(MessageBundle.getMessage("angal.billbrowser.exportsage"));
+			exportSageButton.setMnemonic(KeyEvent.VK_E);
+			exportSageButton.addActionListener(e -> {
+				JFileChooser fcTxt = new JFileChooser();
+				fcTxt.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+				int iRetVal = fcTxt.showSaveDialog(this);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File txtSageDirectory = fcTxt.getSelectedFile();
+					String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String from = dateFrom.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String to = dateTo.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+					File salesFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportvente_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+					File cashFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportcaisse_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+
+					try {
+						boolean resultExportCashTable = billBrowserManager.exportSagePayments(cashFile, dateFrom, dateTo);
+						boolean resultExportSales = billBrowserManager.exportSageBills(salesFile, dateFrom, dateTo);
+
+						if (resultExportCashTable && resultExportSales) {
+							MessageDialog.info(this, "angal.medicalstock.exportsage.succes");
+						} else {
+							MessageDialog.error(this, "angal.medicalstock.exportsage.error");
+						}
+					} catch (IOException | OHServiceException ex) {
+						MessageDialog.error(this, "angal.medicalstock.exportsage.error");
+						LOGGER.error("Export to sage error: ", ex);
+					}
+				}
+			});
+		}
+		return exportSageButton;
+	}
+
 	private JButton getJButtonClose() {
 		if (jButtonClose == null) {
 			jButtonClose = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
@@ -756,6 +802,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
 			}
+			if (SageConfig.ENABLE_SAGE_INTEGRATION) {
+				jPanelButtons.add(getExportSageButton());
+			}
+
 			jPanelButtons.add(getJButtonClose());
 		}
 		return jPanelButtons;
