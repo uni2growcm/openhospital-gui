@@ -43,6 +43,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -204,27 +206,26 @@ public class SelectPatient extends JDialog implements PatientListener {
 
     public SelectPatient(JDialog owner, String searchText, boolean femaleOnly) {
         super(owner, true);
+
         femalesOnly = femaleOnly;
 
-        try {
-            patArray = femaleOnly
-                ? patientBrowserManager.getFemalePatientsByOneOfFieldsLike(searchText)
-                : patientBrowserManager.getPatientsByOneOfFieldsLike(searchText);
-
+        if (!GeneralData.ENHANCEDSEARCH) {
+            try {
+                patArray = femalesOnly ?
+                    patientBrowserManager.getFemalePatientsByOneOfFieldsLike(null) :
+                    patientBrowserManager.getPatientsByOneOfFieldsLike(null);
+            } catch (OHServiceException ohServiceException) {
+                MessageDialog.showExceptions(ohServiceException);
+                patArray = new ArrayList<>();
+            }
             patSearch = patArray;
-        } catch (OHServiceException e) {
-            MessageDialog.showExceptions(e);
-            patArray = new ArrayList<>();
-            patSearch = new ArrayList<>();
         }
-
         ps = new PatientSummary(patient);
         initComponents();
         addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                // to free memory
                 patArray.clear();
                 patSearch.clear();
                 dispose();
@@ -232,9 +233,17 @@ public class SelectPatient extends JDialog implements PatientListener {
         });
         setLocationRelativeTo(null);
         jTextFieldSearchPatient.setText(searchText);
-
         if (GeneralData.ENHANCEDSEARCH) {
             jSearchButton.doClick();
+        } else {
+            try {
+                patArray = !femalesOnly ?
+                        patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText()) :
+                        patientBrowserManager.getFemalePatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+            filterPatient();
         }
     }
 
@@ -356,7 +365,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 						if (Character.isLetterOrDigit(e.getKeyChar())) {
 							lastKey = s;
 						}
-						filterPatient();
+                        try {
+                            patArray = !femalesOnly ?
+                                    patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText()) :
+                                    patientBrowserManager.getFemalePatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
+                        } catch (OHServiceException ex) {
+                            OHServiceExceptionUtil.showMessages(ex);
+                        }
+                        filterPatient();
 					}
 
 					@Override
