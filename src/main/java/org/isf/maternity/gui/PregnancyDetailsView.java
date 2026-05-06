@@ -359,54 +359,59 @@ public class PregnancyDetailsView extends JDialog {
     }
 
     private String getDeliveryModeLabel(DeliveryMode mode) {
+        if (mode == null) return MessageBundle.getMessage("angal.common.na.label");
         switch (mode) {
-            case SVD: return MessageBundle.getMessage("angal.maternity.delivery.mode.svd");
-            case VACUUM: return MessageBundle.getMessage("angal.maternity.delivery.mode.vacuum");
-            case FORCEPS: return MessageBundle.getMessage("angal.maternity.delivery.mode.forceps");
-            case C_SECTION_ELECTIVE: return MessageBundle.getMessage("angal.maternity.delivery.mode.csection.elective");
-            case C_SECTION_EMERGENCY: return MessageBundle.getMessage("angal.maternity.delivery.mode.csection.emergency");
+            case SVD: return MessageBundle.getMessage(DeliveryMode.SVD.getKey());
+            case VACUUM: return MessageBundle.getMessage(DeliveryMode.VACUUM.getKey());
+            case FORCEPS: return MessageBundle.getMessage(DeliveryMode.FORCEPS.getKey());
+            case C_SECTION_ELECTIVE: return MessageBundle.getMessage(DeliveryMode.C_SECTION_ELECTIVE.getKey());
+            case C_SECTION_EMERGENCY: return MessageBundle.getMessage(DeliveryMode.C_SECTION_EMERGENCY.getKey());
             default: return MessageBundle.getMessage("angal.common.na.label");
         }
     }
 
     private String getPerinealIntegrityLabel(PerinealIntegrity integrity) {
+        if (integrity == null) return MessageBundle.getMessage("angal.common.na.label");
         switch (integrity) {
-            case INTACT: return MessageBundle.getMessage("angal.maternity.perineal.intact");
-            case FIRST_DEGREE: return MessageBundle.getMessage("angal.maternity.perineal.first");
-            case SECOND_DEGREE: return MessageBundle.getMessage("angal.maternity.perineal.second");
-            case THIRD_DEGREE: return MessageBundle.getMessage("angal.maternity.perineal.third");
-            case FOURTH_DEGREE: return MessageBundle.getMessage("angal.maternity.perineal.fourth");
-            case EPISIOTOMY: return MessageBundle.getMessage("angal.maternity.perineal.episiotomy");
+            case INTACT: return MessageBundle.getMessage(PerinealIntegrity.INTACT.getKey());
+            case FIRST_DEGREE: return MessageBundle.getMessage(PerinealIntegrity.FIRST_DEGREE.getKey());
+            case SECOND_DEGREE: return MessageBundle.getMessage(PerinealIntegrity.SECOND_DEGREE.getKey());
+            case THIRD_DEGREE: return MessageBundle.getMessage(PerinealIntegrity.THIRD_DEGREE.getKey());
+            case FOURTH_DEGREE: return MessageBundle.getMessage(PerinealIntegrity.FOURTH_DEGREE.getKey());
+            case EPISIOTOMY: return MessageBundle.getMessage(PerinealIntegrity.EPISIOTOMY.getKey());
             default: return MessageBundle.getMessage("angal.common.na.label");
         }
     }
 
     private String getNeonatalStatusLabel(NeonatalStatus status) {
+        if (status == null) return MessageBundle.getMessage("angal.common.na.label");
         switch (status) {
-            case ALIVE: return MessageBundle.getMessage("angal.maternity.neonatal.alive");
-            case STILLBORN: return MessageBundle.getMessage("angal.maternity.neonatal.stillborn");
-            case EARLY_NEONATAL_DEATH: return MessageBundle.getMessage("angal.maternity.neonatal.early_death");
-            case TRANSFERRED: return MessageBundle.getMessage("angal.maternity.neonatal.transferred");
-            case CRITICAL: return MessageBundle.getMessage("angal.maternity.neonatal.critical");
+            case ALIVE: return MessageBundle.getMessage(NeonatalStatus.ALIVE.getKey());
+            case STILLBORN: return MessageBundle.getMessage(NeonatalStatus.STILLBORN.getKey());
+            case EARLY_NEONATAL_DEATH: return MessageBundle.getMessage(NeonatalStatus.EARLY_NEONATAL_DEATH.getKey());
+            case TRANSFERRED: return MessageBundle.getMessage(NeonatalStatus.TRANSFERRED.getKey());
+            case CRITICAL: return MessageBundle.getMessage(NeonatalStatus.CRITICAL.getKey());
             default: return MessageBundle.getMessage("angal.common.na.label");
         }
     }
 
     private String getCryTimeLabel(CryTime cryTime) {
+        if (cryTime == null) return MessageBundle.getMessage("angal.common.na.label");
         switch (cryTime) {
-            case IMMEDIATE: return MessageBundle.getMessage("angal.maternity.cry.immediate");
-            case DELAYED: return MessageBundle.getMessage("angal.maternity.cry.delayed");
-            case NO_CRY: return MessageBundle.getMessage("angal.maternity.cry.none");
-            case UNKNOWN: return MessageBundle.getMessage("angal.maternity.cry.unknown");
+            case IMMEDIATE: return MessageBundle.getMessage(CryTime.IMMEDIATE.getKey());
+            case DELAYED: return MessageBundle.getMessage(CryTime.DELAYED.getKey());
+            case NO_CRY: return MessageBundle.getMessage(CryTime.NO_CRY.getKey());
+            case UNKNOWN: return MessageBundle.getMessage(CryTime.UNKNOWN.getKey());
             default: return MessageBundle.getMessage("angal.common.na.label");
         }
     }
 
     private String getHivStatusLabel(HivStatus status) {
+        if (status == null) return MessageBundle.getMessage("angal.common.na.label");
         switch (status) {
-            case POSITIVE: return MessageBundle.getMessage("angal.maternity.hiv.positive");
-            case NEGATIVE: return MessageBundle.getMessage("angal.maternity.hiv.negative");
-            case UNKNOWN: return MessageBundle.getMessage("angal.maternity.hiv.unknown");
+            case POSITIVE: return MessageBundle.getMessage(HivStatus.POSITIVE.getKey());
+            case NEGATIVE: return MessageBundle.getMessage(HivStatus.NEGATIVE.getKey());
+            case UNKNOWN: return MessageBundle.getMessage(HivStatus.UNKNOWN.getKey());
             default: return MessageBundle.getMessage("angal.common.na.label");
         }
     }
