@@ -85,6 +85,7 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
+import org.isf.utils.pagination.Paged;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
@@ -386,7 +387,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	private void loadCurrentPage() {
 		try {
-			PagedResponse<Opd> opdPage;
+			Paged<Opd> opdPage;  // ← Changer PagedResponse par Paged
 
 			if (searchMode == SearchMode.PROG_YEAR) {
 				opdPage = opdBrowserManager.getOpdByProgYearPageableDatabase(searchCode, currentPage, PAGE_SIZE);
@@ -416,13 +417,13 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				return;
 			}
 
-			PagedResponse<Opd> opdPageResponse = opdBrowserManager.getOpdPageableDatabase(
+			opdPage = opdBrowserManager.getOpdPageableDatabase(
 					getSelectedWard(), getSelectedDiseaseType(), getSelectedDisease(),
 					dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo,
 					getGender(), getPatientAttendance(), currentPage, PAGE_SIZE);
-			pSur = new ArrayList<>(opdPageResponse.getData());
-			totalRows = opdPageResponse.getPageInfo().getTotalNbOfElements();
-			totalPages = opdPageResponse.getPageInfo().getTotalPages();
+			pSur = new ArrayList<>(opdPage.getData());
+			totalRows = opdPage.getPageInfo().getTotalNbOfElements();
+			totalPages = opdPage.getPageInfo().getTotalPages();
 			refreshModel();
 
 		} catch (OHServiceException ohServiceException) {
