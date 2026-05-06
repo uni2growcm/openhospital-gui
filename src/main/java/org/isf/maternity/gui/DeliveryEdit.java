@@ -764,7 +764,6 @@ public class DeliveryEdit extends JDialog {
 
     private void loadDeliveryData() {
         if (delivery == null || delivery.getId() == null) {
-            return; // New delivery, nothing to load
         }
 
         // Load basic delivery information
@@ -851,7 +850,7 @@ public class DeliveryEdit extends JDialog {
                 tableModel.addRow(row);
             }
         } catch (Exception e) {
-            MessageDialog.error(this, "Error loading newborns: " + e.getMessage());
+            MessageDialog.error(this, e.getMessage());
         }
     }
 
