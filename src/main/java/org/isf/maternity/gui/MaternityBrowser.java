@@ -491,8 +491,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJUpdateVisitButton());
         buttonPanel.add(getJDeleteVisitButton());
         buttonPanel.add(getJNewDeliveryButton());
-        buttonPanel.add(getJUpdateDeliveryButton());
-        buttonPanel.add(getJDeleteDeliveryButton());
         buttonPanel.add(getJAdmissionButton());
         buttonPanel.add(getJExamsButton());
         buttonPanel.add(getJVaccinButton());
@@ -539,20 +537,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JButton getJNewDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.newdelivery.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.delivery.btn"));
         button.addActionListener(e -> newDelivery());
-        return button;
-    }
-
-    private JButton getJUpdateDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.updatedelivery.btn"));
-        button.addActionListener(e -> updateDelivery());
-        return button;
-    }
-
-    private JButton getJDeleteDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.deletedelivery.btn"));
-        button.addActionListener(e -> deleteDelivery());
         return button;
     }
 
