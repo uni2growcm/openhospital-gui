@@ -276,8 +276,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jTablePatient.updateUI();
 
 			if (totalCount > PAGE_SIZE) {
-				MessageDialog.info(this, "Plus de " + PAGE_SIZE + " patients trouvés. Seuls les " + PAGE_SIZE + " premiers sont affichés.");
-			}
+				MessageDialog.info(this, MessageBundle.getMessage("angal.patient.too.many.patients.found.message" + PAGE_SIZE));			}
 		} catch (OHServiceException e) {
 			MessageDialog.showExceptions(e);
 			patArray = new ArrayList<>();

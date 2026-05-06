@@ -2555,7 +2555,7 @@ public class PatientInsertExtended extends JDialog {
 		}
 	}
 
-	// Lieu de naissance
+
 	private JPanel getJBirthPlacePanel() {
 		if (jBirthPlacePanel == null) {
 			JLabel jBirthPlaceLabel = new JLabel(MessageBundle.getMessage("angal.patient.birthplace"));
@@ -2796,7 +2796,7 @@ public class PatientInsertExtended extends JDialog {
 			@Override
 			public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
 				if (str == null) return;
-				String filtered = str.replaceAll("[^0-9]", "");
+				String filtered = str.replaceAll("[^0-9+\\-\\s()]", "");
 				super.insertString(offs, filtered, a);
 			}
 		});
@@ -2854,9 +2854,12 @@ public class PatientInsertExtended extends JDialog {
 				return;
 			}
 
-			Integer phoneCode;
+			String phoneCode = phoneCodeStr;
 			try {
-				phoneCode = Integer.parseInt(phoneCodeStr);
+				if (phoneCodeStr.isEmpty()) {
+					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.required"));
+					return;
+				}
 			} catch (NumberFormatException ex) {
 				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.number"));
 				return;
@@ -2865,7 +2868,7 @@ public class PatientInsertExtended extends JDialog {
 			try {
 				CountryIoOperations countryIoOperations = Context.getApplicationContext().getBean(CountryIoOperations.class);
 
-				if (countryIoOperations.getCountryByIsoCode(isoCode) != null) {
+				if (countryIoOperations.getCountryByIsoCode(isoCode).isPresent()) {
 					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.exists"));
 					return;
 				}
