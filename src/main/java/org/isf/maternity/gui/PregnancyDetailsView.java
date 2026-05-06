@@ -198,7 +198,7 @@ public class PregnancyDetailsView extends JDialog {
         JPanel outcomesPanel = createSectionPanel(MessageBundle.getMessage("angal.maternity.delivery.outcomes.header"));
         outcomesPanel.setLayout(new GridLayout(4, 2, 5, 3));
         outcomesPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.placenta.complete.label") + ":"));
-        //outcomesPanel.add(createValueLabel(delivery.getPlacentaComplete() != null ? (delivery.getPlacentaComplete() ? MessageBundle.getMessage("angal.common.yes.label") : MessageBundle.getMessage("angal.common.no.label")) : MessageBundle.getMessage("angal.common.na.label")));
+        outcomesPanel.add(createValueLabel(delivery.isPlacentaComplete() != null ? (delivery.isPlacentaComplete() ? MessageBundle.getMessage("angal.common.yes.label") : MessageBundle.getMessage("angal.common.no.label")) :MessageBundle.getMessage("angal.common.na.label")));
         outcomesPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.placenta.weight.label") + ":"));
         outcomesPanel.add(createValueLabel(delivery.getPlacentaWeight() != null ? delivery.getPlacentaWeight() + " g" : MessageBundle.getMessage("angal.common.na.label")));
         outcomesPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.estimated.blood.loss.label") + ":"));
