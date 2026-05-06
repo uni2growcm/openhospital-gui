@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -186,7 +186,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 		super(owner, true);
 
 		try {
-			// Charge directement les données paginées
 			Page<Patient> patientPage = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
 					searchText.isEmpty() ? null : searchText,
 					0,
@@ -220,9 +219,8 @@ public class SelectPatient extends JDialog implements PatientListener {
 		});
 
 		setLocationRelativeTo(null);
-		buttonNew.setVisible(true);  // Affiche le bouton nouveau patient
+		buttonNew.setVisible(true);
 
-		// Pré-remplit le champ de recherche
 		if (searchText != null && !searchText.isEmpty()) {
 			jTextFieldSearchPatient.setText(searchText);
 		}
@@ -264,7 +262,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		try {
 			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
 					searchText.isEmpty() ? null : searchText,
-					0,  // page 0 = première page
+					0,
 					PAGE_SIZE
 			);
 

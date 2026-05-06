@@ -426,215 +426,6 @@ public class PatientInsertExtended extends JDialog {
 	 *
 	 * @return javax.swing.JButton
 	 */
-//	private JButton getJOkButton() {
-//		if (jOkButton == null) {
-//			jOkButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
-//			jOkButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
-//			jOkButton.addActionListener(actionEvent -> {
-//				boolean ok = true;
-//				String firstName = jFirstNameTextField.getText().trim();
-//				String secondName = jSecondNameTextField.getText().trim();
-//
-//				if (firstName.isEmpty()) {
-//					MessageDialog.error(this, "angal.patient.insertfirstname.msg");
-//					return;
-//				}
-//				if (secondName.isEmpty()) {
-//					MessageDialog.error(this, "angal.patient.insertsecondname.msg");
-//					return;
-//				}
-//				if (!checkAge()) {
-//					MessageDialog.error(this, "angal.patient.insertage");
-//					return;
-//				}
-//				if (insert) {
-//					String name = firstName + ' ' + secondName;
-//					try {
-//						if (patientBrowserManager.isNamePresent(name)) {
-//							ok = switch (MessageDialog.yesNo(null, "angal.patient.thepatientisalreadypresent.msg")) {
-//								case JOptionPane.OK_OPTION -> true;
-//								case JOptionPane.NO_OPTION -> false;
-//								default -> ok;
-//							};
-//						}
-//					} catch (OHServiceException ex) {
-//						OHServiceExceptionUtil.showMessages(ex);
-//					}
-//
-//					if (!consensus.isConsensusFlag()) {
-//						MessageDialog.error(null, "angal.patient.consensus.consensus.mandatory.msg");
-//						ok = false;
-//					}
-//
-//					if (ok) {
-//						patient.setFirstName(firstName);
-//						patient.setSecondName(secondName);
-//
-//						if (radiof.isSelected()) {
-//							patient.setSex('F');
-//						} else if (radiom.isSelected()) {
-//							patient.setSex('M');
-//						} else {
-//							MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
-//							return;
-//						}
-//						patient.setTaxCode(jTaxCodeTextField.getText().trim());
-//						patient.setAddress(jAddressTextField.getText().trim());
-//						patient.setCity(jCityTextField.getText().trim());
-//						patient.setNextKin(jNextKinTextField.getText().trim());
-//						patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
-//						patient.setMotherName(jMotherNameTextField.getText().trim());
-//						if (jMotherAlive.isSelected()) {
-//							patient.setMother('A');
-//						} else {
-//							if (jMotherDead.isSelected()) {
-//								patient.setMother('D');
-//							} else {
-//								patient.setMother('U');
-//							}
-//						}
-//						patient.setFatherName(jFatherNameTextField.getText().trim());
-//						if (jFatherAlive.isSelected()) {
-//							patient.setFather('A');
-//						} else {
-//							if (jFatherDead.isSelected()) {
-//								patient.setFather('D');
-//							} else {
-//								patient.setFather('U');
-//							}
-//						}
-//						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
-//						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
-//						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
-//						if (jInsuranceYes.isSelected()) {
-//							patient.setHasInsurance('Y');
-//						} else {
-//							if (jInsuranceNo.isSelected()) {
-//								patient.setHasInsurance('N');
-//							} else {
-//								patient.setHasInsurance('U');
-//							}
-//						}
-//
-//						if (jParentYes.isSelected()) {
-//							patient.setParentTogether('Y');
-//						} else {
-//							if (jParentNo.isSelected()) {
-//								patient.setParentTogether('N');
-//							} else {
-//								patient.setParentTogether('U');
-//							}
-//						}
-//
-//						patient.setNote(jNoteTextArea.getText().trim());
-//						try {
-//							patient = patientBrowserManager.savePatient(patient);
-//							consensus.setPatient(patient);
-//							patientConsensusManager.updatePatientConsensus(consensus);
-//							if (patientHistory != null) {
-//								patientHistory.setPatientId(patient.getCode());
-//								patientHistoryManager.saveOrUpdate(patientHistory);
-//							}
-//							firePatientInserted(patient);
-//							if (justSave) {
-//								insert = false;
-//								justSave = false;
-//								this.requestFocus();
-//							} else {
-//								dispose();
-//							}
-//						} catch (OHServiceException ohServiceException) {
-//							OHServiceExceptionUtil.showMessages(ohServiceException);
-//							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-//							LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-//						}
-//					}
-//				} else {// Update
-//					if (!consensus.isConsensusFlag()) {
-//						MessageDialog.error(null, "angal.patient.consensus.consensus.mandatory.msg");
-//						return;
-//					}
-//					patient.setFirstName(firstName);
-//					patient.setSecondName(secondName);
-//					if (radiof.isSelected()) {
-//						patient.setSex('F');
-//					} else if (radiom.isSelected()) {
-//						patient.setSex('M');
-//					} else {
-//						MessageDialog.info(this, "angal.patient.pleaseselectasex.msg");
-//						return;
-//					}
-//					patient.setTaxCode(jTaxCodeTextField.getText().trim());
-//					patient.setAddress(jAddressTextField.getText().trim());
-//					patient.setCity(jCityTextField.getText().trim());
-//					patient.setNextKin(jNextKinTextField.getText().trim());
-//					patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
-//					patient.setMotherName(jMotherNameTextField.getText().trim());
-//
-//					if (jMotherAlive.isSelected()) {
-//						patient.setMother('A');
-//					} else {
-//						if (jMotherDead.isSelected()) {
-//							patient.setMother('D');
-//						} else {
-//							patient.setMother('U');
-//						}
-//					}
-//					patient.setFatherName(jFatherNameTextField.getText().trim());
-//					if (jFatherAlive.isSelected()) {
-//						patient.setFather('A');
-//					} else {
-//						if (jFatherDead.isSelected()) {
-//							patient.setFather('D');
-//						} else {
-//							patient.setFather('U');
-//						}
-//					}
-//					patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
-//					patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
-//					patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
-//
-//					if (jInsuranceYes.isSelected()) {
-//						patient.setHasInsurance('Y');
-//					} else {
-//						if (jInsuranceNo.isSelected()) {
-//							patient.setHasInsurance('N');
-//						} else {
-//							patient.setHasInsurance('U');
-//						}
-//					}
-//
-//					if (jParentYes.isSelected()) {
-//						patient.setParentTogether('Y');
-//					} else {
-//						if (jParentNo.isSelected()) {
-//							patient.setParentTogether('N');
-//						} else {
-//							patient.setParentTogether('U');
-//						}
-//					}
-//					patient.setNote(jNoteTextArea.getText().trim());
-//					try {
-//						patient = patientBrowserManager.savePatient(patient);
-//						consensus.setPatient(patient);
-//						patientConsensusManager.updatePatientConsensus(consensus);
-//						if (patientHistory != null) {
-//							patientHistory.setPatientId(patient.getCode());
-//							patientHistoryManager.saveOrUpdate(patientHistory);
-//						}
-//						firePatientUpdated(patient);
-//						dispose();
-//					} catch (OHServiceException ex) {
-//						OHServiceExceptionUtil.showMessages(ex);
-//						MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-//					}
-//				}
-//			});
-//
-//		}
-//		return jOkButton;
-//	}
-
 	private JButton getJOkButton() {
 		if (jOkButton == null) {
 			jOkButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
@@ -737,11 +528,8 @@ public class PatientInsertExtended extends JDialog {
 
 						patient.setNote(jNoteTextArea.getText().trim());
 
-						// ========== NOUVEAUX CHAMPS - INSERT ==========
-						// Lieu de naissance
 						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 
-						// Nombre d'enfants
 						try {
 							int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
 							patient.setNumberOfChildren(children);
@@ -749,7 +537,6 @@ public class PatientInsertExtended extends JDialog {
 							patient.setNumberOfChildren(0);
 						}
 
-						// Position g�ographique
 						String selectedPosition = (String) jGeographicPositionComboBox.getSelectedItem();
 						if ("Dans l'air".equals(selectedPosition)) {
 							patient.setGeographicPosition("dans_l_air");
@@ -761,12 +548,9 @@ public class PatientInsertExtended extends JDialog {
 							patient.setGeographicPosition(null);
 						}
 
-						// R�sidence des parents
 						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
 
-						// Moyen de transport
 						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
-						// Pays
 						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 						if (selectedCountry != null) {
 							patient.setCountry(selectedCountry);
@@ -861,11 +645,8 @@ public class PatientInsertExtended extends JDialog {
 					}
 					patient.setNote(jNoteTextArea.getText().trim());
 
-					// ========== NOUVEAUX CHAMPS - UPDATE ==========
-					// Lieu de naissance
 					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 
-					// Nombre d'enfants
 					try {
 						int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
 						patient.setNumberOfChildren(children);
@@ -873,7 +654,6 @@ public class PatientInsertExtended extends JDialog {
 						patient.setNumberOfChildren(0);
 					}
 
-					// Position g�ographique
 					String selectedPosition = (String) jGeographicPositionComboBox.getSelectedItem();
 					if ("Dans l'air".equals(selectedPosition)) {
 						patient.setGeographicPosition("dans_l_air");
@@ -885,18 +665,13 @@ public class PatientInsertExtended extends JDialog {
 						patient.setGeographicPosition(null);
 					}
 
-					// R�sidence des parents
 					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-
-					// Moyen de transport
 					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 
-					// Pays
 					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 					if (selectedCountry != null) {
 						patient.setCountry(selectedCountry);
 					}
-
 
 					try {
 						patient = patientBrowserManager.savePatient(patient);
@@ -2579,7 +2354,6 @@ public class PatientInsertExtended extends JDialog {
 		return panel;
 	}
 
-	// Nombre d'enfants
 	private JPanel getJNumberOfChildrenPanel() {
 		if (jNumberOfChildrenPanel == null) {
 			JLabel jNumberOfChildrenLabel = new JLabel(MessageBundle.getMessage("angal.patient.numberofchildren"));
@@ -2616,8 +2390,6 @@ public class PatientInsertExtended extends JDialog {
 		return panel;
 	}
 
-	// Position g�ographique (ComboBox)
-// Position géographique (ComboBox)
 	private JPanel getJGeographicPositionPanel() {
 		if (jGeographicPositionPanel == null) {
 			jGeographicPositionPanel = new JPanel();
@@ -2659,7 +2431,6 @@ public class PatientInsertExtended extends JDialog {
 		return jGeographicPositionComboBox;
 	}
 
-	// R�sidence des parents
 	private JPanel getJParentsResidencePanel() {
 		if (jParentsResidencePanel == null) {
 			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
@@ -2683,7 +2454,6 @@ public class PatientInsertExtended extends JDialog {
 		return panel;
 	}
 
-	// Moyen de transport
 	private JPanel getJTransportMeansPanel() {
 		if (jTransportMeansPanel == null) {
 			JLabel jTransportMeansLabel = new JLabel(MessageBundle.getMessage("angal.patient.transportmeans"));
@@ -2707,7 +2477,6 @@ public class PatientInsertExtended extends JDialog {
 		return panel;
 	}
 
-	// Pays
 	private JPanel getJCountryPanel() {
 		if (jCountryPanel == null) {
 			jCountryPanel = new JPanel();
@@ -2756,7 +2525,6 @@ public class PatientInsertExtended extends JDialog {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(8, 5, 8, 5);
 
-		// Ligne 1: Code ISO
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
@@ -2780,7 +2548,6 @@ public class PatientInsertExtended extends JDialog {
 		});
 		panel.add(isoCodeField, gbc);
 
-		// Ligne 2: Code téléphone
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.gridwidth = 1;
@@ -2802,7 +2569,6 @@ public class PatientInsertExtended extends JDialog {
 		});
 		panel.add(phoneCodeField, gbc);
 
-		// Ligne 3: Nom du pays
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		gbc.gridwidth = 1;
@@ -2816,7 +2582,6 @@ public class PatientInsertExtended extends JDialog {
 		JTextField nameField = new JTextField(20);
 		panel.add(nameField, gbc);
 
-		// Ligne 4: Message champs obligatoires
 		gbc.gridx = 0;
 		gbc.gridy = 3;
 		gbc.gridwidth = 3;
@@ -2931,7 +2696,6 @@ public class PatientInsertExtended extends JDialog {
 		return jCountryComboBox;
 	}
 
-	// Patient affili�
 	private JPanel getJAffiliatedPatientPanel() {
 		if (jAffiliatedPatientPanel == null) {
 			jAffiliatedPatientPanel = new JPanel();
@@ -2939,13 +2703,11 @@ public class PatientInsertExtended extends JDialog {
 					MessageBundle.getMessage("angal.patient.affiliation.border"));
 			jAffiliatedPatientPanel.setLayout(new BoxLayout(jAffiliatedPatientPanel, BoxLayout.Y_AXIS));
 
-			// Ligne case à cocher
 			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			jAffiliatedCheckBox = new JCheckBox(MessageBundle.getMessage("angal.patient.affiliation.employee"));
 			topPanel.add(jAffiliatedCheckBox);
 			jAffiliatedPatientPanel.add(topPanel);
 
-			// Ligne champ + boutons — même structure qu'avant
 			JPanel rightPanel = new JPanel(new BorderLayout(5, 0));
 			rightPanel.add(getJAffiliatedPatientTextField(), BorderLayout.CENTER);
 
@@ -2956,7 +2718,6 @@ public class PatientInsertExtended extends JDialog {
 
 			jAffiliatedPatientPanel.add(rightPanel);
 
-			// Écouteur case à cocher — logique inchangée
 			jAffiliatedCheckBox.addActionListener(e -> {
 				boolean isEmployee = jAffiliatedCheckBox.isSelected();
 				boolean enabled = !isEmployee;
@@ -3026,7 +2787,6 @@ public class PatientInsertExtended extends JDialog {
 	}
 
 	private void openPatientSelectorWithSearch(String searchText) {
-		// Modification de SelectPatient pour accepter un texte de recherche pr�-rempli
 		SelectPatient selectPatient = new SelectPatient(this, searchText);
 		selectPatient.addSelectionListener(selectedPatient -> {
 			patient.setAffiliatedPatient(selectedPatient);
