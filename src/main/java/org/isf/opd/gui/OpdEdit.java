@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -453,16 +453,26 @@ public class OpdEdit extends JDialog {
 						if (referralFromCheckBox.isSelected()) {
 							String fromText = referralFromTextField.getText().trim();
 							referralFrom = fromText.isEmpty() ? null : fromText;
+						}
+						// Referral From
+						if (referralFromCheckBox.isSelected()) {
+							String fromText = referralFromTextField.getText().trim();
+							referralFrom = fromText.isEmpty() ? null : fromText;
 						} else {
 							referralFrom = null;
 						}
 
 						// Referral To
 						if (referralToCheckBox.isSelected()) {
-							String toText = referralToTextField.getText().trim();
-							referralTo = toText.isEmpty() ? null : toText;
+							referralTo = "R";
 						} else {
-							referralTo = null;
+							referralTo = "";
+						}
+
+						if (referralFromCheckBox.isSelected()) {
+							referralFrom = "R";
+						} else {
+							referralFrom = "";
 						}
 
 						// disease
@@ -862,59 +872,41 @@ public class OpdEdit extends JDialog {
 	}
 
 	private JPanel getJNewPatientPanel() {
-		if (jNewPatientPanel == null) {
-			jNewPatientPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		String referralTo;
+		String referralFrom;
 
+		if (jNewPatientPanel == null) {
+			jNewPatientPanel = new JPanel();
 			newPatientCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.newattendance.txt"));
 			jNewPatientPanel.add(newPatientCheckBox);
-
 			if (!insert) {
 				if (opd.getNewPatient() == 'N') {
 					newPatientCheckBox.setSelected(true);
 				}
 			}
-
-
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
-			referralFromTextField = new JTextField(15);
-			referralFromTextField.setEnabled(false);
-
+			jNewPatientPanel.add(referralFromCheckBox);
 			if (!insert) {
-				// Mode édition : tout grisé
-				referralFromTextField.setEnabled(false);
-				referralFromCheckBox.setEnabled(false);
-				String referralFrom = opd.getReferralFrom();
-				if (referralFrom != null && !referralFrom.isEmpty() && !referralFrom.equals("")) {
+				referralFrom = opd.getReferralFrom();
+				if (referralFrom == null) {
+					referralFrom = "";
+				}
+				if (referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
 					referralFromTextField.setText(referralFrom);
 				} else {
 					referralFromCheckBox.setSelected(false);
 					referralFromTextField.setText("");
 				}
-			} else {
-				referralFromCheckBox.setSelected(false);
-				referralFromTextField.setText("");
-				referralFromTextField.setEnabled(false);
-
-				referralFromCheckBox.addActionListener(e -> {
-					if (referralFromCheckBox.isSelected()) {
-						referralFromTextField.setEnabled(true);
-					} else {
-						referralFromTextField.setEnabled(false);
-						referralFromTextField.setText("");
-					}
-				});
 			}
-
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
-			referralToTextField = new JTextField(15);
-			referralToTextField.setEnabled(false);
-
+			jNewPatientPanel.add(referralToCheckBox);
 			if (!insert) {
-				referralToTextField.setEnabled(false);
-				referralToCheckBox.setEnabled(false);
-				String referralTo = opd.getReferralTo();
-				if (referralTo != null && !referralTo.isEmpty() && !referralTo.equals("")) {
+				referralTo = opd.getReferralTo();
+				if (referralTo == null) {
+					referralTo="";
+				}
+				if (referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
 					referralToTextField.setText(referralTo);
 				} else {
@@ -935,7 +927,6 @@ public class OpdEdit extends JDialog {
 					}
 				});
 			}
-
 			jNewPatientPanel.add(referralFromCheckBox);
 			jNewPatientPanel.add(referralFromTextField);
 			jNewPatientPanel.add(referralToCheckBox);

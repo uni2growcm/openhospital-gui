@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -118,8 +118,6 @@ import org.slf4j.LoggerFactory;
 public class OpdEditExtended extends ModalJFrame implements PatientInsertExtended.PatientListener, PatientListener, ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	private JCheckBox referralToCheckBox;
-	private JCheckBox referralFromCheckBox;
 	private JTextField referralFromTextField;
 	private JTextField referralToTextField;
 
@@ -207,6 +205,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JButton jAnamnesisButton;
 	private JRadioButton rePatientButton;
 	private JRadioButton newPatientButton;
+	private JCheckBox referralToCheckBox;
+	private JCheckBox referralFromCheckBox;
 
 	private JPanel jPanelPatient;
 
@@ -469,8 +469,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 */
 	private JPanel getjPanelNorth() {
 		if (jPanelNorth == null) {
-			jPanelNorth = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-
+			String referralTo;
+			String referralFrom;
+			jPanelNorth = new JPanel(new FlowLayout());
 
 			rePatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.reattendance.txt"));
 			newPatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.newattendance.txt"));
@@ -487,22 +488,16 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					rePatientButton.setSelected(true);
 				}
 			}
-
-
-
-			referralFromCheckBox.setText(MessageBundle.getMessage("angal.opd.referral.txt"));
-
-			referralFromTextField.setColumns(20);
-			referralFromTextField.setEnabled(false);
-
+			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
+			jPanelNorth.add(referralFromCheckBox);
 			if (!insert) {
-
-				referralFromTextField.setEnabled(true);
-				referralFromCheckBox.setEnabled(true);
-
-				String fromVal = opd.getReferralFrom();
-				if (fromVal != null && !fromVal.isEmpty() && !fromVal.equals("R")) {
+				referralFrom = opd.getReferralFrom();
+				if (referralFrom == null) {
+					referralFrom = "";
+				}
+				if (referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
+					String fromVal = "";
 					referralFromTextField.setText(fromVal);
 				} else {
 					referralFromCheckBox.setSelected(false);
@@ -527,19 +522,16 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					}
 				});
 			}
-
-			referralToCheckBox.setText(MessageBundle.getMessage("angal.opd.referralto.txt"));
-			referralToTextField.setColumns(20);
-			referralToTextField.setEnabled(false);
-
+			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
+			jPanelNorth.add(referralToCheckBox);
 			if (!insert) {
-
-				referralToTextField.setEnabled(true);
-				referralToCheckBox.setEnabled(true);
-
-				String toVal = opd.getReferralTo();
-				if (toVal != null && !toVal.isEmpty() && !toVal.equals("R")) {
+				referralTo = opd.getReferralTo();
+				if (referralTo == null) {
+					referralTo = "";
+				}
+				if (referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
+					String toVal = "";
 					referralToTextField.setText(toVal);
 				} else {
 					referralToCheckBox.setSelected(false);
@@ -568,6 +560,43 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jPanelNorth.add(referralFromTextField);
 			jPanelNorth.add(referralToCheckBox);
 			jPanelNorth.add(referralToTextField);
+		}
+
+		if (!insert) {
+
+			String referralFrom = opd.getReferralFrom();
+			if (referralFrom != null && !referralFrom.isEmpty() && !referralFrom.equals("R")) {
+				referralFromCheckBox.setSelected(true);
+				referralFromTextField.setText(referralFrom);
+				referralFromTextField.setEnabled(true);
+			} else {
+				referralFromCheckBox.setSelected(false);
+				referralFromTextField.setText("");
+				referralFromTextField.setEnabled(false);
+			}
+			String referralTo = opd.getReferralTo();
+			if (referralTo != null && !referralTo.isEmpty() && !referralTo.equals("R")) {
+				referralToCheckBox.setSelected(true);
+				referralToTextField.setText(referralTo);
+				referralToTextField.setEnabled(true);
+			} else {
+				referralToCheckBox.setSelected(false);
+				referralToTextField.setText("");
+				referralToTextField.setEnabled(false);
+			}
+		} else {
+			referralFromCheckBox.addActionListener(e -> {
+				referralFromTextField.setEnabled(referralFromCheckBox.isSelected());
+				if (!referralFromCheckBox.isSelected()) {
+					referralFromTextField.setText("");
+				}
+			});
+			referralToCheckBox.addActionListener(e -> {
+				referralToTextField.setEnabled(referralToCheckBox.isSelected());
+				if (!referralToCheckBox.isSelected()) {
+					referralToTextField.setText("");
+				}
+			});
 		}
 		return jPanelNorth;
 	}
@@ -1825,22 +1854,19 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				} else {
 					newPatient = 'R';
 				}
-
-
-				// Referral FROM
+				// Referral From
 				if (referralFromCheckBox.isSelected()) {
-					String txt = referralFromTextField.getText();
-					referralFrom = (txt == null || txt.trim().isEmpty()) ? null : txt.trim();
+					String fromText = referralFromTextField.getText().trim();
+					referralFrom = fromText.isEmpty() ? null : fromText;
 				} else {
 					referralFrom = null;
 				}
-
-				// Referral TO
+				//Referal to
 				if (referralToCheckBox.isSelected()) {
-					String txt = referralToTextField.getText();
-					referralTo = (txt == null || txt.trim().isEmpty()) ? null : txt.trim();
+					String toText = referralToTextField.getText().trim();
+					referralTo = toText.isEmpty() ? null : toText;
 				} else {
-					referralTo = null;
+					referralTo = "";
 				}
 				// disease
 				if (diseaseBox1.getSelectedIndex() > 0) {
