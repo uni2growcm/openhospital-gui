@@ -44,8 +44,10 @@ import org.isf.admission.model.AdmittedPatient;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabBrowser;
 import org.isf.maternity.manager.PregnancyBrowserManager;
+import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
 import org.isf.maternity.model.Pregnancy;
+import org.isf.maternity.model.PregnancyDelivery;
 import org.isf.maternity.model.PregnancyStatus;
 import org.isf.maternity.model.PregnancyVisit;
 import org.isf.maternity.model.RiskLevel;
@@ -561,8 +563,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJUpdateVisitButton());
         buttonPanel.add(getJDeleteVisitButton());
         buttonPanel.add(getJNewDeliveryButton());
-        buttonPanel.add(getJUpdateDeliveryButton());
-        buttonPanel.add(getJDeleteDeliveryButton());
         buttonPanel.add(getJAdmissionButton());
         buttonPanel.add(getJExamsButton());
         buttonPanel.add(getJVaccinButton());
@@ -609,20 +609,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JButton getJNewDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.newdelivery.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.delivery.btn"));
         button.addActionListener(e -> newDelivery());
-        return button;
-    }
-
-    private JButton getJUpdateDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.updatedelivery.btn"));
-        button.addActionListener(e -> updateDelivery());
-        return button;
-    }
-
-    private JButton getJDeleteDeliveryButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.deletedelivery.btn"));
-        button.addActionListener(e -> deleteDelivery());
         return button;
     }
 
@@ -997,20 +985,16 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
-    private void newDelivery() {
-        if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
-            return;
-        }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement New Delivery");
-    }
 
-    private void updateDelivery() {
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Update Delivery");
+    private void newDelivery () {
+            if (selectedPregnancy == null) {
+                MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+                return;
+            }
+
+            DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
+            edit.setVisible(true);
     }
-        private void deleteDelivery() {
-            MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"), "TODO: Implement Delete Delivery");
-        }
 
     private void admission() {
         if (selectedPregnancy == null) {
