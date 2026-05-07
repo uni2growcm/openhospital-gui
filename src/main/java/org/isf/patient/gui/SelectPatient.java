@@ -197,7 +197,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 			totalCount = patientPage.getTotalElements();
 
 			if (totalCount > maxResults) {
-				MessageDialog.info(this, "Plus de " + maxResults + " patients trouvés. Seuls les " + maxResults + " premiers sont affichés.");
+				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", maxResults));
 			}
 
 		} catch (OHServiceException e) {
@@ -274,7 +274,8 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jTablePatient.updateUI();
 
 			if (totalCount > PAGE_SIZE) {
-				MessageDialog.info(this, MessageBundle.getMessage("angal.patient.too.many.patients.found.message" + PAGE_SIZE));			}
+				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", PAGE_SIZE));
+			}
 		} catch (OHServiceException e) {
 			MessageDialog.showExceptions(e);
 			patArray = new ArrayList<>();
@@ -365,7 +366,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 			totalCount = patientPage.getTotalElements();
 
 			if (totalCount > pageSize) {
-				MessageDialog.info(this, "Plus de " + pageSize + " patients trouvés. Seuls les " + pageSize + " premiers sont affichés.");
+				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", pageSize));
 			}
 
 		} catch (OHServiceException e) {
@@ -603,7 +604,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		try {
 			return patientBrowserManager.getPatientById(code);
 		} catch (OHServiceException ex) {
-			throw new RuntimeException("Unable to load patient");
+			throw new RuntimeException(MessageBundle.getMessage("angal.patient.unable.to.load.patient"));
 		}
 	}
 
