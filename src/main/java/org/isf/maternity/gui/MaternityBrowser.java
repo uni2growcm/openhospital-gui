@@ -21,8 +21,15 @@
  */
 
 package org.isf.maternity.gui;
-
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.event.*;
 import java.io.Serial;
 import java.time.LocalDate;
@@ -44,10 +51,8 @@ import org.isf.admission.model.AdmittedPatient;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabBrowser;
 import org.isf.maternity.manager.PregnancyBrowserManager;
-import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
 import org.isf.maternity.model.Pregnancy;
-import org.isf.maternity.model.PregnancyDelivery;
 import org.isf.maternity.model.PregnancyStatus;
 import org.isf.maternity.model.PregnancyVisit;
 import org.isf.maternity.model.RiskLevel;
