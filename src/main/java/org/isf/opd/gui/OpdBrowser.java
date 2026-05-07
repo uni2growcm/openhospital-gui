@@ -85,11 +85,11 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
-import org.isf.utils.pagination.Paged;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.isf.utils.pagination.PagedResponse;
+import org.springframework.data.domain.Page;
 
 /**
  * OpdBrowser - list all OPD. Let the user select an opd to edit or delete
@@ -387,22 +387,22 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	private void loadCurrentPage() {
 		try {
-			Paged<Opd> opdPage;  // ← Changer PagedResponse par Paged
+			Page<Opd> opdPage;
 
 			if (searchMode == SearchMode.PROG_YEAR) {
 				opdPage = opdBrowserManager.getOpdByProgYearPageableDatabase(searchCode, currentPage, PAGE_SIZE);
-				pSur = new ArrayList<>(opdPage.getData());
-				totalRows = opdPage.getPageInfo().getTotalNbOfElements();
-				totalPages = opdPage.getPageInfo().getTotalPages();
+				pSur = new ArrayList<>(opdPage.getContent());
+				totalRows = opdPage.getTotalElements();
+				totalPages = opdPage.getTotalPages();
 				refreshModel();
 				return;
 			}
 
 			if (searchMode == SearchMode.PATIENT_ID) {
 				opdPage = opdBrowserManager.getOpdByPatientIdPageableDatabase(searchCode, currentPage, PAGE_SIZE);
-				pSur = new ArrayList<>(opdPage.getData());
-				totalRows = opdPage.getPageInfo().getTotalNbOfElements();
-				totalPages = opdPage.getPageInfo().getTotalPages();
+				pSur = new ArrayList<>(opdPage.getContent());
+				totalRows = opdPage.getTotalElements();
+				totalPages = opdPage.getTotalPages();
 				refreshModel();
 				return;
 			}
@@ -417,13 +417,13 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				return;
 			}
 
-			opdPage = opdBrowserManager.getOpdPageableDatabase(
+			Page<Opd> opdPageResponse = opdBrowserManager.getOpdPageableDatabase(
 					getSelectedWard(), getSelectedDiseaseType(), getSelectedDisease(),
 					dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo,
 					getGender(), getPatientAttendance(), currentPage, PAGE_SIZE);
-			pSur = new ArrayList<>(opdPage.getData());
-			totalRows = opdPage.getPageInfo().getTotalNbOfElements();
-			totalPages = opdPage.getPageInfo().getTotalPages();
+			pSur = new ArrayList<>(opdPageResponse.getContent());
+			totalRows = opdPageResponse.getTotalElements();
+			totalPages = opdPageResponse.getTotalPages();
 			refreshModel();
 
 		} catch (OHServiceException ohServiceException) {
