@@ -442,6 +442,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		this.setTitle(MessageBundle.getMessage("angal.opd.opdoutpatientdepartment.title"));
 		this.setContentPane(getJContainPanel());
 		this.setMinimumSize(new Dimension(400 + getJTableWidth(), 700));
+		rowCounter.setText(rowCounterText+pSur.size());
 		applyFilter();
 		validate();
 	}
@@ -455,6 +456,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (jContainPanel == null) {
 			jContainPanel = new JPanel();
 			jContainPanel.setLayout(new BorderLayout());
+			jContainPanel.add(new JScrollPane(getJTable()),BorderLayout.CENTER);
 			jContainPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 			jContainPanel.add(getJSelectionPanel(), BorderLayout.WEST);
 
@@ -473,7 +475,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		loadCurrentPage();
 	}
-
 	/**
 	 * This method initializes jNewButton
 	 *
@@ -1290,6 +1291,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					ward = (Ward) jWardBox.getSelectedItem();
 				} catch (ClassCastException e) {
+					//AllWards selected
 				}
 
 				char sex = getGender();
@@ -1310,14 +1312,26 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					ageFrom = ageTo;
 					return;
 				}
+				//TODO: to retrieve resultset size instead of assuming 1 year as limit for the warning
+				if (TimeTools.getDaysBetweenDates(dateFromDate, dateToDate, true) >= 360) {
+					int ok = JOptionPane.showConfirmDialog(this,
+							MessageBundle.getMessage("angal.common.thiscouldretrievealargeamountofdataproceed.msg"),
+							MessageBundle.getMessage("angal.messagedialog.question.title"),
+							JOptionPane.OK_CANCEL_OPTION);
+					if (ok != JOptionPane.OK_OPTION) {
+						return;
+					}
+				}
 
 				currentPage = 0;
 				searchMode = SearchMode.FILTERS;
-
+				model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+				model.fireTableDataChanged();
+				jTable.updateUI();
+				rowCounter.setText(rowCounterText + pSur.size());
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
-
 				loadCurrentPage();
 			});
 		}
