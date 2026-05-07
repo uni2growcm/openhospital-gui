@@ -171,7 +171,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JRadioButton radioMyPatients;
 	private JRadioButton radioAllPatients;
 
-	private static final int PAGE_SIZE = 20;
+	private static final int PAGE_SIZE = 100;
 	private int currentPage = 0;
 	private long totalRows = 0;
 	private int totalPages = 0;
@@ -441,7 +441,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		this.setTitle(MessageBundle.getMessage("angal.opd.opdoutpatientdepartment.title"));
 		this.setContentPane(getJContainPanel());
 		this.setMinimumSize(new Dimension(400 + getJTableWidth(), 700));
-		rowCounter.setText(rowCounterText+pSur.size());
+		rowCounter.setText(rowCounterText + pSur.size());
 		applyFilter();
 		validate();
 	}
