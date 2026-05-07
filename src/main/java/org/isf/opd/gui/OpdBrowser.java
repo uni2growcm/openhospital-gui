@@ -278,6 +278,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		return jButtonPanel;
 	}
+
 	private JPanel getPaginationPanel() {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
 		panel.setBorder(BorderFactory.createEtchedBorder());
