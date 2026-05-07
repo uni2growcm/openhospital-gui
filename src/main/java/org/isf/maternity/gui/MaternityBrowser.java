@@ -771,7 +771,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         edit.setVisible(true);
     }
 
-
     private void updatePregnancy() {
         int viewRow = pregnancyTable.getSelectedRow();
         if (viewRow < 0) {
@@ -920,63 +919,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
 
         edit.setVisible(true);
-    }
-    
-    private void updateDelivery() {
-        if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
-            return;
-        }
-
-        try {
-            PregnancyDelivery delivery = Context.getApplicationContext()
-                    .getBean(PregnancyDeliveryBrowserManager.class)
-                    .getDeliveryByPregnancy(selectedPregnancy.getId());
-
-            if (delivery == null) {
-                MessageDialog.error(this, "angal.maternity.delivery.nodeliveryfound.msg");
-                return;
-            }
-
-            DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
-            edit.setVisible(true);
-
-        } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
-        }
-    }
-
-    private void deleteDelivery() {
-        if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
-            return;
-        }
-
-        try {
-            PregnancyDeliveryBrowserManager deliveryManager = 
-                    Context.getApplicationContext()
-                    .getBean(PregnancyDeliveryBrowserManager.class);
-
-            PregnancyDelivery delivery = deliveryManager.getDeliveryByPregnancy(selectedPregnancy.getId());
-
-            if (delivery == null) {
-                MessageDialog.error(this, "angal.maternity.delivery.nodeliveryfound.msg");
-                return;
-            }
-
-            String confirmMessage = MessageBundle.getMessage("angal.maternity.delivery.deletedelivery.confirm.msg");
-            int answer = MessageDialog.yesNo(this, confirmMessage);
-
-            if (answer == JOptionPane.YES_OPTION) {
-                deliveryManager.deleteDelivery(delivery);
-                MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.common.info.title"),
-                        MessageBundle.getMessage("angal.maternity.delivery.deletedelivery.success.msg"));
-            }
-
-        } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
-        }
     }
 
     private void admission() {
