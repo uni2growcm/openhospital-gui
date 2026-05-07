@@ -765,7 +765,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		String diseaseType = ((DiseaseType) jDiseaseTypeBox.getSelectedItem()).getCode();
 		return diseaseType.equals(allDiseaseType.getCode()) ? null : diseaseType;
 	}
-
 	private String getSelectedDisease() {
 		String disease = ((Disease) jDiseaseBox.getSelectedItem()).getCode();
 		return disease.equals(allDisease.getCode()) ? null : disease;
@@ -777,7 +776,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		return rowCounter;
 	}
-
 	private Component getDateFilterPanel() {
 		if (dateFilterPanel == null) {
 			dateFilterPanel = new JPanel(new SpringLayout());
@@ -794,7 +792,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		return dateFilterPanel;
 	}
-
 	private void resetDates() {
 		if (!GeneralData.ENHANCEDSEARCH) {
 			dateFrom.setDate(LocalDate.now().minusWeeks(1));
@@ -803,8 +800,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		dateTo.setDate(LocalDate.now());
 	}
-
-
 	public class DocumentLimit extends DefaultStyledDocument {
 
 		private static final long serialVersionUID = -5098766139884585921L;
