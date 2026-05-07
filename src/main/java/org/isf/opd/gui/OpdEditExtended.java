@@ -1328,7 +1328,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			setPatient(opdPatient);
 			jPatientEditButton.setEnabled(true);
 		}
+		//ADDED: Workaround for first item
 		if (jComboPatResult.getItemCount() > 0) {
+
 			if (jComboPatResult.getItemAt(0) instanceof Patient) {
 				opdPatient = (Patient) jComboPatResult.getItemAt(0);
 				setPatient(opdPatient);
