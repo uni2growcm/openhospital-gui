@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -171,7 +171,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JRadioButton radioMyPatients;
 	private JRadioButton radioAllPatients;
 
-	private static final int PAGE_SIZE = 100;
+	private static final int PAGE_SIZE = 20;
 	private int currentPage = 0;
 	private long totalRows = 0;
 	private int totalPages = 0;
@@ -389,7 +389,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			Page<Opd> opdPage;
 
 			if (searchMode == SearchMode.PROG_YEAR) {
-				opdPage = opdBrowserManager.getOpdByProgYearPageableDatabase(searchCode, currentPage, PAGE_SIZE);
+				opdPage = opdBrowserManager.getOpdListByProgYear(searchCode, currentPage, PAGE_SIZE);
 				pSur = new ArrayList<>(opdPage.getContent());
 				totalRows = opdPage.getTotalElements();
 				totalPages = opdPage.getTotalPages();
@@ -398,7 +398,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 
 			if (searchMode == SearchMode.PATIENT_ID) {
-				opdPage = opdBrowserManager.getOpdByPatientIdPageableDatabase(searchCode, currentPage, PAGE_SIZE);
+				opdPage = opdBrowserManager.getOpdListByPatientId(searchCode, currentPage, PAGE_SIZE);
 				pSur = new ArrayList<>(opdPage.getContent());
 				totalRows = opdPage.getTotalElements();
 				totalPages = opdPage.getTotalPages();
@@ -416,10 +416,10 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				return;
 			}
 
-			Page<Opd> opdPageResponse = opdBrowserManager.getOpdPageableDatabase(
+			Page<Opd> opdPageResponse = opdBrowserManager.getOpds(
 					getSelectedWard(), getSelectedDiseaseType(), getSelectedDisease(),
 					dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo,
-					getGender(), getPatientAttendance(), getUser(), currentPage, PAGE_SIZE);
+					getGender(), getPatientAttendance(), currentPage, PAGE_SIZE);
 			pSur = new ArrayList<>(opdPageResponse.getContent());
 			totalRows = opdPageResponse.getTotalElements();
 			totalPages = opdPageResponse.getTotalPages();
@@ -455,7 +455,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (jContainPanel == null) {
 			jContainPanel = new JPanel();
 			jContainPanel.setLayout(new BorderLayout());
-			jContainPanel.add(new JScrollPane(getJTable()),BorderLayout.CENTER);
 			jContainPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 			jContainPanel.add(getJSelectionPanel(), BorderLayout.WEST);
 
@@ -1290,7 +1289,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				try {
 					ward = (Ward) jWardBox.getSelectedItem();
 				} catch (ClassCastException e) {
-					//AllWards selected
+					// AllWards selected
 				}
 
 				char sex = getGender();
@@ -1301,16 +1300,17 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				LocalDate dateToDate = dateTo.getDate();
 
 				if (dateFromDate.isAfter(dateToDate)) {
-					MessageDialog.error(OpdBrowser.this, "angal.opd.datefrommustbebefordateto.msg");
+					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
 					return;
 				}
 
 				if (ageFrom > ageTo) {
-					MessageDialog.error(OpdBrowser.this, "angal.opd.agefrommustbelowerthanageto.msg");
+					MessageDialog.error(this, "angal.opd.agefrommustbelowerthanageto.msg");
 					jAgeFromTextField.setText(ageTo.toString());
 					ageFrom = ageTo;
 					return;
 				}
+
 				//TODO: to retrieve resultset size instead of assuming 1 year as limit for the warning
 				if (TimeTools.getDaysBetweenDates(dateFromDate, dateToDate, true) >= 360) {
 					int ok = JOptionPane.showConfirmDialog(this,
@@ -1321,16 +1321,15 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 						return;
 					}
 				}
-
 				currentPage = 0;
 				searchMode = SearchMode.FILTERS;
-				//model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-				//model.fireTableDataChanged();
-				//jTable.updateUI();
-				//rowCounter.setText(rowCounterText + pSur.size());
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
+				model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+				model.fireTableDataChanged();
+				jTable.updateUI();
+				rowCounter.setText(rowCounterText + pSur.size());
 				loadCurrentPage();
 			});
 		}
@@ -1368,8 +1367,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 
 	class SearchByOPDCodeListener implements KeyListener {
-		@Override public void keyTyped(KeyEvent e) {}
-		@Override public void keyReleased(KeyEvent e) {}
+		@Override
+		public void keyTyped(KeyEvent e) {}
+
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -1383,20 +1383,27 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
-				searchMode = SearchMode.OPD_CODE;
-				searchCode = code;
-				currentPage = 0;
-				loadCurrentPage();
-				if (pSur.isEmpty()) {
+				List<Opd> opdList = new ArrayList<>();
+				Optional<Opd> opd = opdBrowserManager.getOpdById(code);
+				if (opd.isPresent()) {
+					opdList.add(opd.get());
+					pSur = opdList;
+					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
+					rowCounter.setText(rowCounterText + pSur.size());
+				} else {
 					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 				}
 			}
 		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {}
 	}
 
 	class SearchByProgYearListener implements KeyListener {
-		@Override public void keyTyped(KeyEvent e) {}
-		@Override public void keyReleased(KeyEvent e) {}
+		@Override
+		public void keyTyped(KeyEvent e) {}
+
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -1410,20 +1417,23 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				opdCodeFilter.setText("");
 				patientCodeFilter.setText("");
-				searchMode = SearchMode.PROG_YEAR;
-				searchCode = code;
-				currentPage = 0;
-				loadCurrentPage();
+				pSur = opdBrowserManager.getOpdByProgYear(code);
+				((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
+				rowCounter.setText(rowCounterText + pSur.size());
 				if (pSur.isEmpty()) {
 					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
 				}
 			}
 		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {}
 	}
 
 	class SearchByPatientIdListener implements KeyListener {
-		@Override public void keyTyped(KeyEvent e) {}
-		@Override public void keyReleased(KeyEvent e) {}
+		@Override
+		public void keyTyped(KeyEvent e) {}
+
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -1437,14 +1447,21 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
-				searchMode = SearchMode.PATIENT_ID;
-				searchCode = code;
-				currentPage = 0;
-				loadCurrentPage();
-				if (pSur.isEmpty()) {
-					MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
+				try {
+					pSur = opdBrowserManager.getOpdList(code);
+					((AbstractTableModel) jTable.getModel()).fireTableDataChanged();
+					rowCounter.setText(rowCounterText + pSur.size());
+					if (pSur.isEmpty()) {
+						MessageDialog.info(OpdBrowser.this, "angal.common.nodatatoshow.msg");
+					}
+				} catch (OHServiceException ohServiceException) {
+					MessageDialog.showExceptions(ohServiceException);
 				}
 			}
 		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {}
 	}
+
 }
