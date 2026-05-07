@@ -88,7 +88,6 @@ import org.isf.utils.layout.SpringUtilities;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
-import org.isf.utils.pagination.PagedResponse;
 import org.springframework.data.domain.Page;
 
 /**
@@ -420,7 +419,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			Page<Opd> opdPageResponse = opdBrowserManager.getOpdPageableDatabase(
 					getSelectedWard(), getSelectedDiseaseType(), getSelectedDisease(),
 					dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo,
-					getGender(), getPatientAttendance(), currentPage, PAGE_SIZE);
+					getGender(), getPatientAttendance(), getUser(), currentPage, PAGE_SIZE);
 			pSur = new ArrayList<>(opdPageResponse.getContent());
 			totalRows = opdPageResponse.getTotalElements();
 			totalPages = opdPageResponse.getTotalPages();
@@ -1325,10 +1324,10 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 				currentPage = 0;
 				searchMode = SearchMode.FILTERS;
-				model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-				model.fireTableDataChanged();
-				jTable.updateUI();
-				rowCounter.setText(rowCounterText + pSur.size());
+				//model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
+				//model.fireTableDataChanged();
+				//jTable.updateUI();
+				//rowCounter.setText(rowCounterText + pSur.size());
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
