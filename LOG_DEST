@@ -184,3 +184,8 @@ Starting Open Hospital
 [08/May/2026 10:52:06] [admin:admin] INFO - WebcamDefaultDriver capture driver will be used (com.github.sarxos.webcam.Webcam.getDriver(Webcam.java:1048))
 [08/May/2026 10:52:46] [admin:admin] ERROR - >> key not found: The phone field already contains data.
 Do you want to replace it with the country code? (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[08/May/2026 10:57:58] [admin:admin] DEBUG - No default_credentials.properties file found (org.isf.utils.file.FileTools.getFile(FileTools.java:253))
+[08/May/2026 10:58:03] [admin:admin] WARN - Login cancelled. (org.isf.menu.gui.Login.actionPerformed(Login.java:249))
+[08/May/2026 10:58:03] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[08/May/2026 10:58:03] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[08/May/2026 10:58:03] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
