@@ -367,6 +367,7 @@ public class AdmissionBrowser extends ModalJFrame {
 		super();
 		setTitle(editing ? MessageBundle.getMessage("angal.admission.editadmissionrecord.title")
 						: MessageBundle.getMessage("angal.admission.newadmission.title"));
+
 		if (parentFrame instanceof AdmissionListener admissionListener) {
 			addAdmissionListener(admissionListener);
 		}
