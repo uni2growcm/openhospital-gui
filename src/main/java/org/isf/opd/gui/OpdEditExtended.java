@@ -558,8 +558,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 			jPanelNorth.add(referralFromCheckBox);
 			jPanelNorth.add(referralFromTextField);
-			jPanelNorth.add(referralToCheckBox);
-			jPanelNorth.add(referralToTextField);
 		}
 
 		if (!insert) {
