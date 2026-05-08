@@ -2586,7 +2586,7 @@ public class PatientInsertExtended extends JDialog {
 		gbc.gridy = 3;
 		gbc.gridwidth = 3;
 		gbc.weightx = 1;
-		JLabel requiredLabel = new JLabel(MessageBundle.getMessage("angal.patient.country.required.fields"));
+		JLabel requiredLabel = new JLabel(MessageBundle.getMessage("angal.patient.country.required.fields.txt"));
 		requiredLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
 		panel.add(requiredLabel, gbc);
 
@@ -2603,30 +2603,30 @@ public class PatientInsertExtended extends JDialog {
 			String name = nameField.getText().trim();
 
 			if (isoCode.isEmpty()) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.required"));
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.required.msg"));
 				return;
 			}
 			if (isoCode.length() != 2) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.length"));
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.length.msg"));
 				return;
 			}
 			if (phoneCodeStr.isEmpty()) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.required"));
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.required.msg"));
 				return;
 			}
 			if (name.isEmpty()) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.name.required"));
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.name.required.msg"));
 				return;
 			}
 
 			String phoneCode = phoneCodeStr;
 			try {
 				if (phoneCodeStr.isEmpty()) {
-					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.required"));
+					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.required.msg"));
 					return;
 				}
 			} catch (NumberFormatException ex) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.number"));
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.phone.number.msg"));
 				return;
 			}
 
@@ -2634,7 +2634,7 @@ public class PatientInsertExtended extends JDialog {
 				CountryIoOperations countryIoOperations = Context.getApplicationContext().getBean(CountryIoOperations.class);
 
 				if (countryIoOperations.getCountryByIsoCode(isoCode).isPresent()) {
-					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.exists"));
+					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.exists.msg"));
 					return;
 				}
 
@@ -2648,7 +2648,7 @@ public class PatientInsertExtended extends JDialog {
 				dialog.dispose();
 
 			} catch (Exception ex) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.save.error") + ex.getMessage());
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.save.error.msg") + ex.getMessage());
 			}
 		});
 
@@ -2667,9 +2667,13 @@ public class PatientInsertExtended extends JDialog {
 			jCountryComboBox.addItem(null);
 
 			CountryIoOperations countryIoOperations = Context.getApplicationContext().getBean(CountryIoOperations.class);
-			List<Country> countries = countryIoOperations.getAllCountries();
-			for (Country c : countries) {
-				jCountryComboBox.addItem(c);
+			try {
+				List<Country> countries = countryIoOperations.getAllCountries();
+				for (Country c : countries) {
+					jCountryComboBox.addItem(c);
+				}
+			} catch (Exception e) {
+				MessageDialog.error(this, MessageBundle.getMessage("angal.country.load.error.msg"));
 			}
 
 			if (!insert && patient.getCountry() != null) {
@@ -2685,7 +2689,7 @@ public class PatientInsertExtended extends JDialog {
 					if (currentPhone.isEmpty() || currentPhone.matches("^\\+?\\d+$")) {
 						jTelephoneTextField.setText(phoneCode);
 					} else {
-						int answer = MessageDialog.yesNo(this, MessageBundle.getMessage("angal.patient.phone.replace.confirm"));
+						int answer = MessageDialog.yesNo(this, MessageBundle.getMessage("angal.patient.phone.replace.confirm.msg"));
 						if (answer == JOptionPane.YES_OPTION) {
 							jTelephoneTextField.setText(phoneCode);
 						}
