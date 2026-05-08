@@ -64,7 +64,6 @@ import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
-import org.springframework.data.domain.Page;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
@@ -110,10 +109,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 	public Patient getPatient() {
 		return patient;
 	}
-
-	private static final int PAGE_SIZE = 100;
-	private int currentOffset = 0;
-	private long totalCount = 0;
 
 	private JButton buttonNew;
 	private PatientSummary ps;
@@ -181,24 +176,16 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 	}
 
-
-	public SelectPatient(JDialog owner, String searchText, int maxResults) {
+	SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
 		super(owner, true);
 
 		try {
-			Page<Patient> patientPage = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
-					searchText.isEmpty() ? null : searchText,
-					0,
-					maxResults
-			);
+			PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
-			patArray = new ArrayList<>(patientPage.getContent());
+			String keyword = (searchText != null && !searchText.trim().isEmpty()) ? searchText : null;
+			patArray = patientBrowserManager.getPatientsByOneOfFieldsLikeWithLimit(keyword, maxPatients);
+
 			patSearch = new ArrayList<>(patArray);
-			totalCount = patientPage.getTotalElements();
-
-			if (totalCount > maxResults) {
-				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", maxResults));
-			}
 
 		} catch (OHServiceException e) {
 			MessageDialog.showExceptions(e);
@@ -208,6 +195,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		ps = new PatientSummary(patient);
 		initComponents();
+
+		if (searchText != null && !searchText.trim().isEmpty()) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -219,11 +210,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		});
 
 		setLocationRelativeTo(null);
-		buttonNew.setVisible(true);
-
-		if (searchText != null && !searchText.isEmpty()) {
-			jTextFieldSearchPatient.setText(searchText);
-		}
+		buttonNew.setVisible(ableAddPatient);
 	}
 
 	public SelectPatient(JDialog owner, String search) {
@@ -253,33 +240,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.setText(search);
 		if (GeneralData.ENHANCEDSEARCH) {
 			jSearchButton.doClick();
-		}
-	}
-
-
-	private void performSearch() {
-		String searchText = jTextFieldSearchPatient.getText().trim();
-		try {
-			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
-					searchText.isEmpty() ? null : searchText,
-					0,
-					PAGE_SIZE
-			);
-
-			patArray = new ArrayList<>(page.getContent());
-			patSearch = patArray;
-			totalCount = page.getTotalElements();
-			currentOffset = 0;
-
-			jTablePatient.updateUI();
-
-			if (totalCount > PAGE_SIZE) {
-				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", PAGE_SIZE));
-			}
-		} catch (OHServiceException e) {
-			MessageDialog.showExceptions(e);
-			patArray = new ArrayList<>();
-			patSearch = patArray;
 		}
 	}
 
@@ -347,46 +307,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 				dispose();
 			}
 		});
-		setLocationRelativeTo(null);
-		buttonNew.setVisible(abbleAddPatient);
-	}
-
-	SelectPatient(JDialog owner, int pageSize, boolean abbleAddPatient) {
-		super(owner, true);
-
-		try {
-			Page<Patient> patientPage = patientBrowserManager.getPatientsByOneOfFieldsLikePaginated(
-					null,
-					0,
-					pageSize
-			);
-
-			patArray = new ArrayList<>(patientPage.getContent());
-			patSearch = new ArrayList<>(patArray);
-			totalCount = patientPage.getTotalElements();
-
-			if (totalCount > pageSize) {
-				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.too.many.patients", pageSize));
-			}
-
-		} catch (OHServiceException e) {
-			MessageDialog.showExceptions(e);
-			patArray = new ArrayList<>();
-			patSearch = new ArrayList<>();
-		}
-
-		ps = new PatientSummary(patient);
-		initComponents();
-
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				patArray.clear();
-				patSearch.clear();
-				dispose();
-			}
-		});
-
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
 	}

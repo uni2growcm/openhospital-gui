@@ -40,6 +40,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
 
+import org.hibernate.LazyInitializationException;
 import org.isf.agetype.manager.AgeTypeBrowserManager;
 import org.isf.agetype.model.AgeType;
 import org.isf.anamnesis.gui.PatientHistoryEdit;
@@ -171,6 +172,11 @@ public class PatientInsertExtended extends JDialog {
 	private int years;
 	private int months;
 	private int days;
+
+	private JPanel jPhonePanel;
+	private JPanel jPhoneCodePanel;
+	private JTextField jPhoneCodeTextField;
+	private JTextField jLocalNumberTextField;
 
 	// BirthDate Components:
 	private JPanel jBirthDate;
@@ -346,11 +352,44 @@ public class PatientInsertExtended extends JDialog {
 			this.setTitle(MessageBundle.getMessage("angal.patient.newpatient.title"));
 		} else {
 			this.setTitle(MessageBundle.getMessage("angal.patient.editpatient.title"));
+			initializePhoneFields();
 		}
 		this.setSize(new Dimension(604, 445));
 		pack();
 		setResizable(false);
 		setLocationRelativeTo(null);
+	}
+
+	/**
+	 * Initializes the phone fields when editing an existing patient
+	 */
+	private void initializePhoneFields() {
+		if (!insert && patient != null && patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
+			String fullPhone = patient.getTelephone();
+
+			String phoneCode = "+";
+			String localNumber = fullPhone;
+
+			if (fullPhone.startsWith("+")) {
+				int codeLength = 1;
+				while (codeLength < fullPhone.length() &&
+						codeLength <= 5 &&
+						Character.isDigit(fullPhone.charAt(codeLength))) {
+					codeLength++;
+				}
+				phoneCode = fullPhone.substring(0, codeLength);
+				localNumber = fullPhone.substring(codeLength).trim();
+			}
+
+			if (jPhoneCodeTextField != null) {
+				jPhoneCodeTextField.setText(phoneCode);
+			}
+			if (jLocalNumberTextField != null) {
+				jLocalNumberTextField.setText(localNumber);
+			}
+
+			LOGGER.debug("Initialized phone fields - Code: {}, Local: {}", phoneCode, localNumber);
+		}
 	}
 
 	/**
@@ -434,6 +473,21 @@ public class PatientInsertExtended extends JDialog {
 				boolean ok = true;
 				String firstName = jFirstNameTextField.getText().trim();
 				String secondName = jSecondNameTextField.getText().trim();
+				String phoneCode = jPhoneCodeTextField.getText().trim();
+				String localNumber = jLocalNumberTextField.getText().trim();
+
+				if (phoneCode.isEmpty() || phoneCode.equals("+")) {
+					MessageDialog.warning(this, MessageBundle.getMessage("angal.patient.phone.code.required.msg"));
+					return;
+				}
+
+				if (localNumber.isEmpty()) {
+					int answer = MessageDialog.yesNo(this,
+							MessageBundle.getMessage("angal.patient.phone.local.empty.msg"));
+					if (answer != JOptionPane.YES_OPTION) {
+						return;
+					}
+				}
 
 				if (firstName.isEmpty()) {
 					MessageDialog.error(this, "angal.patient.insertfirstname.msg");
@@ -482,7 +536,8 @@ public class PatientInsertExtended extends JDialog {
 						patient.setAddress(jAddressTextField.getText().trim());
 						patient.setCity(jCityTextField.getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
-						patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
+						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + jLocalNumberTextField.getText().trim().replace(" ", "");
+						patient.setTelephone(fullPhoneNumber);
 						patient.setMotherName(jMotherNameTextField.getText().trim());
 						if (jMotherAlive.isSelected()) {
 							patient.setMother('A');
@@ -556,7 +611,6 @@ public class PatientInsertExtended extends JDialog {
 							patient.setCountry(selectedCountry);
 						}
 
-
 						try {
 							patient = patientBrowserManager.savePatient(patient);
 							consensus.setPatient(patient);
@@ -598,7 +652,8 @@ public class PatientInsertExtended extends JDialog {
 					patient.setAddress(jAddressTextField.getText().trim());
 					patient.setCity(jCityTextField.getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
-					patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
+					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + jLocalNumberTextField.getText().trim().replace(" ", "");
+					patient.setTelephone(fullPhoneNumber);
 					patient.setMotherName(jMotherNameTextField.getText().trim());
 
 					if (jMotherAlive.isSelected()) {
@@ -1047,6 +1102,7 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jTelephoneLabel = new JLabel(MessageBundle.getMessage("angal.common.telephone.txt"));
 			jTelephoneLabelPanel = new JPanel();
 			jTelephoneLabelPanel.add(jTelephoneLabel, BorderLayout.EAST);
+			jTelephoneLabel.setToolTipText(MessageBundle.getMessage("angal.patient.phone.format.tooltip"));
 		}
 		return jTelephoneLabelPanel;
 	}
@@ -1060,7 +1116,7 @@ public class PatientInsertExtended extends JDialog {
 		SmsParameters.initialize();
 		if (jTelephoneTextField == null) {
 			jTelephoneTextField = new JTextField(15);
-			jTelephoneTextField.setText(SmsParameters.ICC);
+			jTelephoneTextField.setText("+");
 			if (!insert) {
 				jTelephoneTextField.setText(patient.getTelephone());
 			}
@@ -1742,7 +1798,6 @@ public class PatientInsertExtended extends JDialog {
 
 	/**
 	 * This method initializes jTelephone
-	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJTelephone() {
@@ -1750,7 +1805,21 @@ public class PatientInsertExtended extends JDialog {
 			jTelephone = new JPanel();
 			jTelephone.setLayout(new BorderLayout());
 			jTelephone.add(getJTelPanel(), BorderLayout.WEST);
-			jTelephone.add(getJTelephoneFieldPanel(), BorderLayout.EAST);
+
+			JPanel phoneInputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+			JPanel codePanel = new JPanel(new BorderLayout());
+			jPhoneCodeTextField = new JTextField(5);
+			jPhoneCodeTextField.setEditable(false);
+			jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+			jPhoneCodeTextField.setHorizontalAlignment(JTextField.CENTER);
+			jPhoneCodeTextField.setText("+");
+			codePanel.add(jPhoneCodeTextField, BorderLayout.CENTER);
+			jLocalNumberTextField = new JTextField(12);
+			jLocalNumberTextField.setToolTipText(MessageBundle.getMessage("angal.patient.phone.local.tooltip"));
+			phoneInputPanel.add(codePanel);
+			phoneInputPanel.add(jLocalNumberTextField);
+
+			jTelephone.add(phoneInputPanel, BorderLayout.EAST);
 		}
 		return jTelephone;
 	}
@@ -2587,7 +2656,7 @@ public class PatientInsertExtended extends JDialog {
 		gbc.gridwidth = 3;
 		gbc.weightx = 1;
 		JLabel requiredLabel = new JLabel(MessageBundle.getMessage("angal.patient.country.required.fields.txt"));
-		requiredLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
+		requiredLabel.setAlignmentX(CENTER_ALIGNMENT);
 		panel.add(requiredLabel, gbc);
 
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -2661,6 +2730,7 @@ public class PatientInsertExtended extends JDialog {
 		dialog.add(buttonPanel, BorderLayout.SOUTH);
 		dialog.setVisible(true);
 	}
+
 	private JComboBox<Country> getJCountryComboBox() {
 		if (jCountryComboBox == null) {
 			jCountryComboBox = new JComboBox<>();
@@ -2677,23 +2747,33 @@ public class PatientInsertExtended extends JDialog {
 			}
 
 			if (!insert && patient.getCountry() != null) {
-				jCountryComboBox.setSelectedItem(patient.getCountry());
+				try {
+
+					int countryId = patient.getCountry().getId();
+
+					for (int i = 0; i < jCountryComboBox.getItemCount(); i++) {
+						Country c = jCountryComboBox.getItemAt(i);
+						if (c != null && c.getId() == countryId) {
+							jCountryComboBox.setSelectedItem(c);
+							break;
+						}
+					}
+				} catch (LazyInitializationException ex) {
+					MessageDialog.warning(this, MessageBundle.getMessage("angal.patient.country.load.error.msg"));
+				}
 			}
 
 			jCountryComboBox.addActionListener(e -> {
 				Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 				if (selectedCountry != null && selectedCountry.getPhoneCode() != null) {
-					String currentPhone = jTelephoneTextField.getText().trim();
-					String phoneCode = selectedCountry.getPhoneCode().toString();
+					String rawCode = selectedCountry.getPhoneCode().trim();
+					String phoneCode = rawCode.startsWith("+") ? rawCode : "+" + rawCode;
 
-					if (currentPhone.isEmpty() || currentPhone.matches("^\\+?\\d+$")) {
-						jTelephoneTextField.setText(phoneCode);
-					} else {
-						int answer = MessageDialog.yesNo(this, MessageBundle.getMessage("angal.patient.phone.replace.confirm.msg"));
-						if (answer == JOptionPane.YES_OPTION) {
-							jTelephoneTextField.setText(phoneCode);
-						}
-					}
+					jPhoneCodeTextField.setText(phoneCode);
+					jPhoneCodeTextField.setBackground(new Color(220, 240, 255));
+				} else {
+					jPhoneCodeTextField.setText("+");
+					jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 				}
 			});
 		}
@@ -2755,6 +2835,7 @@ public class PatientInsertExtended extends JDialog {
 						if (!searchText.isEmpty()) {
 							SelectPatient selectPatient = new SelectPatient(
 									PatientInsertExtended.this,
+									true,
 									searchText,
 									100
 							);
@@ -2790,22 +2871,17 @@ public class PatientInsertExtended extends JDialog {
 		return jAffiliatedPatientTextField;
 	}
 
-	private void openPatientSelectorWithSearch(String searchText) {
-		SelectPatient selectPatient = new SelectPatient(this, searchText);
-		selectPatient.addSelectionListener(selectedPatient -> {
-			patient.setAffiliatedPatient(selectedPatient);
-			jAffiliatedPatientTextField.setText(selectedPatient.getName());
-		});
-		selectPatient.setVisible(true);
-	}
-
 	private JButton getJAffiliatedPatientSearchButton() {
 		if (jAffiliatedPatientSearchButton == null) {
+			String searchText = jAffiliatedPatientTextField.getText().trim();
 			ImageIcon searchIcon = new ImageIcon("rsc/icons/pick_patient_button.png");
 			jAffiliatedPatientSearchButton = new JButton(MessageBundle.getMessage("angal.patient.affiliation.select"), searchIcon);
 			jAffiliatedPatientSearchButton.setToolTipText(MessageBundle.getMessage("angal.patient.affiliation.select.patient"));
 			jAffiliatedPatientSearchButton.addActionListener(e -> {
-				SelectPatient selectPatient = new SelectPatient(this, 100, true);
+				SelectPatient selectPatient = new SelectPatient(this, 									true,
+						searchText,
+						100
+				);
 				selectPatient.addSelectionListener(selectedPatient -> {
 					patient.setAffiliatedPatient(selectedPatient);
 					jAffiliatedPatientTextField.setText(selectedPatient.getName());
