@@ -311,8 +311,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 		});
 
-		underLabel = new JLabel("/ 0 Pages");
-		totalPatientsLabel = new JLabel("Total patients: 0");
+		underLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.opd.pagination.pages"));
+		totalPatientsLabel = new JLabel(MessageBundle.getMessage("angal.opd.pagination.totalpatients") + ": 0");
 
 		panel.add(prevButton);
 		panel.add(pagesCombo);
@@ -347,8 +347,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		prevButton.setEnabled(currentPage > 0);
 		nextButton.setEnabled(currentPage < totalPages - 1);
 
-		underLabel.setText("/ " + totalPages + " pages");
-		totalPatientsLabel.setText("Total patients: " + totalRows);
+		underLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.opd.pagination.pages"));
+		totalPatientsLabel.setText(MessageBundle.getMessage("angal.opd.pagination.totalpatients") + ": " + totalRows);
 	}
 
 	private int calculatePages(long rows) {
