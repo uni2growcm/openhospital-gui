@@ -88,18 +88,14 @@ public class PregnancyDetailsView extends JDialog {
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(tabbedPane.getFont().deriveFont(Font.BOLD));
 
-        // Pregnancy information tab
         tabbedPane.addTab(MessageBundle.getMessage("angal.maternity.pregnancy.tab"), createPregnancyPanel());
 
-        // Delivery information tab
         tabbedPane.addTab(MessageBundle.getMessage("angal.maternity.delivery.tab"), createDeliveryPanel());
 
-        // Newborns information tab
         tabbedPane.addTab(MessageBundle.getMessage("angal.maternity.newborns.tab"), createNewbornsPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Print buttons panel
         add(createPrintButtonPanel(), BorderLayout.SOUTH);
     }
 
@@ -122,7 +118,7 @@ public class PregnancyDetailsView extends JDialog {
 
         // Pregnancy Information Section
         JPanel pregnancyInfoPanel = createSectionPanel(MessageBundle.getMessage("angal.maternity.pregnancy.info.header"));
-        pregnancyInfoPanel.setLayout(new GridLayout(6, 2, 5, 3));
+        pregnancyInfoPanel.setLayout(new GridLayout(7, 2, 5, 3));
         pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.pregnancy.id.col") + ":"));
         pregnancyInfoPanel.add(createValueLabel(String.valueOf(pregnancy.getId())));
         pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.creationdate.col") + ":"));
@@ -131,6 +127,10 @@ public class PregnancyDetailsView extends JDialog {
         pregnancyInfoPanel.add(createValueLabel(pregnancy.getLmp() != null ? pregnancy.getLmp().format(dateFormatter) : MessageBundle.getMessage("angal.common.na.label")));
         pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.edd.col") + ":"));
         pregnancyInfoPanel.add(createValueLabel(pregnancy.getEddLmp() != null ? pregnancy.getEddLmp().format(dateFormatter) : MessageBundle.getMessage("angal.common.na.label")));
+        if (delivery == null) {
+            pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.gestationalage.col") + ":"));
+            pregnancyInfoPanel.add(createValueLabel(getGestationalAgeSafely()));
+        }
         pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.risklevel.col") + ":"));
         pregnancyInfoPanel.add(createValueLabel(pregnancy.getRiskLevel() != null ? pregnancy.getRiskLevel().getDescription() : MessageBundle.getMessage("angal.common.na.label")));
         pregnancyInfoPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.status.col") + ":"));
@@ -265,8 +265,8 @@ public class PregnancyDetailsView extends JDialog {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)
+            BorderFactory.createLineBorder(Color.GRAY, 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
         card.setBackground(Color.WHITE);
 
@@ -284,7 +284,7 @@ public class PregnancyDetailsView extends JDialog {
         personalPanel.add(createValueLabel(nb.getBabyPatient().getName()));
         personalPanel.add(createLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
         personalPanel.add(createValueLabel(String.valueOf(nb.getBabyPatient().getCode())));
-        personalPanel.add(createLabel(MessageBundle.getMessage("angal.common.sex.label") + ":"));
+        personalPanel.add(createLabel(MessageBundle.getMessage("angal.common.sex.label")));
         personalPanel.add(createValueLabel(String.valueOf(nb.getBabyPatient().getSex())));
         personalPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.birth.date.label") + ":"));
         personalPanel.add(createValueLabel(nb.getBirthDate() != null ? nb.getBirthDate().format(dateTimeFormatter) : MessageBundle.getMessage("angal.common.na.label")));
@@ -326,12 +326,12 @@ public class PregnancyDetailsView extends JDialog {
     private JPanel createSectionPanel(String title) {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(150, 150, 150)),
-                title,
-                TitledBorder.LEFT,
-                TitledBorder.TOP,
-                panel.getFont().deriveFont(Font.BOLD, 11),
-                new Color(50, 50, 50)
+            BorderFactory.createLineBorder(new Color(150, 150, 150)),
+            title,
+            TitledBorder.LEFT,
+            TitledBorder.TOP,
+            panel.getFont().deriveFont(Font.BOLD, 11),
+            new Color(50, 50, 50)
         ));
         panel.setBackground(Color.WHITE);
         return panel;
@@ -449,8 +449,11 @@ public class PregnancyDetailsView extends JDialog {
             MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.declaration.msg"));
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"),
-                MessageBundle.getMessage("angal.maternity.print.declaration.todo.msg"));
+        MessageDialog.info(
+            this,
+            MessageBundle.getMessage("angal.common.info.title"),
+            MessageBundle.getMessage("angal.maternity.print.declaration.todo.msg")
+        );
     }
 
     private void printBirthCertificate(ActionEvent e) {
@@ -458,7 +461,10 @@ public class PregnancyDetailsView extends JDialog {
             MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.certificate.msg"));
             return;
         }
-        MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"),
-                MessageBundle.getMessage("angal.maternity.print.certificate.todo.msg"));
+        MessageDialog.info(
+            this,
+            MessageBundle.getMessage("angal.common.info.title"),
+            MessageBundle.getMessage("angal.maternity.print.certificate.todo.msg")
+        );
     }
 }

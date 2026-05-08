@@ -85,24 +85,24 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private static final int MAX_AGE = 60;
     
     private final String[] columnHeaders = {
-            MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
-            MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
-            MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
-            MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
-            ""
+        MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
+        MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
+        MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+        MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
+        ""
     };
 
     private final int[] columnWidths = { 50, 70, 150, 50, 120, 100, 100, 80, 100 ,60};
 
     private final String[] vColumns = {
-            MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.typology.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
+        MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.typology.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
     };
 
     private final int[] vColumnWidths = { 100, 150, 400 };
@@ -350,60 +350,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             setText("Détails");
             return this;
-        }
-    }
-
-    class ButtonEditor extends DefaultCellEditor {
-        protected JButton button;
-        private String label;
-        private boolean isPushed;
-        private int selectedRow;
-
-        public ButtonEditor(JCheckBox checkBox) {
-            super(checkBox);
-            button = new JButton();
-            button.setOpaque(true);
-            button.addActionListener(e -> fireEditingStopped());
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            selectedRow = row;
-            label = (value == null) ? "Détails" : value.toString();
-            button.setText(label);
-            isPushed = true;
-            return button;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                Pregnancy pregnancy = pregnancyList.get(selectedRow);
-                if (pregnancy != null) {
-                    MaternityPregnancyEdit edit = new MaternityPregnancyEdit(myFrame, pregnancy, false);
-                    edit.addMaternityPregnancyListener(new MaternityPregnancyEdit.MaternityPregnancyListener() {
-                        @Override
-                        public void pregnancyInserted(AWTEvent e, Pregnancy p) {
-                            performSearch();
-                        }
-
-                        @Override
-                        public void pregnancyUpdated(AWTEvent e, Pregnancy p) {
-                            performSearch();
-                        }
-                    });
-                    edit.setVisible(true);
-                }
-            }
-            isPushed = false;
-            return label;
-        }
-
-        @Override
-        public boolean stopCellEditing() {
-            isPushed = false;
-            return super.stopCellEditing();
         }
     }
 
@@ -869,6 +815,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
                 performSearch();
             }
         });
+
         edit.setVisible(true);
     }
 
@@ -914,7 +861,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void newVisit() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -935,7 +882,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void updateVisit() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -963,7 +910,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void deleteVisit() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -990,10 +937,9 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
-
     private void newDelivery () {
             if (selectedPregnancy == null) {
-                MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+                MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
                 return;
             }
 
@@ -1003,7 +949,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void admission() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -1021,7 +967,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void exams() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -1031,7 +977,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void vaccins() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -1041,7 +987,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void therapy() {
         if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.common.pleaseselectapregnancyfirst.msg");
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
             return;
         }
 
@@ -1077,7 +1023,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             edit.setVisible(true);
         }
     }
-
 
     class MaternityVisitsTableModel extends DefaultTableModel {
         @Serial
@@ -1124,6 +1069,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return false;
         }
     }
+
     class PregnanciesTableModel extends DefaultTableModel {
         @Serial
         private static final long serialVersionUID = 1L;
