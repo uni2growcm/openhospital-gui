@@ -73,10 +73,8 @@ import org.isf.distype.manager.DiseaseTypeBrowserManager;
 import org.isf.distype.model.DiseaseType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
-import org.isf.admission.gui.AdmissionBrowser;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
-import org.isf.admission.model.AdmittedPatient;
 import org.isf.lab.gui.LabBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
@@ -108,7 +106,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jEditButton;
 	private JButton jExamButton;
 	private JButton jTherapyButton;
-	private JButton jOperationButton;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
 	private JPanel dateFilterPanel;
@@ -265,9 +262,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (MainMenu.checkUserGrants("btnadmtherapy")) {
 				jButtonPanel.add(getJTherapyButton(), null);
 			}
-			if (MainMenu.checkUserGrants("btnopdnewoperation") || MainMenu.checkUserGrants("btnopdeditoperation")) {
-				jButtonPanel.add(getJOperationButton(), null);
-			}
 			if (MainMenu.checkUserGrants("btnopddel")) {
 				jButtonPanel.add(getJDeleteButton(), null);
 			}
@@ -373,29 +367,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
 		return jCloseButton;
-	}
-
-	private JButton getJOperationButton() {
-		if (jOperationButton == null) {
-			jOperationButton = new JButton(MessageBundle.getMessage("angal.opd.operation"));
-			jOperationButton.setMnemonic(KeyEvent.VK_O);
-			jOperationButton.addActionListener(actionEvent -> {
-				if (jTable.getSelectedRow() < 0) {
-					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
-					return;
-				}
-				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
-				Patient patient = opd.getPatient();
-				if (patient == null) {
-					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
-					return;
-				}
-				Admission currentAdmission = admissionBrowserManager.getCurrentAdmission(patient);
-				AdmittedPatient admittedPatient = new AdmittedPatient(patient, currentAdmission);
-				new AdmissionBrowser(myFrame, admittedPatient, currentAdmission != null, true);
-			});
-		}
-		return jOperationButton;
 	}
 
 	private JButton getJExamButton() {
