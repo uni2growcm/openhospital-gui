@@ -645,7 +645,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		return jSelectionContentPanel;
 	}
 
-
 	private JPanel getButtonsPanel() {
 		JPanel buttonsPanel = new JPanel();
 		JPanel filterButtonPanel = new JPanel();
@@ -824,7 +823,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		dateTo.setDate(LocalDate.now());
 	}
-
 
 	public class DocumentLimit extends DefaultStyledDocument {
 
@@ -1172,9 +1170,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JPanel getJAgePanel() {
 		if (jAgePanel == null) {
 			jAgePanel = new JPanel();
-			jAgePanel.setLayout(new BoxLayout(getJAgePanel(), BoxLayout.Y_AXIS));
-			jAgePanel.add(getJAgeFromPanel(), null);
-			jAgePanel.add(getJAgeToPanel(), null);
+			jAgePanel.setLayout(new BoxLayout(jAgePanel, BoxLayout.Y_AXIS));
+			jAgePanel.add(getJAgeFromPanel());
+			jAgePanel.add(getJAgeToPanel());
 		}
 		return jAgePanel;
 	}
@@ -1497,5 +1495,4 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		@Override
 		public void keyReleased(KeyEvent e) {}
 	}
-
 }
