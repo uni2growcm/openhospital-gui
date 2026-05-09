@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright � 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -120,7 +120,7 @@ import com.github.lgooddatepicker.zinternaltools.WrapLayout;
  * add an admission record (or modify existing admission record, or set a discharge) of a selected patient
  */
 public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert.PatientListener, PatientListener,
-		AdmissionListener, DeleteAdmissionListener {
+				AdmissionListener, DeleteAdmissionListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -537,29 +537,29 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		layout.setAutoCreateContainerGaps(true);
 		int width = calendarPanel.getMinimumSize().width;
 		layout.setHorizontalGroup(layout.createSequentialGroup() //
-				.addGroup(layout.createParallelGroup() //
-						.addComponent(classPanel, width, width, width) //
-						.addComponent(wardPanel, width, width, width) //
-						.addComponent(calendarPanel, width, width, width) //
-						.addComponent(agePanel, width, width, width) //
-						.addComponent(sexPanel, width, width, width) //
-						.addComponent(searchPanel, width, width, width)));
+						.addGroup(layout.createParallelGroup() //
+										.addComponent(classPanel, width, width, width) //
+										.addComponent(wardPanel, width, width, width) //
+										.addComponent(calendarPanel, width, width, width) //
+										.addComponent(agePanel, width, width, width) //
+										.addComponent(sexPanel, width, width, width) //
+										.addComponent(searchPanel, width, width, width)));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(classPanel, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-						.addComponent(wardPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-						.addComponent(calendarPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-						.addComponent(agePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sexPanel, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-				.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-						.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
+						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(classPanel, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+										.addComponent(wardPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+										.addComponent(calendarPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+										.addComponent(agePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sexPanel, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+						.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+										.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
 
 		mainPanel.setLayout(layout);
 		return mainPanel;
@@ -1040,9 +1040,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 			// ASK CONFIRMATION
 			int ok = MessageDialog.yesNo(this,
-					"angal.admission.withthisoperationthepatientwillbedeletedandthehistorytransferredtothepatient.fmt.msg", patient2.getCode(),
-					patient2.getName(), patient2.getAge(), patient2.getAddress(), mergedPatient.getCode(), mergedPatient.getName(),
-					mergedPatient.getAge(), mergedPatient.getAddress());
+							"angal.admission.withthisoperationthepatientwillbedeletedandthehistorytransferredtothepatient.fmt.msg", patient2.getCode(),
+							patient2.getName(), patient2.getAge(), patient2.getAddress(), mergedPatient.getCode(), mergedPatient.getName(),
+							mergedPatient.getAge(), mergedPatient.getAddress());
 			if (ok != JOptionPane.YES_OPTION) {
 				return;
 			}
@@ -1050,7 +1050,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			if (mergedPatient.getName().toUpperCase().compareTo(patient2.getName().toUpperCase()) != 0) {
 				String[] names = { mergedPatient.getName(), patient2.getName() };
 				String whichName = (String) JOptionPane.showInputDialog(null, MessageBundle.getMessage("angal.admission.pleaseselectthefinalname.msg"),
-						MessageDialog.QUESTION, JOptionPane.QUESTION_MESSAGE, null, names, null);
+								MessageDialog.QUESTION, JOptionPane.QUESTION_MESSAGE, null, names, null);
 				if (whichName == null) {
 					return;
 				}
@@ -1112,18 +1112,18 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		LocalDateTime[] dischargeRange = new LocalDateTime[2];
 		for (int i = 0; i <= dateChoosers.length - 1; i++) {
 			switch (i) {
-				case 0:
-					admissionRange[0] = dateChoosers[i].getDateStartOfDay();
-					break;
-				case 1:
-					admissionRange[1] = dateChoosers[i].getDateEndOfDay();
-					break;
-				case 2:
-					dischargeRange[0] = dateChoosers[i].getDateStartOfDay();
-					break;
-				case 3:
-					dischargeRange[1] = dateChoosers[i].getDateEndOfDay();
-					break;
+			case 0:
+				admissionRange[0] = dateChoosers[i].getDateStartOfDay();
+				break;
+			case 1:
+				admissionRange[1] = dateChoosers[i].getDateEndOfDay();
+				break;
+			case 2:
+				dischargeRange[0] = dateChoosers[i].getDateStartOfDay();
+				break;
+			case 3:
+				dischargeRange[1] = dateChoosers[i].getDateEndOfDay();
+				break;
 			}
 		}
 

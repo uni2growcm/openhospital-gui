@@ -29,9 +29,9 @@ appender.jdbc.type = JDBC
 appender.jdbc.name = jdbc
 appender.jdbc.connectionSource.driverClassName = org.mariadb.jdbc.Driver
 appender.jdbc.connectionSource.type = DriverManager
-appender.jdbc.connectionSource.connectionString = dbc:mariadb://localhost:3306/oh?autoReconnect=true
-appender.jdbc.connectionSource.userName = u2g
-appender.jdbc.connectionSource.password = u2g123
+appender.jdbc.connectionSource.connectionString = dbc:mariadb://DBSERVER:DBPORT/DBNAME?autoReconnect=true
+appender.jdbc.connectionSource.userName = DBUSER
+appender.jdbc.connectionSource.password = DBPASS
 appender.jdbc.tableName = logs
 appender.jdbc.ignoreExceptions = false
 appender.jdbc.columnConfigs[0].type = COLUMN
