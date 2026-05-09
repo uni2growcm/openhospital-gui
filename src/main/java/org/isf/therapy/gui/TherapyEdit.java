@@ -745,18 +745,18 @@ public class TherapyEdit extends ModalJFrame implements VisitListener {
 
 				if (saveTherapies) {
 					try {
-
 						therapyManager.deleteAllTherapies(patient.getCode());
 						for (TherapyRow thRow : thRows) {
 							thRow.setTherapyID(0);
 						}
+
 						therapyManager.newTherapies(thRows);
 
 						for (TherapyRow newThRow : newThRows) {
 							therapyManager.newTherapy(newThRow);
 						}
-						newThRows.clear();
 
+						newThRows.clear();
 					} catch (OHServiceException ex) {
 						MessageDialog.error(this, "angal.therapy.therapiesplancouldnotbesaved");
 						OHServiceExceptionUtil.showMessages(ex);
@@ -969,6 +969,7 @@ public class TherapyEdit extends ModalJFrame implements VisitListener {
 						MessageBundle.getMessage("angal.therapy.renewtherapy.btn"),
 						JOptionPane.YES_NO_OPTION
 				);
+
 				if (confirm != JOptionPane.YES_OPTION) {
 					return;
 				}
