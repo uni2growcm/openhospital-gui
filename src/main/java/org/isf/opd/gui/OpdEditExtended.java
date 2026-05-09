@@ -570,7 +570,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		if (!insert) {
 
 			String referralFrom = opd.getReferralFrom();
-			if (referralFrom != null && !referralFrom.isEmpty() && !referralFrom.equals("R")) {
+			if (referralFrom != null && !referralFrom.isEmpty()) {
 				referralFromCheckBox.setSelected(true);
 				referralFromTextField.setText(referralFrom);
 				referralFromTextField.setEnabled(true);
@@ -1872,7 +1872,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					String toText = referralToTextField.getText().trim();
 					referralTo = toText.isEmpty() ? null : toText;
 				} else {
-					referralTo = "";
+					referralTo = null;
 				}
 				// disease
 				if (diseaseBox1.getSelectedIndex() > 0) {
