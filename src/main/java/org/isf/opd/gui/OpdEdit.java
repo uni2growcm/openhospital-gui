@@ -434,14 +434,14 @@ public class OpdEdit extends JDialog {
 			okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
-				LocalDateTime visitDate;
-				char newPatient;
-				String referralTo = null;
-				String referralFrom = null;
-				Disease disease = null;
-				Disease disease2 = null;
-				Disease disease3 = null;
-				Ward ward;
+						LocalDateTime visitDate;
+						char newPatient;
+						String referralTo;
+						String referralFrom;
+						Disease disease = null;
+						Disease disease2 = null;
+						Disease disease3 = null;
+						Ward ward;
 
 				if (newPatientCheckBox.isSelected()) {
 					newPatient = 'N';
@@ -461,83 +461,87 @@ public class OpdEdit extends JDialog {
 					referralTo = null;
 				}
 
-				// disease
-				if (diseaseBox.getSelectedIndex() > 0) {
-					disease = (Disease) diseaseBox.getSelectedItem();
-				}
-				// disease2
-				if (diseaseBox2.getSelectedIndex() > 0) {
-					disease2 = (Disease) diseaseBox2.getSelectedItem();
-				}
-				// disease3
-				if (diseaseBox3.getSelectedIndex() > 0) {
-					disease3 = (Disease) diseaseBox3.getSelectedItem();
-				}
-				LocalDateTime localDateTime = opdDateField.getLocalDateTime();
-				if (localDateTime == null) {
-					MessageDialog.error(this, "angal.opd.pleaseinsertattendancedate.msg");
-					return;
-				}
-				visitDate = localDateTime;
-
-				if (radiof.isSelected()) {
-					sex = 'F';
-				} else {
-					sex = 'M';
-				}
-
-				opd.setNewPatient(newPatient);
-				opd.setReferralFrom(referralFrom);
-				opd.setReferralTo(referralTo);
-				opd.setAge(age);
-				opd.setSex(sex);
-				opd.setDisease(disease);
-				opd.setDisease2(disease2);
-				opd.setDisease3(disease3);
-				opd.setDate(visitDate);
-				opd.setNote("");
-				opd.setUserID(UserBrowsingManager.getCurrentUser());
-
-				if (insert) {
-					try {
-						if (wardBrowserManager.opdControl(true)) {
-							ward = wardBrowserManager.findWard("OPD");
-							opd.setWard(ward);
+						// disease
+						if (diseaseBox.getSelectedIndex() > 0) {
+							disease = (Disease) diseaseBox.getSelectedItem();
 						}
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-						return;
-					}
-				}
+						// disease2
+						if (diseaseBox2.getSelectedIndex() > 0) {
+							disease2 = (Disease) diseaseBox2.getSelectedItem();
+						}
+						// disease3
+						if (diseaseBox3.getSelectedIndex() > 0) {
+							disease3 = (Disease) diseaseBox3.getSelectedItem();
+						}
+						// visit date
+						LocalDateTime localDateTime = opdDateField.getLocalDateTime();
+						if (localDateTime == null) {
+							MessageDialog.error(this, "angal.opd.pleaseinsertattendancedate.msg");
+							return;
+						}
+						visitDate = localDateTime;
 
-				try {
-					if (insert) {
-						opd.setProgYear(getOpdProgYear(visitDate));
-						RememberDates.setLastOpdVisitDate(visitDate);
-
-						Opd insertedOpd = opdBrowserManager.newOpd(opd);
-						if (insertedOpd != null) {
-							fireSurgeryInserted(opd);
-							dispose();
+						if (radiof.isSelected()) {
+							sex = 'F';
 						} else {
-							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+							sex = 'M';
 						}
-					} else {
-						Opd updatedOpd = opdBrowserManager.updateOpd(opd);
-						if (updatedOpd != null) {
-							fireSurgeryUpdated(updatedOpd);
-							dispose();
-						} else {
-							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+
+						opd.setNewPatient(newPatient);
+						opd.setReferralFrom(referralFrom);
+						opd.setReferralTo(referralTo);
+						opd.setAge(age);
+						opd.setSex(sex);
+						opd.setDisease(disease);
+						opd.setDisease2(disease2);
+						opd.setDisease3(disease3);
+						opd.setDate(visitDate);
+						opd.setNote("");
+						opd.setUserID(UserBrowsingManager.getCurrentUser());
+
+						if (insert) {
+							try {
+								if (wardBrowserManager.opdControl(true)) {
+									ward = wardBrowserManager.findWard("OPD");
+									opd.setWard(ward);
+								}
+							} catch (OHServiceException e) {
+								OHServiceExceptionUtil.showMessages(e);
+								return;
+							}
+						}
+
+						try {
+							if (insert) {    // Insert
+								opd.setProgYear(getOpdProgYear(visitDate));
+								// remember for later use
+								RememberDates.setLastOpdVisitDate(visitDate);
+
+								Opd insertedOpd = opdBrowserManager.newOpd(opd);
+								if (insertedOpd != null) {
+									fireSurgeryInserted(opd);
+									dispose();
+								} else {
+									MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+								}
+							} else {    // Update
+								Opd updatedOpd = opdBrowserManager.updateOpd(opd);
+								if (updatedOpd != null) {
+									fireSurgeryUpdated(updatedOpd);
+									dispose();
+								} else {
+									MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
+								}
+							}
+						} catch (OHServiceException ex) {
+							OHServiceExceptionUtil.showMessages(ex);
 						}
 					}
-				} catch (OHServiceException ex) {
-					OHServiceExceptionUtil.showMessages(ex);
-				}
-			});
+			);
 		}
 		return okButton;
 	}
+
 	private int getOpdProgYear(LocalDateTime date) {
 		int opdNum = 0;
 		if (date == null) {

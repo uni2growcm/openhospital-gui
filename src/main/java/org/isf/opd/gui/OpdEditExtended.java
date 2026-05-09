@@ -472,6 +472,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			String referralTo;
 			String referralFrom;
 			jPanelNorth = new JPanel(new FlowLayout());
+			referralFromTextField = new JTextField(20);
+			referralToTextField = new JTextField(20);
 
 			rePatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.reattendance.txt"));
 			newPatientButton = new JRadioButton(MessageBundle.getMessage("angal.opd.newattendance.txt"));
@@ -497,11 +499,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 				if (referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
-					String fromVal = "";
-					referralFromTextField.setText(fromVal);
-				} else {
-					referralFromCheckBox.setSelected(false);
-					referralFromTextField.setText("");
+					referralFromTextField.setText(referralFrom);
+				} else if(!referralFrom.isEmpty()){
+					referralFromCheckBox.setSelected(true);
+					referralFromTextField.setText(referralFrom);
+					referralFromTextField.setEnabled(true);
 				}
 			} else {
 
@@ -533,14 +535,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					referralToCheckBox.setSelected(true);
 					String toVal = "";
 					referralToTextField.setText(toVal);
+					referralToTextField.setEnabled(true);
 				} else {
 					referralToCheckBox.setSelected(false);
 					referralToTextField.setText("");
+					referralToTextField.setEnabled(false);
 				}
 			} else {
 
 				referralToCheckBox.setSelected(false);
 				referralToTextField.setText("");
+				referralToTextField.setEnabled(false);
 
 				for (ActionListener al : referralToCheckBox.getActionListeners()) {
 					referralToCheckBox.removeActionListener(al);
@@ -558,6 +563,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 			jPanelNorth.add(referralFromCheckBox);
 			jPanelNorth.add(referralFromTextField);
+			jPanelNorth.add(referralToCheckBox);
+			jPanelNorth.add(referralToTextField);
 		}
 
 		if (!insert) {
@@ -598,6 +605,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		return jPanelNorth;
 	}
+
 	/**
 	 * @return the jPanelCentral
 	 */
