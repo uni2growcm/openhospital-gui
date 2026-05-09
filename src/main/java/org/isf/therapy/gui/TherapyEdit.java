@@ -36,6 +36,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -988,17 +989,15 @@ public class TherapyEdit extends ModalJFrame implements VisitListener {
 				TherapyRow currentTherapy = therapyRows.get(0);
 				LocalDateTime endDate = currentTherapy.getEndDate();
 				LocalDateTime suggestedStart = endDate.plusDays(1);
-				LocalDateTime today = java.time.LocalDate.now().atStartOfDay();
-
-
+				LocalDateTime today = LocalDate.now().atStartOfDay();
 				LocalDateTime initialDate = suggestedStart.isBefore(today) ? today : suggestedStart;
-
+				LocalDate defaultDate = initialDate.toLocalDate();
 
 				GoodDateChooser dateChooser = new GoodDateChooser(
-						initialDate.toLocalDate(),
+						defaultDate,
 						true,
 						false,
-						suggestedStart.toLocalDate());
+						initialDate.toLocalDate());
 				int option = JOptionPane.showConfirmDialog(
 						this,
 						dateChooser,
@@ -1017,7 +1016,6 @@ public class TherapyEdit extends ModalJFrame implements VisitListener {
 					return;
 				}
 
-
 				TherapyRow renewedTherapy;
 				try {
 					renewedTherapy = therapyManager.cloneWithNewStartDate(currentTherapy, newStartDate);
@@ -1026,26 +1024,8 @@ public class TherapyEdit extends ModalJFrame implements VisitListener {
 					return;
 				}
 
-
-				Therapy thisTherapy = null;
-				try {
-					thisTherapy = therapyManager.createTherapy(renewedTherapy);
-				} catch (OHServiceException ex) {
-					OHServiceExceptionUtil.showMessages(ex);
-					return;
-				}
-
-
 				newThRows.add(renewedTherapy);
-				therapies.add(thisTherapy);
-				hashTableThRow.put(renewedTherapy.getTherapyID(), renewedTherapy);
-
-				checked = false;
-				therapyModified = true;
-				checkTherapyButton.setEnabled(true);
-				saveButton.setEnabled(true);
-				updateCheckLabel();
-				showAll();
+				addTherapyForSave(renewedTherapy);
 				selectedTherapy = null;
 			});
 		}
