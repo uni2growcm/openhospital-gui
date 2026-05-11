@@ -365,30 +365,44 @@ public class PatientInsertExtended extends JDialog {
 	 */
 	private void initializePhoneFields() {
 		if (!insert && patient != null && patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
-			String fullPhone = patient.getTelephone();
-
+			String fullPhone = patient.getTelephone().trim();
 			String phoneCode = "+";
-			String localNumber = fullPhone;
+			String localNumber = "";
 
 			if (fullPhone.startsWith("+")) {
-				int codeLength = 1;
-				while (codeLength < fullPhone.length() &&
-						codeLength <= 5 &&
-						Character.isDigit(fullPhone.charAt(codeLength))) {
-					codeLength++;
+
+				if (fullPhone.startsWith("+(")) {
+					int closingParen = fullPhone.indexOf(')');
+					if (closingParen != -1) {
+						phoneCode = fullPhone.substring(0, closingParen + 1);
+						localNumber = fullPhone.substring(closingParen + 1).trim();
+					} else {
+
+						localNumber = fullPhone;
+					}
+				} else {
+
+					int codeLength = 1;
+					while (codeLength < fullPhone.length()
+							&& codeLength <= 4
+							&& Character.isDigit(fullPhone.charAt(codeLength))) {
+						codeLength++;
+					}
+					phoneCode = fullPhone.substring(0, codeLength);
+					localNumber = fullPhone.substring(codeLength).trim();
 				}
-				phoneCode = fullPhone.substring(0, codeLength);
-				localNumber = fullPhone.substring(codeLength).trim();
+			} else {
+
+				localNumber = fullPhone;
 			}
 
 			if (jPhoneCodeTextField != null) {
 				jPhoneCodeTextField.setText(phoneCode);
 			}
+
 			if (jLocalNumberTextField != null) {
 				jLocalNumberTextField.setText(localNumber);
 			}
-
-			LOGGER.debug("Initialized phone fields - Code: {}, Local: {}", phoneCode, localNumber);
 		}
 	}
 
@@ -536,7 +550,7 @@ public class PatientInsertExtended extends JDialog {
 						patient.setAddress(jAddressTextField.getText().trim());
 						patient.setCity(jCityTextField.getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
-						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + jLocalNumberTextField.getText().trim().replace(" ", "");
+						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
 						patient.setTelephone(fullPhoneNumber);
 						patient.setMotherName(jMotherNameTextField.getText().trim());
 						if (jMotherAlive.isSelected()) {
@@ -1808,14 +1822,18 @@ public class PatientInsertExtended extends JDialog {
 
 			JPanel phoneInputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 			JPanel codePanel = new JPanel(new BorderLayout());
+
 			jPhoneCodeTextField = new JTextField(5);
 			jPhoneCodeTextField.setEditable(false);
 			jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 			jPhoneCodeTextField.setHorizontalAlignment(JTextField.CENTER);
 			jPhoneCodeTextField.setText("+");
+
 			codePanel.add(jPhoneCodeTextField, BorderLayout.CENTER);
+
 			jLocalNumberTextField = new JTextField(12);
 			jLocalNumberTextField.setToolTipText(MessageBundle.getMessage("angal.patient.phone.local.tooltip"));
+
 			phoneInputPanel.add(codePanel);
 			phoneInputPanel.add(jLocalNumberTextField);
 
