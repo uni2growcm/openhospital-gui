@@ -75,9 +75,6 @@ import org.isf.ward.model.Ward;
  * OpdEdit - add/edit an OPD registration
  */
 public class OpdEdit extends JDialog {
-
-	private JTextField referralFromTextField;
-	private JTextField referralToTextField;
 	
 	private static final long serialVersionUID = -7369841416710920082L;
 
@@ -171,7 +168,13 @@ public class OpdEdit extends JDialog {
     private JButton searchDiseaseButton;
     private JButton searchDiseaseButton2;
     private JButton searchDiseaseButton3;
-        
+
+	/*
+	 * Adds: Textfields to specify referral to and referral from
+	 */
+	private VoLimitedTextField patientReferralFromField;
+	private VoLimitedTextField patientReferralToField;
+
 	/**
 	 * This method initializes
 	 */
@@ -443,22 +446,28 @@ public class OpdEdit extends JDialog {
 						Disease disease3 = null;
 						Ward ward;
 
-				if (newPatientCheckBox.isSelected()) {
-					newPatient = 'N';
-				} else {
-					newPatient = 'R';
-				}
-				if (referralFromCheckBox.isSelected()) {
-					String fromText = referralFromTextField.getText().trim();
-					referralFrom = fromText.isEmpty() ? null : fromText;
-				} else {
-					referralFrom = null;
-				}
+						if (newPatientCheckBox.isSelected()) {
+							newPatient = 'N';
+						} else {
+							newPatient = 'R';
+						}
+
 				if (referralToCheckBox.isSelected()) {
-					String toText = referralToTextField.getText().trim();
-					referralTo = toText.isEmpty() ? null : toText;
+					referralTo = "R";
+					String referralToValue = patientReferralToField.getText().trim();
+					opd.setPatientReferralTo(referralToValue.isEmpty() ? null : referralToValue);
 				} else {
-					referralTo = null;
+					referralTo = "";
+					opd.setPatientReferralTo(null);
+				}
+
+				if (referralFromCheckBox.isSelected()) {
+					referralFrom = "R";
+					String referralFromValue = patientReferralFromField.getText().trim();
+					opd.setPatientReferralFrom(referralFromValue.isEmpty() ? null : referralFromValue);
+				} else {
+					referralFrom = "";
+					opd.setPatientReferralFrom(null);
 				}
 
 						// disease
@@ -872,49 +881,66 @@ public class OpdEdit extends JDialog {
 			}
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
 			jNewPatientPanel.add(referralFromCheckBox);
+
+			patientReferralFromField = new VoLimitedTextField(30, 255);
+			patientReferralFromField.setColumns(15);
+			patientReferralFromField.setEnabled(false);
+			jNewPatientPanel.add(patientReferralFromField);
+
 			if (!insert) {
 				referralFrom = opd.getReferralFrom();
-				if (referralFrom == null) {
-					referralFrom = "";
-				}
-				if (referralFrom.equals("R")) {
+				String patientReferralFrom = opd.getPatientReferralFrom();
+				if (referralFrom != null && referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
-					referralFromTextField.setText(referralFrom);
-				} else {
-					referralFromCheckBox.setSelected(false);
-					referralFromTextField.setText("");
+					patientReferralFromField.setEnabled(true);
+					if (patientReferralFrom != null && !patientReferralFrom.isEmpty()) {
+						patientReferralFromField.setText(patientReferralFrom);
+					}
+				} else if (patientReferralFrom != null && !patientReferralFrom.isEmpty()) {
+					patientReferralFromField.setText(patientReferralFrom);
+					patientReferralFromField.setEnabled(false);
 				}
 			}
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
 			jNewPatientPanel.add(referralToCheckBox);
+
+			patientReferralToField = new VoLimitedTextField(30, 255);
+			patientReferralToField.setColumns(15);
+			patientReferralToField.setEnabled(false);
+			jNewPatientPanel.add(patientReferralToField);
+
 			if (!insert) {
 				referralTo = opd.getReferralTo();
-				if (referralTo == null) {
-					referralTo="";
-				}
-				if (referralTo.equals("R")) {
+				String patientReferralTo = opd.getPatientReferralTo();
+				if (referralTo != null && referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
-					referralToTextField.setText(referralTo);
-				} else {
-					referralToCheckBox.setSelected(false);
-					referralToTextField.setText("");
-				}
-			} else {
-				referralToCheckBox.setSelected(false);
-				referralToTextField.setText("");
-				referralToTextField.setEnabled(false);
-
-				referralToCheckBox.addActionListener(e -> {
-					if (referralToCheckBox.isSelected()) {
-						referralToTextField.setEnabled(true);
-					} else {
-						referralToTextField.setEnabled(false);
-						referralToTextField.setText("");
+					patientReferralToField.setEnabled(true);
+					if (patientReferralTo != null && !patientReferralTo.isEmpty()) {
+						patientReferralToField.setText(patientReferralTo);
 					}
-				});
+				} else if (patientReferralTo != null && !patientReferralTo.isEmpty()) {
+					patientReferralToField.setText(patientReferralTo);
+					patientReferralToField.setEnabled(false);
+				}
 			}
-			jNewPatientPanel.add(referralFromCheckBox);
-			jNewPatientPanel.add(referralFromTextField);
+			referralFromCheckBox.addActionListener(e -> {
+				boolean selected = referralFromCheckBox.isSelected();
+				patientReferralFromField.setEnabled(selected);
+				if (!selected) {
+					patientReferralFromField.setText("");
+				} else {
+					patientReferralFromField.requestFocus();
+				}
+			});
+			referralToCheckBox.addActionListener(e -> {
+				boolean selected = referralToCheckBox.isSelected();
+				patientReferralToField.setEnabled(selected);
+				if (!selected) {
+					patientReferralToField.setText("");
+				} else {
+					patientReferralToField.requestFocus();
+				}
+			});
 		}
 		return jNewPatientPanel;
 	}
