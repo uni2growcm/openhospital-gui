@@ -352,12 +352,15 @@ public class PatientInsertExtended extends JDialog {
 			this.setTitle(MessageBundle.getMessage("angal.patient.newpatient.title"));
 		} else {
 			this.setTitle(MessageBundle.getMessage("angal.patient.editpatient.title"));
-			initializePhoneFields();
 		}
 		this.setSize(new Dimension(604, 445));
 		pack();
 		setResizable(false);
 		setLocationRelativeTo(null);
+
+		if (!insert) {
+			initializePhoneFields();
+		}
 	}
 
 	/**
@@ -666,7 +669,7 @@ public class PatientInsertExtended extends JDialog {
 					patient.setAddress(jAddressTextField.getText().trim());
 					patient.setCity(jCityTextField.getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
-					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + jLocalNumberTextField.getText().trim().replace(" ", "");
+					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
 					patient.setTelephone(fullPhoneNumber);
 					patient.setMotherName(jMotherNameTextField.getText().trim());
 
@@ -2782,16 +2785,30 @@ public class PatientInsertExtended extends JDialog {
 			}
 
 			jCountryComboBox.addActionListener(e -> {
-				Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
-				if (selectedCountry != null && selectedCountry.getPhoneCode() != null) {
-					String rawCode = selectedCountry.getPhoneCode().trim();
-					String phoneCode = rawCode.startsWith("+") ? rawCode : "+" + rawCode;
 
-					jPhoneCodeTextField.setText(phoneCode);
-					jPhoneCodeTextField.setBackground(new Color(220, 240, 255));
-				} else {
-					jPhoneCodeTextField.setText("+");
-					jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+				if (!insert && e.getActionCommand().equals("comboBoxChanged")
+						&& jCountryComboBox.hasFocus()) {
+					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
+					if (selectedCountry != null && selectedCountry.getPhoneCode() != null) {
+						String rawCode = selectedCountry.getPhoneCode().trim();
+						String phoneCode = rawCode.startsWith("+") ? rawCode : "+" + rawCode;
+						jPhoneCodeTextField.setText(phoneCode);
+						jPhoneCodeTextField.setBackground(new Color(220, 240, 255));
+					} else {
+						jPhoneCodeTextField.setText("+");
+						jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+					}
+				} else if (insert) {
+					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
+					if (selectedCountry != null && selectedCountry.getPhoneCode() != null) {
+						String rawCode = selectedCountry.getPhoneCode().trim();
+						String phoneCode = rawCode.startsWith("+") ? rawCode : "+" + rawCode;
+						jPhoneCodeTextField.setText(phoneCode);
+						jPhoneCodeTextField.setBackground(new Color(220, 240, 255));
+					} else {
+						jPhoneCodeTextField.setText("+");
+						jPhoneCodeTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+					}
 				}
 			});
 		}
