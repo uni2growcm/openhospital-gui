@@ -40,25 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -75,7 +57,6 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
-import org.isf.lab.gui.LabBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -93,6 +74,8 @@ import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.springframework.data.domain.Page;
+import org.isf.lab.gui.LabNew;
+
 
 /**
  * OpdBrowser - list all OPD. Let the user select an opd to edit or delete
@@ -577,21 +560,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jCloseButton.addActionListener(actionEvent -> dispose());
 		}
 		return jCloseButton;
-	}
-
-	private JButton getJExamButton() {
-		if (jExamButton == null) {
-			jExamButton = new JButton(MessageBundle.getMessage("angal.menu.exams"));
-			jExamButton.setMnemonic(KeyEvent.VK_X);
-			jExamButton.addActionListener(actionEvent -> {
-				if (jTable.getSelectedRow() < 0) {
-					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
-					return;
-				}
-				new LabBrowser();
-			});
-		}
-		return jExamButton;
 	}
 
 	private JButton getJTherapyButton() {
@@ -1548,5 +1516,27 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 		@Override
 		public void keyReleased(KeyEvent e) {}
+	}
+	private JButton getJExamButton() {
+		if (jExamButton == null) {
+			jExamButton = new JButton(MessageBundle.getMessage("angal.menu.exams"));
+			jExamButton.setMnemonic(KeyEvent.VK_X);
+			jExamButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				Patient patient = opd.getPatient();
+
+				if (patient == null) {
+					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+					return;
+				}
+				LabNew labNew = new LabNew(myFrame, patient);
+				labNew.setVisible(true);
+			});
+		}
+		return jExamButton;
 	}
 }
