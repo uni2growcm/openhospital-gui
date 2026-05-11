@@ -1174,6 +1174,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jAgePanel.add(getJAgeFromPanel());
 			jAgePanel.add(getJAgeToPanel());
 		}
+
 		return jAgePanel;
 	}
 
@@ -1203,6 +1204,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (pSur == null) {
 				return 0;
 			}
+
 			return pSur.size();
 		}
 
