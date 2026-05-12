@@ -1134,26 +1134,36 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				default -> null;
 			};
 
-			LocalDateTime[] admissionFrom = null;
-			LocalDateTime[] admissionTo = null;
+			LocalDateTime admissionDateFrom = null;
+			LocalDateTime admissionDateTo = null;
+			LocalDateTime dischargeDateFrom = null;
+			LocalDateTime dischargeDateTo = null;
 			if (GeneralData.ENHANCEDSEARCH) {
-				if (dateChoosers[0].getDate() != null && dateChoosers[1].getDate() != null) {
-					admissionFrom = new LocalDateTime[]{
-							dateChoosers[0].getDateStartOfDay(),
-							dateChoosers[1].getDateEndOfDay()
-					};
+				if (dateChoosers[0].getDate() != null) {
+					admissionDateFrom = dateChoosers[0].getDateStartOfDay();
 				}
-				if (dateChoosers[2].getDate() != null && dateChoosers[3].getDate() != null) {
-					admissionTo = new LocalDateTime[]{
-							dateChoosers[2].getDateStartOfDay(),
-							dateChoosers[3].getDateEndOfDay()
-					};
+
+				if (dateChoosers[1].getDate() != null) {
+					admissionDateTo = dateChoosers[1].getDateEndOfDay();
+				}
+
+				if  (dateChoosers[2].getDate() != null) {
+					dischargeDateFrom = dateChoosers[2].getDateStartOfDay();
+				}
+
+				if (dateChoosers[3].getDate() != null) {
+					dischargeDateTo = dateChoosers[3].getDateEndOfDay();
 				}
 			}
 
 			Page<AdmittedPatient> result = admissionBrowserManager.getAdmittedPatientsPaginated(
-					searchTerms, admissionStatus, wardCodes,
-					admissionFrom, admissionTo,
+					searchTerms,
+					admissionStatus,
+					wardCodes,
+					admissionDateFrom,
+					admissionDateTo,
+					dischargeDateFrom,
+					dischargeDateTo,
 					ageFrom, ageTo, sex,
 					page, PAGE_SIZE
 			);
