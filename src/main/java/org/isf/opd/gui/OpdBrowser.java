@@ -522,6 +522,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (opdCodeFilter != null) {
 			opdCodeFilter.setText("");
 		}
+
 		if (progYearFilter != null) {
 			progYearFilter.setText("");
 		}
