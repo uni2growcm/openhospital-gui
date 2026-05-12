@@ -286,7 +286,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 	/*
 	 * manage PatientEdit messages
-	 * 
+	 *
 	 * mind PatientEdit return a patient patientInserted create a new AdmittedPatient for table
 	 */
 	@Override
