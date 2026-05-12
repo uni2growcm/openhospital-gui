@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -85,6 +85,9 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.video.gui.PatientPhotoPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.ZoneId;
+import java.util.Date;
+import javax.swing.SwingUtilities;
 
 /**
  */
@@ -436,6 +439,7 @@ public class PatientInsertExtended extends JDialog {
 					MessageDialog.error(this, "angal.patient.insertsecondname.msg");
 					return;
 				}
+				calculateAgeAndBirthDateFromSelection();
 				if (!checkAge()) {
 					MessageDialog.error(this, "angal.patient.insertage");
 					return;
@@ -685,7 +689,6 @@ public class PatientInsertExtended extends JDialog {
 		}
 		patient.setAge(years);
 		patient.setBirthDate(birthDate);
-		patient.setAgetype("");
 		return true;
 	}
 
@@ -1439,14 +1442,7 @@ public class PatientInsertExtended extends JDialog {
 			});
 
 			if (!insert) {
-
-				parseAgeType();
-				jAgeDescComboBox.setSelectedIndex(ageType + 1);
-
-				if (ageType == 0) {
-					jAgeMonthsComboBox.setEnabled(true);
-					jAgeMonthsComboBox.setSelectedIndex(ageTypeMonths);
-				}
+				SwingUtilities.invokeLater(() -> restoreAgeTypeSelection());
 			}
 
 		}
@@ -2257,4 +2253,158 @@ public class PatientInsertExtended extends JDialog {
 		}
 	}
 
+	/**
+	 *Calculates the date of birth and age according to the selected mode.
+	 * Exactly like the web version.
+	 */
+
+	private void calculateAgeAndBirthDateFromSelection() {
+		LocalDate today = LocalDate.now();
+
+		if (jAgeTypeDescription.isSelected()) {
+			int index = jAgeDescComboBox.getSelectedIndex();
+
+			if (index > 0) {
+				try {
+					AgeType selectedAgeType = ageTypeBrowserManager.getTypeByCode(index);
+
+					String categoryLabel = jAgeDescComboBox.getSelectedItem().toString();
+
+					int from = selectedAgeType.getFrom();
+					int to = selectedAgeType.getTo();
+					int averageAge = (int) Math.round((from + to) / 2.0);
+
+					LocalDate estimatedBirthDate = today.minusYears(averageAge);
+
+					patient.setBirthDate(estimatedBirthDate);
+					patient.setAge(averageAge);
+
+					if (index == 1 && jAgeMonthsComboBox.isEnabled()) {
+						int months = jAgeMonthsComboBox.getSelectedIndex();
+						patient.setAgetype(categoryLabel + "/" + months);
+					} else {
+						patient.setAgetype(categoryLabel);
+					}
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+					patient.setBirthDate(today);
+					patient.setAge(0);
+					patient.setAgetype(null);
+				}
+			} else {
+				patient.setBirthDate(today);
+				patient.setAge(0);
+				patient.setAgetype(null);
+			}
+		} else if (jAgeTypeBirthDate.isSelected()) {
+			if (birthDate != null) {
+				long timeDiff = System.currentTimeMillis() -
+						Date.from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime();
+				int age = (int) Math.floor(timeDiff / (1000.0 * 3600 * 24) / 365.25);
+
+				patient.setBirthDate(birthDate);
+				patient.setAge(age);
+				patient.setAgetype("");
+			} else {
+				patient.setBirthDate(today);
+				patient.setAge(0);
+				patient.setAgetype("");
+			}
+		} else if (jAgeTypeAge.isSelected()) {
+			try {
+				int years = Integer.parseInt(jAgeYears.getText());
+				int months = Integer.parseInt(jAgeMonths.getText());
+				int days = Integer.parseInt(jAgeDays.getText());
+
+				LocalDate estimatedBirthDate = today
+						.minusYears(years)
+						.minusMonths(months)
+						.minusDays(days);
+
+				patient.setBirthDate(estimatedBirthDate);
+				patient.setAge(years);
+				patient.setAgetype("");
+
+			} catch (NumberFormatException e) {
+				patient.setBirthDate(today);
+				patient.setAge(0);
+				patient.setAgetype("");
+			}
+		} else {
+			patient.setBirthDate(today);
+			patient.setAge(0);
+			patient.setAgetype("");
+		}
+	}
+
+	/**
+	 * Restores the age category in the interface during editing
+	 */
+
+	private void restoreAgeTypeSelection() {
+
+		if (jAgeDescComboBox == null) {
+			System.err.println("jAgeDescComboBox is null, cannot restore age type");
+			return;
+		}
+
+		if (patient.getAgetype() != null && !patient.getAgetype().isEmpty()) {
+			jAgeTypeDescription.setSelected(true);
+
+			String agetypeValue = patient.getAgetype();
+
+			if (agetypeValue.contains("/")) {
+				String[] parts = agetypeValue.split("/");
+				if (parts.length == 2) {
+					String label = parts[0];
+					String monthsStr = parts[1];
+
+					for (int i = 0; i < jAgeDescComboBox.getItemCount(); i++) {
+						String item = jAgeDescComboBox.getItemAt(i).toString();
+						if (item.equals(label)) {
+							jAgeDescComboBox.setSelectedIndex(i);
+							break;
+						}
+					}
+					try {
+						int months = Integer.parseInt(monthsStr);
+						if (months >= 0 && months < jAgeMonthsComboBox.getItemCount()) {
+							jAgeMonthsComboBox.setSelectedIndex(months);
+						}
+						jAgeMonthsComboBox.setEnabled(true);
+					} catch (NumberFormatException e) {
+						jAgeMonthsComboBox.setSelectedIndex(0);
+					}
+				}
+			} else {
+
+				String label = agetypeValue;
+
+				boolean found = false;
+				for (int i = 0; i < jAgeDescComboBox.getItemCount(); i++) {
+					String item = jAgeDescComboBox.getItemAt(i).toString();
+					if (item.equals(label)) {
+						jAgeDescComboBox.setSelectedIndex(i);
+						found = true;
+						break;
+					}
+				}
+
+				if (!found && patient.getAgetype() != null) {
+					System.err.println("Warning: Could not find category: " + label);
+				}
+
+				jAgeMonthsComboBox.setEnabled(false);
+			}
+
+		} else if (patient.getBirthDate() != null) {
+			jAgeTypeBirthDate.setSelected(true);
+			calcAge(patient.getBirthDate());
+		} else if (patient.getAge() > 0) {
+			jAgeTypeAge.setSelected(true);
+			jAgeYears.setText(String.valueOf(patient.getAge()));
+			jAgeMonths.setText("0");
+			jAgeDays.setText("0");
+		}
+	}
 }
