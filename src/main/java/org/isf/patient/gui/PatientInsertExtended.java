@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright � 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -195,7 +195,6 @@ public class PatientInsertExtended extends JDialog {
 	private JComboBox jAgeDescComboBox;
 	private JComboBox jAgeMonthsComboBox;
 	private JLabel jAgeMonthsLabel;
-
 
 	// Nouveaux champs
 	private JPanel jBirthPlacePanel;
@@ -2913,7 +2912,9 @@ public class PatientInsertExtended extends JDialog {
 			jAffiliatedPatientSearchButton = new JButton(MessageBundle.getMessage("angal.patient.affiliation.select"), searchIcon);
 			jAffiliatedPatientSearchButton.setToolTipText(MessageBundle.getMessage("angal.patient.affiliation.select.patient"));
 			jAffiliatedPatientSearchButton.addActionListener(e -> {
-				SelectPatient selectPatient = new SelectPatient(this, 									true,
+				SelectPatient selectPatient = new SelectPatient(
+						this,
+						true,
 						searchText,
 						100
 				);
@@ -2945,5 +2946,4 @@ public class PatientInsertExtended extends JDialog {
 		}
 		return jAffiliatedPatientClearButton;
 	}
-
 }

@@ -120,10 +120,10 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screensize = kit.getScreenSize();
 		final int pfrmBase = 10;
-		final int pfrmWidth = 6;
-		final int pfrmHeight = 5;
-		this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
-				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
+        final int pfrmWidth = 6;
+        final int pfrmHeight = 5;
+        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
+                screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setTitle(MessageBundle.getMessage("angal.patient.patientbrowser.title"));
 		this.setContentPane(getJContainPanel());
 	}
