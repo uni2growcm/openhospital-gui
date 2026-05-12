@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PregnancyReport" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="PregnancyReport" uuid="bb720af0-a19c-4020-9487-e2cf3b50ac5f">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="PregId" class="java.lang.String"/>
+	<parameter name="PathLogoImage" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+    CONCAT('Pregnancy ', DENSE_RANK() OVER (PARTITION BY PR.PRG_PAT_ID ORDER BY PR.PRG_DATE ASC)) AS PREGNANCY_NUM,
+
+    COUNT(PR.PRG_ID) OVER (PARTITION BY PR.PRG_PAT_ID) AS TOTAL_PREGNANCY,
+
+    PR.*,
+    PA.PAT_NAME,
+    VI.PRGV_ID,
+    VI.PRGV_DATE,
+    IF(VI.PRGV_DATE > VID.PRGDLV_DATE, 'Postnatal', 'Prenatal') AS PRGV_TYPE,
+    LAB.LAB_NOTE,
+    LAB.LAB_RES,
+    EX.EXA_DESC
+FROM OH_PREGNANCY PR
+LEFT JOIN OH_PATIENT PA ON PR.PRG_PAT_ID = PA.PAT_ID
+LEFT JOIN OH_PREGNANCYVISIT VI ON VI.PRGV_PRG_ID = PR.PRG_ID
+LEFT JOIN OH_PREGNANCYDELIVERY VID ON PR.PRG_ID = VID.PRGDLV_PRG_ID
+LEFT JOIN OH_LABORATORY LAB ON LAB.LAB_PAT_ID = PA.PAT_ID
+LEFT JOIN OH_EXAM EX ON EX.EXA_ID_A = LAB.LAB_EXA_ID_A
+WHERE PR.PRG_ID = $P{PregId}
+  AND LAB.LAB_DATE <= PR.PRG_DATE
+ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
+	</queryString>
+	<field name="PREGNANCY_NUM" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PREGNANCY_NUM"/>
+		<property name="com.jaspersoft.studio.field.label" value="PREGNANCY_NUM"/>
+	</field>
+	<field name="TOTAL_PREGNANCY" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="TOTAL_PREGNANCY"/>
+		<property name="com.jaspersoft.studio.field.label" value="TOTAL_PREGNANCY"/>
+	</field>
+	<field name="PRG_ID" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_ID"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_ID"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_PAT_ID" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_PAT_ID"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_PAT_ID"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_DATE" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_DATE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_LMP" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_LMP"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_LMP"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_EDD_LMP" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_EDD_LMP"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_EDD_LMP"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_EDD_SCAN" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_EDD_SCAN"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_EDD_SCAN"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_GRAVIDITY" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_GRAVIDITY"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_GRAVIDITY"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_PARITY" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_PARITY"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_PARITY"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_MISSCARRIAGES" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_MISSCARRIAGES"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_MISSCARRIAGES"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_RISK_LEVEL" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_RISK_LEVEL"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_RISK_LEVEL"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_STATUS" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_STATUS"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_STATUS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_CREATED_BY" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_CREATED_BY"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_CREATED_BY"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_CREATED_DATE" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_CREATED_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_CREATED_DATE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_LAST_MODIFIED_BY" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_LAST_MODIFIED_BY"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_LAST_MODIFIED_BY"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_LAST_MODIFIED_DATE" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_LAST_MODIFIED_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_LAST_MODIFIED_DATE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_LOCK" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_LOCK"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_LOCK"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PRG_ACTIVE" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="PRG_ACTIVE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRG_ACTIVE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
+	</field>
+	<field name="PAT_NAME" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PRGV_ID" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PRGV_ID"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRGV_ID"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancyvisit"/>
+	</field>
+	<field name="PRGV_DATE" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="PRGV_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRGV_DATE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancyvisit"/>
+	</field>
+	<field name="PRGV_TYPE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRGV_TYPE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRGV_TYPE"/>
+	</field>
+	<field name="LAB_NOTE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="LAB_NOTE"/>
+		<property name="com.jaspersoft.studio.field.label" value="LAB_NOTE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_laboratory"/>
+	</field>
+	<field name="LAB_RES" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="LAB_RES"/>
+		<property name="com.jaspersoft.studio.field.label" value="LAB_RES"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_laboratory"/>
+	</field>
+	<field name="EXA_DESC" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="EXA_DESC"/>
+		<property name="com.jaspersoft.studio.field.label" value="EXA_DESC"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_exam"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="174" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-18" x="336" y="0" width="199" height="22" uuid="e3ede081-1d5a-44d5-9ae3-1875ae969e64"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="336" y="22" width="199" height="17" uuid="02f2edbf-2e04-4ac6-b55f-8149934d8e6e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-20" x="336" y="39" width="199" height="17" uuid="a052a2c8-fc52-494b-a755-98327d6a7f44"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-21" x="336" y="56" width="199" height="17" uuid="b11aa04a-c1f9-4b39-9845-df0465da6c3a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{Telephone}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="336" y="119" width="123" height="21" uuid="8c7bacbe-fc36-4660-a733-efec257f0a26"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{totalPregnancy}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="179" y="80" width="196" height="30" uuid="17207f70-fff8-46ef-adbd-eea651b9647e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="15" isBold="true" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pregnancyReport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="213" y="119" width="123" height="21" uuid="a58e176f-1dc2-48c9-89e5-379cc589c463">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{patientName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="119" width="123" height="21" uuid="84aa26b1-1b14-4190-8a42-4038e67c7478">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{patientCode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="213" y="140" width="123" height="28" uuid="04a67c84-8928-44bb-b001-9747180f4c58"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="140" width="123" height="28" uuid="a83677ef-0da2-4d01-87d8-86256c4fac2a"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{PRG_PAT_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="336" y="140" width="123" height="28" uuid="6f1be938-22a6-4253-848d-f5ac953e49f3"/>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{TOTAL_PREGNANCY}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="0" y="0" width="90" height="73" uuid="37c2ef80-e8aa-4a4d-8703-271161f71c54"/>
+				<imageExpression><![CDATA[$P{PathLogoImage}]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="30" uuid="688b533d-e63f-40b8-b994-d91c486f58bb">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5c26eefe-bd51-4a88-8cc2-92d6244e37f8"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pregnancyNumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="100" height="30" uuid="69563d3e-db2a-4ea8-bbfb-a3090a41e53b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b952e546-755f-4db7-a526-68302398600f"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{visitDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="0" width="100" height="30" uuid="dd0db3ef-67cb-4278-a426-44d1fe5a41d8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c25f14f6-aa8d-41f4-afed-d84d900ecef1"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{visitType}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="100" height="30" uuid="05ceb4ec-775b-493e-b06d-87181f27ed89">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7b2386ba-8225-434e-8448-772581747887"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{examNote}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="0" width="100" height="30" uuid="5317d668-0643-4e33-9e34-f0f6146c9b45">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="1499f0ec-b2db-42a1-92a3-1e085b14a542"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{examResult}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="500" y="0" width="64" height="30" uuid="8cc835b4-5c5b-4608-94d5-932dad3a5811">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6b8f6b1d-1ee7-47ba-9425-74fd26751b85"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{examNote}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="30" uuid="7774eb51-c01b-4ea2-92fd-0cdd79f6c09e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5c26eefe-bd51-4a88-8cc2-92d6244e37f8"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{PREGNANCY_NUM}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="100" height="30" uuid="63ef4503-a860-4a33-a23f-60f67b9543c8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b952e546-755f-4db7-a526-68302398600f"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{PRGV_DATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="0" width="100" height="30" uuid="4da2f2da-ea30-4df7-bd65-fa204c80c0a8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c25f14f6-aa8d-41f4-afed-d84d900ecef1"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{PRGV_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="100" height="30" uuid="a4eb987c-89be-4d11-b639-015cc1588044">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7b2386ba-8225-434e-8448-772581747887"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{LAB_NOTE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="0" width="100" height="30" uuid="7459fcfb-1c61-49e5-aa95-146c734933e5">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="1499f0ec-b2db-42a1-92a3-1e085b14a542"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{LAB_RES}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="500" y="0" width="64" height="30" uuid="7d29daa9-9786-4a81-adbb-c373ed1c5418">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6b8f6b1d-1ee7-47ba-9425-74fd26751b85"/>
+				</reportElement>
+				<box padding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{EXA_DESC}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="80" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" x="0" y="0" width="100" height="14" uuid="a206c1ce-94e4-4507-b6f9-a5c2f7196cce"/>
+				<box leftPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="535" y="0" width="20" height="20" uuid="3570c64f-fe03-452e-997d-f2b36e466dce"/>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
