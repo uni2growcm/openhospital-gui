@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright � 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -164,6 +164,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JButton jNextButton;
 	private JLabel jPageLabel;
 	private JComboBox<Integer> jPageComboBox;
+	private long totalElements = 0;
+	private JLabel jTotalLabel;
 
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
@@ -583,9 +585,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sexPanel, GroupLayout.DEFAULT_SIZE,
 						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
 				.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(countryPanel, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))//
-						.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(countryPanel, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))//
+				.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
 						.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
 
@@ -1210,6 +1212,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			pPatient = new ArrayList<>(result.getContent());
 			currentPage = result.getNumber();
 			totalPages = result.getTotalPages();
+			totalElements = result.getTotalElements();
 
 			table.setModel(new AdmittedPatientBrowserModel(null));
 			rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", result.getTotalElements()));
@@ -1245,7 +1248,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		}
 
 		jPageComboBox.setSelectedItem(currentPage + 1);
-		jPageLabel.setText("/ " + totalPages);
+		jPageLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		jTotalLabel.setText(MessageBundle.formatMessage("angal.common.totalpatients.txt", totalElements));
 	}
 
 	private JPanel getPaginationPanel() {
@@ -1274,6 +1278,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		panel.add(jPageComboBox);
 		panel.add(jPageLabel);
 		panel.add(jNextButton);
+
+		jTotalLabel = new JLabel();
+		jTotalLabel.setFont(jTotalLabel.getFont().deriveFont(Font.BOLD));
+		panel.add(jTotalLabel);
 
 		return panel;
 	}
