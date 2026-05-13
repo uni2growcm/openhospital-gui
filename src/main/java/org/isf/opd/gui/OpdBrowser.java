@@ -1546,7 +1546,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
 				Patient patient = opd.getPatient();
-
 				if (patient == null) {
 					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
 					return;
