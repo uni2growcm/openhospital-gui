@@ -105,7 +105,10 @@ import org.isf.ward.model.Ward;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.DefaultListModel;
-import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import org.isf.disease.gui.DiseaseEdit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * OpdEditExtended - add/edit an OPD registration
@@ -265,6 +268,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JButton addDiagnosisButton;
 	private JPanel selectedDiagnosisContainer;
 	private DefaultListModel<Disease> selectedDiagnosisModel;
+	private JScrollPane selectedDiagnosisScrollPane;
 
 	/**
 	 * Opd next visit fields
@@ -500,6 +504,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private void initialize() {
 		this.setContentPane(getMainPanel());
 		pack();
+		setPreferredSize(new Dimension(850, 750));
 		setMinimumSize(this.getSize());
 		this.setTitle(LAST_NOTE_LABEL);
 		setLocationRelativeTo(null);
@@ -560,7 +565,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gblPanelData.columnWidths = new int[] { 80, 40, 20, 80, 20 };
 			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20, 20 };
 			gblPanelData.columnWeights = new double[] { 0.0, 0.1, 0.0, 1.0, 0.0 };
-			gblPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+			gblPanelData.rowHeights = new int[] { 20, 20, 20, 60, 20, 20, 20, 20, 20 };
 			jPanelData.setLayout(gblPanelData);
 
 			// Attendance Date
@@ -680,6 +685,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcAdditional.insets = new Insets(5, 5, 5, 5);
 			gbcAdditional.gridx = 0;
 			gbcAdditional.gridy = 3;
+			gbcAdditional.weighty = 1.0;
 			jPanelData.add(additionalDiagnosisPanel, gbcAdditional);
 
 			// Last OPD Visit Label
@@ -1675,10 +1681,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 * Initializes the additional diagnoses panel
 	 */
 	private void initAdditionalDiagnosisPanel() {
-		// Initialize the model
+		// 1. D'abord initialiser le modèle
 		selectedDiagnosisModel = new DefaultListModel<>();
 
-		// Load existing diagnoses when editing
+		// 2. Charger les diagnostics existants
 		if (!insert && opd.getExtraDiagnosesList() != null) {
 			for (Disease disease : opd.getExtraDiagnosesList()) {
 				if (disease != null) {
@@ -1687,13 +1693,14 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		}
 
-		// Main panel
+		// 3. Créer le panel principal
 		additionalDiagnosisPanel = new JPanel(new BorderLayout());
-		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder("Additional Diagnoses"));
+		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder("Add New Diagnostic"));
+		additionalDiagnosisPanel.setPreferredSize(new Dimension(600, 150));
+		additionalDiagnosisPanel.setMinimumSize(new Dimension(500, 150));
 
-		// Top panel - search area
+		// 4. Panel du haut (recherche)
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
 		searchDiagnosisField = new JTextField(15);
 		topPanel.add(searchDiagnosisField);
 
@@ -1711,26 +1718,68 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		for (Disease disease : diseasesOPD) {
 			browseDiagnosisCombo.addItem(disease);
 		}
+
+		// ========== DOUBLE-CLICK LISTENER TO ADD DIAGNOSIS ==========
+		browseDiagnosisCombo.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					Disease selected = (Disease) browseDiagnosisCombo.getSelectedItem();
+					if (selected != null) {
+						addSelectedDiagnosisToModel(selected);
+					}
+				}
+			}
+		});
+		// ============================================================
+
 		topPanel.add(browseDiagnosisCombo);
 
-		addDiagnosisButton = new JButton("Add");
-		addDiagnosisButton.addActionListener(e -> addSelectedDiagnosis());
+		addDiagnosisButton = new JButton("Add New Disease");
+		addDiagnosisButton.addActionListener(e -> showAddDiseaseDialog()); // ← MODIFIÉ pour ouvrir le dialogue
 		topPanel.add(addDiagnosisButton);
 
 		additionalDiagnosisPanel.add(topPanel, BorderLayout.NORTH);
 
-		// Center panel - selected diagnoses with scroll
+		// 5. Panel central avec scroll (initialisé mais pas ajouté)
 		selectedDiagnosisContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		selectedDiagnosisContainer.setVisible(false);
+
+		selectedDiagnosisScrollPane = new JScrollPane(selectedDiagnosisContainer);
+		selectedDiagnosisScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 200));
+		// NE PAS AJOUTER MAINTENANT
+
+		// 6. ENFIN, rafraîchir l'affichage (après que tout est initialisé)
 		refreshSelectedDisplay();
 
-		JScrollPane scrollPane = new JScrollPane(selectedDiagnosisContainer);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setPreferredSize(new Dimension(500, 70));
-
-		additionalDiagnosisPanel.add(scrollPane, BorderLayout.CENTER);
-
-		// Enter key shortcut for search
+		// 7. Raccourci clavier
 		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
+	}
+
+	/**
+	 * Shows the dialog to add a new disease
+	 */
+	private void showAddDiseaseDialog() {
+		// Créer une nouvelle maladie vide
+		Disease newDisease = new Disease();
+		newDisease.setOpdInclude(true);
+		newDisease.setIpdInInclude(false);
+		newDisease.setIpdOutInclude(false);
+
+		// Ouvrir la boîte de dialogue d'édition
+		DiseaseEdit dialog = new DiseaseEdit((JFrame) getOwner(), newDisease, true);
+		dialog.setModal(true);
+		dialog.setVisible(true);
+
+		// Vérifier si la maladie a été créée (code non null)
+		if (newDisease.getCode() != null && !newDisease.getCode().isEmpty()) {
+			// Ajouter à la liste des maladies disponibles
+			diseasesOPD.add(newDisease);
+			browseDiagnosisCombo.addItem(newDisease);
+			// Ajouter directement à la sélection
+			addSelectedDiagnosisToModel(newDisease);
+		}
 	}
 
 	/**
@@ -1753,51 +1802,101 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	/**
 	 * Adds the selected diagnosis to the list
+	 /**
+	 * Adds the selected diagnosis to the list
 	 */
 	private void addSelectedDiagnosis() {
-		Disease selected = (Disease) browseDiagnosisCombo.getSelectedItem();
+		// Vérifier si l'utilisateur a sélectionné l'option "+ Add new disease..."
+		Object selected = browseDiagnosisCombo.getSelectedItem();
 
-		if (selected != null) {
-			// Check if already added
-			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-				if (selectedDiagnosisModel.get(i).getCode().equals(selected.getCode())) {
-					MessageDialog.warning(this, "Diagnosis already added");
-					return;
-				}
+		if (selected instanceof String && selected.equals("+ Add new disease...")) {
+			// Ouvrir la boîte de dialogue pour créer une nouvelle maladie
+			Disease newDisease = showAddDiseaseDialog();
+			if (newDisease != null) {
+				// Ajouter la nouvelle maladie à la comboBox et à la liste
+				diseasesOPD.add(newDisease);
+				browseDiagnosisCombo.addItem(newDisease);
+				browseDiagnosisCombo.setSelectedItem(newDisease);
+				// L'ajouter directement à la sélection
+				addSelectedDiagnosisToModel(newDisease);
 			}
+			return;
+		}
 
-			selectedDiagnosisModel.addElement(selected);
-			refreshSelectedDisplay();
-			updateOpdDiagnosesList();
-
-			// Reset search
-			browseDiagnosisCombo.setSelectedItem(null);
-			searchDiagnosisField.setText("");
-			performDiagnosisSearch();
+		Disease selectedDisease = (Disease) selected;
+		if (selectedDisease != null) {
+			addSelectedDiagnosisToModel(selectedDisease);
 		}
 	}
 
 	/**
-	 * Refreshes the display of selected diagnoses (tags with remove buttons)
+	 * Adds a disease to the selected diagnoses model
 	 */
-	private void refreshSelectedDisplay() {
-		selectedDiagnosisContainer.removeAll();
+	/**
+	 * Adds a disease to the selected diagnoses model
+	 */
+	private void addSelectedDiagnosisToModel(Disease disease) {
+		if (disease == null) return;
 
-		if (selectedDiagnosisModel.isEmpty()) {
-			JLabel emptyLabel = new JLabel("No additional diagnoses selected");
-			emptyLabel.setForeground(Color.GRAY);
-			selectedDiagnosisContainer.add(emptyLabel);
-		} else {
-			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-				Disease disease = selectedDiagnosisModel.get(i);
-				JPanel tagPanel = createTagPanel(i + 1, disease);
-				selectedDiagnosisContainer.add(tagPanel);
+		// Check if already added
+		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+			if (selectedDiagnosisModel.get(i).getCode().equals(disease.getCode())) {
+				MessageDialog.warning(this, "Diagnosis already added");
+				return;
 			}
 		}
 
-		selectedDiagnosisContainer.revalidate();
-		selectedDiagnosisContainer.repaint();
+		selectedDiagnosisModel.addElement(disease);
+		refreshSelectedDisplay();
+		updateOpdDiagnosesList();
+
+		// Reset search
+		browseDiagnosisCombo.setSelectedItem(null);
+		searchDiagnosisField.setText("");
+		performDiagnosisSearch();
 	}
+
+    /**
+     * Refreshes the display of selected diagnoses (tags with remove buttons)
+     */
+    private void refreshSelectedDisplay() {
+        selectedDiagnosisContainer.removeAll();
+
+        if (selectedDiagnosisModel.isEmpty()) {
+            // Si vide, enlever le scrollPane du panel principal
+            if (selectedDiagnosisScrollPane.getParent() != null) {
+                additionalDiagnosisPanel.remove(selectedDiagnosisScrollPane);
+            }
+        } else {
+            // Si pas vide, ajouter le scrollPane s'il n'est pas déjà présent
+            if (selectedDiagnosisScrollPane.getParent() == null) {
+                additionalDiagnosisPanel.add(selectedDiagnosisScrollPane, BorderLayout.CENTER);
+            }
+
+            for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+                Disease disease = selectedDiagnosisModel.get(i);
+                JPanel tagPanel = createTagPanel(i + 1, disease);
+                selectedDiagnosisContainer.add(tagPanel);
+            }
+
+            // FORCER l'affichage
+            selectedDiagnosisContainer.setVisible(true);
+        }
+
+        selectedDiagnosisContainer.revalidate();
+        selectedDiagnosisContainer.repaint();
+        additionalDiagnosisPanel.revalidate();
+        additionalDiagnosisPanel.repaint();
+
+        // FORCER le layout du parent
+        SwingUtilities.invokeLater(() -> {
+            additionalDiagnosisPanel.repaint();
+            if (getContentPane() != null) {
+                getContentPane().revalidate();
+                getContentPane().repaint();
+            }
+        });
+    }
 
 	/**
 	 * Creates a tag panel for a single diagnosis

@@ -1403,8 +1403,13 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
-				Optional<Opd> opd = opdBrowserManager.getOpdById(code);
-				pSur = new ArrayList<>();
+                Optional<Opd> opd = null;
+                try {
+                    opd = opdBrowserManager.getOpdById(code);
+                } catch (OHServiceException ex) {
+                    throw new RuntimeException(ex);
+                }
+                pSur = new ArrayList<>();
 				if (opd.isPresent()) {
 					pSur.add(opd.get());
 				}
