@@ -23,14 +23,7 @@ package org.isf.opd.gui;
 
 import static org.isf.utils.Constants.DATE_FORMAT_DD_MM_YYYY_HH_MM;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -111,6 +104,8 @@ import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JScrollPane;
 
 /**
  * OpdEditExtended - add/edit an OPD registration
@@ -191,9 +186,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JPanel jPanelButtons;
 
 	private JComboBox diseaseTypeBox;
-	private JComboBox diseaseBox1;
-	private JComboBox diseaseBox2;
-	private JComboBox diseaseBox3;
 	private LocalDateTime visitDateOpd;
 	private DateTimeFormatter currentDateFormat = DateTimeFormatter.ofPattern(DATE_FORMAT_DD_MM_YYYY_HH_MM, new Locale(GeneralData.LANGUAGE));
 	private GoodDateTimeSpinnerChooser opdDateFieldCal;
@@ -262,18 +254,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private Disease lastOPDDisease1;
 	private int visitDuration;
 
-	/*
-	 * Adds: Textfields and buttons to enable search in diagnosis
-	 */
-	private JTextField searchDiseaseTextField;
-	private JTextField searchDiseaseTextField2;
-	private JTextField searchDiseaseTextField3;
-	private JButton searchDiseaseButton;
-	private JButton searchDiseaseButton2;
-	private JButton searchDiseaseButton3;
-
 	private JTabbedPane jTabbedPaneOpd;
 	private JPanel jPanelOperation;
+
+	// Additional diagnoses components
+	private JPanel additionalDiagnosisPanel;
+	private JTextField searchDiagnosisField;
+	private JButton searchDiagnosisButton;
+	private JComboBox<Disease> browseDiagnosisCombo;
+	private JButton addDiagnosisButton;
+	private JPanel selectedDiagnosisContainer;
+	private DefaultListModel<Disease> selectedDiagnosisModel;
 
 	/**
 	 * Opd next visit fields
@@ -421,7 +412,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		StringBuilder lastOPDDisease = new StringBuilder();
 		lastOPDDisease.append(MessageBundle.getMessage("angal.opd.on.txt")).append(' ').append(currentDateFormat.format(lastOpd.getDate())).append(" - ");
 		if (lastOPDDisease1 != null) {
-			setAttendance();
 			lastOPDDisease.append(lastOPDDisease1.getDescription());
 		} 
 		if (lastOPDDisease2 != null) {
@@ -438,20 +428,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		jNoteTextArea.setText(lastOpd.getNote());
 		
 		return true;		
-	}
-	
-	private void setAttendance() {
-		if (!insert) {
-			return;
-		}
-		Object selectedObject = diseaseBox1.getSelectedItem();
-		if (selectedObject instanceof Disease disease) {
-			if (lastOPDDisease1 != null && disease.getCode().equals(lastOPDDisease1.getCode())) {
-				rePatientButton.setSelected(true);
-			} else {
-				newPatientButton.setSelected(true);
-			}
-		}
 	}
 
 	/**
@@ -550,18 +526,15 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				types.clear();
 				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
-				diseaseBox1.removeAllItems();
-				diseaseBox2.removeAllItems();
-				diseaseBox3.removeAllItems();
 				dispose();
 			}
 		});
 	}
 
 	/**
-	 * This method initializes jPanel1	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes jPanel1
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getMainPanel() {
 		if (jPanelMain == null) {
@@ -574,9 +547,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		return jPanelMain;
 	}
-	
+
 	/**
-	 * This method initializes jPanel	
+	 * This method initializes jPanel1	
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
@@ -585,11 +558,12 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jPanelData = new JPanel();
 			GridBagLayout gblPanelData = new GridBagLayout();
 			gblPanelData.columnWidths = new int[] { 80, 40, 20, 80, 20 };
-			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20 };
+			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20, 20 };
 			gblPanelData.columnWeights = new double[] { 0.0, 0.1, 0.0, 1.0, 0.0 };
-			gblPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+			gblPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 			jPanelData.setLayout(gblPanelData);
 
+			// Attendance Date
 			JLabel jLabelDate = new JLabel(MessageBundle.getMessage("angal.opd.attendancedate.txt"));
 			GridBagConstraints gbcLabelDate = new GridBagConstraints();
 			gbcLabelDate.fill = GridBagConstraints.VERTICAL;
@@ -598,6 +572,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelDate.gridx = 0;
 			gbcLabelDate.gridy = 0;
 			jPanelData.add(jLabelDate, gbcLabelDate);
+
+			// Date Field
 			GridBagConstraints gbcDateFieldCal = new GridBagConstraints();
 			gbcDateFieldCal.weightx = 0.5;
 			gbcDateFieldCal.fill = GridBagConstraints.HORIZONTAL;
@@ -605,6 +581,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcDateFieldCal.gridx = 1;
 			gbcDateFieldCal.gridy = 0;
 			jPanelData.add(getOpdDateFieldCal(), gbcDateFieldCal);
+
+			// OPD Number Panel
 			GridBagConstraints gbcOpdNumberPanel = new GridBagConstraints();
 			gbcOpdNumberPanel.weightx = 0.5;
 			gbcOpdNumberPanel.gridwidth = 2;
@@ -612,6 +590,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcOpdNumberPanel.gridx = 2;
 			gbcOpdNumberPanel.gridy = 0;
 			jPanelData.add(getJOpdNumberPanel(), gbcOpdNumberPanel);
+
+			// Ward Label
 			JLabel jLabelOpdWard = new JLabel(MessageBundle.getMessage("angal.common.ward.txt"));
 			GridBagConstraints gbcLabelOpdWard = new GridBagConstraints();
 			gbcLabelOpdWard.insets = new Insets(0, 0, 5, 0);
@@ -619,6 +599,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelOpdWard.gridx = 3;
 			gbcLabelOpdWard.gridy = 0;
 			jPanelData.add(jLabelOpdWard, gbcLabelOpdWard);
+
+			// Ward Box
 			GridBagConstraints gbcWardPanel = new GridBagConstraints();
 			gbcWardPanel.weightx = 0.5;
 			gbcWardPanel.anchor = GridBagConstraints.WEST;
@@ -627,6 +609,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcWardPanel.gridx = 4;
 			gbcWardPanel.gridy = 0;
 			jPanelData.add(getWardBox(), gbcWardPanel);
+
+			// Search Label
 			JLabel jSearchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt"));
 			GridBagConstraints gbcSearchLabel = new GridBagConstraints();
 			gbcSearchLabel.fill = GridBagConstraints.VERTICAL;
@@ -635,6 +619,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcSearchLabel.gridx = 0;
 			gbcSearchLabel.gridy = 1;
 			jPanelData.add(jSearchLabel, gbcSearchLabel);
+
+			// Patient Search Field
 			GridBagConstraints gbcTextPatientSrc = new GridBagConstraints();
 			gbcTextPatientSrc.weightx = 0.5;
 			gbcTextPatientSrc.fill = GridBagConstraints.HORIZONTAL;
@@ -642,11 +628,15 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcTextPatientSrc.gridx = 1;
 			gbcTextPatientSrc.gridy = 1;
 			jPanelData.add(getJTextPatientSrc(), gbcTextPatientSrc);
+
+			// Patient Search Button
 			GridBagConstraints gbcSearchButton = new GridBagConstraints();
 			gbcSearchButton.insets = new Insets(5, 5, 5, 5);
 			gbcSearchButton.gridx = 2;
 			gbcSearchButton.gridy = 1;
 			jPanelData.add(getJSearchButton(), gbcSearchButton);
+
+			// Patient Search Box
 			GridBagConstraints gbcSearchBox = new GridBagConstraints();
 			gbcSearchBox.weightx = 0.5;
 			gbcSearchBox.fill = GridBagConstraints.HORIZONTAL;
@@ -655,12 +645,15 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcSearchBox.gridx = 3;
 			gbcSearchBox.gridy = 1;
 			jPanelData.add(getSearchBox(), gbcSearchBox);
+
+			// Patient Edit Button
 			GridBagConstraints gbcPatientEditButton = new GridBagConstraints();
 			gbcPatientEditButton.insets = new Insets(5, 5, 5, 0);
 			gbcPatientEditButton.gridx = 5;
 			gbcPatientEditButton.gridy = 1;
 			jPanelData.add(getJPatientEditButton(), gbcPatientEditButton);
 
+			// Disease Type Label
 			JLabel jLabelDiseaseType1 = new JLabel(MessageBundle.getMessage("angal.opd.diseasetype.txt"));
 			GridBagConstraints gbcLabelDiseaseType1 = new GridBagConstraints();
 			gbcLabelDiseaseType1.fill = GridBagConstraints.VERTICAL;
@@ -669,6 +662,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelDiseaseType1.gridx = 0;
 			gbcLabelDiseaseType1.gridy = 2;
 			jPanelData.add(jLabelDiseaseType1, gbcLabelDiseaseType1);
+
+			// Disease Type Box
 			GridBagConstraints gbcDiseaseTypeBox = new GridBagConstraints();
 			gbcDiseaseTypeBox.insets = new Insets(5, 5, 5, 5);
 			gbcDiseaseTypeBox.fill = GridBagConstraints.HORIZONTAL;
@@ -677,171 +672,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcDiseaseTypeBox.gridy = 2;
 			jPanelData.add(getDiseaseTypeBox(), gbcDiseaseTypeBox);
 
-			JLabel jLabelDisease1 = new JLabel(MessageBundle.getMessage("angal.opd.diagnosis.txt"));
-			GridBagConstraints gbcLabelDisease1 = new GridBagConstraints();
-			gbcLabelDisease1.fill = GridBagConstraints.VERTICAL;
-			gbcLabelDisease1.insets = new Insets(5, 5, 5, 5);
-			gbcLabelDisease1.anchor = GridBagConstraints.WEST;
-			gbcLabelDisease1.gridx = 0;
-			gbcLabelDisease1.gridy = 3;
-			jPanelData.add(jLabelDisease1, gbcLabelDisease1);
-			/////////////Search text field/////////////
-			GridBagConstraints gbcSearchDiseaseTextField = new GridBagConstraints();
-			gbcSearchDiseaseTextField.weightx = 0.5;
-			gbcSearchDiseaseTextField.fill = GridBagConstraints.HORIZONTAL;
-			gbcSearchDiseaseTextField.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseTextField.gridx = 1;
-			gbcSearchDiseaseTextField.gridy = 3;
-			searchDiseaseTextField = new JTextField(10);
-			searchDiseaseTextField.addKeyListener(new KeyListener() {
+			// Additional diagnoses panel
+			initAdditionalDiagnosisPanel();
+			GridBagConstraints gbcAdditional = new GridBagConstraints();
+			gbcAdditional.gridwidth = 5;
+			gbcAdditional.fill = GridBagConstraints.HORIZONTAL;
+			gbcAdditional.insets = new Insets(5, 5, 5, 5);
+			gbcAdditional.gridx = 0;
+			gbcAdditional.gridy = 3;
+			jPanelData.add(additionalDiagnosisPanel, gbcAdditional);
 
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseButton.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-			jPanelData.add(searchDiseaseTextField, gbcSearchDiseaseTextField);
-			/////////////Search text button/////////////
-			GridBagConstraints gbcSearchDiseaseButton = new GridBagConstraints();
-			gbcSearchDiseaseButton.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseButton.gridx = 2;
-			gbcSearchDiseaseButton.gridy = 3;
-			searchDiseaseButton = new JButton();
-			searchDiseaseButton.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchDiseaseButton.addActionListener(this);
-			jPanelData.add(searchDiseaseButton, gbcSearchDiseaseButton);
-			/////////////Diseases combo/////////////
-			GridBagConstraints gbcDiseaseBox1 = new GridBagConstraints();
-			gbcDiseaseBox1.insets = new Insets(5, 5, 5, 5);
-			gbcDiseaseBox1.fill = GridBagConstraints.HORIZONTAL;
-			gbcDiseaseBox1.weightx = 0.5;
-			gbcDiseaseBox1.gridwidth = 2;
-			gbcDiseaseBox1.gridx = 3;
-			gbcDiseaseBox1.gridy = 3;
-			jPanelData.add(getDiseaseBox1(), gbcDiseaseBox1);
-
-			JLabel jLabelDis2 = new JLabel(MessageBundle.getMessage("angal.opd.diagnosisnfulllist2.txt"));
-			GridBagConstraints gbcLabelDis2 = new GridBagConstraints();
-			gbcLabelDis2.fill = GridBagConstraints.VERTICAL;
-			gbcLabelDis2.insets = new Insets(5, 5, 5, 5);
-			gbcLabelDis2.anchor = GridBagConstraints.WEST;
-			gbcLabelDis2.gridx = 0;
-			gbcLabelDis2.gridy = 4;
-			jPanelData.add(jLabelDis2, gbcLabelDis2);
-			/////////////Search text field/////////////
-			GridBagConstraints gbcSearchDiseaseTextField2 = new GridBagConstraints();
-			gbcSearchDiseaseTextField2.weightx = 0.5;
-			gbcSearchDiseaseTextField2.fill = GridBagConstraints.HORIZONTAL;
-			gbcSearchDiseaseTextField2.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseTextField2.gridx = 1;
-			gbcSearchDiseaseTextField2.gridy = 4;
-			searchDiseaseTextField2 = new JTextField(10);
-			searchDiseaseTextField2.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseButton2.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-			jPanelData.add(searchDiseaseTextField2, gbcSearchDiseaseTextField2);
-			/////////////Search text button/////////////
-			GridBagConstraints gbcSearchDiseaseButton2 = new GridBagConstraints();
-			gbcSearchDiseaseButton2.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseButton2.gridx = 2;
-			gbcSearchDiseaseButton2.gridy = 4;
-			searchDiseaseButton2 = new JButton();
-			searchDiseaseButton2.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseButton2.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			searchDiseaseButton2.addActionListener(this);
-			jPanelData.add(searchDiseaseButton2, gbcSearchDiseaseButton2);
-			/////////////Diseases combo/////////////
-			GridBagConstraints gbcDiseaseBox2 = new GridBagConstraints();
-			gbcDiseaseBox2.insets = new Insets(5, 5, 5, 5);
-			gbcDiseaseBox2.fill = GridBagConstraints.HORIZONTAL;
-			gbcDiseaseBox2.weightx = 0.5;
-			gbcDiseaseBox2.gridwidth = 2;
-			gbcDiseaseBox2.gridx = 3;
-			gbcDiseaseBox2.gridy = 4;
-			jPanelData.add(getDiseaseBox2(), gbcDiseaseBox2);
-
-			JLabel jLabelDis3 = new JLabel(MessageBundle.getMessage("angal.opd.diagnosisnfulllist3.txt"));
-			GridBagConstraints gbcLabelDisBox3 = new GridBagConstraints();
-			gbcLabelDisBox3.fill = GridBagConstraints.VERTICAL;
-			gbcLabelDisBox3.insets = new Insets(5, 5, 5, 5);
-			gbcLabelDisBox3.anchor = GridBagConstraints.WEST;
-			gbcLabelDisBox3.gridx = 0;
-			gbcLabelDisBox3.gridy = 5;
-			jPanelData.add(jLabelDis3, gbcLabelDisBox3);
-			/////////////Search text field/////////////
-			GridBagConstraints gbcSearchDiseaseTextField3 = new GridBagConstraints();
-			gbcSearchDiseaseTextField3.weightx = 0.5;
-			gbcSearchDiseaseTextField3.fill = GridBagConstraints.HORIZONTAL;
-			gbcSearchDiseaseTextField3.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseTextField3.gridx = 1;
-			gbcSearchDiseaseTextField3.gridy = 5;
-			searchDiseaseTextField3 = new JTextField(10);
-			searchDiseaseTextField3.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseButton3.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-			jPanelData.add(searchDiseaseTextField3, gbcSearchDiseaseTextField3);
-			/////////////Search text button/////////////
-			GridBagConstraints gbcSearchDiseaseButton3 = new GridBagConstraints();
-			gbcSearchDiseaseButton3.insets = new Insets(5, 5, 5, 5);
-			gbcSearchDiseaseButton3.gridx = 2;
-			gbcSearchDiseaseButton3.gridy = 5;
-			searchDiseaseButton3 = new JButton();
-			searchDiseaseButton3.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseButton3.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			jPanelData.add(searchDiseaseButton3, gbcSearchDiseaseButton3);
-			searchDiseaseButton3.addActionListener(this);
-			/////////////Diseases combo/////////////
-			GridBagConstraints gbcDiseaseBox3 = new GridBagConstraints();
-			gbcDiseaseBox3.insets = new Insets(5, 5, 5, 5);
-			gbcDiseaseBox3.fill = GridBagConstraints.HORIZONTAL;
-			gbcDiseaseBox3.weightx = 0.5;
-			gbcDiseaseBox3.gridwidth = 2;
-			gbcDiseaseBox3.gridx = 3;
-			gbcDiseaseBox3.gridy = 5;
-			jPanelData.add(getDiseaseBox3(), gbcDiseaseBox3);
-
+			// Last OPD Visit Label
 			jLabelLastOpdVisit = new JLabel(" ");
 			jLabelLastOpdVisit.setHorizontalAlignment(SwingConstants.RIGHT);
 			jLabelLastOpdVisit.setForeground(Color.RED);
@@ -850,8 +691,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdVisit.insets = new Insets(5, 5, 5, 5);
 			gbcLabelLastOpdVisit.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdVisit.gridx = 0;
-			gbcLabelLastOpdVisit.gridy = 6;
+			gbcLabelLastOpdVisit.gridy = 4;
 			jPanelData.add(jLabelLastOpdVisit, gbcLabelLastOpdVisit);
+
+			// Last OPD Visit Value
 			jFieldLastOpdVisit = new JLabel(" ");
 			jFieldLastOpdVisit.setFocusable(false);
 			GridBagConstraints gbcFieldLastOpdVisit = new GridBagConstraints();
@@ -859,9 +702,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdVisit.fill = GridBagConstraints.HORIZONTAL;
 			gbcFieldLastOpdVisit.gridwidth = 4;
 			gbcFieldLastOpdVisit.gridx = 1;
-			gbcFieldLastOpdVisit.gridy = 6;
+			gbcFieldLastOpdVisit.gridy = 4;
 			jPanelData.add(jFieldLastOpdVisit, gbcFieldLastOpdVisit);
 
+			// Last OPD Note Label
 			jLabelLastOpdNote = new JLabel(" ");
 			jLabelLastOpdNote.setHorizontalAlignment(SwingConstants.RIGHT);
 			jLabelLastOpdNote.setForeground(Color.RED);
@@ -870,8 +714,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdNote.insets = new Insets(5, 5, 0, 5);
 			gbcLabelLastOpdNote.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdNote.gridx = 0;
-			gbcLabelLastOpdNote.gridy = 7;
+			gbcLabelLastOpdNote.gridy = 5;
 			jPanelData.add(jLabelLastOpdNote, gbcLabelLastOpdNote);
+
+			// Last OPD Note Value
 			jFieldLastOpdNote = new JLabel(" ");
 			jFieldLastOpdNote.setPreferredSize(new Dimension(500, 30));
 			jFieldLastOpdNote.setFocusable(false);
@@ -880,26 +726,31 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdNote.insets = new Insets(5, 5, 0, 0);
 			gbcFieldLastOpdNote.gridwidth = 4;
 			gbcFieldLastOpdNote.gridx = 1;
-			gbcFieldLastOpdNote.gridy = 7;
+			gbcFieldLastOpdNote.gridy = 5;
 			jPanelData.add(jFieldLastOpdNote, gbcFieldLastOpdNote);
 
+			// Next Visit Label
 			GridBagConstraints gbcNextVisitLabel = new GridBagConstraints();
 			gbcNextVisitLabel.insets = new Insets(0, 0, 0, 5);
 			gbcNextVisitLabel.gridx = 0;
-			gbcNextVisitLabel.gridy = 8;
+			gbcNextVisitLabel.gridy = 6;
 			jPanelData.add(getNextVisitLabel(), gbcNextVisitLabel);
+
+			// Next Visit Date
 			gbcOpdNextVisitDate = new GridBagConstraints();
 			gbcOpdNextVisitDate.insets = new Insets(0, 0, 0, 5);
 			gbcOpdNextVisitDate.fill = GridBagConstraints.HORIZONTAL;
 			gbcOpdNextVisitDate.gridx = 1;
-			gbcOpdNextVisitDate.gridy = 8;
+			gbcOpdNextVisitDate.gridy = 6;
 			jPanelData.add(getOpdNextVisitDate(), gbcOpdNextVisitDate);
+
+			// Next Visit Ward Panel
 			GridBagConstraints gbcLabelNextVisitWard = new GridBagConstraints();
 			gbcLabelNextVisitWard.insets = new Insets(0, 0, 5, 0);
 			gbcLabelNextVisitWard.gridwidth = 2;
 			gbcLabelNextVisitWard.anchor = GridBagConstraints.WEST;
 			gbcLabelNextVisitWard.gridx = 2;
-			gbcLabelNextVisitWard.gridy = 8;
+			gbcLabelNextVisitWard.gridy = 6;
 			jPanelData.add(getJNextVisitWardPanel(), gbcLabelNextVisitWard);
 		}
 		return jPanelData;
@@ -1111,91 +962,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			} else {
 				diseaseTypeBox.setSelectedIndex(0);
 			}
-			diseaseTypeBox.addActionListener(actionEvent -> {
-				diseaseBox1.removeAllItems();
-				getDiseaseBox1();
-			});
 		}
 		return diseaseTypeBox;
 	}
-	
-	/**
-	 * This method initializes diseaseBox1
-	 * 	
-	 * @return javax.swing.JComboBox	
-	 */
-	private JComboBox getDiseaseBox1() {
-		if (diseaseBox1 == null) {
-			diseaseBox1 = new JComboBox();
-			diseaseBox1.setMaximumSize(new Dimension(400, 50));
-			diseaseBox1.addActionListener(actionEvent -> setAttendance());
-		}
-		Disease elem2 = null;
-		diseaseBox1.addItem("");
-
-		for (Disease elem : diseasesOPD) {
-			if (diseaseTypeBox.getSelectedItem().equals(allType)) {
-				diseaseBox1.addItem(elem);
-			} else if (elem.getType().equals(diseaseTypeBox.getSelectedItem())) {
-				diseaseBox1.addItem(elem);
-			}
-			if (!insert && opd.getDisease() != null) {
-				if (opd.getDisease().getCode().equals(elem.getCode())) {
-					elem2 = elem;
-				}
-			}
-		}
-		if (!insert) {
-			if (elem2 != null) {
-				diseaseBox1.setSelectedItem(elem2);
-			} else { //try in the canceled diseases
-				if (opd.getDisease() != null) {
-					for (Disease elem : diseasesAll) {
-						if (opd.getDisease().getCode().equals(elem.getCode())) {
-							MessageDialog.warning(this, "angal.opd.disease1mayhavebeencancelled.msg");
-							diseaseBox1.addItem(elem);
-							diseaseBox1.setSelectedItem(elem);
-						}
-					}
-				}
-			}
-		}
-		return diseaseBox1;
-	}
-	
-	public JComboBox getDiseaseBox2() {
-		if (diseaseBox2 == null) {
-			diseaseBox2 = new JComboBox();
-			diseaseBox2.setMaximumSize(new Dimension(400, 50));
-		}
-		Disease elem2=null;
-		diseaseBox2.addItem("");
-
-		for (Disease elem : diseasesOPD) {
-			diseaseBox2.addItem(elem);
-			if (!insert && opd.getDisease2() != null) {
-				if (opd.getDisease2().getCode().equals(elem.getCode())) {
-					elem2 = elem;
-				}
-			}
-		}
-		if (elem2 !=  null) {
-			diseaseBox2.setSelectedItem(elem2);
-		} else { //try in the canceled diseases
-			if (opd.getDisease2()!=null) {
-				for (Disease elem : diseasesAll) {
-					
-					if (opd.getDisease2().getCode().equals(elem.getCode())) {
-						MessageDialog.warning(this, "angal.opd.disease2mayhavebeencancelled.msg");
-						diseaseBox2.addItem(elem);
-						diseaseBox2.setSelectedItem(elem);
-					}
-				}
-			}
-		}
-		return diseaseBox2;
-	}
-
 	private VoLimitedTextField getJTextPatientSrc() {
 		if (jTextPatientSrc == null) {
 			jTextPatientSrc = new VoLimitedTextField(16, 20);
@@ -1386,38 +1155,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		}	
 		return jPatientEditButton;
-	}
-	
-	private JComboBox getDiseaseBox3() {
-		if (diseaseBox3 == null) {
-			diseaseBox3 = new JComboBox();
-			diseaseBox3.setMaximumSize(new Dimension(400, 50));
-		}
-		Disease elem2=null;
-		diseaseBox3.addItem("");
-
-		for (Disease elem : diseasesOPD) {
-			diseaseBox3.addItem(elem);
-			if (!insert && opd.getDisease3() != null) {
-				if (opd.getDisease3().getCode().equals(elem.getCode())) {
-					elem2 = elem;
-				}
-			}
-		}
-		if (elem2!= null) {
-			diseaseBox3.setSelectedItem(elem2);
-		} else { //try in the canceled diseases
-			if (opd.getDisease3()!=null) {	
-				for (Disease elem : diseasesAll) {
-					if (opd.getDisease3().getCode().equals(elem.getCode())) {
-						MessageDialog.warning(this, "angal.opd.disease3mayhavebeencancelled.msg");
-						diseaseBox3.addItem(elem);
-						diseaseBox3.setSelectedItem(elem);
-					}
-				}
-			}
-		}
-		return diseaseBox3;
 	}
 
 	private JTabbedPane getJTabbedPaneOpd() {
@@ -1748,9 +1485,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				char newPatient;
 				String referralTo;
 				String referralFrom;
-				Disease disease = null;
-				Disease disease2 = null;
-				Disease disease3 = null;
 				Ward opdWard = (Ward) opdWardBox.getSelectedItem();
 
 				if (newPatientButton.isSelected()) {
@@ -1767,18 +1501,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					referralFrom = "R";
 				} else {
 					referralFrom = "";
-				}
-				// disease
-				if (diseaseBox1.getSelectedIndex() > 0) {
-					disease = (Disease) diseaseBox1.getSelectedItem();
-				}
-				// disease2
-				if (diseaseBox2.getSelectedIndex() > 0) {
-					disease2 = (Disease) diseaseBox2.getSelectedItem();
-				}
-				// disease3
-				if (diseaseBox3.getSelectedIndex() > 0) {
-					disease3 = (Disease) diseaseBox3.getSelectedItem();
 				}
 
 				// nextVisit - the presence of opdNextVisitDate drives the management of the visit linked to the OPD
@@ -1816,9 +1538,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setNewPatient(newPatient);
 				opd.setReferralFrom(referralFrom);
 				opd.setReferralTo(referralTo);
-				opd.setDisease(disease);
-				opd.setDisease2(disease2);
-				opd.setDisease3(disease3);
+				updateOpdDiagnosesList();
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setWard(opdWard);
 
@@ -1887,9 +1607,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				types.clear();
 				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
-				diseaseBox1.removeAllItems();
-				diseaseBox2.removeAllItems();
-				diseaseBox3.removeAllItems();
 				dispose();
 			});
 		}
@@ -1917,73 +1634,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
-		JButton source = (JButton) actionEvent.getSource();
-		if (source == searchDiseaseButton) {
-			diseaseBox1.removeAllItems();
-			diseaseBox1.addItem("");
-			for (Disease disease : getSearchDiagnosisResults(searchDiseaseTextField.getText(), diseasesOPD == null ? diseasesAll : diseasesOPD)) {
-				diseaseBox1.addItem(disease);
-			}
-			if (diseaseBox1.getItemCount() >= 2) {
-				diseaseBox1.setSelectedIndex(1);
-			}
-			diseaseBox1.requestFocus();
-			if (diseaseBox1.getItemCount() > 2) {
-				diseaseBox1.showPopup();
-			}
-		} else if (source == searchDiseaseButton2) {
-			diseaseBox2.removeAllItems();
-			diseaseBox2.addItem("");
-			for (Disease disease : getSearchDiagnosisResults(searchDiseaseTextField2.getText(), diseasesOPD == null ? diseasesAll : diseasesOPD)) {
-				diseaseBox2.addItem(disease);
-			}
-			if (diseaseBox2.getItemCount() >= 2) {
-				diseaseBox2.setSelectedIndex(1);
-			}
-			diseaseBox2.requestFocus();
-			if (diseaseBox2.getItemCount() > 2) {
-				diseaseBox2.showPopup();
-			}
-		} else if (source == searchDiseaseButton3) {
-			diseaseBox3.removeAllItems();
-			diseaseBox3.addItem("");
-			for (Disease disease : getSearchDiagnosisResults(searchDiseaseTextField3.getText(), diseasesOPD == null ? diseasesAll : diseasesOPD)) {
-				diseaseBox3.addItem(disease);
-			}
-			if (diseaseBox3.getItemCount() >= 2) {
-				diseaseBox3.setSelectedIndex(1);
-			}
-			diseaseBox3.requestFocus();
-			if (diseaseBox3.getItemCount() > 2) {
-				diseaseBox3.showPopup();
-			}
-		}
+
 	}
 
-	private List<Disease> getSearchDiagnosisResults(String s, List<Disease> diseaseList) {
-		String query = s.trim();
-		List<Disease> results = new ArrayList<>();
-		for (Disease disease : diseaseList) {
-			if (!query.equals("")) {
-				String[] patterns = query.split(" ");
-				String name = disease.getDescription().toLowerCase();
-				boolean patternFound = false;
-				for (String pattern : patterns) {
-					if (name.contains(pattern.toLowerCase())) {
-						patternFound = true;
-						//It is sufficient that only one pattern matches the query
-						break;
-					}
-				}
-				if (patternFound) {
-					results.add(disease);
-				}
-			} else {
-				results.add(disease);
-			}
-		}
-		return results;
-	}
 
 	private JLabel getNextVisitLabel() {
 		if (nextVisitLabel == null) {
@@ -2017,6 +1670,173 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		}
 		return opdNextVisitDate;
+	}
+	/**
+	 * Initializes the additional diagnoses panel
+	 */
+	private void initAdditionalDiagnosisPanel() {
+		// Initialize the model
+		selectedDiagnosisModel = new DefaultListModel<>();
+
+		// Load existing diagnoses when editing
+		if (!insert && opd.getExtraDiagnosesList() != null) {
+			for (Disease disease : opd.getExtraDiagnosesList()) {
+				if (disease != null) {
+					selectedDiagnosisModel.addElement(disease);
+				}
+			}
+		}
+
+		// Main panel
+		additionalDiagnosisPanel = new JPanel(new BorderLayout());
+		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder("Additional Diagnoses"));
+
+		// Top panel - search area
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+		searchDiagnosisField = new JTextField(15);
+		topPanel.add(searchDiagnosisField);
+
+		searchDiagnosisButton = new JButton();
+		searchDiagnosisButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+		searchDiagnosisButton.setPreferredSize(new Dimension(24, 24));
+		searchDiagnosisButton.addActionListener(e -> performDiagnosisSearch());
+		topPanel.add(searchDiagnosisButton);
+
+		topPanel.add(Box.createHorizontalStrut(10));
+
+		browseDiagnosisCombo = new JComboBox<>();
+		browseDiagnosisCombo.setPreferredSize(new Dimension(250, 28));
+		browseDiagnosisCombo.addItem(null);
+		for (Disease disease : diseasesOPD) {
+			browseDiagnosisCombo.addItem(disease);
+		}
+		topPanel.add(browseDiagnosisCombo);
+
+		addDiagnosisButton = new JButton("Add");
+		addDiagnosisButton.addActionListener(e -> addSelectedDiagnosis());
+		topPanel.add(addDiagnosisButton);
+
+		additionalDiagnosisPanel.add(topPanel, BorderLayout.NORTH);
+
+		// Center panel - selected diagnoses with scroll
+		selectedDiagnosisContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		refreshSelectedDisplay();
+
+		JScrollPane scrollPane = new JScrollPane(selectedDiagnosisContainer);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setPreferredSize(new Dimension(500, 70));
+
+		additionalDiagnosisPanel.add(scrollPane, BorderLayout.CENTER);
+
+		// Enter key shortcut for search
+		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
+	}
+
+	/**
+	 * Performs the disease search
+	 */
+	private void performDiagnosisSearch() {
+		String query = searchDiagnosisField.getText().trim().toLowerCase();
+
+		browseDiagnosisCombo.removeAllItems();
+		browseDiagnosisCombo.addItem(null);
+
+		for (Disease disease : diseasesOPD) {
+			if (query.isEmpty() || disease.getDescription().toLowerCase().contains(query)) {
+				browseDiagnosisCombo.addItem(disease);
+			}
+		}
+
+		browseDiagnosisCombo.showPopup();
+	}
+
+	/**
+	 * Adds the selected diagnosis to the list
+	 */
+	private void addSelectedDiagnosis() {
+		Disease selected = (Disease) browseDiagnosisCombo.getSelectedItem();
+
+		if (selected != null) {
+			// Check if already added
+			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+				if (selectedDiagnosisModel.get(i).getCode().equals(selected.getCode())) {
+					MessageDialog.warning(this, "Diagnosis already added");
+					return;
+				}
+			}
+
+			selectedDiagnosisModel.addElement(selected);
+			refreshSelectedDisplay();
+			updateOpdDiagnosesList();
+
+			// Reset search
+			browseDiagnosisCombo.setSelectedItem(null);
+			searchDiagnosisField.setText("");
+			performDiagnosisSearch();
+		}
+	}
+
+	/**
+	 * Refreshes the display of selected diagnoses (tags with remove buttons)
+	 */
+	private void refreshSelectedDisplay() {
+		selectedDiagnosisContainer.removeAll();
+
+		if (selectedDiagnosisModel.isEmpty()) {
+			JLabel emptyLabel = new JLabel("No additional diagnoses selected");
+			emptyLabel.setForeground(Color.GRAY);
+			selectedDiagnosisContainer.add(emptyLabel);
+		} else {
+			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+				Disease disease = selectedDiagnosisModel.get(i);
+				JPanel tagPanel = createTagPanel(i + 1, disease);
+				selectedDiagnosisContainer.add(tagPanel);
+			}
+		}
+
+		selectedDiagnosisContainer.revalidate();
+		selectedDiagnosisContainer.repaint();
+	}
+
+	/**
+	 * Creates a tag panel for a single diagnosis
+	 */
+	private JPanel createTagPanel(int index, Disease disease) {
+		JPanel tag = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+		tag.setBorder(BorderFactory.createLineBorder(new Color(100, 150, 200), 1));
+		tag.setBackground(new Color(220, 240, 255));
+
+		JLabel numberLabel = new JLabel(index + ".");
+		numberLabel.setFont(numberLabel.getFont().deriveFont(Font.BOLD));
+		tag.add(numberLabel);
+
+		JLabel diseaseLabel = new JLabel(disease.getDescription());
+		tag.add(diseaseLabel);
+
+		JButton removeButton = new JButton("\u00D7");
+		removeButton.setPreferredSize(new Dimension(20, 20));
+		removeButton.setBorderPainted(false);
+		removeButton.setContentAreaFilled(false);
+		removeButton.addActionListener(e -> {
+			selectedDiagnosisModel.removeElement(disease);
+			refreshSelectedDisplay();
+			updateOpdDiagnosesList();
+		});
+		tag.add(removeButton);
+
+		return tag;
+	}
+
+	/**
+	 * Updates the OPD object with the current list of diagnoses
+	 */
+	private void updateOpdDiagnosesList() {
+		List<Disease> list = new ArrayList<>();
+		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+			list.add(selectedDiagnosisModel.get(i));
+		}
+		opd.setExtraDiagnosesList(list);
 	}
 
 }
