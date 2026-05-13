@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -221,6 +221,11 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jAddressLabelPanel;
 	private JPanel jAddressFieldPanel;
 	private JTextField jAddressTextField;
+
+	private JPanel jBirthPlace;
+	private JPanel jBirthPlaceLabelPanel;
+	private JPanel jBirthPlaceFieldPanel;
+	private JTextField jBirthPlaceTextField;
 
 	// Address Components:
 	private JPanel jTaxCodePanel;
@@ -474,6 +479,7 @@ public class PatientInsertExtended extends JDialog {
 						patient.setTaxCode(jTaxCodeTextField.getText().trim());
 						patient.setAddress(jAddressTextField.getText().trim());
 						patient.setCity(jCityTextField.getText().trim());
+						patient.setBirthPlace(getJBirthPlaceTextField().getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
 						patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
 						patient.setMotherName(jMotherNameTextField.getText().trim());
@@ -560,6 +566,7 @@ public class PatientInsertExtended extends JDialog {
 					patient.setTaxCode(jTaxCodeTextField.getText().trim());
 					patient.setAddress(jAddressTextField.getText().trim());
 					patient.setCity(jCityTextField.getText().trim());
+					patient.setBirthPlace(getJBirthPlaceTextField().getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
 					patient.setTelephone(jTelephoneTextField.getText().replace(" ", ""));
 					patient.setMotherName(jMotherNameTextField.getText().trim());
@@ -1003,6 +1010,63 @@ public class PatientInsertExtended extends JDialog {
 	}
 
 	/**
+	 * This method initializes jBirthPlacePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlaceLabelPanel() {
+		if (jBirthPlaceLabelPanel == null) {
+			JLabel jBirthPlaceLabel = new JLabel(MessageBundle.getMessage("angal.patient.birthplace.label"));
+			jBirthPlaceLabelPanel = new JPanel();
+			jBirthPlaceLabelPanel.add(jBirthPlaceLabel, BorderLayout.EAST);
+		}
+		return jBirthPlaceLabelPanel;
+	}
+
+	/**
+	 * This method initializes jBirthPlaceTextField
+	 *
+	 * @return javax.swing.JTextField
+	 */
+	private JTextField getJBirthPlaceTextField() {
+		if (jBirthPlaceTextField == null) {
+			jBirthPlaceTextField = new JTextField(15);
+			if (!insert) {
+				jBirthPlaceTextField.setText(patient.getBirthPlace() != null ? patient.getBirthPlace() : "");
+			}
+		}
+		return jBirthPlaceTextField;
+	}
+
+	/**
+	 * This method initializes jBirthPlaceFieldPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlaceFieldPanel() {
+		if (jBirthPlaceFieldPanel == null) {
+			jBirthPlaceFieldPanel = new JPanel();
+			jBirthPlaceFieldPanel.add(getJBirthPlaceTextField(), null);
+		}
+		return jBirthPlaceFieldPanel;
+	}
+
+	/**
+	 * This method initializes jBirthPlace
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlace() {
+		if (jBirthPlace == null) {
+			jBirthPlace = new JPanel();
+			jBirthPlace.setLayout(new BorderLayout());
+			jBirthPlace.add(getJBirthPlaceLabelPanel(), BorderLayout.WEST);
+			jBirthPlace.add(getJBirthPlaceFieldPanel(), BorderLayout.EAST);
+		}
+		return jBirthPlace;
+	}
+
+	/**
 	 * This method initializes jNextKinLabelPanel
 	 *
 	 * @return javax.swing.JPanel
@@ -1124,6 +1188,7 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getSexPanel(), null);
 			jAnagraphPanel.add(getJAddressPanel(), null);
 			jAnagraphPanel.add(getJCity(), null);
+			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
 			jAnagraphPanel.add(getJLabelRequiredFields(), null);
