@@ -21,7 +21,6 @@
  */
 package org.isf.admission.gui;
 
-
 import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
