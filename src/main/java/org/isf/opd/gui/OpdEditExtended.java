@@ -23,7 +23,14 @@ package org.isf.opd.gui;
 
 import static org.isf.utils.Constants.DATE_FORMAT_DD_MM_YYYY_HH_MM;
 
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -108,6 +115,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import org.isf.disease.gui.DiseaseEdit;
 import java.awt.event.ItemEvent;
+import java.awt.Font;
+import java.awt.Component;
 
 /**
  * OpdEditExtended - add/edit an OPD registration
@@ -214,7 +223,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private DiseaseType allType = new DiseaseType(MessageBundle.getMessage("angal.common.alltypes.txt"), MessageBundle.getMessage("angal.common.alltypes.txt"));
 	private Disease allDisease = new Disease(
 			MessageBundle.getMessage("angal.opd.alldiseases.txt"),
-			MessageBundle.getMessage("angal.opd.alldiseases.txt"),
+			MessageBundle.getMessage("angal.opd.selectdiseases.txt"),
 			allType);
 	private VoLimitedTextField jTextPatientSrc;
 	private JComboBox jComboPatResult;
@@ -508,7 +517,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private void initialize() {
 		this.setContentPane(getMainPanel());
 		pack();
-		setPreferredSize(new Dimension(850, 750));
+		setPreferredSize(new Dimension(850, 900));
+		setMinimumSize(new Dimension(850, 800));
 		setMinimumSize(this.getSize());
 		this.setTitle(LAST_NOTE_LABEL);
 		setLocationRelativeTo(null);
@@ -569,7 +579,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gblPanelData.columnWidths = new int[] { 80, 40, 20, 80, 20 };
 			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20 };
 			gblPanelData.columnWeights = new double[] { 0.0, 0.1, 0.0, 1.0, 0.0 };
-			gblPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 			jPanelData.setLayout(gblPanelData);
 
 			JLabel jLabelDate = new JLabel(MessageBundle.getMessage("angal.opd.attendancedate.txt"));
@@ -1665,9 +1674,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 
 		additionalDiagnosisPanel = new JPanel(new BorderLayout());
-		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder("Add New Diagnostic"));
-		additionalDiagnosisPanel.setPreferredSize(new Dimension(600, 150));
+		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.opd.addnewdiagnostic.border")));
+		additionalDiagnosisPanel.setPreferredSize(new Dimension(600, 200));  // Augmenter la hauteur
 		additionalDiagnosisPanel.setMinimumSize(new Dimension(500, 150));
+
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		searchDiagnosisField = new JTextField(15);
 		topPanel.add(searchDiagnosisField);
@@ -1682,8 +1692,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		browseDiagnosisCombo = new JComboBox<>();
 		browseDiagnosisCombo.setPreferredSize(new Dimension(250, 28));
-
-		// ✅ AJOUT : "All Diseases" comme premier élément
 		browseDiagnosisCombo.addItem(allDisease);
 
 		for (Disease disease : diseasesOPD) {
@@ -1693,7 +1701,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		browseDiagnosisCombo.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
 				Disease selected = (Disease) e.getItem();
-				// ✅ AJOUT : Ne pas ajouter "All Diseases"
 				if (selected != null && selected != allDisease) {
 					SwingUtilities.invokeLater(() -> {
 						addSelectedDiagnosisToModel(selected);
@@ -1705,21 +1712,24 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		topPanel.add(browseDiagnosisCombo);
 
-		addDiagnosisButton = new JButton("Add New Disease");
+		addDiagnosisButton = new JButton(MessageBundle.getMessage("angal.opd.addnewdisease.btn"));
 		addDiagnosisButton.addActionListener(e -> showAddDiseaseDialog());
 		topPanel.add(addDiagnosisButton);
 
 		additionalDiagnosisPanel.add(topPanel, BorderLayout.NORTH);
-		selectedDiagnosisContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		selectedDiagnosisContainer.setVisible(false);
+
+		// ✅ CHANGEMENT : Utiliser un layout vertical (BoxLayout.Y_AXIS)
+		selectedDiagnosisContainer = new JPanel();
+		selectedDiagnosisContainer.setLayout(new BoxLayout(selectedDiagnosisContainer, BoxLayout.Y_AXIS));
+		selectedDiagnosisContainer.setVisible(true);
 
 		selectedDiagnosisScrollPane = new JScrollPane(selectedDiagnosisContainer);
 		selectedDiagnosisScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 200));
+		selectedDiagnosisScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);  // Désactiver le scroll horizontal
+		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 150));
+
 		refreshSelectedDisplay();
 		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
-
-		// ✅ AJOUT : Listener pour filtrer quand le type de maladie change
 		diseaseTypeBox.addActionListener(e -> filterDiseasesByType());
 	}
 
@@ -1735,7 +1745,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			} else if (disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())) {
 				browseDiagnosisCombo.addItem(disease);
 			}
-			// ✅ Les maladies avec type null sont ignorées quand un type spécifique est sélectionné
 		}
 
 		browseDiagnosisCombo.setSelectedItem(allDisease);
@@ -1774,7 +1783,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		browseDiagnosisCombo.addItem(allDisease);
 
 		for (Disease disease : diseasesOPD) {
-			// ✅ Vérification null pour disease.getType()
 			boolean typeOk = (selectedType == null || selectedType == allType ||
 					(disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())));
 
@@ -1797,7 +1805,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
 			if (selectedDiagnosisModel.get(i).getCode().equals(disease.getCode())) {
-				MessageDialog.warning(this, "Diagnosis already added");
+				MessageDialog.warning(this, MessageBundle.getMessage("angal.opd.diagnosis.alreadyadded"));
 				return;
 			}
 		}
@@ -1814,57 +1822,71 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
     /**
      * Refreshes the display of selected diagnoses (tags with remove buttons)
      */
-    private void refreshSelectedDisplay() {
-        selectedDiagnosisContainer.removeAll();
+	private void refreshSelectedDisplay() {
+		selectedDiagnosisContainer.removeAll();
 
-        if (selectedDiagnosisModel.isEmpty()) {
-            if (selectedDiagnosisScrollPane.getParent() != null) {
-                additionalDiagnosisPanel.remove(selectedDiagnosisScrollPane);
-            }
-        } else {
-            if (selectedDiagnosisScrollPane.getParent() == null) {
-                additionalDiagnosisPanel.add(selectedDiagnosisScrollPane, BorderLayout.CENTER);
-            }
+		if (selectedDiagnosisModel.isEmpty()) {
+			if (selectedDiagnosisScrollPane.getParent() != null) {
+				additionalDiagnosisPanel.remove(selectedDiagnosisScrollPane);
+			}
+		} else {
+			if (selectedDiagnosisScrollPane.getParent() == null) {
+				additionalDiagnosisPanel.add(selectedDiagnosisScrollPane, BorderLayout.CENTER);
+			}
 
-            for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-                Disease disease = selectedDiagnosisModel.get(i);
-                JPanel tagPanel = createTagPanel(i + 1, disease);
-                selectedDiagnosisContainer.add(tagPanel);
-            }
+			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+				Disease disease = selectedDiagnosisModel.get(i);
+				JPanel tagPanel = createTagPanel(i + 1, disease);
+				// S'assurer que chaque tag prend toute la largeur
+				tagPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, tagPanel.getPreferredSize().height));
+				tagPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+				selectedDiagnosisContainer.add(tagPanel);
+				selectedDiagnosisContainer.add(Box.createVerticalStrut(5)); // Espace entre les tags
+			}
 
-            selectedDiagnosisContainer.setVisible(true);
-        }
+			selectedDiagnosisContainer.setVisible(true);
+		}
 
-        selectedDiagnosisContainer.revalidate();
-        selectedDiagnosisContainer.repaint();
-        additionalDiagnosisPanel.revalidate();
-        additionalDiagnosisPanel.repaint();
-        SwingUtilities.invokeLater(() -> {
-            additionalDiagnosisPanel.repaint();
-            if (getContentPane() != null) {
-                getContentPane().revalidate();
-                getContentPane().repaint();
-            }
-        });
-    }
+		selectedDiagnosisContainer.revalidate();
+		selectedDiagnosisContainer.repaint();
+		additionalDiagnosisPanel.revalidate();
+		additionalDiagnosisPanel.repaint();
+
+		SwingUtilities.invokeLater(() -> {
+			additionalDiagnosisPanel.repaint();
+			if (getContentPane() != null) {
+				getContentPane().revalidate();
+				getContentPane().repaint();
+			}
+		});
+	}
 
 	/**
 	 * Creates a tag panel for a single diagnosis
 	 */
 	private JPanel createTagPanel(int index, Disease disease) {
-		JPanel tag = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+		JPanel tag = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		tag.setBorder(BorderFactory.createLineBorder(new Color(100, 150, 200), 1));
 		tag.setBackground(new Color(220, 240, 255));
+		tag.setLayout(new BoxLayout(tag, BoxLayout.X_AXIS));
+		tag.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+		tag.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		JLabel numberLabel = new JLabel(index + ".");
 		numberLabel.setFont(numberLabel.getFont().deriveFont(Font.BOLD));
+		numberLabel.setPreferredSize(new Dimension(30, 25));
 		tag.add(numberLabel);
 
+		tag.add(Box.createHorizontalStrut(5));
+
 		JLabel diseaseLabel = new JLabel(disease.getDescription());
+		diseaseLabel.setPreferredSize(new Dimension(400, 25));
 		tag.add(diseaseLabel);
 
-		JButton removeButton = new JButton("×");
-		removeButton.setPreferredSize(new Dimension(20, 20));
+		tag.add(Box.createHorizontalGlue());
+
+		JButton removeButton = new JButton("✖");
+		removeButton.setPreferredSize(new Dimension(25, 25));
 		removeButton.setBorderPainted(false);
 		removeButton.setContentAreaFilled(false);
 		removeButton.addActionListener(e -> {
