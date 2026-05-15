@@ -424,6 +424,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 
 			if (searchMode == SearchMode.PATIENT_ID) {
+
 				opdPage = opdBrowserManager.getOpdListByPatientId(searchCode, currentPage, PAGE_SIZE);
 				pSur = new ArrayList<>(opdPage.getContent());
 				totalRows = opdPage.getTotalElements();
