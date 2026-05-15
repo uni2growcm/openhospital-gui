@@ -412,6 +412,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				lastOPDDisease3 = disease;
 			}
 		}
+		private Disease allDisease = new Disease(
+				MessageBundle.getMessage("angal.opd.alldiseases.txt"),
+				MessageBundle.getMessage("angal.opd.alldiseases.txt"),
+				null);
 
 		// TODO: this should be a formatted message in the bundle and not "appended" together
 		StringBuilder lastOPDDisease = new StringBuilder();
@@ -1679,17 +1683,22 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		browseDiagnosisCombo = new JComboBox<>();
 		browseDiagnosisCombo.setPreferredSize(new Dimension(250, 28));
-		browseDiagnosisCombo.addItem(null);
+
+		// ✅ AJOUT : "All Diseases" comme premier élément
+		browseDiagnosisCombo.addItem(allDisease);
+
 		for (Disease disease : diseasesOPD) {
 			browseDiagnosisCombo.addItem(disease);
 		}
+
 		browseDiagnosisCombo.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
 				Disease selected = (Disease) e.getItem();
-				if (selected != null) {
+				// ✅ AJOUT : Ne pas ajouter "All Diseases"
+				if (selected != null && selected != allDisease) {
 					SwingUtilities.invokeLater(() -> {
 						addSelectedDiagnosisToModel(selected);
-						browseDiagnosisCombo.setSelectedItem(null);
+						browseDiagnosisCombo.setSelectedItem(allDisease);
 					});
 				}
 			}
@@ -1710,6 +1719,26 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 200));
 		refreshSelectedDisplay();
 		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
+
+		// ✅ AJOUT : Listener pour filtrer quand le type de maladie change
+		diseaseTypeBox.addActionListener(e -> filterDiseasesByType());
+	}
+
+	private void filterDiseasesByType() {
+		DiseaseType selectedType = (DiseaseType) diseaseTypeBox.getSelectedItem();
+
+		browseDiagnosisCombo.removeAllItems();
+		browseDiagnosisCombo.addItem(allDisease);
+
+		for (Disease disease : diseasesOPD) {
+			if (selectedType == null || selectedType == allType) {
+				browseDiagnosisCombo.addItem(disease);
+			} else if (disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())) {
+				browseDiagnosisCombo.addItem(disease);
+			}
+		}
+
+		browseDiagnosisCombo.setSelectedItem(allDisease);
 	}
 
 	/**
@@ -1739,16 +1768,23 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 */
 	private void performDiagnosisSearch() {
 		String query = searchDiagnosisField.getText().trim().toLowerCase();
+		DiseaseType selectedType = (DiseaseType) diseaseTypeBox.getSelectedItem();
 
 		browseDiagnosisCombo.removeAllItems();
-		browseDiagnosisCombo.addItem(null);
+		browseDiagnosisCombo.addItem(allDisease);
 
 		for (Disease disease : diseasesOPD) {
-			if (query.isEmpty() || disease.getDescription().toLowerCase().contains(query)) {
+			boolean typeOk = (selectedType == null || selectedType == allType ||
+					(disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())));
+
+			boolean searchOk = (query.isEmpty() || disease.getDescription().toLowerCase().contains(query));
+
+			if (typeOk && searchOk) {
 				browseDiagnosisCombo.addItem(disease);
 			}
 		}
 
+		browseDiagnosisCombo.setSelectedItem(allDisease);
 		browseDiagnosisCombo.showPopup();
 	}
 
