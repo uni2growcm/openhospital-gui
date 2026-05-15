@@ -1046,7 +1046,7 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel getJBirthPlaceFieldPanel() {
 		if (jBirthPlaceFieldPanel == null) {
 			jBirthPlaceFieldPanel = new JPanel();
-			jBirthPlaceFieldPanel.add(getJBirthPlaceTextField(), null);
+			jBirthPlaceFieldPanel.add(getJBirthPlaceTextField());
 		}
 		return jBirthPlaceFieldPanel;
 	}
