@@ -437,20 +437,20 @@ public class OpdEdit extends JDialog {
 			okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
-						LocalDateTime visitDate;
-						char newPatient;
-						String referralTo;
-						String referralFrom;
-						Disease disease = null;
-						Disease disease2 = null;
-						Disease disease3 = null;
-						Ward ward;
+				LocalDateTime visitDate;
+				char newPatient;
+				String referralTo;
+				String referralFrom;
+				Disease disease = null;
+				Disease disease2 = null;
+				Disease disease3 = null;
+				Ward ward;
 
-						if (newPatientCheckBox.isSelected()) {
-							newPatient = 'N';
-						} else {
-							newPatient = 'R';
-						}
+				if (newPatientCheckBox.isSelected()) {
+					newPatient = 'N';
+				} else {
+					newPatient = 'R';
+				}
 
 				if (referralToCheckBox.isSelected()) {
 					referralTo = "R";
@@ -470,82 +470,82 @@ public class OpdEdit extends JDialog {
 					opd.setReferingHospital(null);
 				}
 
-						// disease
-						if (diseaseBox.getSelectedIndex() > 0) {
-							disease = (Disease) diseaseBox.getSelectedItem();
-						}
-						// disease2
-						if (diseaseBox2.getSelectedIndex() > 0) {
-							disease2 = (Disease) diseaseBox2.getSelectedItem();
-						}
-						// disease3
-						if (diseaseBox3.getSelectedIndex() > 0) {
+				// disease
+				if (diseaseBox.getSelectedIndex() > 0) {
+					disease = (Disease) diseaseBox.getSelectedItem();
+				}
+				// disease2
+				if (diseaseBox2.getSelectedIndex() > 0) {
+					disease2 = (Disease) diseaseBox2.getSelectedItem();
+				}
+				// disease3
+				if (diseaseBox3.getSelectedIndex() > 0) {
 							disease3 = (Disease) diseaseBox3.getSelectedItem();
-						}
-						// visit date
-						LocalDateTime localDateTime = opdDateField.getLocalDateTime();
-						if (localDateTime == null) {
-							MessageDialog.error(this, "angal.opd.pleaseinsertattendancedate.msg");
-							return;
-						}
-						visitDate = localDateTime;
+				}
+				// visit date
+				LocalDateTime localDateTime = opdDateField.getLocalDateTime();
+				if (localDateTime == null) {
+					MessageDialog.error(this, "angal.opd.pleaseinsertattendancedate.msg");
+					return;
+				}
+				visitDate = localDateTime;
 
-						if (radiof.isSelected()) {
-							sex = 'F';
+				if (radiof.isSelected()) {
+					sex = 'F';
+				} else {
+					sex = 'M';
+				}
+
+				opd.setNewPatient(newPatient);
+				opd.setReferralFrom(referralFrom);
+				opd.setReferralTo(referralTo);
+				opd.setAge(age);
+				opd.setSex(sex);
+				opd.setDisease(disease);
+				opd.setDisease2(disease2);
+				opd.setDisease3(disease3);
+				opd.setDate(visitDate);
+				opd.setNote("");
+				opd.setUserID(UserBrowsingManager.getCurrentUser());
+
+				if (insert) {
+					try {
+						if (wardBrowserManager.opdControl(true)) {
+							ward = wardBrowserManager.findWard("OPD");
+							opd.setWard(ward);
+						}
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+						return;
+					}
+				}
+
+				try {
+					if (insert) {    // Insert
+						opd.setProgYear(getOpdProgYear(visitDate));
+						// remember for later use
+						RememberDates.setLastOpdVisitDate(visitDate);
+
+						Opd insertedOpd = opdBrowserManager.newOpd(opd);
+						if (insertedOpd != null) {
+							fireSurgeryInserted(opd);
+							dispose();
 						} else {
-							sex = 'M';
+							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
 						}
-
-						opd.setNewPatient(newPatient);
-						opd.setReferralFrom(referralFrom);
-						opd.setReferralTo(referralTo);
-						opd.setAge(age);
-						opd.setSex(sex);
-						opd.setDisease(disease);
-						opd.setDisease2(disease2);
-						opd.setDisease3(disease3);
-						opd.setDate(visitDate);
-						opd.setNote("");
-						opd.setUserID(UserBrowsingManager.getCurrentUser());
-
-						if (insert) {
-							try {
-								if (wardBrowserManager.opdControl(true)) {
-									ward = wardBrowserManager.findWard("OPD");
-									opd.setWard(ward);
-								}
-							} catch (OHServiceException e) {
-								OHServiceExceptionUtil.showMessages(e);
-								return;
-							}
-						}
-
-						try {
-							if (insert) {    // Insert
-								opd.setProgYear(getOpdProgYear(visitDate));
-								// remember for later use
-								RememberDates.setLastOpdVisitDate(visitDate);
-
-								Opd insertedOpd = opdBrowserManager.newOpd(opd);
-								if (insertedOpd != null) {
-									fireSurgeryInserted(opd);
-									dispose();
-								} else {
-									MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-								}
-							} else {    // Update
-								Opd updatedOpd = opdBrowserManager.updateOpd(opd);
-								if (updatedOpd != null) {
-									fireSurgeryUpdated(updatedOpd);
-									dispose();
-								} else {
-									MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-								}
-							}
-						} catch (OHServiceException ex) {
-							OHServiceExceptionUtil.showMessages(ex);
+					} else {    // Update
+						Opd updatedOpd = opdBrowserManager.updateOpd(opd);
+						if (updatedOpd != null) {
+							fireSurgeryUpdated(updatedOpd);
+							dispose();
+						} else {
+							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
 						}
 					}
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex);
+				}
+			}
 			);
 		}
 		return okButton;
@@ -889,15 +889,15 @@ public class OpdEdit extends JDialog {
 
 			if (!insert) {
 				referralFrom = opd.getReferralFrom();
-				String patientReferralFrom = opd.getReferingHospital();
+				String referingHospital = opd.getReferingHospital();
 				if (referralFrom != null && referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
 					referingHospitalField.setEnabled(true);
-					if (patientReferralFrom != null && !patientReferralFrom.isEmpty()) {
-						referingHospitalField.setText(patientReferralFrom);
+					if (referingHospital != null && !referingHospital.isEmpty()) {
+						referingHospitalField.setText(referingHospital);
 					}
-				} else if (patientReferralFrom != null && !patientReferralFrom.isEmpty()) {
-					referingHospitalField.setText(patientReferralFrom);
+				} else if (referingHospital != null && !referingHospital.isEmpty()) {
+					referingHospitalField.setText(referingHospital);
 					referingHospitalField.setEnabled(false);
 				}
 			}
@@ -911,15 +911,15 @@ public class OpdEdit extends JDialog {
 
 			if (!insert) {
 				referralTo = opd.getReferralTo();
-				String patientReferralTo = opd.getReceivingHospital();
+				String receivingHospital = opd.getReceivingHospital();
 				if (referralTo != null && referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
 					receivingHospitalField.setEnabled(true);
-					if (patientReferralTo != null && !patientReferralTo.isEmpty()) {
-						receivingHospitalField.setText(patientReferralTo);
+					if (receivingHospital != null && !receivingHospital.isEmpty()) {
+						receivingHospitalField.setText(receivingHospital);
 					}
-				} else if (patientReferralTo != null && !patientReferralTo.isEmpty()) {
-					receivingHospitalField.setText(patientReferralTo);
+				} else if (receivingHospital != null && !receivingHospital.isEmpty()) {
+					receivingHospitalField.setText(receivingHospital);
 					receivingHospitalField.setEnabled(false);
 				}
 			}
