@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright � 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -1218,7 +1218,6 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", result.getTotalElements()));
 			updatePaginationControls();
 			searchString.requestFocus();
-
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -1526,8 +1525,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		}
 		patientCountryBox.setRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value,
-			                                              int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value == null) {
 					setText(MessageBundle.getMessage("angal.common.all.txt"));
