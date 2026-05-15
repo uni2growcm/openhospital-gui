@@ -107,8 +107,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import org.isf.disease.gui.DiseaseEdit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ItemEvent;
 
 /**
  * OpdEditExtended - add/edit an OPD registration
@@ -260,7 +259,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JTabbedPane jTabbedPaneOpd;
 	private JPanel jPanelOperation;
 
-	// Additional diagnoses components
+	/**
+	* Additional diagnoses components
+	*/
 	private JPanel additionalDiagnosisPanel;
 	private JTextField searchDiagnosisField;
 	private JButton searchDiagnosisButton;
@@ -554,7 +555,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	}
 
 	/**
-	 * This method initializes jPanel1	
+	 * This method initializes jPanel
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
@@ -563,12 +564,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jPanelData = new JPanel();
 			GridBagLayout gblPanelData = new GridBagLayout();
 			gblPanelData.columnWidths = new int[] { 80, 40, 20, 80, 20 };
-			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20, 20 };
+			gblPanelData.rowHeights = new int[] { 20, 20, 20, 20, 20, 20, 20, 20 };
 			gblPanelData.columnWeights = new double[] { 0.0, 0.1, 0.0, 1.0, 0.0 };
-			gblPanelData.rowHeights = new int[] { 20, 20, 20, 60, 20, 20, 20, 20, 20 };
+			gblPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 			jPanelData.setLayout(gblPanelData);
 
-			// Attendance Date
 			JLabel jLabelDate = new JLabel(MessageBundle.getMessage("angal.opd.attendancedate.txt"));
 			GridBagConstraints gbcLabelDate = new GridBagConstraints();
 			gbcLabelDate.fill = GridBagConstraints.VERTICAL;
@@ -577,8 +577,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelDate.gridx = 0;
 			gbcLabelDate.gridy = 0;
 			jPanelData.add(jLabelDate, gbcLabelDate);
-
-			// Date Field
 			GridBagConstraints gbcDateFieldCal = new GridBagConstraints();
 			gbcDateFieldCal.weightx = 0.5;
 			gbcDateFieldCal.fill = GridBagConstraints.HORIZONTAL;
@@ -586,8 +584,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcDateFieldCal.gridx = 1;
 			gbcDateFieldCal.gridy = 0;
 			jPanelData.add(getOpdDateFieldCal(), gbcDateFieldCal);
-
-			// OPD Number Panel
 			GridBagConstraints gbcOpdNumberPanel = new GridBagConstraints();
 			gbcOpdNumberPanel.weightx = 0.5;
 			gbcOpdNumberPanel.gridwidth = 2;
@@ -595,8 +591,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcOpdNumberPanel.gridx = 2;
 			gbcOpdNumberPanel.gridy = 0;
 			jPanelData.add(getJOpdNumberPanel(), gbcOpdNumberPanel);
-
-			// Ward Label
 			JLabel jLabelOpdWard = new JLabel(MessageBundle.getMessage("angal.common.ward.txt"));
 			GridBagConstraints gbcLabelOpdWard = new GridBagConstraints();
 			gbcLabelOpdWard.insets = new Insets(0, 0, 5, 0);
@@ -604,8 +598,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelOpdWard.gridx = 3;
 			gbcLabelOpdWard.gridy = 0;
 			jPanelData.add(jLabelOpdWard, gbcLabelOpdWard);
-
-			// Ward Box
 			GridBagConstraints gbcWardPanel = new GridBagConstraints();
 			gbcWardPanel.weightx = 0.5;
 			gbcWardPanel.anchor = GridBagConstraints.WEST;
@@ -614,8 +606,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcWardPanel.gridx = 4;
 			gbcWardPanel.gridy = 0;
 			jPanelData.add(getWardBox(), gbcWardPanel);
-
-			// Search Label
 			JLabel jSearchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt"));
 			GridBagConstraints gbcSearchLabel = new GridBagConstraints();
 			gbcSearchLabel.fill = GridBagConstraints.VERTICAL;
@@ -624,8 +614,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcSearchLabel.gridx = 0;
 			gbcSearchLabel.gridy = 1;
 			jPanelData.add(jSearchLabel, gbcSearchLabel);
-
-			// Patient Search Field
 			GridBagConstraints gbcTextPatientSrc = new GridBagConstraints();
 			gbcTextPatientSrc.weightx = 0.5;
 			gbcTextPatientSrc.fill = GridBagConstraints.HORIZONTAL;
@@ -633,15 +621,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcTextPatientSrc.gridx = 1;
 			gbcTextPatientSrc.gridy = 1;
 			jPanelData.add(getJTextPatientSrc(), gbcTextPatientSrc);
-
-			// Patient Search Button
 			GridBagConstraints gbcSearchButton = new GridBagConstraints();
 			gbcSearchButton.insets = new Insets(5, 5, 5, 5);
 			gbcSearchButton.gridx = 2;
 			gbcSearchButton.gridy = 1;
 			jPanelData.add(getJSearchButton(), gbcSearchButton);
-
-			// Patient Search Box
 			GridBagConstraints gbcSearchBox = new GridBagConstraints();
 			gbcSearchBox.weightx = 0.5;
 			gbcSearchBox.fill = GridBagConstraints.HORIZONTAL;
@@ -650,15 +634,12 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcSearchBox.gridx = 3;
 			gbcSearchBox.gridy = 1;
 			jPanelData.add(getSearchBox(), gbcSearchBox);
-
-			// Patient Edit Button
 			GridBagConstraints gbcPatientEditButton = new GridBagConstraints();
 			gbcPatientEditButton.insets = new Insets(5, 5, 5, 0);
 			gbcPatientEditButton.gridx = 5;
 			gbcPatientEditButton.gridy = 1;
 			jPanelData.add(getJPatientEditButton(), gbcPatientEditButton);
 
-			// Disease Type Label
 			JLabel jLabelDiseaseType1 = new JLabel(MessageBundle.getMessage("angal.opd.diseasetype.txt"));
 			GridBagConstraints gbcLabelDiseaseType1 = new GridBagConstraints();
 			gbcLabelDiseaseType1.fill = GridBagConstraints.VERTICAL;
@@ -667,8 +648,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelDiseaseType1.gridx = 0;
 			gbcLabelDiseaseType1.gridy = 2;
 			jPanelData.add(jLabelDiseaseType1, gbcLabelDiseaseType1);
-
-			// Disease Type Box
 			GridBagConstraints gbcDiseaseTypeBox = new GridBagConstraints();
 			gbcDiseaseTypeBox.insets = new Insets(5, 5, 5, 5);
 			gbcDiseaseTypeBox.fill = GridBagConstraints.HORIZONTAL;
@@ -687,7 +666,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcAdditional.gridy = 3;
 			gbcAdditional.weighty = 1.0;
 			jPanelData.add(additionalDiagnosisPanel, gbcAdditional);
-
+			/////////////Search text field/////////////
 			// Last OPD Visit Label
 			jLabelLastOpdVisit = new JLabel(" ");
 			jLabelLastOpdVisit.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -699,10 +678,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdVisit.gridx = 0;
 			gbcLabelLastOpdVisit.gridy = 4;
 			jPanelData.add(jLabelLastOpdVisit, gbcLabelLastOpdVisit);
-
-			// Last OPD Visit Value
 			jFieldLastOpdVisit = new JLabel(" ");
 			jFieldLastOpdVisit.setFocusable(false);
+			/////////////Diseases combo/////////////
 			GridBagConstraints gbcFieldLastOpdVisit = new GridBagConstraints();
 			gbcFieldLastOpdVisit.insets = new Insets(5, 5, 5, 0);
 			gbcFieldLastOpdVisit.fill = GridBagConstraints.HORIZONTAL;
@@ -711,7 +689,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdVisit.gridy = 4;
 			jPanelData.add(jFieldLastOpdVisit, gbcFieldLastOpdVisit);
 
-			// Last OPD Note Label
 			jLabelLastOpdNote = new JLabel(" ");
 			jLabelLastOpdNote.setHorizontalAlignment(SwingConstants.RIGHT);
 			jLabelLastOpdNote.setForeground(Color.RED);
@@ -722,8 +699,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdNote.gridx = 0;
 			gbcLabelLastOpdNote.gridy = 5;
 			jPanelData.add(jLabelLastOpdNote, gbcLabelLastOpdNote);
-
-			// Last OPD Note Value
 			jFieldLastOpdNote = new JLabel(" ");
 			jFieldLastOpdNote.setPreferredSize(new Dimension(500, 30));
 			jFieldLastOpdNote.setFocusable(false);
@@ -735,22 +710,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdNote.gridy = 5;
 			jPanelData.add(jFieldLastOpdNote, gbcFieldLastOpdNote);
 
-			// Next Visit Label
 			GridBagConstraints gbcNextVisitLabel = new GridBagConstraints();
 			gbcNextVisitLabel.insets = new Insets(0, 0, 0, 5);
 			gbcNextVisitLabel.gridx = 0;
 			gbcNextVisitLabel.gridy = 6;
 			jPanelData.add(getNextVisitLabel(), gbcNextVisitLabel);
-
-			// Next Visit Date
 			gbcOpdNextVisitDate = new GridBagConstraints();
 			gbcOpdNextVisitDate.insets = new Insets(0, 0, 0, 5);
 			gbcOpdNextVisitDate.fill = GridBagConstraints.HORIZONTAL;
 			gbcOpdNextVisitDate.gridx = 1;
 			gbcOpdNextVisitDate.gridy = 6;
 			jPanelData.add(getOpdNextVisitDate(), gbcOpdNextVisitDate);
-
-			// Next Visit Ward Panel
 			GridBagConstraints gbcLabelNextVisitWard = new GridBagConstraints();
 			gbcLabelNextVisitWard.insets = new Insets(0, 0, 5, 0);
 			gbcLabelNextVisitWard.gridwidth = 2;
@@ -1681,10 +1651,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 * Initializes the additional diagnoses panel
 	 */
 	private void initAdditionalDiagnosisPanel() {
-		// 1. D'abord initialiser le modèle
-		selectedDiagnosisModel = new DefaultListModel<>();
 
-		// 2. Charger les diagnostics existants
+		selectedDiagnosisModel = new DefaultListModel<>();
 		if (!insert && opd.getExtraDiagnosesList() != null) {
 			for (Disease disease : opd.getExtraDiagnosesList()) {
 				if (disease != null) {
@@ -1693,13 +1661,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		}
 
-		// 3. Créer le panel principal
 		additionalDiagnosisPanel = new JPanel(new BorderLayout());
 		additionalDiagnosisPanel.setBorder(BorderFactory.createTitledBorder("Add New Diagnostic"));
 		additionalDiagnosisPanel.setPreferredSize(new Dimension(600, 150));
 		additionalDiagnosisPanel.setMinimumSize(new Dimension(500, 150));
-
-		// 4. Panel du haut (recherche)
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		searchDiagnosisField = new JTextField(15);
 		topPanel.add(searchDiagnosisField);
@@ -1718,68 +1683,55 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		for (Disease disease : diseasesOPD) {
 			browseDiagnosisCombo.addItem(disease);
 		}
-
-		// ========== DOUBLE-CLICK LISTENER TO ADD DIAGNOSIS ==========
-		browseDiagnosisCombo.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					Disease selected = (Disease) browseDiagnosisCombo.getSelectedItem();
-					if (selected != null) {
+		browseDiagnosisCombo.addItemListener(e -> {
+			if (e.getStateChange() == ItemEvent.SELECTED) {
+				Disease selected = (Disease) e.getItem();
+				if (selected != null) {
+					SwingUtilities.invokeLater(() -> {
 						addSelectedDiagnosisToModel(selected);
-					}
+						browseDiagnosisCombo.setSelectedItem(null);
+					});
 				}
 			}
 		});
-		// ============================================================
 
 		topPanel.add(browseDiagnosisCombo);
 
 		addDiagnosisButton = new JButton("Add New Disease");
-		addDiagnosisButton.addActionListener(e -> showAddDiseaseDialog()); // ← MODIFIÉ pour ouvrir le dialogue
+		addDiagnosisButton.addActionListener(e -> showAddDiseaseDialog());
 		topPanel.add(addDiagnosisButton);
 
 		additionalDiagnosisPanel.add(topPanel, BorderLayout.NORTH);
-
-		// 5. Panel central avec scroll (initialisé mais pas ajouté)
 		selectedDiagnosisContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		selectedDiagnosisContainer.setVisible(false);
 
 		selectedDiagnosisScrollPane = new JScrollPane(selectedDiagnosisContainer);
 		selectedDiagnosisScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 200));
-		// NE PAS AJOUTER MAINTENANT
-
-		// 6. ENFIN, rafraîchir l'affichage (après que tout est initialisé)
 		refreshSelectedDisplay();
-
-		// 7. Raccourci clavier
 		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
 	}
 
 	/**
 	 * Shows the dialog to add a new disease
+	 *
+	 * @return
 	 */
-	private void showAddDiseaseDialog() {
-		// Créer une nouvelle maladie vide
+	private Disease showAddDiseaseDialog() {
 		Disease newDisease = new Disease();
 		newDisease.setOpdInclude(true);
 		newDisease.setIpdInInclude(false);
 		newDisease.setIpdOutInclude(false);
-
-		// Ouvrir la boîte de dialogue d'édition
 		DiseaseEdit dialog = new DiseaseEdit((JFrame) getOwner(), newDisease, true);
 		dialog.setModal(true);
 		dialog.setVisible(true);
 
-		// Vérifier si la maladie a été créée (code non null)
 		if (newDisease.getCode() != null && !newDisease.getCode().isEmpty()) {
-			// Ajouter à la liste des maladies disponibles
 			diseasesOPD.add(newDisease);
 			browseDiagnosisCombo.addItem(newDisease);
-			// Ajouter directement à la sélection
 			addSelectedDiagnosisToModel(newDisease);
 		}
+		return newDisease;
 	}
 
 	/**
@@ -1801,44 +1753,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	}
 
 	/**
-	 * Adds the selected diagnosis to the list
-	 /**
-	 * Adds the selected diagnosis to the list
-	 */
-	private void addSelectedDiagnosis() {
-		// Vérifier si l'utilisateur a sélectionné l'option "+ Add new disease..."
-		Object selected = browseDiagnosisCombo.getSelectedItem();
-
-		if (selected instanceof String && selected.equals("+ Add new disease...")) {
-			// Ouvrir la boîte de dialogue pour créer une nouvelle maladie
-			Disease newDisease = showAddDiseaseDialog();
-			if (newDisease != null) {
-				// Ajouter la nouvelle maladie à la comboBox et à la liste
-				diseasesOPD.add(newDisease);
-				browseDiagnosisCombo.addItem(newDisease);
-				browseDiagnosisCombo.setSelectedItem(newDisease);
-				// L'ajouter directement à la sélection
-				addSelectedDiagnosisToModel(newDisease);
-			}
-			return;
-		}
-
-		Disease selectedDisease = (Disease) selected;
-		if (selectedDisease != null) {
-			addSelectedDiagnosisToModel(selectedDisease);
-		}
-	}
-
-	/**
-	 * Adds a disease to the selected diagnoses model
-	 */
-	/**
 	 * Adds a disease to the selected diagnoses model
 	 */
 	private void addSelectedDiagnosisToModel(Disease disease) {
 		if (disease == null) return;
 
-		// Check if already added
 		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
 			if (selectedDiagnosisModel.get(i).getCode().equals(disease.getCode())) {
 				MessageDialog.warning(this, "Diagnosis already added");
@@ -1850,7 +1769,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		refreshSelectedDisplay();
 		updateOpdDiagnosesList();
 
-		// Reset search
 		browseDiagnosisCombo.setSelectedItem(null);
 		searchDiagnosisField.setText("");
 		performDiagnosisSearch();
@@ -1863,12 +1781,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
         selectedDiagnosisContainer.removeAll();
 
         if (selectedDiagnosisModel.isEmpty()) {
-            // Si vide, enlever le scrollPane du panel principal
             if (selectedDiagnosisScrollPane.getParent() != null) {
                 additionalDiagnosisPanel.remove(selectedDiagnosisScrollPane);
             }
         } else {
-            // Si pas vide, ajouter le scrollPane s'il n'est pas déjà présent
             if (selectedDiagnosisScrollPane.getParent() == null) {
                 additionalDiagnosisPanel.add(selectedDiagnosisScrollPane, BorderLayout.CENTER);
             }
@@ -1879,7 +1795,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
                 selectedDiagnosisContainer.add(tagPanel);
             }
 
-            // FORCER l'affichage
             selectedDiagnosisContainer.setVisible(true);
         }
 
@@ -1887,8 +1802,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
         selectedDiagnosisContainer.repaint();
         additionalDiagnosisPanel.revalidate();
         additionalDiagnosisPanel.repaint();
-
-        // FORCER le layout du parent
         SwingUtilities.invokeLater(() -> {
             additionalDiagnosisPanel.repaint();
             if (getContentPane() != null) {
@@ -1913,7 +1826,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		JLabel diseaseLabel = new JLabel(disease.getDescription());
 		tag.add(diseaseLabel);
 
-		JButton removeButton = new JButton("\u00D7");
+		JButton removeButton = new JButton("×");
 		removeButton.setPreferredSize(new Dimension(20, 20));
 		removeButton.setBorderPainted(false);
 		removeButton.setContentAreaFilled(false);
