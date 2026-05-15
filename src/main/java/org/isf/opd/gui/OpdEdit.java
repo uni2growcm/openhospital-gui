@@ -454,8 +454,8 @@ public class OpdEdit extends JDialog {
 
 				if (referralToCheckBox.isSelected()) {
 					referralTo = "R";
-					String referralToValue = receivingHospitalField.getText().trim();
-					opd.setReceivingHospital(referralToValue.isEmpty() ? null : referralToValue);
+					String receivingValue = receivingHospitalField.getText().trim();
+					opd.setReceivingHospital(receivingValue.isEmpty() ? null : receivingValue);
 				} else {
 					referralTo = "";
 					opd.setReceivingHospital(null);
@@ -463,8 +463,8 @@ public class OpdEdit extends JDialog {
 
 				if (referralFromCheckBox.isSelected()) {
 					referralFrom = "R";
-					String referralFromValue = referingHospitalField.getText().trim();
-					opd.setReferingHospital(referralFromValue.isEmpty() ? null : referralFromValue);
+					String referingValue = referingHospitalField.getText().trim();
+					opd.setReferingHospital(referingValue.isEmpty() ? null : referingValue);
 				} else {
 					referralFrom = "";
 					opd.setReferingHospital(null);
