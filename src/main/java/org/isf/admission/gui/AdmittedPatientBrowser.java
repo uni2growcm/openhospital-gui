@@ -94,7 +94,6 @@ import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.therapy.gui.TherapyEdit;
-import org.isf.utils.db.NormalizeString;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -348,6 +347,15 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		setTitle(MessageBundle.getMessage("angal.admission.patientbrowser.title"));
 		myFrame = this;
 
+		if (!GeneralData.ENHANCEDSEARCH) {
+			// Load the whole list of patients
+			try {
+				pPatient = admissionBrowserManager.getAdmittedPatients(null);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+
 		initComponents();
 		setMinimumSize(new Dimension(1270, 570));
 		pack();
@@ -386,7 +394,6 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		dataAndControlPanel.add(getCenterPanel(), BorderLayout.CENTER);
 		return dataAndControlPanel;
 	}
-
 
 	private JPanel getCenterPanel() {
 		JPanel centerPanel = new JPanel(new BorderLayout());
@@ -1226,6 +1233,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private void updatePaginationControls() {
 		jPrevButton.setEnabled(currentPage > 0);
 		jNextButton.setEnabled(currentPage < totalPages - 1);
+		jPageComboBox.setEnabled(totalPages > 1);
 
 		if (jPageComboBox.getItemCount() != totalPages) {
 			ActionListener[] listeners = jPageComboBox.getActionListeners();
@@ -1347,91 +1355,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		private static final long serialVersionUID = 1L;
 
-		List<AdmittedPatient> patientList = new ArrayList<>(pPatient);
+		List<AdmittedPatient> patientList;
 
 		public AdmittedPatientBrowserModel(String key) {
-			for (AdmittedPatient ap : pPatient) {
-				Admission adm = ap.getAdmission();
-				// if not admitted stripes admitted
-				if (patientClassBox.getSelectedItem().equals(patientClassItems[2])) {
-					if (adm != null) {
-						continue;
-					}
-				}
-				// if admitted stripes not admitted
-				else if (patientClassBox.getSelectedItem().equals(patientClassItems[1])) {
-					if (adm == null) {
-						continue;
-					}
-				}
-
-				// if all or admitted filters not matching ward
-				if (!patientClassBox.getSelectedItem().equals(patientClassItems[2])) {
-					if (adm != null) {
-						int cc = -1;
-						for (int j = 0; j < wardList.size(); j++) {
-							if (adm.getWard().getCode().equalsIgnoreCase(wardList.get(j).getCode())) {
-								cc = j;
-								break;
-							}
-						}
-						if (!wardCheck[cc].isSelected()) {
-							continue;
-						}
-					}
-				}
-
-				// lower age limit
-				String ageLimit = patientAgeFromTextField.getText();
-				if (DIGIT_PATTERN.matcher(ageLimit).matches()) {
-					if (!(ap.getPatient().getAge() >= Integer.parseInt(ageLimit))) {
-						continue;
-					}
-				}
-
-				// upper age limit
-				ageLimit = patientAgeToTextField.getText();
-				if (DIGIT_PATTERN.matcher(ageLimit).matches()) {
-					if (!(ap.getPatient().getAge() <= Integer.parseInt(ageLimit))) {
-						continue;
-					}
-				}
-
-				// sex patient type
-				Character sex = switch (patientSexBox.getSelectedIndex()) {
-					case 1 -> 'M';
-					case 2 -> 'F';
-					default -> null;
-				};
-
-				if (sex != null && !sex.equals(ap.getPatient().getSex())) {
-					continue;
-				}
-
-				if (key != null) {
-					String s = key + lastKey;
-					s = s.trim();
-					String[] tokens = s.split(" ");
-
-					if (!s.isEmpty()) {
-						String name = ap.getPatient().getSearchString();
-						int a = 0;
-						for (String value : tokens) {
-							String token = value.toLowerCase();
-							if (NormalizeString.normalizeContains(name, token)) {
-								a++;
-							}
-						}
-						if (a == tokens.length) {
-							patientList.add(ap);
-						}
-					} else {
-						patientList.add(ap);
-					}
-				} else {
-					patientList.add(ap);
-				}
-			}
+			patientList = new ArrayList<>(pPatient);
 		}
 
 		@Override
@@ -1536,5 +1463,4 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			}
 		});
 	}
-
 }
