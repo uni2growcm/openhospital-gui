@@ -212,7 +212,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private Opd opd;
 	private boolean insert;
 	private DiseaseType allType = new DiseaseType(MessageBundle.getMessage("angal.common.alltypes.txt"), MessageBundle.getMessage("angal.common.alltypes.txt"));
-
+	private Disease allDisease = new Disease(
+			MessageBundle.getMessage("angal.opd.alldiseases.txt"),
+			MessageBundle.getMessage("angal.opd.alldiseases.txt"),
+			allType);
 	private VoLimitedTextField jTextPatientSrc;
 	private JComboBox jComboPatResult;
 	private JRadioButton radiof;
@@ -412,10 +415,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				lastOPDDisease3 = disease;
 			}
 		}
-		private Disease allDisease = new Disease(
-				MessageBundle.getMessage("angal.opd.alldiseases.txt"),
-				MessageBundle.getMessage("angal.opd.alldiseases.txt"),
-				null);
 
 		// TODO: this should be a formatted message in the bundle and not "appended" together
 		StringBuilder lastOPDDisease = new StringBuilder();
@@ -1736,6 +1735,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			} else if (disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())) {
 				browseDiagnosisCombo.addItem(disease);
 			}
+			// ✅ Les maladies avec type null sont ignorées quand un type spécifique est sélectionné
 		}
 
 		browseDiagnosisCombo.setSelectedItem(allDisease);
@@ -1774,6 +1774,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		browseDiagnosisCombo.addItem(allDisease);
 
 		for (Disease disease : diseasesOPD) {
+			// ✅ Vérification null pour disease.getType()
 			boolean typeOk = (selectedType == null || selectedType == allType ||
 					(disease.getType() != null && disease.getType().getCode().equals(selectedType.getCode())));
 
