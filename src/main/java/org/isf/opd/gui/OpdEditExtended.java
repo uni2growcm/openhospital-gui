@@ -491,7 +491,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 			if (!insert) {
 				referralFrom = opd.getReferralFrom();
-				String patientReferralFrom = opd.getPatientReferralFrom();
+				String patientReferralFrom = opd.getReferingHospital();
 				if (referralFrom != null && referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
 					patientReferralFromField.setEnabled(true);
@@ -514,7 +514,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 			if (!insert) {
 				referralTo = opd.getReferralTo();
-				String patientReferralTo = opd.getPatientReferralTo();
+				String patientReferralTo = opd.getReceivingHospital();
 				if (referralTo != null && referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
 					patientReferralToField.setEnabled(true);
@@ -1803,18 +1803,18 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				if (referralToCheckBox.isSelected()) {
 					referralTo = "R";
 					String referralToValue = patientReferralToField.getText().trim();
-					opd.setPatientReferralTo(referralToValue.isEmpty() ? null : referralToValue);
+					opd.setReceivingHospital(referralToValue.isEmpty() ? null : referralToValue);
 				} else {
 					referralTo = "";
-					opd.setPatientReferralTo(null);
+					opd.setReceivingHospital(null);
 				}
 				if (referralFromCheckBox.isSelected()) {
 					referralFrom = "R";
 					String referralFromValue = patientReferralFromField.getText().trim();
-					opd.setPatientReferralFrom(referralFromValue.isEmpty() ? null : referralFromValue);
+					opd.setReferingHospital(referralFromValue.isEmpty() ? null : referralFromValue);
 				} else {
 					referralFrom = "";
-					opd.setPatientReferralFrom(null);
+					opd.setReferingHospital(null);
 				}
 				// disease
 				if (diseaseBox1.getSelectedIndex() > 0) {
