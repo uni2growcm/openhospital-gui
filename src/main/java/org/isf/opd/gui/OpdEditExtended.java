@@ -519,7 +519,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		pack();
 		setPreferredSize(new Dimension(850, 900));
 		setMinimumSize(new Dimension(850, 800));
-		setMinimumSize(this.getSize());
 		this.setTitle(LAST_NOTE_LABEL);
 		setLocationRelativeTo(null);
 

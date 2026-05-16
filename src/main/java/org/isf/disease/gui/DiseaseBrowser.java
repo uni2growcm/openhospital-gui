@@ -280,4 +280,5 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 			return cell;
 		}
 	}
+
 }
