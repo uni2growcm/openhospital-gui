@@ -1259,9 +1259,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	}
 
 	private void getSearchBox(String key) {
-		String[] s1;
-
-		if (key == null || key.compareTo("") == 0) {
+		if (key == null || key.trim().isEmpty()) {
+			jComboPatResult.removeAllItems();
 			jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.selectapatient.txt"));
 			jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.enteranewpatient.txt"));
 			jLabelLastOpdVisit.setText(" ");
@@ -1274,69 +1273,68 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			if (jPanelPatient != null) {
 				resetPatient();
 			}
+			jPatientEditButton.setEnabled(false);
+			return;
 		}
 
+		jComboPatResult.removeAllItems();
+		jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.selectapatient.txt"));
+		jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.enteranewpatient.txt"));
+
+		boolean isIdSearch = key.trim().matches("\\d+");
+		Patient foundPatient = null;
+		List<Patient> matchedPatients = new ArrayList<>();
+
 		for (Patient elem : pat) {
-			if (key != null) {
-				s1 = key.split(" ");
-				String name = elem.getSearchString();
-				int a = 0;
-				for (String value : s1) {
-					if (name.contains(value.toLowerCase())) {
-						a++;
+			if (isIdSearch) {
+
+				int searchId = Integer.parseInt(key.trim());
+				if (elem.getCode() == searchId) {
+					foundPatient = elem;
+					break;
+				}
+			} else {
+				String[] patterns = key.toLowerCase().split(" ");
+				String name = elem.getSearchString().toLowerCase();
+				boolean allPatternsMatch = true;
+				for (String pattern : patterns) {
+					if (!name.contains(pattern)) {
+						allPatternsMatch = false;
+						break;
 					}
 				}
-				if (a == s1.length) {
-					jComboPatResult.addItem(elem);
-				}
-
-				boolean isIdSearch = key.trim().matches("\\d+");
-
-				if (isIdSearch) {
-					//search  exactly by ID
-					int searchId = Integer.parseInt(key.trim());
-					if (elem.getCode() == searchId) {
-						jComboPatResult.addItem(elem);
-					}
-				} else {
-					//search  exactly name/text
-					s1 = key.toLowerCase().split(" ");
-					name = elem.getSearchString().toLowerCase();
-					a = 0;
-					for (String value : s1) {
-						if (name.contains(value)) {
-							a++;
-						}
-					}
-					if (a == s1.length) {
-						jComboPatResult.addItem(elem);
-					}
+				if (allPatternsMatch) {
+					matchedPatients.add(elem);
 				}
 			}
 		}
-		//ADDED: Workaround for no items
-		if (jComboPatResult.getItemCount() == 0) {
+
+		if (isIdSearch && foundPatient != null) {
+			jComboPatResult.addItem(foundPatient);
+			opdPatient = foundPatient;
+			setPatient(opdPatient);
+			jPatientEditButton.setEnabled(true);
+			jComboPatResult.setSelectedItem(foundPatient);
+		} else if (!isIdSearch && !matchedPatients.isEmpty()) {
+
+			for (Patient patient : matchedPatients) {
+
+				jComboPatResult.addItem(patient);
+			}
+			opdPatient = matchedPatients.get(0);
+			setPatient(opdPatient);
+			jPatientEditButton.setEnabled(true);
+			jComboPatResult.setSelectedItem(opdPatient);
+		} else {
+
 			opdPatient = null;
 			if (jPanelPatient != null) {
 				resetPatient();
 			}
-			jPatientEditButton.setEnabled(true);
-		}
-		//ADDED: Workaround for one item only
-		if (jComboPatResult.getItemCount() == 1) {
-			opdPatient = (Patient) jComboPatResult.getSelectedItem();
-			setPatient(opdPatient);
-			jPatientEditButton.setEnabled(true);
-		}
-		//ADDED: Workaround for first item
-		if (jComboPatResult.getItemCount() > 0) {
+			jPatientEditButton.setEnabled(false);
 
-			if (jComboPatResult.getItemAt(0) instanceof Patient) {
-				opdPatient = (Patient) jComboPatResult.getItemAt(0);
-				setPatient(opdPatient);
-				jPatientEditButton.setEnabled(true);
-			}
 		}
+
 		jTextPatientSrc.requestFocus();
 	}
 	
@@ -1381,7 +1379,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		return jComboPatResult;
 	}
-	
+
 	//ADDED: Alex
 	private JButton getJPatientEditButton() {
 		if (jPatientEditButton == null) {
@@ -1405,10 +1403,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			if (!insert) {
 				jPatientEditButton.setEnabled(false);
 			}
-		}	
+		}
 		return jPatientEditButton;
 	}
-	
+
 	private JComboBox getDiseaseBox3() {
 		if (diseaseBox3 == null) {
 			diseaseBox3 = new JComboBox();
