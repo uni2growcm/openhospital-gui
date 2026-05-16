@@ -205,8 +205,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JRadioButton newPatientButton;
 	private JCheckBox referralToCheckBox;
 	private JCheckBox referralFromCheckBox;
-	private VoLimitedTextField referingHospitalField;
-	private VoLimitedTextField receivingHospitalField;
+	private JTextField referingHospitalField;
+	private JTextField receivingHospitalField;
 
 	private JPanel jPanelPatient;
 
@@ -484,7 +484,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
 			jPanelNorth.add(referralFromCheckBox);
 
-			referingHospitalField = new VoLimitedTextField(20, 255);
+			referingHospitalField = new JTextField(20);
 			referingHospitalField.setColumns(12);
 			referingHospitalField.setEnabled(false);
 			jPanelNorth.add(referingHospitalField);
@@ -507,7 +507,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
 			jPanelNorth.add(referralToCheckBox);
 
-			receivingHospitalField = new VoLimitedTextField(20, 255);
+			receivingHospitalField = new JTextField(20);
 			receivingHospitalField.setColumns(12);
 			receivingHospitalField.setEnabled(false);
 			jPanelNorth.add(receivingHospitalField);
