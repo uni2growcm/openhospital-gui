@@ -1538,7 +1538,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 	private JButton getJExamButton() {
 		if (jExamButton == null) {
-			jExamButton = new JButton(MessageBundle.getMessage("angal.menu.exams"));
+			jExamButton = new JButton(MessageBundle.getMessage("angal.opd.exams.btn"));
 			jExamButton.setMnemonic(KeyEvent.VK_X);
 			jExamButton.addActionListener(actionEvent -> {
 				if (jTable.getSelectedRow() < 0) {
