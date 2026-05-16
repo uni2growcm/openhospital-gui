@@ -535,6 +535,7 @@ public class OpdEdit extends JDialog {
 						}
 					} else {    // Update
 						Opd updatedOpd = opdBrowserManager.updateOpd(opd);
+
 						if (updatedOpd != null) {
 							fireSurgeryUpdated(updatedOpd);
 							dispose();
