@@ -478,6 +478,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					rePatientButton.setSelected(true);
 				}
 			}
+
 			//Referral from with input field
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
 			jPanelNorth.add(referralFromCheckBox);
@@ -501,6 +502,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					referingHospitalField.setEnabled(false);
 				}
 			}
+			
 			//Referral To with input field
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
 			jPanelNorth.add(referralToCheckBox);
