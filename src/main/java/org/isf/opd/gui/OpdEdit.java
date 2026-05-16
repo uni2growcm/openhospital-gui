@@ -172,8 +172,8 @@ public class OpdEdit extends JDialog {
 	/*
 	 * Adds: Textfields to specify referral to and referral from
 	 */
-	private VoLimitedTextField referingHospitalField;
-	private VoLimitedTextField receivingHospitalField;
+	private JTextField referingHospitalField;
+	private JTextField receivingHospitalField;
 
 	/**
 	 * This method initializes

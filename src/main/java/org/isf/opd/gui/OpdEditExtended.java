@@ -126,8 +126,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
 
-
-
 	@Override
 	public void patientInserted(AWTEvent e) {
 		opdPatient = (Patient) e.getSource();
