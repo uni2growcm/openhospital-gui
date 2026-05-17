@@ -34,6 +34,8 @@ import org.isf.maternity.manager.NewBornBrowserManager;
 import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.model.*;
 import org.isf.menu.manager.Context;
+import org.isf.stat.gui.report.GenericReportPregnancyBirthDeclaration;
+import org.isf.stat.gui.report.GenericReportPregnancyCertificateOfDeclaration;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
@@ -54,7 +56,7 @@ public class PregnancyDetailsView extends JDialog {
     private JTabbedPane tabbedPane;
 
     public PregnancyDetailsView(JFrame parent, Pregnancy pregnancy) {
-        super(parent, MessageBundle.getMessage("angal.maternity.pregnancy.details.title") + " - " + pregnancy.getPatient().getFirstName() + " " + pregnancy.getPatient().getSecondName() + " (" + MessageBundle.getMessage("angal.common.code.txt") + ": " + pregnancy.getPatient().getCode() + ")", true);
+        super(parent, MessageBundle.getMessage("angal.maternity.pregnancy.details.title") + " - " + pregnancy.getPatient().getFirstName() + " " + pregnancy.getPatient().getSecondName() + " (" + MessageBundle.getMessage("angal.common.code.txt") + ": " + pregnancy.getPatient().getCode() + ")", false);
         this.pregnancy = pregnancy;
 
         initManagers();
@@ -320,6 +322,13 @@ public class PregnancyDetailsView extends JDialog {
         healthPanel.add(createValueLabel(nb.getHivStatus() != null ? getHivStatusLabel(nb.getHivStatus()) : MessageBundle.getMessage("angal.common.na.label")));
         card.add(healthPanel);
 
+        JButton birthDeclarationBtn = new JButton(MessageBundle.getMessage("angal.maternity.birth.declaration.btn"));
+        birthDeclarationBtn.setFont(birthDeclarationBtn.getFont().deriveFont(Font.PLAIN, 11));
+        birthDeclarationBtn.setPreferredSize(new Dimension(140, 26));
+        birthDeclarationBtn.setFocusPainted(false);
+        birthDeclarationBtn.addActionListener(e -> printBirthDeclaration(e, nb));
+        card.add(birthDeclarationBtn);
+
         return card;
     }
 
@@ -420,12 +429,6 @@ public class PregnancyDetailsView extends JDialog {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
         panel.setBorder(BorderFactory.createEmptyBorder(6, 10, 8, 10));
 
-        JButton birthDeclarationBtn = new JButton(MessageBundle.getMessage("angal.maternity.birth.declaration.btn"));
-        birthDeclarationBtn.setFont(birthDeclarationBtn.getFont().deriveFont(Font.PLAIN, 11));
-        birthDeclarationBtn.setPreferredSize(new Dimension(140, 26));
-        birthDeclarationBtn.setFocusPainted(false);
-        birthDeclarationBtn.addActionListener(this::printBirthDeclaration);
-
         JButton birthCertificateBtn = new JButton(MessageBundle.getMessage("angal.maternity.birth.certificate.btn"));
         birthCertificateBtn.setFont(birthCertificateBtn.getFont().deriveFont(Font.PLAIN, 11));
         birthCertificateBtn.setPreferredSize(new Dimension(140, 26));
@@ -436,24 +439,18 @@ public class PregnancyDetailsView extends JDialog {
         closeBtn.setFont(closeBtn.getFont().deriveFont(Font.PLAIN, 11));
         closeBtn.setPreferredSize(new Dimension(100, 26));
         closeBtn.addActionListener(e -> dispose());
-
-        panel.add(birthDeclarationBtn);
         panel.add(birthCertificateBtn);
         panel.add(closeBtn);
 
         return panel;
     }
 
-    private void printBirthDeclaration(ActionEvent e) {
-        if (delivery == null || newborns == null || newborns.isEmpty()) {
+    private void printBirthDeclaration(ActionEvent e, Newborn newborn) {
+        if (newborn == null) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.declaration.msg"));
             return;
         }
-        MessageDialog.info(
-            this,
-            MessageBundle.getMessage("angal.common.info.title"),
-            MessageBundle.getMessage("angal.maternity.print.declaration.todo.msg")
-        );
+        new GenericReportPregnancyBirthDeclaration(newborn.getId().longValue());
     }
 
     private void printBirthCertificate(ActionEvent e) {
@@ -461,10 +458,6 @@ public class PregnancyDetailsView extends JDialog {
             MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.certificate.msg"));
             return;
         }
-        MessageDialog.info(
-            this,
-            MessageBundle.getMessage("angal.common.info.title"),
-            MessageBundle.getMessage("angal.maternity.print.certificate.todo.msg")
-        );
+        new GenericReportPregnancyCertificateOfDeclaration(pregnancy.getId().longValue());
     }
 }

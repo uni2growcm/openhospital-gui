@@ -62,11 +62,11 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.gui.PatVacBrowser;
+import org.isf.stat.gui.report.GenericReportPregnancyCertificateOfDeclaration;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
-import org.isf.stat.gui.report.GenericReportPregnancy;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -84,7 +84,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private static final int MIN_AGE = 10;
     private static final int MAX_AGE = 60;
-    
+
     private final String[] columnHeaders = {
         MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
         MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
@@ -519,7 +519,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJExamsButton());
         buttonPanel.add(getJVaccinButton());
         buttonPanel.add(getJTherapyButton());
-        buttonPanel.add(getJCertificateOfDeclarationButton());
         buttonPanel.add(getJCloseButton());
 
         return buttonPanel;
@@ -589,20 +588,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.therapy.btn"));
         button.addActionListener(e -> therapy());
         return button;
-    }
-
-    private JButton getJCertificateOfDeclarationButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.birth.certificate.btn"));
-        button.addActionListener(e -> printCertificateOfDeclaration());
-        return button;
-    }
-
-    private void printCertificateOfDeclaration() {
-        if (selectedPregnancy == null) {
-            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
-            return;
-        }
-        new GenericReportPregnancy(selectedPregnancy.getId().longValue(), "certificateOfDeclaration");
     }
 
     private JButton getJCloseButton() {

@@ -1,0 +1,355 @@
+[16/May/2026 18:36:48] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 18:36:48] [:] INFO - Starting Application using Java 17.0.18 with PID 67575 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 18:36:48] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 18:36:48] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 18:36:53] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 18:36:54] [:] INFO - Finished Spring Data repository scanning in 799 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 18:36:55] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 18:36:57] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 18:36:57] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 18:36:57] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 18:36:58] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 18:36:58] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 18:36:59] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@5acd7d1c (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 18:36:59] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 18:36:59] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 18:36:59] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 18:37:05] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 18:37:05] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 18:37:06] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 18:37:15] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:37:16] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 18:37:16] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:37:16] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:37:16] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:37:16] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:37:18] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 18:37:18] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:37:21] [:] INFO - Started Application in 35.997 seconds (process running for 45.099) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 18:37:22] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 18:37:22] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:37:22] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 18:37:22] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 18:37:22] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:37:25] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 18:37:25] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 18:37:26] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 18:37:26] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 18:37:29] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:37:29] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 18:37:42] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 18:37:42] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:38:11] [admin:admin] ERROR - >> key not found: Information (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[16/May/2026 18:42:51] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 18:42:51] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 18:42:51] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
+[16/May/2026 18:43:19] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 18:43:19] [:] INFO - Starting Application using Java 17.0.18 with PID 67851 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 18:43:19] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 18:43:19] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 18:43:23] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 18:43:23] [:] INFO - Finished Spring Data repository scanning in 684 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 18:43:24] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 18:43:26] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 18:43:26] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 18:43:26] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 18:43:26] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 18:43:27] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 18:43:27] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@4ae5ddc0 (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 18:43:27] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 18:43:27] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 18:43:27] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 18:43:33] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 18:43:33] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 18:43:34] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 18:43:43] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:43:44] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 18:43:44] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:43:44] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:43:44] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:43:44] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:43:45] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 18:43:45] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:43:48] [:] INFO - Started Application in 31.049 seconds (process running for 34.069) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 18:43:48] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 18:43:48] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:43:48] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 18:43:48] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 18:43:48] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:43:51] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 18:43:51] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 18:43:51] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 18:43:51] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 18:43:54] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:43:54] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 18:44:26] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 18:44:26] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:45:19] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 18:52:04] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 18:52:04] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 18:52:04] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
+[16/May/2026 18:52:16] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 18:52:16] [:] INFO - Starting Application using Java 17.0.18 with PID 68126 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 18:52:16] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 18:52:16] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 18:52:19] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 18:52:20] [:] INFO - Finished Spring Data repository scanning in 749 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 18:52:20] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 18:52:22] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 18:52:22] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 18:52:22] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 18:52:23] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 18:52:23] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 18:52:24] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@5acd7d1c (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 18:52:24] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 18:52:24] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 18:52:24] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 18:52:30] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 18:52:30] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 18:52:31] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 18:52:40] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:52:42] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 18:52:42] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:52:42] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:52:42] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:52:42] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 18:52:43] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 18:52:43] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:52:46] [:] INFO - Started Application in 32.744 seconds (process running for 36.063) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 18:52:46] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 18:52:46] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:52:46] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 18:52:46] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 18:52:46] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:52:50] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 18:52:50] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 18:52:50] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 18:52:50] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 18:52:53] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:52:53] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 18:53:01] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 18:53:01] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:53:10] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 18:53:38] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 18:59:41] [admin:admin] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 18:59:41] [admin:admin] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 18:59:41] [admin:admin] DEBUG - Session refreshed... (org.isf.session.RestartUserSession.lambda$restartSession$1(RestartUserSession.java:63))
+[16/May/2026 19:04:44] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 19:04:44] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 19:04:44] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
+[16/May/2026 19:16:59] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 19:16:59] [:] INFO - Starting Application using Java 17.0.18 with PID 68805 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 19:16:59] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 19:16:59] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 19:17:02] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 19:17:02] [:] INFO - Finished Spring Data repository scanning in 635 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 19:17:03] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 19:17:04] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 19:17:04] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 19:17:05] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 19:17:05] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 19:17:05] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 19:17:06] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@3ca6bd01 (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 19:17:06] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 19:17:06] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 19:17:06] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 19:17:12] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 19:17:12] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 19:17:13] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 19:17:21] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:17:23] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 19:17:23] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:17:23] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:17:23] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:17:23] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:17:24] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 19:17:24] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:17:27] [:] INFO - Started Application in 29.592 seconds (process running for 32.587) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 19:17:27] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 19:17:27] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:17:27] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 19:17:27] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 19:17:27] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:17:31] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 19:17:31] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 19:17:32] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 19:17:32] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 19:17:35] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:17:35] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 19:17:46] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 19:17:47] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:18:13] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 19:23:51] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 19:23:51] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 19:23:51] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
+[16/May/2026 19:27:34] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 19:27:34] [:] INFO - Starting Application using Java 17.0.18 with PID 69113 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 19:27:34] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 19:27:34] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 19:27:38] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 19:27:39] [:] INFO - Finished Spring Data repository scanning in 666 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 19:27:40] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 19:27:41] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 19:27:41] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 19:27:42] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 19:27:43] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 19:27:43] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 19:27:43] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@5f4e389a (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 19:27:43] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 19:27:43] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 19:27:43] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 19:27:49] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 19:27:49] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 19:27:51] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 19:27:59] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:00] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 19:28:00] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:28:00] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:28:00] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:28:00] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:28:01] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 19:28:01] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:04] [:] INFO - Started Application in 32.32 seconds (process running for 35.485) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 19:28:05] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 19:28:05] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:05] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 19:28:05] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 19:28:05] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:07] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 19:28:08] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 19:28:08] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 19:28:08] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 19:28:11] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:11] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 19:28:27] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 19:28:27] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:28:56] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 19:31:37] [admin:admin] ERROR - >> key not found: Information (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[16/May/2026 19:33:30] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 19:38:53] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 19:38:53] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 19:38:53] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
+[16/May/2026 19:50:58] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[16/May/2026 19:50:58] [:] INFO - Starting Application using Java 17.0.18 with PID 69949 (/home/uni2grow/Documents/OH/openhospital-gui/target/classes started by uni2grow in /home/uni2grow/Documents/OH/openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[16/May/2026 19:50:58] [:] DEBUG - Running with Spring Boot v3.5.6, Spring v6.2.11 (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:54))
+[16/May/2026 19:50:58] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[16/May/2026 19:51:02] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[16/May/2026 19:51:03] [:] INFO - Finished Spring Data repository scanning in 591 ms. Found 65 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[16/May/2026 19:51:03] [:] INFO - BeanFactory id=7f338de1-2d1f-3ffb-a0bd-e70922f6fade (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[16/May/2026 19:51:05] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[16/May/2026 19:51:05] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[16/May/2026 19:51:05] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[16/May/2026 19:51:06] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[16/May/2026 19:51:06] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[16/May/2026 19:51:06] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@23263ba (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[16/May/2026 19:51:06] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[16/May/2026 19:51:06] [:] WARN - HHH000511: The 8.0.45 version for [org.hibernate.dialect.MariaDBDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 10.4.0. Check the community dialects project for available legacy versions. (org.hibernate.dialect.Dialect.checkVersion(Dialect.java:355))
+[16/May/2026 19:51:07] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[16/May/2026 19:51:12] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[16/May/2026 19:51:12] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[16/May/2026 19:51:13] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[16/May/2026 19:51:22] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:51:23] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[16/May/2026 19:51:23] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:51:23] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:51:24] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:51:24] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[16/May/2026 19:51:25] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[16/May/2026 19:51:25] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:51:29] [:] INFO - Started Application in 32.547 seconds (process running for 36.031) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[16/May/2026 19:51:29] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[16/May/2026 19:51:29] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:51:29] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[16/May/2026 19:51:29] [:] INFO - Java version 17.0.18 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[16/May/2026 19:51:29] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:51:33] [:] INFO - Configuration fetched. (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:72))
+[16/May/2026 19:51:33] [:] DEBUG - textToCheck: Address (org.isf.menu.gui.Menu.fontChecker(Menu.java:131))
+[16/May/2026 19:51:34] [:] DEBUG - Current Font: Dialog.bold 12 (org.isf.menu.gui.Menu.fontChecker(Menu.java:136))
+[16/May/2026 19:51:34] [:] DEBUG - The current font supports the selected language. (org.isf.menu.gui.Menu.fontChecker(Menu.java:144))
+[16/May/2026 19:51:39] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:51:39] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:195))
+[16/May/2026 19:52:02] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:106))
+[16/May/2026 19:52:02] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[16/May/2026 19:52:19] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 19:52:47] [admin:admin] DEBUG - Search subreports for certificateOfDeclaration... (org.isf.stat.manager.JasperReportsManager.addBundleParameter(JasperReportsManager.java:984))
+[16/May/2026 19:53:28] [admin:admin] INFO - 
+
+=====================
+ Open Hospital closed 
+=====================
+ (org.isf.menu.gui.MainMenu.actionExit(MainMenu.java:412))
+[16/May/2026 19:53:28] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[16/May/2026 19:53:28] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[16/May/2026 19:53:28] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))

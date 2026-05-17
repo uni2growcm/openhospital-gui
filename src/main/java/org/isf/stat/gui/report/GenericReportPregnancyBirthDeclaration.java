@@ -28,19 +28,20 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenericReportPregnancy extends DisplayReport {
+import javax.swing.*;
+import java.awt.*;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GenericReportPregnancy.class);
-	private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
+public class GenericReportPregnancyBirthDeclaration extends DisplayReport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericReportPregnancyCertificateOfDeclaration.class);
+    private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 
-	public GenericReportPregnancy(Long pregnancyId, String jasperFileName) {
-		try {
-			JasperReportResultDto jasperReportResultDto = jasperReportsManager.getGenericReportPregnancyPdf(pregnancyId, jasperFileName);
-			showReport(jasperReportResultDto);
-		} catch (Exception e) {
-			LOGGER.error("", e);
-			MessageDialog.error(null, "angal.stat.reporterror.msg");
-		}
-	}
-
+    public GenericReportPregnancyBirthDeclaration(Long nbnId) {
+        try {
+            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getBirthDeclarationPdf(nbnId);
+            showReport(jasperReportResultDto);
+        } catch (Exception e) {
+            LOGGER.error("", e);
+            MessageDialog.error(null, "angal.stat.reporterror.msg");
+        }
+    }
 }
