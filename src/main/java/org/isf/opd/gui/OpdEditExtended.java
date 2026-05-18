@@ -132,6 +132,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
 
+	
+
 	@Override
 	public void patientInserted(AWTEvent e) {
 		opdPatient = (Patient) e.getSource();
@@ -429,6 +431,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		StringBuilder lastOPDDisease = new StringBuilder();
 		lastOPDDisease.append(MessageBundle.getMessage("angal.opd.on.txt")).append(' ').append(currentDateFormat.format(lastOpd.getDate())).append(" - ");
 		if (lastOPDDisease1 != null) {
+			setAttendance();
 			lastOPDDisease.append(lastOPDDisease1.getDescription());
 		} 
 		if (lastOPDDisease2 != null) {
@@ -443,8 +446,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		String note = lastOpd.getNote();
 		jFieldLastOpdNote.setText(note.equals("") ? MessageBundle.getMessage("angal.opd.none.txt") : note);
 		jNoteTextArea.setText(lastOpd.getNote());
-
-		return true;
+		
+		return true;		
 	}
 
 	/**
@@ -608,11 +611,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		return jPanelMain;
 	}
-
+	
 	/**
-	 * This method initializes jPanel
-	 *
-	 * @return javax.swing.JPanel
+	 * This method initializes jPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
 	 */
 	private JPanel getDataPanel() {
 		if (jPanelData == null) {
@@ -740,7 +743,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdVisit.fill = GridBagConstraints.HORIZONTAL;
 			gbcFieldLastOpdVisit.gridwidth = 4;
 			gbcFieldLastOpdVisit.gridx = 1;
-			gbcFieldLastOpdVisit.gridy = 4;
+			gbcFieldLastOpdVisit.gridy = 6;
 			jPanelData.add(jFieldLastOpdVisit, gbcFieldLastOpdVisit);
 
 			jLabelLastOpdNote = new JLabel(" ");
@@ -751,7 +754,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdNote.insets = new Insets(5, 5, 0, 5);
 			gbcLabelLastOpdNote.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdNote.gridx = 0;
-			gbcLabelLastOpdNote.gridy = 5;
+			gbcLabelLastOpdNote.gridy = 7;
 			jPanelData.add(jLabelLastOpdNote, gbcLabelLastOpdNote);
 			jFieldLastOpdNote = new JLabel(" ");
 			jFieldLastOpdNote.setPreferredSize(new Dimension(500, 30));
@@ -761,26 +764,26 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdNote.insets = new Insets(5, 5, 0, 0);
 			gbcFieldLastOpdNote.gridwidth = 4;
 			gbcFieldLastOpdNote.gridx = 1;
-			gbcFieldLastOpdNote.gridy = 5;
+			gbcFieldLastOpdNote.gridy = 7;
 			jPanelData.add(jFieldLastOpdNote, gbcFieldLastOpdNote);
 
 			GridBagConstraints gbcNextVisitLabel = new GridBagConstraints();
 			gbcNextVisitLabel.insets = new Insets(0, 0, 0, 5);
 			gbcNextVisitLabel.gridx = 0;
-			gbcNextVisitLabel.gridy = 6;
+			gbcNextVisitLabel.gridy = 8;
 			jPanelData.add(getNextVisitLabel(), gbcNextVisitLabel);
 			gbcOpdNextVisitDate = new GridBagConstraints();
 			gbcOpdNextVisitDate.insets = new Insets(0, 0, 0, 5);
 			gbcOpdNextVisitDate.fill = GridBagConstraints.HORIZONTAL;
 			gbcOpdNextVisitDate.gridx = 1;
-			gbcOpdNextVisitDate.gridy = 6;
+			gbcOpdNextVisitDate.gridy = 8;
 			jPanelData.add(getOpdNextVisitDate(), gbcOpdNextVisitDate);
 			GridBagConstraints gbcLabelNextVisitWard = new GridBagConstraints();
 			gbcLabelNextVisitWard.insets = new Insets(0, 0, 5, 0);
 			gbcLabelNextVisitWard.gridwidth = 2;
 			gbcLabelNextVisitWard.anchor = GridBagConstraints.WEST;
 			gbcLabelNextVisitWard.gridx = 2;
-			gbcLabelNextVisitWard.gridy = 6;
+			gbcLabelNextVisitWard.gridy = 8;
 			jPanelData.add(getJNextVisitWardPanel(), gbcLabelNextVisitWard);
 		}
 		return jPanelData;
