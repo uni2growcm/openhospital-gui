@@ -56,7 +56,7 @@ public class PregnancyDetailsView extends JDialog {
     private JTabbedPane tabbedPane;
 
     public PregnancyDetailsView(JFrame parent, Pregnancy pregnancy) {
-        super(parent, MessageBundle.getMessage("angal.maternity.pregnancy.details.title") + " - " + pregnancy.getPatient().getFirstName() + " " + pregnancy.getPatient().getSecondName() + " (" + MessageBundle.getMessage("angal.common.code.txt") + ": " + pregnancy.getPatient().getCode() + ")", false);
+        super(parent, MessageBundle.getMessage("angal.maternity.pregnancy.details.title") + " - " + pregnancy.getPatient().getFirstName() + " " + pregnancy.getPatient().getSecondName() + " (" + MessageBundle.getMessage("angal.common.code.txt") + ": " + pregnancy.getPatient().getCode() + ")", true);
         this.pregnancy = pregnancy;
 
         initManagers();
