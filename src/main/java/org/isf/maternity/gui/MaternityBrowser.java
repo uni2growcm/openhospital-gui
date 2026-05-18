@@ -62,6 +62,7 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.gui.PatVacBrowser;
+import org.isf.stat.gui.report.GenericReportPregnancy;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
@@ -1001,7 +1002,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        new PregnancyReport(selectedPregnancy.getId());
+        new GenericReportPregnancy(selectedPregnancy.getId());
     }
 
     private void therapy() {

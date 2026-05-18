@@ -213,14 +213,6 @@ ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
 				<textFieldExpression><![CDATA[$P{Telephone}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="336" y="119" width="123" height="21" uuid="8c7bacbe-fc36-4660-a733-efec257f0a26"/>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{totalPregnancy}]]></textFieldExpression>
-			</textField>
-			<textField>
 				<reportElement x="179" y="80" width="196" height="30" uuid="17207f70-fff8-46ef-adbd-eea651b9647e"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true" isUnderline="true"/>
@@ -228,7 +220,7 @@ ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
 				<textFieldExpression><![CDATA[$R{pregnancyReport}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="213" y="119" width="123" height="21" uuid="a58e176f-1dc2-48c9-89e5-379cc589c463">
+				<reportElement x="270" y="119" width="187" height="21" uuid="a58e176f-1dc2-48c9-89e5-379cc589c463">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -239,7 +231,7 @@ ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
 				<textFieldExpression><![CDATA[$R{patientName}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="90" y="119" width="123" height="21" uuid="84aa26b1-1b14-4190-8a42-4038e67c7478">
+				<reportElement x="83" y="119" width="187" height="21" uuid="84aa26b1-1b14-4190-8a42-4038e67c7478">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -251,7 +243,7 @@ ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
 				<textFieldExpression><![CDATA[$R{patientCode}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="213" y="140" width="123" height="28" uuid="04a67c84-8928-44bb-b001-9747180f4c58"/>
+				<reportElement x="270" y="140" width="187" height="28" uuid="04a67c84-8928-44bb-b001-9747180f4c58"/>
 				<box padding="1">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</box>
@@ -259,20 +251,12 @@ ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
 				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="90" y="140" width="123" height="28" uuid="a83677ef-0da2-4d01-87d8-86256c4fac2a"/>
+				<reportElement x="83" y="140" width="187" height="28" uuid="a83677ef-0da2-4d01-87d8-86256c4fac2a"/>
 				<box padding="1">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{PRG_PAT_ID}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="336" y="140" width="123" height="28" uuid="6f1be938-22a6-4253-848d-f5ac953e49f3"/>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{TOTAL_PREGNANCY}]]></textFieldExpression>
 			</textField>
 			<image>
 				<reportElement x="0" y="0" width="90" height="73" uuid="37c2ef80-e8aa-4a4d-8703-271161f71c54"/>
