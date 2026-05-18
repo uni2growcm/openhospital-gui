@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -132,8 +132,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
 
-	
-
 	@Override
 	public void patientInserted(AWTEvent e) {
 		opdPatient = (Patient) e.getSource();
@@ -208,6 +206,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JRadioButton newPatientButton;
 	private JCheckBox referralToCheckBox;
 	private JCheckBox referralFromCheckBox;
+	private JTextField referingHospitalField;
+	private JTextField receivingHospitalField;
 
 	private JPanel jPanelPatient;
 
@@ -443,8 +443,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		String note = lastOpd.getNote();
 		jFieldLastOpdNote.setText(note.equals("") ? MessageBundle.getMessage("angal.opd.none.txt") : note);
 		jNoteTextArea.setText(lastOpd.getNote());
-		
-		return true;		
+
+		return true;
 	}
 
 	/**
@@ -471,28 +471,71 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					rePatientButton.setSelected(true);
 				}
 			}
+
+			//Referral from with input field
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
 			jPanelNorth.add(referralFromCheckBox);
+
+			referingHospitalField = new JTextField(20);
+			referingHospitalField.setColumns(12);
+			referingHospitalField.setEnabled(false);
+			jPanelNorth.add(referingHospitalField);
+
 			if (!insert) {
 				referralFrom = opd.getReferralFrom();
-				if (referralFrom == null) {
-					referralFrom = "";
-				}
-				if (referralFrom.equals("R")) {
+				String referingHospital = opd.getReferingHospital();
+				if (referralFrom != null && referralFrom.equals("R")) {
 					referralFromCheckBox.setSelected(true);
+					referingHospitalField.setEnabled(true);
+					if (referingHospital != null && !referingHospital.isEmpty()) {
+						referingHospitalField.setText(referingHospital);
+					}
+				} else if (referingHospital != null && !referingHospital.isEmpty()) {
+					referingHospitalField.setText(referingHospital);
+					referingHospitalField.setEnabled(false);
 				}
 			}
+
+			//Referral To with input field
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
 			jPanelNorth.add(referralToCheckBox);
+
+			receivingHospitalField = new JTextField(20);
+			receivingHospitalField.setColumns(12);
+			receivingHospitalField.setEnabled(false);
+			jPanelNorth.add(receivingHospitalField);
+
 			if (!insert) {
 				referralTo = opd.getReferralTo();
-				if (referralTo == null) {
-					referralTo = "";
-				}
-				if (referralTo.equals("R")) {
+				String receivingHospital = opd.getReceivingHospital();
+				if (referralTo != null && referralTo.equals("R")) {
 					referralToCheckBox.setSelected(true);
+					receivingHospitalField.setEnabled(true);
+					if (receivingHospital != null && !receivingHospital.isEmpty()) {
+						receivingHospitalField.setText(receivingHospital);
+					}
+				} else if (receivingHospital != null && !receivingHospital.isEmpty()) {
+					receivingHospitalField.setText(receivingHospital);
+					receivingHospitalField.setEnabled(false);
 				}
 			}
+
+			//Action for listeners
+			referralFromCheckBox.addActionListener(e -> {
+				boolean selected = referralFromCheckBox.isSelected();
+				referingHospitalField.setEnabled(selected);
+				if (!selected) {
+					referingHospitalField.setText("");
+				}
+			});
+
+			referralToCheckBox.addActionListener(e -> {
+				boolean selected = referralToCheckBox.isSelected();
+				receivingHospitalField.setEnabled(selected);
+				if (!selected) {
+					receivingHospitalField.setText("");
+				}
+			});
 		}
 		return jPanelNorth;
 	}
@@ -568,8 +611,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	/**
 	 * This method initializes jPanel
-	 * 	
-	 * @return javax.swing.JPanel	
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getDataPanel() {
 		if (jPanelData == null) {
@@ -1481,13 +1524,19 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 				if (referralToCheckBox.isSelected()) {
 					referralTo = "R";
+					String receivingValue = receivingHospitalField.getText().trim();
+					opd.setReceivingHospital(receivingValue.isEmpty() ? null : receivingValue);
 				} else {
 					referralTo = "";
+					opd.setReceivingHospital(null);
 				}
 				if (referralFromCheckBox.isSelected()) {
 					referralFrom = "R";
+					String referingValue = referingHospitalField.getText().trim();
+					opd.setReferingHospital(referingValue.isEmpty() ? null : referingValue);
 				} else {
 					referralFrom = "";
+					opd.setReferingHospital(null);
 				}
 
 				// nextVisit - the presence of opdNextVisitDate drives the management of the visit linked to the OPD
