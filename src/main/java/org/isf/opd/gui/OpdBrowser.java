@@ -154,6 +154,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private List<Opd> pSur;
 	private JTable jTable;
 	private OpdBrowsingModel model;
+	private List<Disease> diseasesAll;
 	private int[] pColumnWidth = {50, 80, 100, 130, 70, 150, 30, 30, 195, 195, 50, 50};
 	private boolean[] columnResizable = { false, false, false, false, false, true, false, false, true, true, false, false };
 	private boolean[] columnsVisible = { true, true, GeneralData.OPDEXTENDED, true, GeneralData.OPDEXTENDED, GeneralData.OPDEXTENDED, true, true, true, true, true, !isSingleUser };
@@ -258,7 +259,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		super();
 		myFrame = this;
 		initialize();
-		Opd newOpd = new Opd(0, ' ', -1, new Disease());
+		Opd newOpd = new Opd(0, ' ', -1, null);
 		OpdEditExtended editrecord = new OpdEditExtended(myFrame, newOpd, patient, true);
 		editrecord.addSurgeryListener(this);
 		editrecord.showAsModal(myFrame);
@@ -379,6 +380,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 
 	private void refreshModel() {
+		loadExtraDiagnoses(pSur);
 		if (currentPage >= totalPages && currentPage > 0) {
 			currentPage = totalPages - 1;
 			loadCurrentPage();
@@ -406,6 +408,71 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		jTable.updateUI();
 		updatePaginationControls();
 		rowCounter.setText(rowCounterText + totalRows);
+	}
+
+	private void loadExtraDiagnoses(List<Opd> opds) {
+		if (opds == null || opds.isEmpty()) {
+			return;
+		}
+		List<Disease> allDiseases = getDiseasesAll();
+		if (allDiseases == null || allDiseases.isEmpty()) {
+			return;
+		}
+		for (Opd opd : opds) {
+			if (opd != null) {
+				opd.loadExtraDiagnosesFromString(allDiseases);
+			}
+		}
+	}
+
+	private List<Disease> getDiseasesAll() {
+		if (diseasesAll == null) {
+			try {
+				diseasesAll = diseaseBrowserManager.getDiseaseAll();
+			} catch (OHServiceException ohServiceException) {
+				MessageDialog.showExceptions(ohServiceException);
+				diseasesAll = new ArrayList<>();
+			}
+		}
+		return diseasesAll;
+	}
+
+	private String getDiagnosesDescription(Opd opd) {
+		String diagnoses = joinDiagnoses(opd, false);
+		return diagnoses.isEmpty() ? '[' + MessageBundle.getMessage("angal.opd.notspecified.msg") + ']' : diagnoses;
+	}
+
+	private String getDiagnosisTypesDescription(Opd opd) {
+		return joinDiagnoses(opd, true);
+	}
+
+	private String joinDiagnoses(Opd opd, boolean diseaseTypes) {
+		if (opd == null) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		List<String> added = new ArrayList<>();
+		for (Disease disease : opd.getAllDiagnoses()) {
+			if (disease == null || disease.getCode() == null || added.contains(disease.getCode())) {
+				continue;
+			}
+			String value = "";
+			if (diseaseTypes) {
+				if (disease.getType() != null && disease.getType().getDescription() != null) {
+					value = disease.getType().getDescription();
+				}
+			} else {
+				value = disease.getDescription() != null ? disease.getDescription() : disease.getCode();
+			}
+			if (!value.isEmpty()) {
+				if (builder.length() > 0) {
+					builder.append(", ");
+				}
+				builder.append(value);
+			}
+			added.add(disease.getCode());
+		}
+		return builder.toString();
 	}
 
 	private void loadCurrentPage() {
@@ -520,7 +587,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jNewButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jNewButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jNewButton.addActionListener(actionEvent -> {
-				Opd newOpd = new Opd(0, ' ', -1, new Disease());
+				Opd newOpd = new Opd(0, ' ', -1, null);
 				if (GeneralData.OPDEXTENDED) {
 					OpdEditExtended newrecord = new OpdEditExtended(myFrame, newOpd, true);
 					newrecord.addSurgeryListener(this);
@@ -628,9 +695,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 							opd.getCreatedDate() == null
 									? opd.getDate().format(DATE_FORMATTER)
 									: opd.getCreatedDate().format(DATE_FORMATTER),
-							opd.getDisease().getDescription() == null
-									? '[' + MessageBundle.getMessage("angal.opd.notspecified.msg") + ']'
-									: opd.getDisease().getDescription(),
+							getDiagnosesDescription(opd),
 							opd.getAge(),
 							opd.getSex(),
 							opd.getDate().format(DATE_TIME_FORMATTER));
@@ -639,9 +704,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 							opd.getCreatedDate() == null
 									? opd.getDate().format(DATE_FORMATTER)
 									: opd.getCreatedDate().format(DATE_FORMATTER),
-							opd.getDisease().getDescription() == null
-									? '[' + MessageBundle.getMessage("angal.opd.notspecified.msg") + ']'
-									: opd.getDisease().getDescription(),
+							getDiagnosesDescription(opd),
 							opd.getAge(),
 							opd.getSex(),
 							opd.getDate().format(DATE_FORMATTER));
@@ -1286,9 +1349,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			} else if (c == ++i) {
 				return opd.getAge();
 			} else if (c == ++i) {
-				return opd.getDisease().getDescription();
+				return getDiagnosesDescription(opd);
 			} else if (c == ++i) {
-				return opd.getDisease().getType().getDescription();
+				return getDiagnosisTypesDescription(opd);
 			} else if (c == ++i) {
 				String patientStatus;
 				if (opd.getNewPatient() == 'N') {
@@ -1311,6 +1374,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	@Override
 	public void surgeryUpdated(AWTEvent e, Opd opd) {
+		loadExtraDiagnoses(List.of(opd));
 		pSur.set(pSur.size() - selectedrow - 1, opd);
 		((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
 		jTable.updateUI();
@@ -1322,6 +1386,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	@Override
 	public void surgeryInserted(AWTEvent e, Opd opd) {
+		loadExtraDiagnoses(List.of(opd));
+		currentPage = 0;
+		searchMode = SearchMode.FILTERS;
 		pSur.add(pSur.size(), opd);
 		((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
 		loadCurrentPage();
@@ -1442,13 +1509,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				}
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
-                Optional<Opd> opd = null;
-                try {
-                    opd = opdBrowserManager.getOpdById(code);
-                } catch (OHServiceException ex) {
-                    throw new RuntimeException(ex);
-                }
-                pSur = new ArrayList<>();
+				Optional<Opd> opd = opdBrowserManager.getOpdById(code);
+				pSur = new ArrayList<>();
 				if (opd.isPresent()) {
 					pSur.add(opd.get());
 				}
