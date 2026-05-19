@@ -708,9 +708,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		}
 	}
 
-	/**
-	 * Rafraîchit la liste déroulante des prescripteurs
-	 */
 	private void refreshPrescriberCombo() {
 		if (comboPrescriber != null) {
 			String currentSelection = (String) comboPrescriber.getSelectedItem();
