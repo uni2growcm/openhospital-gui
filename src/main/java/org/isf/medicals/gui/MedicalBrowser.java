@@ -201,8 +201,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		JPanel contentPane = new JPanel(new BorderLayout());
 		contentPane.add(getScrollPane(), BorderLayout.CENTER);
 		JPanel southPanel = new JPanel(new BorderLayout());
-		southPanel.add(getJButtonPanel(), BorderLayout.NORTH);
-		southPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		southPanel.add(getPaginationPanel(), BorderLayout.NORTH);
+		southPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
 		return contentPane;
