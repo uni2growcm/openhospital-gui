@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -93,10 +93,18 @@ public class LabEditExtended extends ModalJFrame {
 	public interface LabEditExtendedListener extends EventListener {
 
 		void labUpdated();
+		void prescribersUpdated();
 	}
 
 	public void addLabEditExtendedListener(LabEditExtendedListener l) {
 		labEditExtendedListener.add(LabEditExtendedListener.class, l);
+	}
+
+	private void firePrescribersUpdated() {
+		EventListener[] listeners = labEditExtendedListener.getListeners(LabEditExtendedListener.class);
+		for (EventListener listener : listeners) {
+			((LabEditExtendedListener) listener).prescribersUpdated();
+		}
 	}
 
 	private void fireLabUpdated() {
@@ -125,12 +133,13 @@ public class LabEditExtended extends ModalJFrame {
 	private JButton cancelButton;
 	private JButton printButton;
 	private JComboBox matComboBox;
+	private JComboBox<String> prescriberComboBox;
 	private ExamComboBox examComboBox;
 	private ExamRowComboBox examRowComboBox;
 	private PatientComboBox patientComboBox;
 	private Exam examSelected;
 	private JScrollPane noteScrollPane;
-
+	private JTextField prescriberTextField;
 	private JTextArea noteTextArea;
 
 	private VoLimitedTextField patTextField;
@@ -146,8 +155,8 @@ public class LabEditExtended extends ModalJFrame {
 	private GoodDateTimeSpinnerChooser examDateFieldCal;
 
 	private static final int PANEL_WIDTH = 550;
-	private static final int LABEL_WIDTH = 70;
-	private static final int DATA_PANEL_HEIGHT = 90;
+	private static final int LABEL_WIDTH = 90;
+	private static final int DATA_PANEL_HEIGHT = 130;
 	private static final int DATA_PATIENT_HEIGHT = 100;
 	private static final int RESULT_PANEL_HEIGHT = 350;
 	private static final int BUTTON_PANEL_HEIGHT = 45;
@@ -213,39 +222,77 @@ public class LabEditExtended extends ModalJFrame {
 		return jContentPane;
 	}
 
+	private JTextField getPrescriberTextField() {
+		if (prescriberTextField == null) {
+			prescriberTextField = new JTextField();
+			prescriberTextField.setPreferredSize(new Dimension(200, 25));
+			if (!insert) {
+				prescriberTextField.setText(lab.getPrescriber() != null ? lab.getPrescriber() : "");
+			}
+		}
+		return prescriberTextField;
+	}
+
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			// initialize data panel
 			dataPanel = new JPanel();
 			dataPanel.setLayout(null);
 			dataPanel.setBounds(0, 0, PANEL_WIDTH, DATA_PANEL_HEIGHT);
+
 			// exam date
 			JLabel examDateLabel = new JLabel(MessageBundle.getMessage("angal.common.date.txt"));
 			examDateLabel.setBounds(5, 10, LABEL_WIDTH, 25);
 			examDateFieldCal = getExamDateFieldCal();
 			examDateFieldCal.setBounds(LABEL_WIDTH + 5, 10, 200, 25);
+
 			// material
 			JLabel materialLabel = new JLabel(MessageBundle.getMessage("angal.lab.material"));
-			materialLabel.setBounds(290, 10, 140, 20);
+			materialLabel.setBounds(320, 10, 80, 20);
 			matComboBox = getMatComboBox();
-			matComboBox.setBounds(360, 10, 185, 20);
+			matComboBox.setBounds(405, 10, 140, 20);
 
 			// exam combo
 			JLabel examLabel = new JLabel(MessageBundle.getMessage("angal.lab.exam"));
 			examLabel.setBounds(5, 40, LABEL_WIDTH, 20);
 			examComboBox = getExamComboBox();
-			examComboBox.setBounds(LABEL_WIDTH + 5, 40, 470, 20);
+			examComboBox.setBounds(LABEL_WIDTH + 5, 40, 435, 20);
+
+			// Prescriber
+			JLabel prescriberLabel = new JLabel(MessageBundle.getMessage("angal.lab.prescriber.label"));
+			prescriberLabel.setBounds(5, 70, LABEL_WIDTH, 20);
+
+			prescriberTextField = getPrescriberTextField();
+			prescriberTextField.setBounds(LABEL_WIDTH + 5, 70, 175, 20);
+
+			String placeholder = MessageBundle.getMessage("angal.lab.prescriber.selectOrType");
+			prescriberComboBox = new JComboBox<>();
+			prescriberComboBox.addItem(placeholder);
+			try {
+				List<String> prescribers = labManager.getDistinctPrescribers();
+				prescribers.forEach(prescriberComboBox::addItem);
+			} catch (OHServiceException e) {
+				// silently ignored
+			}
+			prescriberComboBox.addActionListener(ae -> {
+				String sel = (String) prescriberComboBox.getSelectedItem();
+				if (sel != null && !sel.equals(placeholder) && !sel.isEmpty()) {
+					prescriberTextField.setText(sel);
+				} else if (sel != null && sel.equals(placeholder)) {
+					prescriberTextField.setText("");
+				}
+			});
+			prescriberComboBox.setBounds(LABEL_WIDTH + 185, 70, 255, 20);
 
 			// patient (in or out) data
 			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.lab.patientcode"));
-			patientLabel.setBounds(LABEL_WIDTH + 5, 65, 120, 20);
+			patientLabel.setBounds(LABEL_WIDTH + 5, 100, 120, 20);
 			inPatientCheckBox = getInPatientCheckBox();
-			inPatientCheckBox.setBounds(5, 65, LABEL_WIDTH, 20);
+			inPatientCheckBox.setBounds(5, 100, LABEL_WIDTH, 20);
 			jTextPatientSrc = new VoLimitedTextField(200, 20);
-			jTextPatientSrc.setBounds(LABEL_WIDTH + 70, 65, 90, 20);
+			jTextPatientSrc.setBounds(LABEL_WIDTH + 70, 100, 90, 20);
 
 			jTextPatientSrc.addKeyListener(new KeyListener() {
-
 				@Override
 				public void keyTyped(KeyEvent e) {
 					lastKey = "";
@@ -255,20 +302,14 @@ public class LabEditExtended extends ModalJFrame {
 					}
 					keyChar = jTextPatientSrc.getText() + lastKey;
 					keyChar = keyChar.trim();
-
 					filterPatient(keyChar);
 				}
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
+				@Override public void keyPressed(KeyEvent e) {}
+				@Override public void keyReleased(KeyEvent e) {}
 			});
+
 			patientComboBox = getPatientComboBox();
-			patientComboBox.setBounds(LABEL_WIDTH + 170, 65, 305, 20);
+			patientComboBox.setBounds(LABEL_WIDTH + 170, 100, 305, 20);
 
 			// add all to the data panel
 			dataPanel.add(examDateLabel, null);
@@ -277,9 +318,11 @@ public class LabEditExtended extends ModalJFrame {
 			dataPanel.add(matComboBox, null);
 			dataPanel.add(examLabel, null);
 			dataPanel.add(examComboBox, null);
+			dataPanel.add(prescriberLabel, null);
+			dataPanel.add(prescriberTextField, null);
+			dataPanel.add(prescriberComboBox, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
-			// ADDED: Alex
 			dataPanel.add(jTextPatientSrc, null);
 			dataPanel.add(patientComboBox, null);
 
@@ -612,6 +655,8 @@ public class LabEditExtended extends ModalJFrame {
 					return;
 				}
 				List<String> labRow = new ArrayList<>();
+				String prescriber = prescriberTextField.getText().trim();
+				lab.setPrescriber(prescriber);
 				lab.setLabDate(examDate);
 				RememberDates.setLastLabExamDate(examDate);
 				lab.setMaterial(labManager.getMaterialKey(matSelected));
@@ -639,6 +684,7 @@ public class LabEditExtended extends ModalJFrame {
 					lab.setAge(labPat.getAge());
 					try {
 						labManager.newLaboratory(lab, labRow);
+						firePrescribersUpdated();
 					} catch (OHServiceException e1) {
 						OHServiceExceptionUtil.showMessages(e1);
 					}
@@ -646,6 +692,7 @@ public class LabEditExtended extends ModalJFrame {
 					try {
 						labManager.updateLaboratory(lab, labRow);
 						fireLabUpdated();
+						firePrescribersUpdated();
 						dispose();
 					} catch (OHServiceException e1) {
 						MessageDialog.error(this, "angal.common.datacouldnotbesaved.msg");
