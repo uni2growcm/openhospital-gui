@@ -629,7 +629,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		});
 		return pbox;
 	}
-
 	protected void launchExpiringReport() {
 
 		List<String> options = new ArrayList<>();
@@ -1004,7 +1003,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				((MedicalBrowsingModel) model).medicalList = pMedicals;
 				table.setModel(model);
 			}
+
 			updatePaginationControls();
+
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 			pMedicals = new ArrayList<>();
