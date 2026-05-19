@@ -450,33 +450,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	 *
 	 * @return patientCodeField (JTextField)
 	 */
-//	private JTextField getPatientCodeField() {
-//		if (patientCodeField == null) {
-//			patientCodeField = new JTextField();
-//			patientCodeField.setPreferredSize(new Dimension(215, 30));
-//			patientCodeField.addKeyListener(new KeyListener() {
-//				@Override
-//				public void keyPressed(KeyEvent e) {
-//					int key = e.getKeyCode();
-//					if (key == KeyEvent.VK_ENTER) {
-//						model = new LabBrowsingModel(patientCodeField.getText());
-//						model.fireTableDataChanged();
-//						jTable.updateUI();
-//					}
-//				}
-//
-//				@Override
-//				public void keyReleased(KeyEvent e) {
-//				}
-//
-//				@Override
-//				public void keyTyped(KeyEvent e) {
-//				}
-//			});
-//		}
-//		return patientCodeField;
-//	}
-
 	private JTextField getPatientCodeField() {
 		if (patientCodeField == null) {
 			patientCodeField = new JTextField();
@@ -494,7 +467,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 								jTable.updateUI();
 								return;
 							}
-							// si plusieurs patients trouvés, on prend tous leurs examens
+
 							pLabs = new ArrayList<>();
 							for (Patient pat : patients) {
 								pLabs.addAll(labManager.getLaboratory(pat));
@@ -574,14 +547,12 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.search.btn.key"));
 			filterButton.addActionListener(actionEvent -> {
 				typeSelected = comboExams.getSelectedItem().toString();
+
 				if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
 					typeSelected = "";
 				}
 
-				// modèle existant inchangé
 				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
-
-				// filtre résultat côté client — inchangé
 				String resultFilter = (String) comboResultFilter.getSelectedItem();
 				if (FILTER_NON_EMPTY.equals(resultFilter)) {
 					pLabs.removeIf(lab -> lab.getResult() == null || lab.getResult().isBlank());
@@ -589,7 +560,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					pLabs.removeIf(lab -> lab.getResult() != null && !lab.getResult().isBlank());
 				}
 
-				// filtre prescripteur côté client — nouveau, même logique
 				String prescriberSelected = (String) comboPrescriber.getSelectedItem();
 				if (prescriberSelected != null && !prescriberSelected.equals(
 						MessageBundle.getMessage("angal.lab.prescriber.all"))) {
