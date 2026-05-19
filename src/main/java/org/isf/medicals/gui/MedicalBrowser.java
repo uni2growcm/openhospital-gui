@@ -1005,7 +1005,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				table.setModel(model);
 			}
 			updatePaginationControls();
-
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 			pMedicals = new ArrayList<>();
