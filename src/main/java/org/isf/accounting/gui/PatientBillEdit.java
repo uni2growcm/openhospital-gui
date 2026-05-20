@@ -265,6 +265,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonCustom;
 	private JButton jButtonPickPatient;
 	private JButton jButtonTrashPatient;
+	private JButton jButtonAddPrescription;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -898,7 +899,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonPickPatient.setMnemonic(MessageBundle.getMnemonic("angal.newbill.changepatient.btn.key"));
 			jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.newbill.changethepatientassociatedwiththisbill.tooltip"));
 			if (jButtonTrashPatient != null) {
-				jButtonTrashPatient.setEnabled(true);	
+				jButtonTrashPatient.setEnabled(true);
 			}
 		}
 	}
@@ -1095,6 +1096,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		if (jPanelButtonsBill == null) {
 			jPanelButtonsBill = new JPanel();
 			jPanelButtonsBill.setLayout(new BoxLayout(jPanelButtonsBill, BoxLayout.Y_AXIS));
+			jPanelButtonsBill.add(getJButtonAddPrescription());
 			jPanelButtonsBill.add(getJButtonAddMedical());
 			jPanelButtonsBill.add(getJButtonAddOperation());
 			jPanelButtonsBill.add(getJButtonAddExam());
@@ -1641,6 +1643,57 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			});
 		}
 		return jButtonAddOperation;
+	}
+
+	private JButton getJButtonAddPrescription() {
+		if (jButtonAddPrescription == null) {
+			jButtonAddPrescription = new JButton(MessageBundle.getMessage("angal.newbill.prescription.btn"));
+			jButtonAddPrescription.setMaximumSize(BUTTON_ITEM_SIZE);
+			jButtonAddPrescription.setHorizontalAlignment(SwingConstants.LEFT);
+			jButtonAddPrescription.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+			jButtonAddPrescription.addActionListener(actionEvent -> {
+
+				if (thisBill.getBillPatient() == null || thisBill.getBillPatient().getCode() == 0) {
+					MessageDialog.error(this, "angal.patvac.pleaseselectapatient.msg");
+					return;
+				}
+
+				try {
+					if (!billBrowserManager.hasPrescription(thisBill.getBillPatient().getCode())) {
+						MessageDialog.info(this, "angal.newbill.noprescriptionforthispatient.msg");
+						return;
+					}
+				} catch (OHServiceException e) {
+					MessageDialog.showExceptions(e);
+					return;
+				}
+
+				try {
+					SelectPrescriptions selectPrescriptions = new SelectPrescriptions(this, thisBill.getBillPatient());
+					selectPrescriptions.addPrescriptionSelectedListener(prescriptions -> {
+						for (BillItems item : prescriptions) {
+							boolean itemExists = billItems.stream()
+									.anyMatch(bi -> bi.getItemDescription().equals(item.getItemDescription()));
+
+							if (!itemExists) {
+								billItems.add(item);
+								modified = true;
+							} else {
+								MessageDialog.warning(PatientBillEdit.this,
+										MessageBundle.formatMessage("angal.newbill.prescriptionalreadyadded.fmt.msg", item.getItemDescription()));
+							}
+						}
+						updateTotals();
+						updateGUI();
+					});
+					selectPrescriptions.setVisible(true);
+				} catch (Exception ex) {
+					MessageDialog.error(this, MessageBundle.getMessage("angal.common.error.msg"));
+					LOGGER.error("Error creating SelectPrescriptions", ex);
+				}
+			});
+		}
+		return jButtonAddPrescription;
 	}
 
 	private JButton getJButtonAddMedical() {
