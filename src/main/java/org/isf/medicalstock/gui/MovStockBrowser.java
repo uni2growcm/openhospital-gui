@@ -358,7 +358,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private void loadPage(int page) {
 		try {
-			Page<Movement> result = movBrowserManager.getMovementsPaginated(
+			Page<Movement> result = movBrowserManager.getMovements(
 					lastMedicalCode, lastMedicalType, lastWard, lastMovType,
 					lastMovFrom, lastMovTo,
 					lastLotPrepFrom, lastLotPrepTo,
@@ -400,7 +400,6 @@ public class MovStockBrowser extends ModalJFrame {
 			jPageComboBox.setSelectedItem(currentPage + 1);
 			jPageComboBox.setEnabled(true);
 		} else if (totalPages == 1) {
-
 			jPageComboBox.addItem(1);
 			jPageComboBox.setSelectedItem(1);
 			jPageComboBox.setEnabled(false);
