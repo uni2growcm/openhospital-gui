@@ -128,7 +128,7 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private int currentPage = 0;
 	private long totalElements = 0;
-	private static final int PAGE_SIZE = 5;
+	private static final int PAGE_SIZE = 100;
 	private int totalPages = 0;
 	private JButton jPrevButton;
 	private JButton jNextButton;
