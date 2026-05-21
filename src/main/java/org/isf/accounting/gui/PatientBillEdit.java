@@ -23,9 +23,15 @@ package org.isf.accounting.gui;
 
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Image;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
