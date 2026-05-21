@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -278,9 +278,6 @@ public class LabEdit extends ModalJFrame {
 
 			dataPanel.setPreferredSize(new Dimension(150, 200));
 
-			/*
-			 * Teo : Adding scroll capabilities at note textArea
-			 */
 			if (noteScrollPane == null) {
 				noteScrollPane = new JScrollPane(noteTextArea);
 				noteScrollPane.setBounds(LABEL_WIDTH + 5, 120, 470, 40);
@@ -318,6 +315,10 @@ public class LabEdit extends ModalJFrame {
 		return inPatientCheckBox;
 	}
 
+	/*
+	 * TODO: Patient Selection like in LabNew with the difference that here will be optional If no patient is chosen only Name, Age and Sex will be saved in
+	 * LABORATORY table (Name can be empty)
+	 */
 	private PatientComboBox getPatientComboBox() {
 		if (patientComboBox == null) {
 			patientComboBox = new PatientComboBox();
@@ -524,10 +525,8 @@ public class LabEdit extends ModalJFrame {
 					lab.setResult(examRowComboBox.getSelectedItem().toString());
 				} else if (examSelected.getProcedure() == 2) {
 					lab.setResult(MessageBundle.getMessage("angal.lab.multipleresults.txt"));
-					// Extraction adaptée au nouveau composant interne EditProcedure2RowPanel
 					for (EditProcedure2RowPanel componentRow : procedure2RowsComponents) {
 						if (componentRow.isChecked()) {
-							// Pour préserver le fonctionnement natif de LabManager, on ajoute la description ou le formattage nécessaire
 							labRow.add(componentRow.getLabRowDescription());
 						}
 					}
@@ -539,7 +538,7 @@ public class LabEdit extends ModalJFrame {
 					lab.setAge(tmpAge);
 					try {
 						labManager.newLaboratory(lab, labRow);
-						fireLabUpdated(); // Ajouté si besoin de rafraîchir en insertion également
+						fireLabUpdated();
 						dispose();
 					} catch (OHServiceException e1) {
 						OHServiceExceptionUtil.showMessages(e1);
@@ -661,10 +660,6 @@ public class LabEdit extends ModalJFrame {
 		return resultPanel;
 	}
 
-	/**
-	 * Nouveau composant graphique interne pour la gestion des sous-résultats de la Procédure 2.
-	 * Aligne une case à cocher à gauche et un champ texte éditable à droite.
-	 */
 	private class EditProcedure2RowPanel extends JPanel {
 
 		private static final long serialVersionUID = 1L;
@@ -698,10 +693,6 @@ public class LabEdit extends ModalJFrame {
 
 		public String getLabRowDescription() {
 			return this.description;
-		}
-
-		public String getValueText() {
-			return valueField.getText().trim();
 		}
 	}
 }
