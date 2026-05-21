@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Laboratory_Register" pageWidth="1190" pageHeight="842" orientation="Landscape" whenNoDataType="NoPages" columnWidth="1130" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="ef022603-3303-48cc-9157-218a06af028b">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Laboratory_Register" pageWidth="1190" pageHeight="842" orientation="Landscape" whenNoDataType="NoPages" columnWidth="1130" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="Laboratory_Register" uuid="ef022603-3303-48cc-9157-218a06af028b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
-	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
-	<import value="it.businesslogic.ireport.IReportScriptlet"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="305"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="684"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="fromdate" class="java.lang.String"/>
-	<parameter name="todate" class="java.lang.String"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
 	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="LOGO_PATH" class="java.lang.String">
-		<defaultValueExpression><![CDATA["./rsc/images/"]]></defaultValueExpression>
-	</parameter>
+	<parameter name="LOGO_PATH" class="java.lang.String"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String">
 		<defaultValueExpression><![CDATA["./rpt/"]]></defaultValueExpression>
 	</parameter>
@@ -30,10 +29,9 @@
 	PAT_SEX,
 	PAT_BDATE,
 	lab.LAB_EXA_ID_A as CODE_EXA,
---         lab.LAB_MPROG as MONTH_ORDER,
 	IF(PAT_BDATE is not null,DATEDIFF(CURDATE(),DATE(PAT_BDATE))/365,PAT_AGE) as age,	
 	IF((LAB_RES is not null) and (exa.EXA_PROC="1"),LAB_RES,"") as RESULTS1,
-	IF((LAB_RES is not null) and (exa.EXA_PROC="1"),IF(LAB_RES="PERSONNALISE",LAB_RES_VALUE,IF(LAB_RES_VALUE is null or LAB_RES_VALUE="",LAB_RES,LAB_RES_VALUE)),"") as RESULTS,
+	IF((LAB_RES is not null) and (exa.EXA_PROC="1"),IF(LAB_RES="PERSONNALISE", LAB_RES, ""),"") as RESULTS,
 	IF(LAB_NOTE is null,"",LAB_NOTE) as LAB_NOTE,
 	IF(lab.LAB_EXA_ID_A="PCV", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="GRAM - CLUS-CELLS" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as CLUE_CELLS,
 	IF(lab.LAB_EXA_ID_A="PCV", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="GRAM - CELLULES ÉPITHÉLIALES" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as CELL_EPITHE,
@@ -44,7 +42,7 @@
 	IF(lab.LAB_EXA_ID_A="PU", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="GRAM - DIPLOCOQUES DE NEISSER" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as DIPLO_NEISSER_PU,
 	IF(lab.LAB_EXA_ID_A="PU", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="GRAM - BACILLES" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GRAM_BACILLE_PU,
       
-        IF(lab.LAB_EXA_ID_A="GE", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="PLASMODIUM MALARIA" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GE_MALARIA,
+    IF(lab.LAB_EXA_ID_A="GE", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="PLASMODIUM MALARIA" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GE_MALARIA,
 	IF(lab.LAB_EXA_ID_A="GE", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="P. VIVAX" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GE_VIVAX,
 	IF(lab.LAB_EXA_ID_A="GE", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="P. OVALE" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GE_OVALE,
 	IF(lab.LAB_EXA_ID_A="GE", (select LW.LABR_RES_VALUE from oh_laboratoryrow LW where (LW.LABR_DESC="P. FALCIPARUM" and LW.LABR_LAB_ID=lab.LAB_ID) ),"") as GE_FALCIPARUM
@@ -53,35 +51,100 @@
 From oh_laboratory lab 
        join oh_exam exa on (lab.LAB_EXA_ID_A = exa.EXA_ID_A) 
        join oh_patient pat on (pat.PAT_ID = lab.LAB_PAT_ID )
-       /*left join laboratoryrow labr on (lab.LAB_ID = labr.LABR_LAB_ID )*/
 
-WHERE DATE(LAB_DATE) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') and STR_TO_DATE($P{todate}, '%d/%m/%Y')
+WHERE DATE(LAB_DATE) BETWEEN DATE($P{fromdate}) and DATE($P{todate})
 
-Order by LAB_ID
-]]>
+Order by LAB_ID]]>
 	</queryString>
-	<field name="LAB_DATE" class="java.lang.String"/>
-	<field name="PAT_ID" class="java.lang.Integer"/>
-	<field name="PAT_NAME" class="java.lang.String"/>
-	<field name="PAT_SEX" class="java.lang.String"/>
-	<field name="PAT_BDATE" class="java.sql.Date"/>
-	<field name="CODE_EXA" class="java.lang.String"/>
-	<field name="MONTH_ORDER" class="java.lang.Integer"/>
-	<field name="age" class="java.math.BigDecimal"/>
-	<field name="RESULTS1" class="java.lang.String"/>
-	<field name="RESULTS" class="java.lang.String"/>
-	<field name="LAB_NOTE" class="java.lang.String"/>
-	<field name="CLUE_CELLS" class="java.lang.String"/>
-	<field name="CELL_EPITHE" class="java.lang.String"/>
-	<field name="GRAM_BACILLE" class="java.lang.String"/>
-	<field name="GRAM_COCCI" class="java.lang.String"/>
-	<field name="CELL_EPITHE_PU" class="java.lang.String"/>
-	<field name="DIPLO_NEISSER_PU" class="java.lang.String"/>
-	<field name="GRAM_BACILLE_PU" class="java.lang.String"/>
-	<field name="GE_MALARIA" class="java.lang.String"/>
-	<field name="GE_VIVAX" class="java.lang.String"/>
-	<field name="GE_OVALE" class="java.lang.String"/>
-	<field name="GE_FALCIPARUM" class="java.lang.String"/>
+	<field name="LAB_DATE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="LAB_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="LAB_DATE"/>
+	</field>
+	<field name="PAT_ID" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_ID"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_ID"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_NAME" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_SEX" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_SEX"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_SEX"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_BDATE" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_BDATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_BDATE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="CODE_EXA" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="LAB_EXA_ID_A"/>
+		<property name="com.jaspersoft.studio.field.label" value="CODE_EXA"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_laboratory"/>
+	</field>
+	<field name="age" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="age"/>
+		<property name="com.jaspersoft.studio.field.label" value="age"/>
+	</field>
+	<field name="RESULTS1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="RESULTS1"/>
+		<property name="com.jaspersoft.studio.field.label" value="RESULTS1"/>
+	</field>
+	<field name="RESULTS" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="RESULTS"/>
+		<property name="com.jaspersoft.studio.field.label" value="RESULTS"/>
+	</field>
+	<field name="LAB_NOTE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="LAB_NOTE"/>
+		<property name="com.jaspersoft.studio.field.label" value="LAB_NOTE"/>
+	</field>
+	<field name="CLUE_CELLS" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CLUE_CELLS"/>
+		<property name="com.jaspersoft.studio.field.label" value="CLUE_CELLS"/>
+	</field>
+	<field name="CELL_EPITHE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CELL_EPITHE"/>
+		<property name="com.jaspersoft.studio.field.label" value="CELL_EPITHE"/>
+	</field>
+	<field name="GRAM_BACILLE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GRAM_BACILLE"/>
+		<property name="com.jaspersoft.studio.field.label" value="GRAM_BACILLE"/>
+	</field>
+	<field name="GRAM_COCCI" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GRAM_COCCI"/>
+		<property name="com.jaspersoft.studio.field.label" value="GRAM_COCCI"/>
+	</field>
+	<field name="CELL_EPITHE_PU" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CELL_EPITHE_PU"/>
+		<property name="com.jaspersoft.studio.field.label" value="CELL_EPITHE_PU"/>
+	</field>
+	<field name="DIPLO_NEISSER_PU" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="DIPLO_NEISSER_PU"/>
+		<property name="com.jaspersoft.studio.field.label" value="DIPLO_NEISSER_PU"/>
+	</field>
+	<field name="GRAM_BACILLE_PU" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GRAM_BACILLE_PU"/>
+		<property name="com.jaspersoft.studio.field.label" value="GRAM_BACILLE_PU"/>
+	</field>
+	<field name="GE_MALARIA" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GE_MALARIA"/>
+		<property name="com.jaspersoft.studio.field.label" value="GE_MALARIA"/>
+	</field>
+	<field name="GE_VIVAX" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GE_VIVAX"/>
+		<property name="com.jaspersoft.studio.field.label" value="GE_VIVAX"/>
+	</field>
+	<field name="GE_OVALE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GE_OVALE"/>
+		<property name="com.jaspersoft.studio.field.label" value="GE_OVALE"/>
+	</field>
+	<field name="GE_FALCIPARUM" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GE_FALCIPARUM"/>
+		<property name="com.jaspersoft.studio.field.label" value="GE_FALCIPARUM"/>
+	</field>
 	<variable name="TOTAL" class="java.lang.Long" calculation="Sum"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -99,7 +162,7 @@ Order by LAB_ID
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<imageExpression><![CDATA[$P{LOGO_PATH} + "Splash.jpg"]]></imageExpression>
+				<imageExpression><![CDATA[$P{LOGO_PATH}]]></imageExpression>
 			</image>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
 				<reportElement key="textField-4" x="922" y="35" width="208" height="18" uuid="123c4dbd-613e-44d3-b52d-0084b042a5c4"/>
@@ -110,7 +173,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
 			</textField>
@@ -122,13 +185,15 @@ Order by LAB_ID
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}+",  "+$P{Email}+",  "+$P{Telephone}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-13" x="0" y="5" width="1074" height="30" forecolor="#FFFFFF" uuid="a52bc01d-e54d-4c83-9786-d13a58fa26dd"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Arial Black" size="16" pdfEncoding="Cp1252"/>
+					<font fontName="SansSerif" size="16" pdfEncoding="Cp1252"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" "+$R{title}+" [ "+$P{fromdate}+"  -  "+$P{todate}+"  ]"]]></textFieldExpression>
 			</textField>
@@ -148,7 +213,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{name}]]></textFieldExpression>
 			</textField>
@@ -161,7 +226,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{codepatient}]]></textFieldExpression>
 			</textField>
@@ -174,7 +239,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{asat}]]></textFieldExpression>
 			</textField>
@@ -187,7 +252,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sucres}]]></textFieldExpression>
 			</textField>
@@ -200,7 +265,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{observation}]]></textFieldExpression>
 			</textField>
@@ -213,7 +278,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cluecells}]]></textFieldExpression>
 			</textField>
@@ -226,7 +291,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{aspect}]]></textFieldExpression>
 			</textField>
@@ -239,7 +304,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
@@ -252,7 +317,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{codeprelevement}]]></textFieldExpression>
 			</textField>
@@ -265,7 +330,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uree}]]></textFieldExpression>
 			</textField>
@@ -278,7 +343,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{creatine}]]></textFieldExpression>
 			</textField>
@@ -291,7 +356,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{alat}]]></textFieldExpression>
 			</textField>
@@ -304,7 +369,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{acideurique}]]></textFieldExpression>
 			</textField>
@@ -317,7 +382,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{albumine}]]></textFieldExpression>
 			</textField>
@@ -330,7 +395,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{idpatient}]]></textFieldExpression>
 			</textField>
@@ -343,7 +408,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{monthorder}]]></textFieldExpression>
 			</textField>
@@ -356,7 +421,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{age}]]></textFieldExpression>
 			</textField>
@@ -369,7 +434,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sexe}]]></textFieldExpression>
 			</textField>
@@ -382,7 +447,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{biochimie}]]></textFieldExpression>
 			</textField>
@@ -395,7 +460,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{acetone}]]></textFieldExpression>
 			</textField>
@@ -408,7 +473,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pregnanttest}]]></textFieldExpression>
 			</textField>
@@ -421,7 +486,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{glycemie}]]></textFieldExpression>
 			</textField>
@@ -434,7 +499,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{results}]]></textFieldExpression>
 			</textField>
@@ -447,7 +512,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{blood}]]></textFieldExpression>
 			</textField>
@@ -460,7 +525,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{urine}]]></textFieldExpression>
 			</textField>
@@ -473,7 +538,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacteriologie}]]></textFieldExpression>
 			</textField>
@@ -486,7 +551,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vaginalexam}]]></textFieldExpression>
 			</textField>
@@ -499,7 +564,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{results}]]></textFieldExpression>
 			</textField>
@@ -512,7 +577,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cellepithbyfield}]]></textFieldExpression>
 			</textField>
@@ -525,7 +590,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{leucocytebyfield}]]></textFieldExpression>
 			</textField>
@@ -538,7 +603,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{trichomonasvaginalis}]]></textFieldExpression>
 			</textField>
@@ -551,7 +616,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{levurebyfield}]]></textFieldExpression>
 			</textField>
@@ -564,7 +629,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{floredoderlein}]]></textFieldExpression>
 			</textField>
@@ -577,7 +642,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{gardenerellavaginalis}]]></textFieldExpression>
 			</textField>
@@ -590,7 +655,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillesdegram}]]></textFieldExpression>
 			</textField>
@@ -603,7 +668,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillesdegramneg}]]></textFieldExpression>
 			</textField>
@@ -616,7 +681,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{coccidegram}]]></textFieldExpression>
 			</textField>
@@ -629,7 +694,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{typeflorevaginale}]]></textFieldExpression>
 			</textField>
@@ -642,7 +707,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uretralexam}]]></textFieldExpression>
 			</textField>
@@ -655,7 +720,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{results}]]></textFieldExpression>
 			</textField>
@@ -668,7 +733,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{diplocoquedeneisseria}]]></textFieldExpression>
 			</textField>
@@ -681,7 +746,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cellepithbyfield}]]></textFieldExpression>
 			</textField>
@@ -694,7 +759,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{leucocytes_wbc}]]></textFieldExpression>
 			</textField>
@@ -707,7 +772,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{trichomonasvaginalis}]]></textFieldExpression>
 			</textField>
@@ -720,7 +785,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{levuress}]]></textFieldExpression>
 			</textField>
@@ -733,7 +798,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillesdegram}]]></textFieldExpression>
 			</textField>
@@ -746,7 +811,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillesdegramneg}]]></textFieldExpression>
 			</textField>
@@ -759,7 +824,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{coccidegram}]]></textFieldExpression>
 			</textField>
@@ -772,7 +837,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{coccidegramneg}]]></textFieldExpression>
 			</textField>
@@ -785,7 +850,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{germeisole}]]></textFieldExpression>
 			</textField>
@@ -798,7 +863,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{clear}]]></textFieldExpression>
 			</textField>
@@ -811,7 +876,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{trouble}]]></textFieldExpression>
 			</textField>
@@ -824,7 +889,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sanguineous}]]></textFieldExpression>
 			</textField>
@@ -837,7 +902,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cellules_epitheliales}]]></textFieldExpression>
 			</textField>
@@ -850,7 +915,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacteria_ml}]]></textFieldExpression>
 			</textField>
@@ -863,7 +928,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{crystals}]]></textFieldExpression>
 			</textField>
@@ -876,7 +941,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{flagella}]]></textFieldExpression>
 			</textField>
@@ -889,7 +954,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{levuress}]]></textFieldExpression>
 			</textField>
@@ -902,7 +967,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{enumerationofurinarygerms}]]></textFieldExpression>
 			</textField>
@@ -915,7 +980,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{numberofleukocytesperfield}]]></textFieldExpression>
 			</textField>
@@ -928,7 +993,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{numberofredcellsperfield}]]></textFieldExpression>
 			</textField>
@@ -941,7 +1006,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sputum}]]></textFieldExpression>
 			</textField>
@@ -954,7 +1019,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{control}]]></textFieldExpression>
 			</textField>
@@ -967,7 +1032,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{negative}]]></textFieldExpression>
 			</textField>
@@ -980,7 +1045,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{positive}]]></textFieldExpression>
 			</textField>
@@ -993,7 +1058,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -1006,7 +1071,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillaryconcentration}]]></textFieldExpression>
 			</textField>
@@ -1019,7 +1084,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{negative}]]></textFieldExpression>
 			</textField>
@@ -1032,7 +1097,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{positive}]]></textFieldExpression>
 			</textField>
@@ -1045,7 +1110,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bacillaryconcentration}]]></textFieldExpression>
 			</textField>
@@ -1058,7 +1123,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{baar1}]]></textFieldExpression>
 			</textField>
@@ -1071,7 +1136,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{baar2}]]></textFieldExpression>
 			</textField>
@@ -1084,7 +1149,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{parasitology}]]></textFieldExpression>
 			</textField>
@@ -1097,7 +1162,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{coprology}]]></textFieldExpression>
 			</textField>
@@ -1110,7 +1175,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{hemoparasite}]]></textFieldExpression>
 			</textField>
@@ -1123,7 +1188,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{control}]]></textFieldExpression>
 			</textField>
@@ -1136,9 +1201,9 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.labregister.tdr" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{tdr}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-134" x="890" y="22" width="40" height="10" uuid="0456073a-ca1f-4150-876f-6022f9eb57b0"/>
@@ -1149,9 +1214,9 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.labregister.malariatest" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{malariatest}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-135" x="930" y="22" width="30" height="10" uuid="32fffcbb-c7c6-477b-92b5-5f9663427eaf"/>
@@ -1162,9 +1227,9 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.labregister.rmf" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{rmf}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-136" x="960" y="22" width="20" height="88" uuid="1896765b-9c36-4d8b-97ee-d8e24353b7a0"/>
@@ -1175,7 +1240,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{skin}]]></textFieldExpression>
 			</textField>
@@ -1188,7 +1253,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{plasmodiumfalciparum_ul}]]></textFieldExpression>
 			</textField>
@@ -1201,7 +1266,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pan}]]></textFieldExpression>
 			</textField>
@@ -1214,7 +1279,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{negative}]]></textFieldExpression>
 			</textField>
@@ -1227,7 +1292,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{plasmodiumfalciparum}]]></textFieldExpression>
 			</textField>
@@ -1240,7 +1305,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{plasmodiummalariae}]]></textFieldExpression>
 			</textField>
@@ -1253,7 +1318,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{plasmodiumovale}]]></textFieldExpression>
 			</textField>
@@ -1266,7 +1331,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{plasmodiumvivax}]]></textFieldExpression>
 			</textField>
@@ -1279,7 +1344,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{onchocerca}]]></textFieldExpression>
 			</textField>
@@ -1292,7 +1357,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{loa}]]></textFieldExpression>
 			</textField>
@@ -1305,7 +1370,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{wuchericheria}]]></textFieldExpression>
 			</textField>
@@ -1318,7 +1383,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="6"/>
+					<font fontName="SansSerif" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{technicians}]]></textFieldExpression>
 			</textField>
@@ -1331,7 +1396,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{atms}]]></textFieldExpression>
 			</textField>
@@ -1344,7 +1409,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tms}]]></textFieldExpression>
 			</textField>
@@ -1357,7 +1422,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{aspectsfinanciers}]]></textFieldExpression>
 			</textField>
@@ -1370,7 +1435,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{num_bill}]]></textFieldExpression>
 			</textField>
@@ -1383,7 +1448,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{reductionrate}]]></textFieldExpression>
 			</textField>
@@ -1396,7 +1461,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="6"/>
+					<font fontName="SansSerif" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{person_order_reduction}]]></textFieldExpression>
 			</textField>
@@ -1409,7 +1474,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{director}]]></textFieldExpression>
 			</textField>
@@ -1422,7 +1487,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{other}]]></textFieldExpression>
 			</textField>
@@ -1435,7 +1500,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["1"]]></textFieldExpression>
 			</textField>
@@ -1448,7 +1513,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["2"]]></textFieldExpression>
 			</textField>
@@ -1461,7 +1526,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["3"]]></textFieldExpression>
 			</textField>
@@ -1474,7 +1539,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["4"]]></textFieldExpression>
 			</textField>
@@ -1487,7 +1552,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["5"]]></textFieldExpression>
 			</textField>
@@ -1500,7 +1565,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["6"]]></textFieldExpression>
 			</textField>
@@ -1513,7 +1578,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["7"]]></textFieldExpression>
 			</textField>
@@ -1526,7 +1591,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["8"]]></textFieldExpression>
 			</textField>
@@ -1539,7 +1604,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["9"]]></textFieldExpression>
 			</textField>
@@ -1552,7 +1617,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["10"]]></textFieldExpression>
 			</textField>
@@ -1565,7 +1630,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["11"]]></textFieldExpression>
 			</textField>
@@ -1578,7 +1643,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["12"]]></textFieldExpression>
 			</textField>
@@ -1591,7 +1656,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["13"]]></textFieldExpression>
 			</textField>
@@ -1604,7 +1669,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["14"]]></textFieldExpression>
 			</textField>
@@ -1617,7 +1682,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["15"]]></textFieldExpression>
 			</textField>
@@ -1630,7 +1695,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["16"]]></textFieldExpression>
 			</textField>
@@ -1643,7 +1708,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["17"]]></textFieldExpression>
 			</textField>
@@ -1656,7 +1721,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["18"]]></textFieldExpression>
 			</textField>
@@ -1669,7 +1734,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["19"]]></textFieldExpression>
 			</textField>
@@ -1682,7 +1747,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["20"]]></textFieldExpression>
 			</textField>
@@ -1695,7 +1760,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["21"]]></textFieldExpression>
 			</textField>
@@ -1708,7 +1773,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["22"]]></textFieldExpression>
 			</textField>
@@ -1721,7 +1786,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["23"]]></textFieldExpression>
 			</textField>
@@ -1734,7 +1799,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["24"]]></textFieldExpression>
 			</textField>
@@ -1747,7 +1812,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["25"]]></textFieldExpression>
 			</textField>
@@ -1760,7 +1825,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["26"]]></textFieldExpression>
 			</textField>
@@ -1773,7 +1838,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["27"]]></textFieldExpression>
 			</textField>
@@ -1786,7 +1851,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["28"]]></textFieldExpression>
 			</textField>
@@ -1799,7 +1864,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["29"]]></textFieldExpression>
 			</textField>
@@ -1812,7 +1877,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["30"]]></textFieldExpression>
 			</textField>
@@ -1825,7 +1890,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["31"]]></textFieldExpression>
 			</textField>
@@ -1838,7 +1903,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["32"]]></textFieldExpression>
 			</textField>
@@ -1851,7 +1916,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["33"]]></textFieldExpression>
 			</textField>
@@ -1864,7 +1929,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["34"]]></textFieldExpression>
 			</textField>
@@ -1877,7 +1942,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["35"]]></textFieldExpression>
 			</textField>
@@ -1890,7 +1955,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["36"]]></textFieldExpression>
 			</textField>
@@ -1903,7 +1968,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["37"]]></textFieldExpression>
 			</textField>
@@ -1916,7 +1981,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["38"]]></textFieldExpression>
 			</textField>
@@ -1929,7 +1994,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["39"]]></textFieldExpression>
 			</textField>
@@ -1942,7 +2007,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["40"]]></textFieldExpression>
 			</textField>
@@ -1955,7 +2020,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["41"]]></textFieldExpression>
 			</textField>
@@ -1968,7 +2033,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["42"]]></textFieldExpression>
 			</textField>
@@ -1981,7 +2046,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["43"]]></textFieldExpression>
 			</textField>
@@ -1994,7 +2059,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["44"]]></textFieldExpression>
 			</textField>
@@ -2007,7 +2072,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["45"]]></textFieldExpression>
 			</textField>
@@ -2020,7 +2085,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["46"]]></textFieldExpression>
 			</textField>
@@ -2033,7 +2098,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["47"]]></textFieldExpression>
 			</textField>
@@ -2046,7 +2111,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["48"]]></textFieldExpression>
 			</textField>
@@ -2059,7 +2124,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["49"]]></textFieldExpression>
 			</textField>
@@ -2072,7 +2137,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["50"]]></textFieldExpression>
 			</textField>
@@ -2085,7 +2150,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["51"]]></textFieldExpression>
 			</textField>
@@ -2098,7 +2163,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["52"]]></textFieldExpression>
 			</textField>
@@ -2111,7 +2176,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["53"]]></textFieldExpression>
 			</textField>
@@ -2124,7 +2189,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["54"]]></textFieldExpression>
 			</textField>
@@ -2137,7 +2202,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["55"]]></textFieldExpression>
 			</textField>
@@ -2150,7 +2215,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["56"]]></textFieldExpression>
 			</textField>
@@ -2163,7 +2228,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["57"]]></textFieldExpression>
 			</textField>
@@ -2176,7 +2241,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["58"]]></textFieldExpression>
 			</textField>
@@ -2189,7 +2254,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["59"]]></textFieldExpression>
 			</textField>
@@ -2202,7 +2267,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["60"]]></textFieldExpression>
 			</textField>
@@ -2215,7 +2280,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["61"]]></textFieldExpression>
 			</textField>
@@ -2228,7 +2293,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["62"]]></textFieldExpression>
 			</textField>
@@ -2241,7 +2306,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["63"]]></textFieldExpression>
 			</textField>
@@ -2254,7 +2319,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["64"]]></textFieldExpression>
 			</textField>
@@ -2267,7 +2332,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["65"]]></textFieldExpression>
 			</textField>
@@ -2280,7 +2345,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["66"]]></textFieldExpression>
 			</textField>
@@ -2293,7 +2358,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["67"]]></textFieldExpression>
 			</textField>
@@ -2306,7 +2371,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["68"]]></textFieldExpression>
 			</textField>
@@ -2319,7 +2384,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["69"]]></textFieldExpression>
 			</textField>
@@ -2332,7 +2397,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["70"]]></textFieldExpression>
 			</textField>
@@ -2345,7 +2410,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["71"]]></textFieldExpression>
 			</textField>
@@ -2358,7 +2423,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["72"]]></textFieldExpression>
 			</textField>
@@ -2371,7 +2436,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["73"]]></textFieldExpression>
 			</textField>
@@ -2384,7 +2449,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["74"]]></textFieldExpression>
 			</textField>
@@ -2397,7 +2462,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["75"]]></textFieldExpression>
 			</textField>
@@ -2410,7 +2475,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="5"/>
+					<font fontName="SansSerif" size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["76"]]></textFieldExpression>
 			</textField>
@@ -2427,7 +2492,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{age}]]></textFieldExpression>
 			</textField>
@@ -2440,22 +2505,9 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ID}+""]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField" x="26" y="0" width="15" height="37" uuid="5e3a9739-21ee-491a-823c-3ad8c424cdf4"/>
-				<box>
-					<topPen lineWidth="0.25"/>
-					<leftPen lineWidth="0.25"/>
-					<bottomPen lineWidth="0.25"/>
-					<rightPen lineWidth="0.25"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{MONTH_ORDER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="41" y="0" width="86" height="37" uuid="13b0f706-c714-4317-85dd-1628ccfcb365"/>
@@ -2466,7 +2518,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" "+$F{PAT_NAME}]]></textFieldExpression>
 			</textField>
@@ -2479,7 +2531,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("AU")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2492,7 +2544,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("AL_1")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2505,7 +2557,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="6"/>
+					<font fontName="SansSerif" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LAB_NOTE}]]></textFieldExpression>
 			</textField>
@@ -2518,7 +2570,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
-					<font size="5" isBold="false"/>
+					<font fontName="SansSerif" size="5" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yy").format(new SimpleDateFormat("dd/MM/yyyy").parse($F{LAB_DATE}))]]></textFieldExpression>
 			</textField>
@@ -2531,7 +2583,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_SEX}]]></textFieldExpression>
 			</textField>
@@ -2544,7 +2596,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("28")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2557,7 +2609,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("UR")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2570,7 +2622,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("ALT")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2583,7 +2635,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2596,7 +2648,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("CR")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2609,7 +2661,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("AST")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2622,7 +2674,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("SUC")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2635,7 +2687,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2648,7 +2700,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("TG")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -2661,7 +2713,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CLUE_CELLS}]]></textFieldExpression>
 			</textField>
@@ -2674,7 +2726,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CELL_EPITHE}]]></textFieldExpression>
 			</textField>
@@ -2687,7 +2739,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2700,7 +2752,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2713,7 +2765,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2726,7 +2778,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2739,7 +2791,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2752,7 +2804,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GRAM_BACILLE}]]></textFieldExpression>
 			</textField>
@@ -2765,7 +2817,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2778,7 +2830,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GRAM_COCCI}]]></textFieldExpression>
 			</textField>
@@ -2791,7 +2843,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2804,7 +2856,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CELL_EPITHE_PU}]]></textFieldExpression>
 			</textField>
@@ -2817,7 +2869,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2830,7 +2882,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2843,7 +2895,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2856,7 +2908,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DIPLO_NEISSER_PU}]]></textFieldExpression>
 			</textField>
@@ -2869,7 +2921,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GRAM_BACILLE_PU}]]></textFieldExpression>
 			</textField>
@@ -2882,7 +2934,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2895,7 +2947,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2908,7 +2960,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2921,7 +2973,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2934,7 +2986,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2947,7 +2999,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2960,7 +3012,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2973,7 +3025,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2986,7 +3038,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -2999,7 +3051,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3012,7 +3064,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3025,7 +3077,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3038,7 +3090,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3051,7 +3103,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3064,7 +3116,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3077,7 +3129,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3090,7 +3142,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3103,7 +3155,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3116,7 +3168,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3129,7 +3181,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3142,7 +3194,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3155,7 +3207,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3168,7 +3220,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3181,7 +3233,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CODE_EXA}.equals("CAPROCUATB")?$F{RESULTS}:""]]></textFieldExpression>
 			</textField>
@@ -3194,7 +3246,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3207,7 +3259,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3220,7 +3272,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3233,7 +3285,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GE_FALCIPARUM}]]></textFieldExpression>
 			</textField>
@@ -3246,7 +3298,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GE_MALARIA}]]></textFieldExpression>
 			</textField>
@@ -3259,7 +3311,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GE_OVALE}]]></textFieldExpression>
 			</textField>
@@ -3272,7 +3324,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{GE_VIVAX}]]></textFieldExpression>
 			</textField>
@@ -3285,7 +3337,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3298,7 +3350,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3311,7 +3363,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3324,7 +3376,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3337,7 +3389,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3350,7 +3402,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3363,7 +3415,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3376,7 +3428,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3389,7 +3441,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3402,7 +3454,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="7"/>
+					<font fontName="SansSerif" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
@@ -3425,7 +3477,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
@@ -3439,7 +3491,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
@@ -3456,7 +3508,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Times-Roman" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
@@ -3477,7 +3529,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
@@ -3491,7 +3543,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
@@ -3508,7 +3560,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Times-Roman" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
@@ -3526,7 +3578,7 @@ Order by LAB_ID
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
-					<font fontName="Arial" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
@@ -3534,7 +3586,7 @@ Order by LAB_ID
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-17" x="737" y="5" width="339" height="20" forecolor="#000099" backcolor="#FFFFFF" uuid="177d02db-1ec7-4435-b45e-dc1b7b4f293a"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="Arial" size="14" isBold="false" isItalic="false" pdfEncoding="CP1252"/>
+					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" pdfEncoding="CP1252"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}+" "]]></textFieldExpression>
 			</textField>
