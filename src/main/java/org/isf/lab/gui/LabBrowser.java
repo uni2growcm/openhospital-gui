@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -92,6 +92,11 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		filterButton.doClick();
 	}
 
+	@Override
+	public void prescribersUpdated() {
+		refreshPrescriberCombo();
+	}
+
 	private JPanel jContentPane;
 	private JPanel jButtonPanel;
 	private JButton buttonEdit;
@@ -103,6 +108,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JPanel jSelectionPanel;
 	private JTable jTable;
 	private JComboBox comboExams;
+	private JComboBox<String> comboPrescriber;
 	private JTextField patientCodeField;
 	private int pfrmHeight = 100;
 	private List<Laboratory> pLabs;
@@ -110,12 +116,17 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.patient.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.exam.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.lab.prescriber.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.result.txt").toUpperCase()
 	};
-	private boolean[] columnsResizable = {false, true, true, false};
-	private int[] pColumnWidth = {150, 200, 200, 200};
-	private int[] maxWidth = {150, 200, 200, 200};
-	private boolean[] columnsVisible = { true, GeneralData.LABEXTENDED, true, true};
+	private JComboBox<String> comboResultFilter;
+	private static final String FILTER_ALL = MessageBundle.getMessage("angal.lab.result.filter.all");
+	private static final String FILTER_NON_EMPTY = MessageBundle.getMessage("angal.lab.result.filter.nonempty");
+	private static final String FILTER_EMPTY = MessageBundle.getMessage("angal.lab.result.filter.empty");
+	private boolean[] columnsResizable = {false, true, true, true, false};
+	private int[] pColumnWidth = {150, 200, 200, 150, 200};
+	private int[] maxWidth = {150, 200, 200, 150, 200};
+	private boolean[] columnsVisible = { true, GeneralData.LABEXTENDED, true, true, true};
 	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 	private PatientBrowserManager patManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private PrintManager printManager = Context.getApplicationContext().getBean(PrintManager.class);
@@ -209,6 +220,32 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			});
 		}
 		return printTableButton;
+	}
+
+	private JComboBox<String> getComboResultFilter() {
+		if (comboResultFilter == null) {
+			comboResultFilter = new JComboBox<>();
+			comboResultFilter.setPreferredSize(new Dimension(225, 30));
+			comboResultFilter.addItem(FILTER_ALL);
+			comboResultFilter.addItem(FILTER_NON_EMPTY);
+			comboResultFilter.addItem(FILTER_EMPTY);
+		}
+		return comboResultFilter;
+	}
+
+	private JComboBox<String> getComboPrescriber() {
+		if (comboPrescriber == null) {
+			comboPrescriber = new JComboBox<>();
+			comboPrescriber.setPreferredSize(new Dimension(225, 30));
+			comboPrescriber.addItem(MessageBundle.getMessage("angal.lab.prescriber.all"));
+			try {
+				List<String> prescribers = labManager.getDistinctPrescribers();
+				prescribers.forEach(comboPrescriber::addItem);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		return comboPrescriber;
 	}
 
 	private JButton getPrintLabelButton() {
@@ -369,10 +406,13 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (jSelectionPanel == null) {
 			jSelectionPanel = new JPanel();
 			jSelectionPanel.setPreferredSize(new Dimension(225, pfrmHeight));
-			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.searchbycodepatientpressenter")));
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.searchbycodeorname")));
 			jSelectionPanel.add(getPatientCodeField());
 			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.selectanexam")));
 			jSelectionPanel.add(getComboExams());
+			jSelectionPanel.add(getComboResultFilter());
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.prescriber.filter")));
+			jSelectionPanel.add(getComboPrescriber());
 			jSelectionPanel.add(getDateFilterPanel());
 			jSelectionPanel.add(getFilterButton());
 		}
@@ -417,21 +457,30 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			patientCodeField.addKeyListener(new KeyListener() {
 				@Override
 				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						model = new LabBrowsingModel(patientCodeField.getText());
-						model.fireTableDataChanged();
-						jTable.updateUI();
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						try {
+							String input = patientCodeField.getText().trim();
+							List<Patient> patients = patManager.getPatientByCodeOrName(input);
+							if (patients == null || patients.isEmpty()) {
+								pLabs = new ArrayList<>();
+								model.fireTableDataChanged();
+								jTable.updateUI();
+								return;
+							}
+
+							pLabs = new ArrayList<>();
+							for (Patient pat : patients) {
+								pLabs.addAll(labManager.getLaboratory(pat));
+							}
+							model.fireTableDataChanged();
+							jTable.updateUI();
+						} catch (OHServiceException ex) {
+							OHServiceExceptionUtil.showMessages(ex);
+						}
 					}
 				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
+				@Override public void keyReleased(KeyEvent e) {}
+				@Override public void keyTyped(KeyEvent e) {}
 			});
 		}
 		return patientCodeField;
@@ -498,10 +547,26 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.search.btn.key"));
 			filterButton.addActionListener(actionEvent -> {
 				typeSelected = comboExams.getSelectedItem().toString();
+
 				if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
 					typeSelected = "";
 				}
+
 				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
+				String resultFilter = (String) comboResultFilter.getSelectedItem();
+				if (FILTER_NON_EMPTY.equals(resultFilter)) {
+					pLabs.removeIf(lab -> lab.getResult() == null || lab.getResult().isBlank());
+				} else if (FILTER_EMPTY.equals(resultFilter)) {
+					pLabs.removeIf(lab -> lab.getResult() != null && !lab.getResult().isBlank());
+				}
+
+				String prescriberSelected = (String) comboPrescriber.getSelectedItem();
+				if (prescriberSelected != null && !prescriberSelected.equals(
+						MessageBundle.getMessage("angal.lab.prescriber.all"))) {
+					pLabs.removeIf(lab -> lab.getPrescriber() == null
+							|| !lab.getPrescriber().equalsIgnoreCase(prescriberSelected));
+				}
+
 				model.fireTableDataChanged();
 				jTable.updateUI();
 			});
@@ -605,6 +670,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			} else if (c == 2) {
 				return lab.getExam();
 			} else if (c == 3) {
+				return lab.getPrescriber() != null ? lab.getPrescriber() : "";
+			} else if (c == 4) {
 				return lab.getResult();
 			}
 			return null;
@@ -641,4 +708,23 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		}
 	}
 
+	private void refreshPrescriberCombo() {
+		if (comboPrescriber != null) {
+			String currentSelection = (String) comboPrescriber.getSelectedItem();
+			comboPrescriber.removeAllItems();
+			comboPrescriber.addItem(MessageBundle.getMessage("angal.lab.prescriber.all"));
+			try {
+				List<String> prescribers = labManager.getDistinctPrescribers();
+				for (String prescriber : prescribers) {
+					comboPrescriber.addItem(prescriber);
+				}
+				if (currentSelection != null && comboPrescriber.getItemCount() > 0) {
+					comboPrescriber.setSelectedItem(currentSelection);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			comboPrescriber.repaint();
+		}
+	}
 }
