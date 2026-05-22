@@ -449,14 +449,12 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		try {
 			diagnoses = opd.getDiagnoses();
 		} catch (LazyInitializationException e) {
-			// Session fermée, essayer de recharger depuis la base
 			try {
 				Opd reloaded = opdBrowserManager.getOpdById(opd.getCode()).orElse(null);
 				if (reloaded != null) {
 					diagnoses = reloaded.getDiagnoses();
 				}
 			} catch (Exception ex) {
-				// Ignorer
 			}
 		}
 
@@ -1401,6 +1399,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		return false;
 	}
+
 	private void updateCounters() {
 		rowCounter.setText(rowCounterText + totalRows);
 		totalPatientsLabel.setText(MessageBundle.getMessage("angal.opd.pagination.totalpatients") + ": " + totalRows);
@@ -1610,6 +1609,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		@Override
 		public void keyReleased(KeyEvent e) {}
 	}
+
 	private JButton getJExamButton() {
 		if (jExamButton == null) {
 			jExamButton = new JButton(MessageBundle.getMessage("angal.opd.exams.btn"));
@@ -1631,6 +1631,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		}
 		return jExamButton;
 	}
+
 	private String getDiagnosisTypesDescription(Opd opd) {
 		if (opd == null || opd.getDiagnoses() == null || opd.getDiagnoses().isEmpty()) {
 			return "";
