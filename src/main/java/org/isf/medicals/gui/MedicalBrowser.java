@@ -976,12 +976,18 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private void loadCurrentPage() {
 		try {
+			boolean showActive = false;
+			boolean showDisabled = false;
 
-			String activeFilter = null;
 			if (activeSelection.equals(STR_ACTIVE_ONLY)) {
-				activeFilter = "ACTIVE";
+				showActive = true;
+				showDisabled = false;
 			} else if (activeSelection.equals(STR_DISABLED_ONLY)) {
-				activeFilter = "DISABLED";
+				showActive = false;
+				showDisabled = true;
+			} else if (activeSelection.equals(STR_ALL)) {
+				showActive = true;
+				showDisabled = true;
 			}
 
 			String medicalTypeCode = null;
@@ -989,7 +995,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				medicalTypeCode = ((MedicalType) pbox.getSelectedItem()).getCode();
 			}
 
-			Page<Medical> medicalPage = medicalBrowsingManager.getMedicals(currentPage,PAGE_SIZE,activeFilter,medicalTypeCode);
+			Page<Medical> medicalPage = medicalBrowsingManager.getMedicals(currentPage, PAGE_SIZE, showActive, showDisabled, medicalTypeCode);
 
 			pMedicals = new ArrayList<>(medicalPage.getContent());
 			totalRows = medicalPage.getTotalElements();
@@ -1004,6 +1010,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				table.setModel(model);
 			}
 
+			table.updateUI();
 			updatePaginationControls();
 
 		} catch (OHServiceException e) {
