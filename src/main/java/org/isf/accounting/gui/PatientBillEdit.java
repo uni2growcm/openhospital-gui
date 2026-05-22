@@ -31,6 +31,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Image;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -231,6 +232,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonAddExam;
 	private JButton jButtonAddOther;
 	private JButton jButtonAddPayment;
+	private JButton jButtonHistory;
 	private JPanel jPanelButtons;
 	private JPanel jPanelDate;
 	private JPanel jPanelPatient;
@@ -1164,6 +1166,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelButtonsPayment = new JPanel();
 			jPanelButtonsPayment.setLayout(new BoxLayout(jPanelButtonsPayment, BoxLayout.Y_AXIS));
 			jPanelButtonsPayment.add(getJButtonAddPayment());
+			jPanelButtonsPayment.add(getJButtonHistory());
 			jPanelButtonsPayment.add(getJButtonAddRefund());
 			if (GeneralData.RECEIPTPRINTER) {
 				jPanelButtonsPayment.add(getJButtonPrintPayment());
@@ -1599,6 +1602,38 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			});
 		}
 		return jButtonAddPayment;
+	}
+
+	private JButton getJButtonHistory() {
+		if (jButtonHistory == null) {
+			jButtonHistory = new JButton(MessageBundle.getMessage("angal.billbrowser.billhistory"));
+			jButtonHistory.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.billhistory.key"));
+			jButtonHistory.setMaximumSize(BUTTON_PAYMENT_SIZE);
+			jButtonHistory.setHorizontalAlignment(SwingConstants.LEFT);
+
+			ImageIcon icon = new ImageIcon("rsc/icons/historique.png");
+			Image image = icon.getImage();
+			int width = 18;
+			int height = 18;
+			Image resizedImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+			ImageIcon resizedIcon = new ImageIcon(resizedImage);
+			jButtonHistory.setIcon(resizedIcon);
+
+			jButtonHistory.addActionListener(actionEvent -> {
+				if (thisBill != null && thisBill.getId() > 0) {
+					try {
+						BillHistory billHistory = new BillHistory(this, thisBill);
+						billHistory.setVisible(true);
+					} catch (OHServiceException ex) {
+						LOGGER.error("Error opening bill history", ex);
+						MessageDialog.error(this, "angal.common.error.msg", ex.getMessage());
+					}
+				} else {
+					MessageDialog.info(this, "angal.billbrowser.newinvoicehistorymessage.msg");
+				}
+			});
+		}
+		return jButtonHistory;
 	}
 
 	private JButton getJButtonRemovePayment() {
