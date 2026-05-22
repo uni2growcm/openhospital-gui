@@ -116,8 +116,9 @@ import javax.swing.SwingUtilities;
 import org.isf.disease.gui.DiseaseEdit;
 import java.awt.event.ItemEvent;
 import java.awt.Font;
-import java.awt.Component;
-
+import org.isf.opd.model.DiagnosisEntry;
+import java.awt.Rectangle;
+import javax.swing.Scrollable;
 /**
  * OpdEditExtended - add/edit an OPD registration
  */
@@ -279,8 +280,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JComboBox<Disease> browseDiagnosisCombo;
 	private JButton addDiagnosisButton;
 	private JPanel selectedDiagnosisContainer;
-	private DefaultListModel<Disease> selectedDiagnosisModel;
 	private JScrollPane selectedDiagnosisScrollPane;
+	private DefaultListModel<DiagnosisEntry> selectedDiagnosisModel;
 
 	/**
 	 * Opd next visit fields
@@ -303,7 +304,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			diseasesAll = diseaseBrowserManager.getDiseaseAll();
 			wardsOPDList = wardBrowserManager.getOpdWards();
 			wardsList = wardBrowserManager.getWards();
-			loadExtraDiagnoses();
+			if (!insert && opd != null && opd.getCode() > 0) {
+				List<DiagnosisEntry> diagnoses = opdBrowserManager.getDiagnosesByOpdId(opd.getCode());
+				opd.setDiagnoses(diagnoses);
+			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -334,7 +338,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			diseasesAll = diseaseBrowserManager.getDiseaseAll();
 			wardsOPDList = wardBrowserManager.getOpdWards();
 			wardsList = wardBrowserManager.getWards();
-			loadExtraDiagnoses();
+			if (!insert && opd != null && opd.getCode() > 0) {
+				List<DiagnosisEntry> diagnoses = opdBrowserManager.getDiagnosesByOpdId(opd.getCode());
+				opd.setDiagnoses(diagnoses);
+			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -356,7 +363,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private void loadExtraDiagnoses() {
 		if (!insert && opd != null && diseasesAll != null) {
-			opd.loadExtraDiagnosesFromString(diseasesAll);
+
 		}
 	}
 
@@ -414,8 +421,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jNoteTextArea.setText("");
 			return false;
 		}
-		
-		lastOpd.loadExtraDiagnosesFromString(diseasesAll);
 
 		// TODO: this should be a formatted message in the bundle and not "appended" together
 		StringBuilder lastOPDDisease = new StringBuilder();
@@ -438,6 +443,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * @return the jPanelNorth
 	 */
+
 	private JPanel getjPanelNorth() {
 		if (jPanelNorth == null) {
 			String referralTo;
@@ -460,7 +466,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 			}
 
-			//Referral from with input field
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
 			jPanelNorth.add(referralFromCheckBox);
 
@@ -484,7 +489,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 			}
 
-			//Referral To with input field
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
 			jPanelNorth.add(referralToCheckBox);
 
@@ -508,7 +512,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 			}
 
-			//Action for listeners
 			referralFromCheckBox.addActionListener(e -> {
 				boolean selected = referralFromCheckBox.isSelected();
 				referingHospitalField.setEnabled(selected);
@@ -531,6 +534,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * @return the jPanelCentral
 	 */
+
 	private JPanel getjPanelCentral() {
 		if (jPanelCentral == null) {
 			jPanelCentral = new JPanel();
@@ -969,12 +973,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			diseaseTypeBox.setMaximumSize(new Dimension(400, 50));
 			diseaseTypeBox.addItem(allType);
 			for (DiseaseType elem : types) {
-				Disease primaryDiagnosis = getPrimaryDiagnosis();
-				if (!insert && primaryDiagnosis != null && primaryDiagnosis.getType() != null) {
-					if (primaryDiagnosis.getType().getCode().equals(elem.getCode())) {
-						elem2 = elem;
-					}
-				}
 				diseaseTypeBox.addItem(elem);
 			}
 			if (elem2 != null) {
@@ -984,36 +982,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			}
 		}
 		return diseaseTypeBox;
-	}
-
-	private Disease getPrimaryDiagnosis() {
-		if (opd == null) {
-			return null;
-		}
-		List<Disease> diagnoses = opd.getAllDiagnoses();
-		return diagnoses.isEmpty() ? null : diagnoses.get(0);
-	}
-
-	private String getDiagnosesDescription(Opd opd) {
-		if (opd == null) {
-			return "";
-		}
-		StringBuilder builder = new StringBuilder();
-		List<String> added = new ArrayList<>();
-		for (Disease disease : opd.getAllDiagnoses()) {
-			if (disease == null || disease.getCode() == null || added.contains(disease.getCode())) {
-				continue;
-			}
-			String description = disease.getDescription() != null ? disease.getDescription() : disease.getCode();
-			if (!description.isEmpty()) {
-				if (builder.length() > 0) {
-					builder.append(", ");
-				}
-				builder.append(description);
-			}
-			added.add(disease.getCode());
-		}
-		return builder.toString();
 	}
 
 	private VoLimitedTextField getJTextPatientSrc() {
@@ -1586,8 +1554,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					nextVisit.setDate(nextVisitDateTime);
 					nextVisit.setWard(ward);
 					nextVisit.setDuration(ward.getVisitDuration());
-					nextVisit.setService(""); // future developments
-					//nextVisit.setNote(); // future developments
+					nextVisit.setService("");
 				}
 
 				opd.setNote(jNoteTextArea.getText());
@@ -1595,7 +1562,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setNewPatient(newPatient);
 				opd.setReferralFrom(referralFrom);
 				opd.setReferralTo(referralTo);
-				updateOpdDiagnosesList();
+
+				List<DiagnosisEntry> diagnosesToSave = buildDiagnosesToSave(opd);
+				opd.setDiagnoses(diagnosesToSave);
+				syncLegacyDiseaseFields(opd, diagnosesToSave);
+
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setWard(opdWard);
 
@@ -1615,11 +1586,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 						if (insertedOpd != null) {
 							RememberDates.setLastOpdVisitDate(visitDateOpd);
 							RememberData.setLastOpdWard(opdWard);
-							fireSurgeryInserted(opd);
+							fireSurgeryInserted(insertedOpd);
 							dispose();
 						} else {
 							MessageDialog.error(null, "angal.common.datacouldnotbesaved.msg");
-                        }
+						}
 					} else { // Update
 						if (isNextVisit) {
 							nextVisit = visitManager.updateVisit(nextVisit);
@@ -1632,7 +1603,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 							MessageDialog.error(this, "angal.common.datacouldnotbesaved.msg");
 						} else {
 							fireSurgeryUpdated(updatedOpd);
-							// can't delete the visit info until the OPD is updated
 							if (!isNextVisit && nextVisit != null) {
 								visitManager.deleteVisit(nextVisit);
 							}
@@ -1645,6 +1615,35 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			});
 		}
 		return okButton;
+	}
+
+	private List<DiagnosisEntry> buildDiagnosesToSave(Opd targetOpd) {
+		List<DiagnosisEntry> diagnosesToSave = new ArrayList<>();
+		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+			DiagnosisEntry selectedEntry = selectedDiagnosisModel.get(i);
+			DiagnosisEntry entry = new DiagnosisEntry();
+			entry.setOpd(targetOpd);
+			entry.setDisease(selectedEntry.getDisease());
+			entry.setOrderNumber(i + 1);
+			entry.setActive(true);
+			diagnosesToSave.add(entry);
+		}
+		return diagnosesToSave;
+	}
+
+	private int getPrimaryDiagnosisIndex() {
+		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+			if (selectedDiagnosisModel.get(i).isActive()) {
+				return i;
+			}
+		}
+		return selectedDiagnosisModel.isEmpty() ? -1 : 0;
+	}
+
+	private void syncLegacyDiseaseFields(Opd opd, List<DiagnosisEntry> diagnoses) {
+		opd.setDisease(diagnoses.size() > 0 ? diagnoses.get(0).getDisease() : null);
+		opd.setDisease2(diagnoses.size() > 1 ? diagnoses.get(1).getDisease() : null);
+		opd.setDisease3(diagnoses.size() > 2 ? diagnoses.get(2).getDisease() : null);
 	}
 
 	/**
@@ -1731,22 +1730,14 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * Initializes the additional diagnoses panel
 	 */
-	private void initAdditionalDiagnosisPanel() {
 
+	private void initAdditionalDiagnosisPanel() {
 		selectedDiagnosisModel = new DefaultListModel<>();
-		if (!insert && opd.getExtraDiagnosesList() != null) {
-			for (Disease disease : opd.getExtraDiagnosesList()) {
-				if (disease != null) {
-					try {
-						Disease attachedDisease = diseaseBrowserManager.getDiseaseByCode(disease.getCode());
-						if (attachedDisease != null) {
-							selectedDiagnosisModel.addElement(attachedDisease);
-						} else {
-							selectedDiagnosisModel.addElement(disease);
-						}
-					} catch (OHServiceException e) {
-						selectedDiagnosisModel.addElement(disease);
-					}
+
+		if (!insert && opd != null && opd.getDiagnoses() != null) {
+			for (DiagnosisEntry entry : opd.getDiagnoses()) {
+				if (entry.isActive()) {
+					selectedDiagnosisModel.addElement(entry);
 				}
 			}
 		}
@@ -1814,14 +1805,13 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 		additionalDiagnosisPanel.add(topPanel, BorderLayout.NORTH);
 
-		selectedDiagnosisContainer = new JPanel();
-		selectedDiagnosisContainer.setLayout(new BoxLayout(selectedDiagnosisContainer, BoxLayout.Y_AXIS));
+		selectedDiagnosisContainer = new ScrollableTagPanel();
 		selectedDiagnosisContainer.setVisible(true);
 
 		selectedDiagnosisScrollPane = new JScrollPane(selectedDiagnosisContainer);
 		selectedDiagnosisScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		selectedDiagnosisScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 150));
+		selectedDiagnosisScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // jamais horizontal
+		selectedDiagnosisScrollPane.setPreferredSize(new Dimension(500, 120));
 
 		refreshSelectedDisplay();
 		searchDiagnosisField.addActionListener(e -> performDiagnosisSearch());
@@ -1848,6 +1838,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * Refreshes the display of selected diagnoses (tags with remove buttons)
 	 */
+
 	private void refreshSelectedDisplay() {
 		selectedDiagnosisContainer.removeAll();
 
@@ -1859,17 +1850,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			if (selectedDiagnosisScrollPane.getParent() == null) {
 				additionalDiagnosisPanel.add(selectedDiagnosisScrollPane, BorderLayout.CENTER);
 			}
-
 			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-				Disease disease = selectedDiagnosisModel.get(i);
-				JPanel tagPanel = createTagPanel(i + 1, disease);
-				tagPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, tagPanel.getPreferredSize().height));
-				tagPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-				selectedDiagnosisContainer.add(tagPanel);
-				selectedDiagnosisContainer.add(Box.createVerticalStrut(5));
+				DiagnosisEntry entry = selectedDiagnosisModel.get(i);
+				selectedDiagnosisContainer.add(createTagPanel(i + 1, entry));
 			}
-
-			selectedDiagnosisContainer.setVisible(true);
 		}
 
 		selectedDiagnosisContainer.revalidate();
@@ -1891,6 +1875,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 *
 	 * @return
 	 */
+
 	private Disease showAddDiseaseDialog() {
 		Disease newDisease = new Disease();
 		newDisease.setOpdInclude(true);
@@ -1912,6 +1897,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * Performs the disease search
 	 */
+
 	private void performDiagnosisSearch() {
 		String query = searchDiagnosisField.getText().trim().toLowerCase();
 		DiseaseType selectedType = (DiseaseType) diseaseTypeBox.getSelectedItem();
@@ -1937,67 +1923,68 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	/**
 	 * Adds a disease to the selected diagnoses model
 	 */
+
 	private void addSelectedDiagnosisToModel(Disease disease) {
 		if (disease == null) return;
 
 		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-			if (selectedDiagnosisModel.get(i).getCode().equals(disease.getCode())) {
+			if (selectedDiagnosisModel.get(i).getDisease().getCode().equals(disease.getCode())) {
 				MessageDialog.warning(this, MessageBundle.getMessage("angal.opd.diagnosis.alreadyadded"));
 				return;
 			}
 		}
 
-		try {
-			Disease attachedDisease = diseaseBrowserManager.getDiseaseByCode(disease.getCode());
-			if (attachedDisease != null) {
-				selectedDiagnosisModel.addElement(attachedDisease);
-			} else {
-				selectedDiagnosisModel.addElement(disease);
-			}
-		} catch (OHServiceException e) {
-			selectedDiagnosisModel.addElement(disease);
-		}
+		DiagnosisEntry entry = new DiagnosisEntry();
+		entry.setDisease(disease);
+		entry.setOrderNumber(selectedDiagnosisModel.size() + 1);
+		entry.setActive(true);
 
+		selectedDiagnosisModel.addElement(entry);
 		refreshSelectedDisplay();
-		updateOpdDiagnosesList();
-
-		browseDiagnosisCombo.setSelectedItem(null);
-		searchDiagnosisField.setText("");
-		performDiagnosisSearch();
 	}
 
 	/**
 	 * Creates a tag panel for a single diagnosis
 	 */
-	private JPanel createTagPanel(int index, Disease disease) {
-		JPanel tag = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		tag.setBorder(BorderFactory.createLineBorder(new Color(100, 150, 200), 1));
-		tag.setBackground(new Color(220, 240, 255));
+
+	private JPanel createTagPanel(int index, DiagnosisEntry entry) {
+		Disease disease = entry.getDisease();
+
+		JPanel tag = new JPanel();
 		tag.setLayout(new BoxLayout(tag, BoxLayout.X_AXIS));
-		tag.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-		tag.setAlignmentX(Component.LEFT_ALIGNMENT);
+		tag.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(new Color(100, 150, 200), 1),
+				BorderFactory.createEmptyBorder(3, 6, 3, 4)
+		));
+		tag.setBackground(new Color(220, 240, 255));
 
 		JLabel numberLabel = new JLabel(index + ".");
 		numberLabel.setFont(numberLabel.getFont().deriveFont(Font.BOLD));
-		numberLabel.setPreferredSize(new Dimension(30, 25));
 		tag.add(numberLabel);
 
 		tag.add(Box.createHorizontalStrut(5));
 
-		JLabel diseaseLabel = new JLabel(disease.getDescription());
-		diseaseLabel.setPreferredSize(new Dimension(400, 25));
+		JLabel diseaseLabel = new JLabel(disease != null ? disease.getDescription() : "");
 		tag.add(diseaseLabel);
 
-		tag.add(Box.createHorizontalGlue());
+		tag.add(Box.createHorizontalStrut(8));
 
-		JButton removeButton = new JButton("✖");
-		removeButton.setPreferredSize(new Dimension(25, 25));
+		JButton removeButton = new JButton("\u2715");
+		removeButton.setFont(removeButton.getFont().deriveFont(Font.BOLD, 11f));
+		removeButton.setForeground(new Color(180, 40, 40));
+		removeButton.setPreferredSize(new Dimension(22, 22));
+		removeButton.setMaximumSize(new Dimension(22, 22));
 		removeButton.setBorderPainted(false);
 		removeButton.setContentAreaFilled(false);
+		removeButton.setFocusPainted(false);
+		removeButton.setToolTipText(MessageBundle.getMessage("angal.common.delete.btn"));
 		removeButton.addActionListener(e -> {
-			selectedDiagnosisModel.removeElement(disease);
+			selectedDiagnosisModel.removeElement(entry);
+
+			for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
+				selectedDiagnosisModel.get(i).setOrderNumber(i + 1);
+			}
 			refreshSelectedDisplay();
-			updateOpdDiagnosesList();
 		});
 		tag.add(removeButton);
 
@@ -2005,32 +1992,69 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	}
 
 	/**
-	 * Updates the OPD object with the current list of diagnoses
-	 */
-	private void updateOpdDiagnosesList() {
-		List<Disease> list = new ArrayList<>();
-		for (int i = 0; i < selectedDiagnosisModel.size(); i++) {
-			Disease diseaseFromModel = selectedDiagnosisModel.get(i);
-			try {
-				Disease persistedDisease = diseaseBrowserManager.getDiseaseByCode(diseaseFromModel.getCode());
-				if (persistedDisease != null) {
-					list.add(persistedDisease);
-				} else {
-					list.add(diseaseFromModel);
-				}
-			} catch (OHServiceException e) {
-				list.add(diseaseFromModel);
-			}
-		}
-		opd.setExtraDiagnosesList(list);
-	}
-
-	/**
 	 * Sets the attendance type based on last visit
 	 */
+
 	private void setAttendance() {
 		rePatientButton.setSelected(true);
 		newPatientButton.setSelected(false);
+	}
+
+	/**
+	 * Retourne la description des diagnostics pour un OPD
+	 */
+
+	private String getDiagnosesDescription(Opd opd) {
+		if (opd == null || opd.getDiagnoses() == null || opd.getDiagnoses().isEmpty()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		for (DiagnosisEntry entry : opd.getDiagnoses()) {
+			if (entry.isActive() && entry.getDisease() != null) {
+				if (builder.length() > 0) builder.append(", ");
+				builder.append(entry.getDisease().getDescription()); // plus d'étoile
+			}
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Panel qui implémente Scrollable pour forcer FlowLayout à wrapper
+	 * horizontalement avec un scroll vertical.
+	 */
+
+	private static class ScrollableTagPanel extends JPanel implements Scrollable {
+		public ScrollableTagPanel() {
+			super(new FlowLayout(FlowLayout.LEFT, 6, 6));
+		}
+
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 30;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 100;
+		}
+
+		/**
+		 * TRUE = la largeur du panel colle au viewport → FlowLayout wraps à la ligne
+		 */
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return false;
+		}
 	}
 
 }

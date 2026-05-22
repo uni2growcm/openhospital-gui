@@ -59,7 +59,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -67,6 +66,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 
+import org.hibernate.LazyInitializationException;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
 import org.isf.distype.manager.DiseaseTypeBrowserManager;
@@ -93,6 +93,8 @@ import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 import org.springframework.data.domain.Page;
 import org.isf.lab.gui.LabNew;
+import org.isf.opd.model.DiagnosisEntry;
+
 
 
 /**
@@ -414,13 +416,14 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (opds == null || opds.isEmpty()) {
 			return;
 		}
-		List<Disease> allDiseases = getDiseasesAll();
-		if (allDiseases == null || allDiseases.isEmpty()) {
-			return;
-		}
 		for (Opd opd : opds) {
-			if (opd != null) {
-				opd.loadExtraDiagnosesFromString(allDiseases);
+			if (opd == null || opd.getCode() <= 0) {
+				continue;
+			}
+			try {
+				opd.setDiagnoses(opdBrowserManager.getDiagnosesByOpdId(opd.getCode()));
+			} catch (OHServiceException ohServiceException) {
+				MessageDialog.showExceptions(ohServiceException);
 			}
 		}
 	}
@@ -438,39 +441,35 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 
 	private String getDiagnosesDescription(Opd opd) {
-		String diagnoses = joinDiagnoses(opd, false);
-		return diagnoses.isEmpty() ? '[' + MessageBundle.getMessage("angal.opd.notspecified.msg") + ']' : diagnoses;
-	}
-
-	private String getDiagnosisTypesDescription(Opd opd) {
-		return joinDiagnoses(opd, true);
-	}
-
-	private String joinDiagnoses(Opd opd, boolean diseaseTypes) {
 		if (opd == null) {
-			return "";
+			return "[" + MessageBundle.getMessage("angal.opd.notspecified.msg") + "]";
 		}
+
+		List<DiagnosisEntry> diagnoses = null;
+		try {
+			diagnoses = opd.getDiagnoses();
+		} catch (LazyInitializationException e) {
+			// Session fermée, essayer de recharger depuis la base
+			try {
+				Opd reloaded = opdBrowserManager.getOpdById(opd.getCode()).orElse(null);
+				if (reloaded != null) {
+					diagnoses = reloaded.getDiagnoses();
+				}
+			} catch (Exception ex) {
+				// Ignorer
+			}
+		}
+
+		if (diagnoses == null || diagnoses.isEmpty()) {
+			return "[" + MessageBundle.getMessage("angal.opd.notspecified.msg") + "]";
+		}
+
 		StringBuilder builder = new StringBuilder();
-		List<String> added = new ArrayList<>();
-		for (Disease disease : opd.getAllDiagnoses()) {
-			if (disease == null || disease.getCode() == null || added.contains(disease.getCode())) {
-				continue;
+		for (DiagnosisEntry entry : diagnoses) {
+			if (entry.isActive() && entry.getDisease() != null) {
+				if (builder.length() > 0) builder.append(", ");
+				builder.append(entry.getDisease().getDescription());
 			}
-			String value = "";
-			if (diseaseTypes) {
-				if (disease.getType() != null && disease.getType().getDescription() != null) {
-					value = disease.getType().getDescription();
-				}
-			} else {
-				value = disease.getDescription() != null ? disease.getDescription() : disease.getCode();
-			}
-			if (!value.isEmpty()) {
-				if (builder.length() > 0) {
-					builder.append(", ");
-				}
-				builder.append(value);
-			}
-			added.add(disease.getCode());
 		}
 		return builder.toString();
 	}
@@ -1374,28 +1373,33 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	@Override
 	public void surgeryUpdated(AWTEvent e, Opd opd) {
-		loadExtraDiagnoses(List.of(opd));
-		pSur.set(pSur.size() - selectedrow - 1, opd);
-		((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
-		jTable.updateUI();
-		if (jTable.getRowCount() > 0 && selectedrow > -1) {
-			jTable.setRowSelectionInterval(selectedrow, selectedrow);
-		}
+		int opdCode = opd.getCode();
 		loadCurrentPage();
+		selectOpd(opdCode);
 	}
 
 	@Override
 	public void surgeryInserted(AWTEvent e, Opd opd) {
-		loadExtraDiagnoses(List.of(opd));
+		int opdCode = opd.getCode();
 		currentPage = 0;
 		searchMode = SearchMode.FILTERS;
-		pSur.add(pSur.size(), opd);
-		((OpdBrowsingModel) jTable.getModel()).fireTableDataChanged();
 		loadCurrentPage();
-		if (jTable.getRowCount() > 0) {
-			jTable.setRowSelectionInterval(0, 0);
+		if (!selectOpd(opdCode) && totalPages > 1) {
+			currentPage = totalPages - 1;
+			loadCurrentPage();
+			selectOpd(opdCode);
 		}
-		rowCounter.setText(rowCounterText + pSur.size());
+	}
+
+	private boolean selectOpd(int opdCode) {
+		for (int row = 0; row < jTable.getRowCount(); row++) {
+			Opd rowOpd = (Opd) model.getValueAt(row, -1);
+			if (rowOpd != null && rowOpd.getCode() == opdCode) {
+				jTable.setRowSelectionInterval(row, row);
+				return true;
+			}
+		}
+		return false;
 	}
 	private void updateCounters() {
 		rowCounter.setText(rowCounterText + totalRows);
@@ -1517,7 +1521,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				totalRows = pSur.size();
 				totalPages = calculatePages(totalRows);
 				currentPage = 0;
-				searchMode = SearchMode.FILTERS;
+				searchMode = SearchMode.OPD_CODE;
+				searchCode = code;
 				refreshModel();
 				updateCounters();
 
@@ -1552,7 +1557,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				totalRows = pSur.size();
 				totalPages = calculatePages(totalRows);
 				currentPage = 0;
-				searchMode = SearchMode.FILTERS;
+				searchMode = SearchMode.PROG_YEAR;
+				searchCode = code;
 				refreshModel();
 				updateCounters();
 				if (pSur.isEmpty()) {
@@ -1587,7 +1593,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 					totalRows = pSur.size();
 					totalPages = calculatePages(totalRows);
 					currentPage = 0;
-					searchMode = SearchMode.FILTERS;
+					searchMode = SearchMode.PATIENT_ID;
+					searchCode = code;
 					refreshModel();
 					updateCounters();
 
@@ -1623,5 +1630,20 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return jExamButton;
+	}
+	private String getDiagnosisTypesDescription(Opd opd) {
+		if (opd == null || opd.getDiagnoses() == null || opd.getDiagnoses().isEmpty()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		for (DiagnosisEntry entry : opd.getDiagnoses()) {
+			if (entry.isActive() && entry.getDisease() != null && entry.getDisease().getType() != null) {
+				if (builder.length() > 0) {
+					builder.append(", ");
+				}
+				builder.append(entry.getDisease().getType().getDescription());
+			}
+		}
+		return builder.toString();
 	}
 }
