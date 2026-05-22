@@ -10,7 +10,9 @@ import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 
+import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.BillItems;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.manager.LabManager;
@@ -20,6 +22,7 @@ import org.isf.operation.manager.OperationRowBrowserManager;
 import org.isf.operation.model.OperationRow;
 import org.isf.patient.model.Patient;
 import org.isf.priceslist.model.ItemGroup;
+import org.isf.priceslist.model.Price;
 import org.isf.therapy.manager.TherapyManager;
 import org.isf.therapy.model.TherapyRow;
 import org.isf.utils.exception.OHServiceException;
@@ -40,13 +43,25 @@ public class SelectPrescriptions extends JDialog {
     private JTable tableOperation;
 
     private Map<Integer, Integer> therapyQuantities = new HashMap<>();
+    private Map<TherapyRow, Integer> mapTherapies = new HashMap<>();
 
     private EventListenerList selectionListener = new EventListenerList();
 
-    // Core managers - obtained from Spring Context
+    // Labels for totals
+    private JLabel lblTherapyTotalVal;
+    private JLabel lblTherapyTotalSelectionVal;
+    private JLabel lblExamTotalVal;
+    private JLabel lblExamTotalSelectionVal;
+    private JLabel lblOpeTotalVal;
+    private JLabel lblOpeTotalSelectionVal;
+    private JLabel lblTotalVal;
+    private JLabel lblTotalSelectionVal;
+
+    // Core managers
     private TherapyManager therapyManager;
     private LabManager labManager;
     private OperationRowBrowserManager opManager;
+    private BillBrowserManager billManager;
 
     public interface PrescriptionSelectionListener extends EventListener {
         void prescriptionSelected(List<BillItems> prescriptions);
@@ -56,12 +71,8 @@ public class SelectPrescriptions extends JDialog {
         super(owner, true);
         this.patient = patient;
 
-        // Initialize managers from Spring Context
         initManagers();
-
-        loadTherapies();
-        loadLaboratories();
-        loadOperations();
+        loadData();
 
         initComponents();
         setLocationRelativeTo(null);
@@ -72,13 +83,16 @@ public class SelectPrescriptions extends JDialog {
             therapyManager = Context.getApplicationContext().getBean(TherapyManager.class);
             labManager = Context.getApplicationContext().getBean(LabManager.class);
             opManager = Context.getApplicationContext().getBean(OperationRowBrowserManager.class);
+            billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
         } catch (Exception e) {
             MessageDialog.error(this, "Error initializing managers: " + e.getMessage());
-            // Fallback: create empty lists
-            therapies = new ArrayList<>();
-            laboratories = new ArrayList<>();
-            operations = new ArrayList<>();
         }
+    }
+
+    private void loadData() {
+        loadTherapies();
+        loadLaboratories();
+        loadOperations();
     }
 
     private void loadTherapies() {
@@ -88,21 +102,36 @@ public class SelectPrescriptions extends JDialog {
         }
 
         try {
-            therapies = therapyManager.getTherapyRows(patient.getCode());
+            List<TherapyRow> allTherapies = therapyManager.getTherapyRows(patient.getCode());
+            therapies = new ArrayList<>();
 
-            // Filter therapies with remaining quantity > 0
-            therapies.removeIf(therapy -> {
-                double remaining = therapy.getQty();
+            for (TherapyRow therapy : allTherapies) {
+                double totalPrescribed = calculateTotalQuantity(
+                        therapy.getStartDate(), therapy.getEndDate(),
+                        therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getQty()
+                );
+                double alreadyBought = therapy.getQtyBougth() != null ? therapy.getQtyBougth() : 0.0;
+                double remaining = totalPrescribed - alreadyBought;
+
+                // Show only therapies with remaining quantity > 0
                 if (remaining > 0) {
+                    therapies.add(therapy);
+                    mapTherapies.put(therapy, (int) Math.ceil(remaining));
                     therapyQuantities.put(therapy.getTherapyID(), (int) Math.ceil(remaining));
-                    return false;
                 }
-                return true;
-            });
+            }
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e, this);
             therapies = new ArrayList<>();
         }
+    }
+
+    private double calculateTotalQuantity(LocalDateTime startDate, LocalDateTime endDate,
+                                          int freqInPeriod, int freqInDay, double qty) {
+        long diffInMillis = java.time.Duration.between(startDate, endDate).toMillis();
+        long totalDays = (diffInMillis / (1000 * 60 * 60 * 24)) + 1;
+        long effectiveDays = (totalDays + freqInPeriod - 1) / freqInPeriod;
+        return effectiveDays * freqInDay * qty;
     }
 
     private void loadLaboratories() {
@@ -112,7 +141,6 @@ public class SelectPrescriptions extends JDialog {
         }
 
         try {
-            // Get laboratories without bill using patient code
             laboratories = labManager.getLabWithoutBill(patient.getCode());
             if (laboratories == null) {
                 laboratories = new ArrayList<>();
@@ -130,7 +158,6 @@ public class SelectPrescriptions extends JDialog {
         }
 
         try {
-            // Get operations without bill - pass Patient object, not String
             operations = opManager.getOperationWithoutBill(patient);
             if (operations == null) {
                 operations = new ArrayList<>();
@@ -141,11 +168,53 @@ public class SelectPrescriptions extends JDialog {
         }
     }
 
+    private double getTherapyPrice(TherapyRow therapy, boolean withReduction) {
+        try {
+            Price price;
+            if (withReduction) {
+                price = billManager.getPrice(String.valueOf(therapy.getMedicalId()), ItemGroup.MEDICAL, patient);
+            } else {
+                price = billManager.getPriceFromListWithoutReduction(String.valueOf(therapy.getMedicalId()), ItemGroup.MEDICAL, patient);
+            }
+            return price != null ? price.getPrice() : 0.0;
+        } catch (OHServiceException e) {
+            return 0.0;
+        }
+    }
+
+    private double getExamPrice(Laboratory lab, boolean withReduction) {
+        try {
+            Price price;
+            if (withReduction) {
+                price = billManager.getPrice(lab.getExam().getCode(), ItemGroup.EXAM, patient);
+            } else {
+                price = billManager.getPriceFromListWithoutReduction(lab.getExam().getCode(), ItemGroup.EXAM, patient);
+            }
+            return price != null ? price.getPrice() : 0.0;
+        } catch (OHServiceException e) {
+            return 0.0;
+        }
+    }
+
+    private double getOperationPrice(OperationRow op, boolean withReduction) {
+        try {
+            Price price;
+            if (withReduction) {
+                price = billManager.getPrice(op.getOperation().getCode(), ItemGroup.OPERATION, patient);
+            } else {
+                price = billManager.getPriceFromListWithoutReduction(op.getOperation().getCode(), ItemGroup.OPERATION, patient);
+            }
+            return price != null ? price.getPrice() : 0.0;
+        } catch (OHServiceException e) {
+            return 0.0;
+        }
+    }
+
     public void addPrescriptionSelectedListener(PrescriptionSelectionListener listener) {
         selectionListener.add(PrescriptionSelectionListener.class, listener);
     }
 
-    private void firePrescriptionSelected() {
+    private void fireSelectedPrescription() {
         List<BillItems> prescriptions = new ArrayList<>();
 
         // Add selected therapies
@@ -154,13 +223,26 @@ public class SelectPrescriptions extends JDialog {
             for (int row : selectedRows) {
                 if (row < therapies.size()) {
                     TherapyRow therapy = therapies.get(row);
-                    BillItems item = new BillItems();
-                    item.setItemDescription(getMedicalDescription(therapy.getMedicalId()));
-                    item.setItemGroup(ItemGroup.MEDICAL.getCode());
-                    item.setItemId(String.valueOf(therapy.getMedicalId()));
-                    item.setPrescriptionId(therapy.getTherapyID());
-                    item.setItemQuantity(therapyQuantities.getOrDefault(therapy.getTherapyID(), 0));
-                    prescriptions.add(item);
+                    int quantityToBill = mapTherapies.getOrDefault(therapy, 0);
+
+                    if (quantityToBill > 0) {
+                        BillItems item = new BillItems();
+                        item.setItemDescription(getMedicalDescription(therapy.getMedicalId()));
+                        item.setItemGroup(ItemGroup.MEDICAL.getCode());
+                        item.setItemId(String.valueOf(therapy.getMedicalId()));
+                        item.setItemQuantity(quantityToBill);
+                        // Convert int to Integer using valueOf
+                        item.setPrescriptionId(Integer.valueOf(therapy.getTherapyID()));
+
+                        // Get prices with and without reductions
+                        double priceWithReduction = getTherapyPrice(therapy, true);
+                        double priceBrut = getTherapyPrice(therapy, false);
+                        item.setItemAmount(priceWithReduction);
+                        item.setItemAmountBrut(priceBrut);
+                        item.setPrice(true);
+
+                        prescriptions.add(item);
+                    }
                 }
             }
         }
@@ -175,8 +257,16 @@ public class SelectPrescriptions extends JDialog {
                     item.setItemDescription(lab.getExam().getDescription());
                     item.setItemGroup(ItemGroup.EXAM.getCode());
                     item.setItemId(lab.getExam().getCode());
+                    // lab.getCode() returns Integer already, no conversion needed
                     item.setPrescriptionId(lab.getCode());
                     item.setItemQuantity(1);
+
+                    double priceWithReduction = getExamPrice(lab, true);
+                    double priceBrut = getExamPrice(lab, false);
+                    item.setItemAmount(priceWithReduction);
+                    item.setItemAmountBrut(priceBrut);
+                    item.setPrice(true);
+
                     prescriptions.add(item);
                 }
             }
@@ -192,8 +282,16 @@ public class SelectPrescriptions extends JDialog {
                     item.setItemDescription(op.getOperation().getDescription());
                     item.setItemGroup(ItemGroup.OPERATION.getCode());
                     item.setItemId(op.getOperation().getCode());
-                    item.setPrescriptionId(op.getId());
+                    // Convert int to Integer using valueOf
+                    item.setPrescriptionId(Integer.valueOf(op.getId()));
                     item.setItemQuantity(1);
+
+                    double priceWithReduction = getOperationPrice(op, true);
+                    double priceBrut = getOperationPrice(op, false);
+                    item.setItemAmount(priceWithReduction);
+                    item.setItemAmountBrut(priceBrut);
+                    item.setPrice(true);
+
                     prescriptions.add(item);
                 }
             }
@@ -217,7 +315,7 @@ public class SelectPrescriptions extends JDialog {
     }
 
     private void initComponents() {
-        setTitle(MessageBundle.getMessage("angal.patientbill.prescription"));
+        setTitle(MessageBundle.getMessage("angal.patientbill.prescription") + " - " + patient.getName());
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -229,19 +327,6 @@ public class SelectPrescriptions extends JDialog {
         titleLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(titleLabel);
-
-        // Select all checkbox
-        JCheckBox selectAllCheckBox = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectall"));
-        selectAllCheckBox.addActionListener(e -> {
-            if (selectAllCheckBox.isSelected()) {
-                selectAllRows();
-            } else {
-                clearAllSelections();
-            }
-        });
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(selectAllCheckBox);
-        mainPanel.add(topPanel);
 
         // Therapies panel
         if (!therapies.isEmpty()) {
@@ -272,6 +357,10 @@ public class SelectPrescriptions extends JDialog {
             mainPanel.add(noDataLabel);
         }
 
+        // Global totals panel
+        JPanel globalPanel = createGlobalPanel();
+        mainPanel.add(globalPanel);
+
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
@@ -286,7 +375,7 @@ public class SelectPrescriptions extends JDialog {
                 MessageDialog.warning(this, "angal.billbrowser.pleaseselectatleestonerow");
                 return;
             }
-            firePrescriptionSelected();
+            fireSelectedPrescription();
             dispose();
         });
 
@@ -296,19 +385,7 @@ public class SelectPrescriptions extends JDialog {
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        setSize(800, 650);
-    }
-
-    private void selectAllRows() {
-        if (tableTherapy != null) tableTherapy.selectAll();
-        if (tableExam != null) tableExam.selectAll();
-        if (tableOperation != null) tableOperation.selectAll();
-    }
-
-    private void clearAllSelections() {
-        if (tableTherapy != null) tableTherapy.clearSelection();
-        if (tableExam != null) tableExam.clearSelection();
-        if (tableOperation != null) tableOperation.clearSelection();
+        setSize(1000, 750);
     }
 
     private JPanel createTherapyPanel() {
@@ -317,20 +394,26 @@ public class SelectPrescriptions extends JDialog {
         String[] columns = {
                 MessageBundle.getMessage("angal.therapy.startdate"),
                 MessageBundle.getMessage("angal.priceslist.medicals"),
-                MessageBundle.getMessage("angal.newbill.qty"),
-                MessageBundle.getMessage("angal.therapy.remaining")
+                MessageBundle.getMessage("angal.newbill.totalqty"),
+                MessageBundle.getMessage("angal.newbill.alreadybought"),
+                MessageBundle.getMessage("angal.therapy.remaining"),
+                MessageBundle.getMessage("angal.common.stock.txt"),
+                MessageBundle.getMessage("angal.newbill.unitprice.txt")
         };
 
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 3;
+                return column == 4; // Only "remaining" column is editable
             }
 
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 2 || columnIndex == 3) {
+                if (columnIndex == 2 || columnIndex == 3 || columnIndex == 4 || columnIndex == 5) {
                     return Integer.class;
+                }
+                if (columnIndex == 6) {
+                    return Double.class;
                 }
                 return String.class;
             }
@@ -342,53 +425,133 @@ public class SelectPrescriptions extends JDialog {
             LocalDateTime startDate = therapy.getStartDate();
             String startDateStr = startDate != null ? startDate.format(formatter) : "";
 
-            int totalQty = therapy.getQty().intValue();
-            int remaining = totalQty;
+            double totalQty = calculateTotalQuantity(
+                    therapy.getStartDate(), therapy.getEndDate(),
+                    therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getQty()
+            );
+            double alreadyBought = therapy.getQtyBougth() != null ? therapy.getQtyBougth() : 0.0;
+            int remaining = (int) Math.ceil(totalQty - alreadyBought);
+            double unitPrice = getTherapyPrice(therapy, true);
 
             Object[] row = {
                     startDateStr,
                     getMedicalDescription(therapy.getMedicalId()),
-                    totalQty,
-                    remaining
+                    (int) Math.ceil(totalQty),
+                    (int) Math.ceil(alreadyBought),
+                    remaining,
+                    0, // Stock - would need to be retrieved
+                    unitPrice
             };
             model.addRow(row);
         }
 
         tableTherapy = new JTable(model);
-        tableTherapy.getColumnModel().getColumn(3).setCellEditor(new SpinnerNumberEditor(0, 9999, 1));
+
+        // Set column widths
+        TableColumn qtyColumn = tableTherapy.getColumnModel().getColumn(4);
+        qtyColumn.setCellEditor(new SpinnerNumberEditor(0, 9999, 1));
+
         tableTherapy.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        tableTherapy.getSelectionModel().addListSelectionListener(e -> updateTherapyQuantity());
 
+        // Add selection listener for totals
+        tableTherapy.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateTotals();
+            }
+        });
+
+        // Add header with select all checkbox
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JCheckBox selectAllTherapy = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallmedicals"));
+        selectAllTherapy.addActionListener(e -> {
+            if (selectAllTherapy.isSelected()) {
+                tableTherapy.selectAll();
+            } else {
+                tableTherapy.clearSelection();
+            }
+            updateTotals();
+        });
+
+        JPanel therapyTotalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        therapyTotalPanel.add(new JLabel(MessageBundle.getMessage("angal.common.total.txt") + ":"));
+        lblTherapyTotalVal = new JLabel("0.00");
+        therapyTotalPanel.add(lblTherapyTotalVal);
+        therapyTotalPanel.add(new JLabel("  " + MessageBundle.getMessage("angal.common.selected.txt") + ":"));
+        lblTherapyTotalSelectionVal = new JLabel("0.00");
+        therapyTotalPanel.add(lblTherapyTotalSelectionVal);
+
+        headerPanel.add(selectAllTherapy);
+        headerPanel.add(Box.createHorizontalGlue());
+        headerPanel.add(therapyTotalPanel);
+
+        panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(new JScrollPane(tableTherapy), BorderLayout.CENTER);
-        return panel;
-    }
 
-    private void updateTherapyQuantity() {
-        int selectedRow = tableTherapy.getSelectedRow();
-        if (selectedRow >= 0 && selectedRow < therapies.size()) {
-            int remaining = (Integer) tableTherapy.getValueAt(selectedRow, 3);
-            TherapyRow therapy = therapies.get(selectedRow);
-            therapyQuantities.put(therapy.getTherapyID(), remaining);
-        }
+        return panel;
     }
 
     private JPanel createExamPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
         String[] columns = {
-                MessageBundle.getMessage("angal.agetype.description")
+                MessageBundle.getMessage("angal.agetype.description"),
+                MessageBundle.getMessage("angal.newbill.unitprice.txt")
         };
 
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) return Double.class;
+                return String.class;
+            }
+        };
 
         for (Laboratory lab : laboratories) {
-            model.addRow(new Object[]{lab.getExam().getDescription()});
+            double price = getExamPrice(lab, true);
+            Object[] row = {lab.getExam().getDescription(), price};
+            model.addRow(row);
         }
 
         tableExam = new JTable(model);
         tableExam.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
+        tableExam.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateTotals();
+            }
+        });
+
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JCheckBox selectAllExam = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallexams"));
+        selectAllExam.addActionListener(e -> {
+            if (selectAllExam.isSelected()) {
+                tableExam.selectAll();
+            } else {
+                tableExam.clearSelection();
+            }
+            updateTotals();
+        });
+
+        JPanel examTotalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        examTotalPanel.add(new JLabel(MessageBundle.getMessage("angal.common.total.txt") + ":"));
+        lblExamTotalVal = new JLabel("0.00");
+        examTotalPanel.add(lblExamTotalVal);
+        examTotalPanel.add(new JLabel("  " + MessageBundle.getMessage("angal.common.selected.txt") + ":"));
+        lblExamTotalSelectionVal = new JLabel("0.00");
+        examTotalPanel.add(lblExamTotalSelectionVal);
+
+        headerPanel.add(selectAllExam);
+        headerPanel.add(Box.createHorizontalGlue());
+        headerPanel.add(examTotalPanel);
+
+        panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(new JScrollPane(tableExam), BorderLayout.CENTER);
+
         return panel;
     }
 
@@ -396,20 +559,144 @@ public class SelectPrescriptions extends JDialog {
         JPanel panel = new JPanel(new BorderLayout());
 
         String[] columns = {
-                MessageBundle.getMessage("angal.agetype.description")
+                MessageBundle.getMessage("angal.agetype.description"),
+                MessageBundle.getMessage("angal.newbill.unitprice.txt")
         };
 
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) return Double.class;
+                return String.class;
+            }
+        };
 
         for (OperationRow op : operations) {
-            model.addRow(new Object[]{op.getOperation().getDescription()});
+            double price = getOperationPrice(op, true);
+            Object[] row = {op.getOperation().getDescription(), price};
+            model.addRow(row);
         }
 
         tableOperation = new JTable(model);
         tableOperation.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
+        tableOperation.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateTotals();
+            }
+        });
+
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JCheckBox selectAllOperation = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectalloperations"));
+        selectAllOperation.addActionListener(e -> {
+            if (selectAllOperation.isSelected()) {
+                tableOperation.selectAll();
+            } else {
+                tableOperation.clearSelection();
+            }
+            updateTotals();
+        });
+
+        JPanel opeTotalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        opeTotalPanel.add(new JLabel(MessageBundle.getMessage("angal.common.total.txt") + ":"));
+        lblOpeTotalVal = new JLabel("0.00");
+        opeTotalPanel.add(lblOpeTotalVal);
+        opeTotalPanel.add(new JLabel("  " + MessageBundle.getMessage("angal.common.selected.txt") + ":"));
+        lblOpeTotalSelectionVal = new JLabel("0.00");
+        opeTotalPanel.add(lblOpeTotalSelectionVal);
+
+        headerPanel.add(selectAllOperation);
+        headerPanel.add(Box.createHorizontalGlue());
+        headerPanel.add(opeTotalPanel);
+
+        panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(new JScrollPane(tableOperation), BorderLayout.CENTER);
+
         return panel;
+    }
+
+    private JPanel createGlobalPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.summary.txt")));
+
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.total.txt") + ":"));
+        lblTotalVal = new JLabel("0.00");
+        panel.add(lblTotalVal);
+
+        panel.add(new JLabel("    " + MessageBundle.getMessage("angal.common.selected.txt") + ":"));
+        lblTotalSelectionVal = new JLabel("0.00");
+        panel.add(lblTotalSelectionVal);
+
+        return panel;
+    }
+
+    private void updateTotals() {
+        double therapyTotal = 0.0;
+        double therapySelected = 0.0;
+        double examTotal = 0.0;
+        double examSelected = 0.0;
+        double opeTotal = 0.0;
+        double opeSelected = 0.0;
+
+        // Therapy totals
+        if (tableTherapy != null) {
+            for (int i = 0; i < tableTherapy.getRowCount(); i++) {
+                double price = (Double) tableTherapy.getValueAt(i, 6);
+                int quantity = (Integer) tableTherapy.getValueAt(i, 4);
+                double total = price * quantity;
+                therapyTotal += total;
+
+                if (tableTherapy.isRowSelected(i)) {
+                    therapySelected += total;
+                }
+            }
+        }
+
+        // Exam totals
+        if (tableExam != null) {
+            for (int i = 0; i < tableExam.getRowCount(); i++) {
+                double price = (Double) tableExam.getValueAt(i, 1);
+                examTotal += price;
+
+                if (tableExam.isRowSelected(i)) {
+                    examSelected += price;
+                }
+            }
+        }
+
+        // Operation totals
+        if (tableOperation != null) {
+            for (int i = 0; i < tableOperation.getRowCount(); i++) {
+                double price = (Double) tableOperation.getValueAt(i, 1);
+                opeTotal += price;
+
+                if (tableOperation.isRowSelected(i)) {
+                    opeSelected += price;
+                }
+            }
+        }
+
+        // Update labels
+        if (lblTherapyTotalVal != null) {
+            lblTherapyTotalVal.setText(String.format("%.2f", therapyTotal));
+            lblTherapyTotalSelectionVal.setText(String.format("%.2f", therapySelected));
+        }
+        if (lblExamTotalVal != null) {
+            lblExamTotalVal.setText(String.format("%.2f", examTotal));
+            lblExamTotalSelectionVal.setText(String.format("%.2f", examSelected));
+        }
+        if (lblOpeTotalVal != null) {
+            lblOpeTotalVal.setText(String.format("%.2f", opeTotal));
+            lblOpeTotalSelectionVal.setText(String.format("%.2f", opeSelected));
+        }
+
+        lblTotalVal.setText(String.format("%.2f", therapyTotal + examTotal + opeTotal));
+        lblTotalSelectionVal.setText(String.format("%.2f", therapySelected + examSelected + opeSelected));
     }
 
     class SpinnerNumberEditor extends AbstractCellEditor implements TableCellEditor {
@@ -417,6 +704,10 @@ public class SelectPrescriptions extends JDialog {
 
         public SpinnerNumberEditor(int min, int max, int step) {
             spinner = new JSpinner(new SpinnerNumberModel(min, min, max, step));
+            spinner.addChangeListener(e -> {
+                fireEditingStopped();
+                updateTotals();
+            });
         }
 
         @Override
