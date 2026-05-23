@@ -1890,6 +1890,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			MessageDialog.showExceptions(e);
 		}
 	}
+
 	private void initComponents() {
 		add(getJPanelRange(), BorderLayout.NORTH);
 		add(getJTabbedPaneBills(), BorderLayout.CENTER);
