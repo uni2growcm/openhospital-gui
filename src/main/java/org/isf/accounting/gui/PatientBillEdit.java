@@ -158,7 +158,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			((PatientBillListener) listener).billInserted(event);
 		}
 	}
-	// ---------------------------------------------------------------------------
 
 	@Override
 	public void patientSelected(Patient patient) {
@@ -171,6 +170,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		} catch (OHServiceException ohServiceException) {
 			LOGGER.error(ohServiceException.getMessage(), ohServiceException);
 		}
+
 		if (patientPendingBills.isEmpty()) {
 			// BILL
 			thisBill.setBillPatient(patient);
@@ -191,18 +191,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						modified = true;
 					} else {
 						initData(patientPendingBills.get(0), false);
-
-						/* ****** Check if it is same month ************** */
-						// checkIfSameMonth();
-						/* *********************************************** */
 					}
 				} else {
 					MessageDialog.error(null, "angal.newbill.thispatienthasapendingbill.msg");
 					initData(patientPendingBills.get(0), false);
-
-					/* ****** Check if it is same month ************** */
-					// checkIfSameMonth();
-					/* *********************************************** */
 				}
 			} else {
 				if (GeneralData.ALLOWMULTIPLEOPENEDBILL) {
@@ -279,7 +271,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         for (BillItemGroupItem groupItem : items) {
 
             try {
-
                 Price price = getPrice(groupItem.getPriceId());
 
                 if (price == null) {
@@ -291,46 +282,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     continue;
                 }
 
-                /*
-                 * =========================
-                 * APPLY REDUCTION PLAN
-                 * =========================
-                 */
                 price = applyReduction(price);
 
-                /*
-                 * =========================
-                 * MEDICAL STOCK VALIDATION
-                 * =========================
-                 */
                 if ("MED".equals(price.getGroup()) && stockMovementEnabled) {
-
                     MedicalWard medicalWard = getMedicalWard(price);
 
                     if (medicalWard == null) {
-                        errors.add(
-                                price.getDesc()
-                                        + " - "
-                                        + MessageBundle.getMessage("angal.newbill.stocknotavailableforitem")
-                        );
+                        errors.add(price.getDesc() + " - " + MessageBundle.getMessage("angal.newbill.stocknotavailableforitem"));
                         continue;
                     }
 
                     if (!containPrice(price, groupItem.getQuantity())) {
-                        errors.add(
-                                price.getDesc()
-                                        + " - "
-                                        + MessageBundle.getMessage("angal.newbill.qtynotinstock")
-                        );
+                        errors.add(price.getDesc() + " - " + MessageBundle.getMessage("angal.newbill.qtynotinstock"));
                         continue;
                     }
                 }
 
-                /*
-                 * =========================
-                 * CREATE BILL ITEM
-                 * =========================
-                 */
                 BillItems billItem = new BillItems(
                         0,
                         thisBill,
@@ -344,11 +311,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 billItem.setPriceID(groupItem.getPriceId());
                 billItem.setItemId(price.getItem());
 
-                /*
-                 * =========================
-                 * DISPLAY CODE
-                 * =========================
-                 */
                 if ("MED".equals(price.getGroup())) {
 
                     MedicalWard medicalWard = getMedicalWard(price);
@@ -2803,6 +2765,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
 
         }
+
         wardComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {

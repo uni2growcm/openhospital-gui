@@ -507,6 +507,22 @@ public class PatientInsertExtended extends JDialog {
 							}
 						}
 
+                        ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
+
+                        if (reductionPlan != null && reductionPlan.getId() != 0) {
+                            patient.setReductionPlan(reductionPlan);
+                        } else {
+                            patient.setReductionPlan(null);
+                        }
+
+                        PriceList priceList = (PriceList) priceListComboBox.getSelectedItem();
+
+                        if (priceList != null && priceList.getId() != 0) {
+                            patient.setPriceList(priceList);
+                        } else {
+                            patient.setPriceList(null);
+                        }
+
 						patient.setNote(jNoteTextArea.getText().trim());
 						try {
 							patient = patientBrowserManager.savePatient(patient);
