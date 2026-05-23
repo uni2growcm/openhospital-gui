@@ -629,6 +629,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		});
 		return pbox;
 	}
+
 	protected void launchExpiringReport() {
 
 		List<String> options = new ArrayList<>();
