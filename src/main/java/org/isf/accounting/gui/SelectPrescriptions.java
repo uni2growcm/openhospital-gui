@@ -1,3 +1,24 @@
+/*
+ * Open Hospital (www.open-hospital.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ *
+ * Open Hospital is a free and open source software for healthcare data management.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package org.isf.accounting.gui;
 
 import java.awt.*;
@@ -56,6 +77,9 @@ public class SelectPrescriptions extends JDialog {
     private JLabel lblOpeTotalSelectionVal;
     private JLabel lblTotalVal;
     private JLabel lblTotalSelectionVal;
+    private JCheckBox selectAllTherapy;
+    private JCheckBox selectAllExam;
+    private JCheckBox selectAllOperation;
 
     // Core managers
     private TherapyManager therapyManager;
@@ -382,6 +406,8 @@ public class SelectPrescriptions extends JDialog {
         buttonPanel.add(cancelButton);
         buttonPanel.add(validateButton);
 
+        updateTotals();
+
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -456,13 +482,18 @@ public class SelectPrescriptions extends JDialog {
         // Add selection listener for totals
         tableTherapy.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
+                if (selectAllTherapy != null) {
+                    boolean allSelected = tableTherapy.getSelectedRowCount() == tableTherapy.getRowCount()
+                            && tableTherapy.getRowCount() > 0;
+                    selectAllTherapy.setSelected(allSelected);
+                }
                 updateTotals();
             }
         });
 
         // Add header with select all checkbox
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JCheckBox selectAllTherapy = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallmedicals"));
+        selectAllTherapy = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallmedicals"));
         selectAllTherapy.addActionListener(e -> {
             if (selectAllTherapy.isSelected()) {
                 tableTherapy.selectAll();
@@ -522,12 +553,17 @@ public class SelectPrescriptions extends JDialog {
 
         tableExam.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
+                if (selectAllExam != null) {
+                    boolean allSelected = tableExam.getRowCount() > 0
+                            && tableExam.getSelectedRowCount() == tableExam.getRowCount();
+                    selectAllExam.setSelected(allSelected);
+                }
                 updateTotals();
             }
         });
 
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JCheckBox selectAllExam = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallexams"));
+        selectAllExam = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectallexams"));
         selectAllExam.addActionListener(e -> {
             if (selectAllExam.isSelected()) {
                 tableExam.selectAll();
@@ -587,12 +623,17 @@ public class SelectPrescriptions extends JDialog {
 
         tableOperation.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
+                if (selectAllOperation != null) {
+                    boolean allSelected = tableOperation.getRowCount() > 0
+                            && tableOperation.getSelectedRowCount() == tableOperation.getRowCount();
+                    selectAllOperation.setSelected(allSelected);
+                }
                 updateTotals();
             }
         });
 
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JCheckBox selectAllOperation = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectalloperations"));
+        selectAllOperation = new JCheckBox(MessageBundle.getMessage("angal.selectprescription.selectalloperations"));
         selectAllOperation.addActionListener(e -> {
             if (selectAllOperation.isSelected()) {
                 tableOperation.selectAll();

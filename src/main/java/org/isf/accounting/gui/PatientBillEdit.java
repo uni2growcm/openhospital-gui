@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -1802,18 +1802,48 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
                 try {
                     SelectPrescriptions selectPrescriptions = new SelectPrescriptions(this, thisBill.getBillPatient());
                     selectPrescriptions.addPrescriptionSelectedListener(prescriptions -> {
+						List<String> alreadyPaidItems = new ArrayList<>();
                         for (BillItems item : prescriptions) {
-                            boolean itemExists = billItems.stream()
-                                    .anyMatch(bi -> bi.getItemDescription().equals(item.getItemDescription()));
+							boolean alreadyPaid = false;
+							try {
+								alreadyPaid = billBrowserManager.isPrescriptionAlreadyBilledAndPaid(
+										thisBill.getBillPatient().getCode(),
+										item.getPrescriptionId(),
+										item.getItemGroup()
+								);
+							} catch (OHServiceException ex) {
+							}
 
-                            if (!itemExists) {
-                                billItems.add(item);
-                                modified = true;
-                            } else {
-                                MessageDialog.warning(PatientBillEdit.this,
-                                        MessageBundle.formatMessage("angal.newbill.prescriptionalreadyadded.fmt.msg", item.getItemDescription()));
-                            }
+							if (alreadyPaid) {
+								alreadyPaidItems.add(item.getItemDescription());
+								continue;
+							}
+
+							boolean itemExists = billItems.stream().anyMatch(bi ->
+									bi.getPrescriptionId() != null
+											&& bi.getPrescriptionId().equals(item.getPrescriptionId())
+											&& bi.getItemGroup() != null
+											&& bi.getItemGroup().equals(item.getItemGroup())
+							);
+
+							if (!itemExists) {
+								billItems.add(item);
+								modified = true;
+							} else {
+								MessageDialog.warning(PatientBillEdit.this,
+										MessageBundle.formatMessage("angal.newbill.prescriptionalreadyadded.fmt.msg",
+												item.getItemDescription()));
+							}
                         }
+
+						if (!alreadyPaidItems.isEmpty()) {
+							MessageDialog.warning(PatientBillEdit.this,
+									MessageBundle.formatMessage(
+											"angal.newbill.prescriptionsalreadypaid.fmt.msg",
+											String.join(", ", alreadyPaidItems)));
+						}
+
+						updatePrescriptionButtonVisibility();
                         updateTotals();
                         updateGUI();
                     });
