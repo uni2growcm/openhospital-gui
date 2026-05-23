@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -33,14 +33,15 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -48,7 +49,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -79,7 +79,6 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
 import org.isf.medicalstock.manager.MovBrowserManager;
-import org.isf.medicalstock.model.Lot;
 import org.isf.medicalstock.model.Movement;
 import org.isf.medicalstockward.gui.WardPharmacyRectify.MovementWardListeners;
 import org.isf.medicalstockward.manager.MovWardBrowserManager;
@@ -90,7 +89,6 @@ import org.isf.medtype.manager.MedicalTypeBrowserManager;
 import org.isf.medtype.model.MedicalType;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
-import org.isf.patient.model.Patient;
 import org.isf.serviceprinting.manager.PrintManager;
 import org.isf.stat.gui.report.GenericReportPharmaceuticalStockCard;
 import org.isf.stat.gui.report.GenericReportPharmaceuticalStockWard;
@@ -117,14 +115,14 @@ public class WardPharmacy extends ModalJFrame implements
 
 	@Override
 	public void movementInserted(AWTEvent e) {
-		jTableOutcomes.setModel(new OutcomesModel());
-		jTableDrugs.setModel(new DrugsModel());
+		loadPageOutcomes(0);
+		loadPageDrugs(0);
 	}
 
 	@Override
 	public void movementUpdated(AWTEvent e) {
-		jTableOutcomes.setModel(new OutcomesModel());
-		jTableDrugs.setModel(new DrugsModel());
+		loadPageOutcomes(0);
+		loadPageDrugs(0);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -217,6 +215,38 @@ public class WardPharmacy extends ModalJFrame implements
 	private JButton jButtonStockCard;
 	private JButton jButtonStockLedger;
 	private JButton jButtonDelete;
+
+	private static final int PAGE_SIZE = 3;
+
+	// Outcomes
+	private int currentPageOutcomes = 0;
+	private int totalPagesOutcomes = 0;
+	private long totalElementsOutcomes = 0;
+	private JButton jPrevButtonOutcomes;
+	private JButton jNextButtonOutcomes;
+	private JLabel jPageLabelOutcomes;
+	private JLabel jElementsLabelOutcomes;
+	private JComboBox<Integer> jPageComboBoxOutcomes;
+
+	// Incomings
+	private int currentPageIncomings = 0;
+	private int totalPagesIncomings = 0;
+	private long totalElementsIncomings = 0;
+	private JButton jPrevButtonIncomings;
+	private JButton jNextButtonIncomings;
+	private JLabel jPageLabelIncomings;
+	private JLabel jElementsLabelIncomings;
+	private JComboBox<Integer> jPageComboBoxIncomings;
+
+	// Drugs
+	private int currentPageDrugs = 0;
+	private int totalPagesDrugs = 0;
+	private long totalElementsDrugs = 0;
+	private JButton jPrevButtonDrugs;
+	private JButton jNextButtonDrugs;
+	private JLabel jPageLabelDrugs;
+	private JLabel jElementsLabelDrugs;
+	private JComboBox<Integer> jPageComboBoxDrugs;
 
 	/*
 	 * Managers and datas
@@ -420,9 +450,8 @@ public class WardPharmacy extends ModalJFrame implements
 					return;
 				}
 				MessageDialog.info(this, "angal.medicalstock.deletemovementsuccess.msg");
-				filterButton.doClick();
-				jTableDrugs.setModel(new DrugsModel());
-
+				loadPageOutcomes(0);
+				loadPageDrugs(0);
 			});
 		}
 		return jButtonDelete;
@@ -466,9 +495,9 @@ public class WardPharmacy extends ModalJFrame implements
 				LocalDate newDate = dateChangeEvent.getNewDate();
 				if (newDate != null) {
 					dateTo = newDate.atTime(LocalTime.MAX);
-					jTableOutcomes.setModel(new OutcomesModel());
-					jTableIncomes.setModel(new IncomesModel());
-					rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
+					loadPageOutcomes(0);
+					loadPageIncomings(0);
+					rowCounter.setText(rowCounterText + totalElementsOutcomes);
 				}
 			});
 			jCalendarTo.setEnabled(false);
@@ -483,9 +512,9 @@ public class WardPharmacy extends ModalJFrame implements
 				LocalDate newDate = dateChangeEvent.getNewDate();
 				if (newDate != null) {
 					dateFrom = newDate.atStartOfDay();
-					jTableOutcomes.setModel(new OutcomesModel());
-					jTableIncomes.setModel(new IncomesModel());
-					rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
+					loadPageOutcomes(0);
+					loadPageIncomings(0);
+					rowCounter.setText(rowCounterText + totalElementsOutcomes);
 				}
 			});
 			jCalendarFrom.setEnabled(false);
@@ -728,8 +757,8 @@ public class WardPharmacy extends ModalJFrame implements
 					weightFrom = weightTo;
 					return;
 				}
-				jTableOutcomes.setModel(new OutcomesModel());
-				rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
+				loadPageOutcomes(0);
+				rowCounter.setText(rowCounterText + totalElementsOutcomes);
 			});
 		}
 		return filterButton;
@@ -1057,11 +1086,316 @@ public class WardPharmacy extends ModalJFrame implements
 	private JTabbedPane getJTabbedPaneWard() {
 		if (jTabbedPaneWard == null) {
 			jTabbedPaneWard = new JTabbedPane();
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.outcomes"), getJScrollPaneOutcomes()); //$NON-NLS-1$
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.incomings"), getJScrollPaneIncomes()); //$NON-NLS-1$
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.drugs"), getJScrollPaneDrugs()); //$NON-NLS-1$
+
+			jTabbedPaneWard.addTab(
+					MessageBundle.getMessage("angal.medicalstockward.outcomes"),
+					getOutcomesPanel()
+			);
+			jTabbedPaneWard.addTab(
+					MessageBundle.getMessage("angal.medicalstockward.incomings"),
+					getIncomingsPanel()
+			);
+			jTabbedPaneWard.addTab(
+					MessageBundle.getMessage("angal.medicalstockward.drugs"),
+					getDrugsPanel()
+			);
+
+			jTabbedPaneWard.addChangeListener(e -> {
+				if (wardSelected == null) return;
+				int tab = jTabbedPaneWard.getSelectedIndex();
+				if (tab == 0)      loadPageOutcomes(currentPageOutcomes);
+				else if (tab == 1) loadPageIncomings(currentPageIncomings);
+				else if (tab == 2) loadPageDrugs(currentPageDrugs);
+			});
 		}
 		return jTabbedPaneWard;
+	}
+
+	private JPanel getOutcomesPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneOutcomes(), BorderLayout.CENTER);
+		panel.add(getPaginationPanelOutcomes(), BorderLayout.SOUTH);
+		return panel;
+	}
+
+	private JPanel getIncomingsPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneIncomes(), BorderLayout.CENTER);
+		panel.add(getPaginationPanelIncomings(), BorderLayout.SOUTH);
+		return panel;
+	}
+
+	private JPanel getDrugsPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneDrugs(), BorderLayout.CENTER);
+		panel.add(getPaginationPanelDrugs(), BorderLayout.SOUTH);
+		return panel;
+	}
+
+	private JPanel getPaginationPanelOutcomes() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButtonOutcomes = new JButton("<");
+		jPrevButtonOutcomes.setEnabled(false);
+		jPrevButtonOutcomes.addActionListener(e -> loadPageOutcomes(currentPageOutcomes - 1));
+
+		jPageComboBoxOutcomes = new JComboBox<>();
+		jPageComboBoxOutcomes.addActionListener(e -> {
+			if (jPageComboBoxOutcomes.getSelectedItem() != null
+					&& jPageComboBoxOutcomes.isEnabled()) {
+				int selected = (int) jPageComboBoxOutcomes.getSelectedItem() - 1;
+				if (selected != currentPageOutcomes) {
+					loadPageOutcomes(selected);
+				}
+			}
+		});
+		jPageLabelOutcomes = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.pages.fmt", 0));
+
+		jNextButtonOutcomes = new JButton(">");
+		jNextButtonOutcomes.setEnabled(false);
+		jNextButtonOutcomes.addActionListener(e -> loadPageOutcomes(currentPageOutcomes + 1));
+
+		jElementsLabelOutcomes = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.elements.found.fmt", 0));
+
+		panel.add(jPrevButtonOutcomes);
+		panel.add(jPageComboBoxOutcomes);
+		panel.add(jPageLabelOutcomes);
+		panel.add(jNextButtonOutcomes);
+		panel.add(jElementsLabelOutcomes);
+		return panel;
+	}
+
+	private JPanel getPaginationPanelIncomings() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButtonIncomings = new JButton("<");
+		jPrevButtonIncomings.setEnabled(false);
+		jPrevButtonIncomings.addActionListener(e -> loadPageIncomings(currentPageIncomings - 1));
+
+		jPageComboBoxIncomings = new JComboBox<>();
+		jPageComboBoxIncomings.addActionListener(e -> {
+			if (jPageComboBoxIncomings.getSelectedItem() != null
+					&& jPageComboBoxIncomings.isEnabled()) {
+				int selected = (int) jPageComboBoxIncomings.getSelectedItem() - 1;
+				if (selected != currentPageIncomings) {
+					loadPageIncomings(selected);
+				}
+			}
+		});
+		jPageLabelIncomings = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.pages.fmt", 0));
+
+		jNextButtonIncomings = new JButton(">");
+		jNextButtonIncomings.setEnabled(false);
+		jNextButtonIncomings.addActionListener(e -> loadPageIncomings(currentPageIncomings + 1));
+
+		jElementsLabelIncomings = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.elements.found.fmt", 0));
+
+		panel.add(jPrevButtonIncomings);
+		panel.add(jPageComboBoxIncomings);
+		panel.add(jPageLabelIncomings);
+		panel.add(jNextButtonIncomings);
+		panel.add(jElementsLabelIncomings);
+		return panel;
+	}
+
+	private JPanel getPaginationPanelDrugs() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButtonDrugs = new JButton("<");
+		jPrevButtonDrugs.setEnabled(false);
+		jPrevButtonDrugs.addActionListener(e -> loadPageDrugs(currentPageDrugs - 1));
+
+		jPageComboBoxDrugs = new JComboBox<>();
+		jPageComboBoxDrugs.addActionListener(e -> {
+			if (jPageComboBoxDrugs.getSelectedItem() != null
+					&& jPageComboBoxDrugs.isEnabled()) {
+				int selected = (int) jPageComboBoxDrugs.getSelectedItem() - 1;
+				if (selected != currentPageDrugs) {
+					loadPageDrugs(selected);
+				}
+			}
+		});
+		jPageLabelDrugs = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.pages.fmt", 0));
+
+		jNextButtonDrugs = new JButton(">");
+		jNextButtonDrugs.setEnabled(false);
+		jNextButtonDrugs.addActionListener(e -> loadPageDrugs(currentPageDrugs + 1));
+
+		jElementsLabelDrugs = new JLabel(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.elements.found.fmt", 0));
+
+		panel.add(jPrevButtonDrugs);
+		panel.add(jPageComboBoxDrugs);
+		panel.add(jPageLabelDrugs);
+		panel.add(jNextButtonDrugs);
+		panel.add(jElementsLabelDrugs);
+		return panel;
+	}
+
+	private void updatePaginationControls(
+			JButton prevBtn, JButton nextBtn,
+			JComboBox<Integer> comboBox,
+			JLabel pageLabel, JLabel elementsLabel,
+			int currentPage, int totalPages, long totalElements) {
+
+		if (prevBtn == null || nextBtn == null || comboBox == null
+				|| pageLabel == null || elementsLabel == null) return;
+
+		ActionListener[] listeners = comboBox.getActionListeners();
+		for (ActionListener l : listeners) comboBox.removeActionListener(l);
+
+		comboBox.removeAllItems();
+		if (totalPages > 1) {
+			for (int i = 1; i <= totalPages; i++) comboBox.addItem(i);
+			comboBox.setSelectedItem(currentPage + 1);
+			comboBox.setEnabled(true);
+		} else if (totalPages == 1) {
+			comboBox.addItem(1);
+			comboBox.setSelectedItem(1);
+			comboBox.setEnabled(false);
+		} else {
+			comboBox.addItem(0);
+			comboBox.setEnabled(false);
+		}
+
+		pageLabel.setText(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.pages.fmt", totalPages));
+		elementsLabel.setText(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.elements.found.fmt", totalElements));
+
+		for (ActionListener l : listeners) comboBox.addActionListener(l);
+
+		prevBtn.setEnabled(currentPage > 0);
+		nextBtn.setEnabled(totalPages > 1 && currentPage < totalPages - 1);
+	}
+
+	private void loadPageOutcomes(int page) {
+		if (wardSelected == null) return;
+		try {
+			String medicalTypeCode = null;
+			if (jComboBoxTypes.getSelectedItem() instanceof MedicalType) {
+				medicalTypeCode = ((MedicalType) jComboBoxTypes.getSelectedItem()).getCode();
+			}
+			Integer medicalCode = null;
+			if (jComboBoxMedicals.getSelectedItem() instanceof Medical) {
+				medicalCode = ((Medical) jComboBoxMedicals.getSelectedItem()).getCode();
+			}
+			char sexChar = radioa.isSelected() ? 'A' : radiom.isSelected() ? 'M' : 'F';
+			String sex = String.valueOf(sexChar);
+			int ageFromVal = Integer.parseInt(jAgeFromTextField.getText());
+			int ageToVal = Integer.parseInt(jAgeToTextField.getText());
+			float weightFromVal = Float.parseFloat(jWeightFromTextField.getText());
+			float weightToVal = Float.parseFloat(jWeightToTextField.getText());
+
+			org.springframework.data.domain.Page<MovementWard> result =
+					movWardBrowserManager.getMovementWardWithFilter(
+							wardSelected.getCode(),
+							dateFrom, dateTo,
+							medicalTypeCode, medicalCode,
+							sex,
+							ageFromVal, ageToVal,
+							weightFromVal, weightToVal,
+							page, PAGE_SIZE);
+
+			wardOutcomes = new ArrayList<>(result.getContent());
+			currentPageOutcomes = result.getNumber();
+			totalPagesOutcomes = result.getTotalPages();
+			totalElementsOutcomes = result.getTotalElements();
+
+			jTableOutcomes.setModel(new OutcomesModel(wardOutcomes));
+			jTableOutcomes.updateUI();
+			updatePaginationControls(
+					jPrevButtonOutcomes, jNextButtonOutcomes,
+					jPageComboBoxOutcomes, jPageLabelOutcomes,
+					jElementsLabelOutcomes,
+					currentPageOutcomes, totalPagesOutcomes, totalElementsOutcomes);
+			rowCounter.setText(rowCounterText + totalElementsOutcomes);
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private void loadPageIncomings(int page) {
+		if (wardSelected == null) return;
+		try {
+			List<Movement> allIncomes = new ArrayList<>();
+
+			List<Movement> centralMovements = movBrowserManager.getMovements(
+					wardSelected.getCode(), dateFrom, dateTo);
+			for (Movement mov : centralMovements) {
+				if (mov.getWard() != null && mov.getWard().equals(wardSelected)) {
+					allIncomes.add(mov);
+				}
+			}
+
+			List<MovementWard> wardMovementsTo = movWardBrowserManager.getWardMovementsToWard(
+					wardSelected.getCode(), dateFrom, dateTo);
+			for (MovementWard wMvnt : wardMovementsTo) {
+				if (wMvnt.getWardTo() != null && wMvnt.getWardTo().equals(wardSelected)) {
+					MovementType typeCharge = new MovementType(
+							"fromward", wMvnt.getWard().getDescription(), "*", "*");
+					allIncomes.add(new Movement(
+							wMvnt.getMedical(), typeCharge, wardSelected,
+							wMvnt.getLot(), wMvnt.getDate(),
+							wMvnt.getQuantity().intValue(), null, null));
+				}
+			}
+
+			int total = allIncomes.size();
+			int fromIndex = page * PAGE_SIZE;
+			int toIndex = Math.min(fromIndex + PAGE_SIZE, total);
+			List<Movement> pageContent = fromIndex >= total
+					? new ArrayList<>()
+					: allIncomes.subList(fromIndex, toIndex);
+
+			wardIncomes = pageContent;
+			currentPageIncomings = page;
+			totalPagesIncomings = (int) Math.ceil((double) total / PAGE_SIZE);
+			totalElementsIncomings = total;
+
+			jTableIncomes.setModel(new IncomesModel(wardIncomes));
+			jTableIncomes.updateUI();
+			updatePaginationControls(
+					jPrevButtonIncomings, jNextButtonIncomings,
+					jPageComboBoxIncomings, jPageLabelIncomings,
+					jElementsLabelIncomings,
+					currentPageIncomings, totalPagesIncomings, totalElementsIncomings);
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private void loadPageDrugs(int page) {
+		if (wardSelected == null) return;
+		try {
+			org.springframework.data.domain.Page<MedicalWard> result =
+					movWardBrowserManager.getMedicalsWardTotalQuantity(
+							wardSelected.getCode(), page, PAGE_SIZE);
+
+			List<MedicalWard> drugsPage = new ArrayList<>(result.getContent());
+			wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
+			currentPageDrugs = result.getNumber();
+			totalPagesDrugs = result.getTotalPages();
+			totalElementsDrugs = result.getTotalElements();
+
+			jTableDrugs.setModel(new DrugsModel(drugsPage));
+			jTableDrugs.updateUI();
+			updatePaginationControls(
+					jPrevButtonDrugs, jNextButtonDrugs,
+					jPageComboBoxDrugs, jPageLabelDrugs,
+					jElementsLabelDrugs,
+					currentPageDrugs, totalPagesDrugs, totalElementsDrugs);
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
 	}
 
 	private JScrollPane getJScrollPaneOutcomes() {
@@ -1155,11 +1489,14 @@ public class WardPharmacy extends ModalJFrame implements
 						validate();
 						setLocationRelativeTo(null);
 						added = true;
+						loadPageOutcomes(0);
+						loadPageIncomings(0);
+						loadPageDrugs(0);
 					} else {
 						if (wardSelected != null) {
-							jTableIncomes.setModel(new IncomesModel());
-							jTableOutcomes.setModel(new OutcomesModel());
-							jTableDrugs.setModel(new DrugsModel());
+							loadPageOutcomes(0);
+							loadPageIncomings(0);
+							loadPageDrugs(0);
 						} else {
 							remove(jTabbedPaneWard);
 							jButtonNew.setVisible(false);
@@ -1188,54 +1525,27 @@ public class WardPharmacy extends ModalJFrame implements
 	class IncomesModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
+		private List<Movement> data;
 
 		public IncomesModel() {
-			wardIncomes = new ArrayList<>();
-			try {
-				listMovementCentral = movBrowserManager.getMovements(wardSelected.getCode(), dateFrom, dateTo);
+			this.data = new ArrayList<>();
+		}
 
-				for (Movement mov : listMovementCentral) {
-					if (mov.getWard().getDescription() != null) {
-						if (mov.getWard().equals(wardSelected)) {
-							wardIncomes.add(mov);
-						}
-					}
-				}
-
-				// List movements from other wards
-				for (MovementWard wMvnt : movWardBrowserManager.getWardMovementsToWard(wardSelected.getCode(), dateFrom, dateTo)) {
-					if (wMvnt.getWardTo().getDescription() != null) {
-						if (wMvnt.getWardTo().equals(wardSelected)) {
-							MovementType typeCharge = new MovementType("fromward", wMvnt.getWard().getDescription(), "*", "*");
-							wardIncomes.add(new Movement(
-											wMvnt.getMedical(),
-											typeCharge,
-											wardSelected,
-											wMvnt.getLot(),
-											wMvnt.getDate(),
-											wMvnt.getQuantity().intValue(),
-											null,
-											null));
-						}
-					}
-				}
-			} catch (OHServiceException ohServiceException) {
-				OHServiceExceptionUtil.showMessages(ohServiceException);
-				LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-			}
+		public IncomesModel(List<Movement> data) {
+			this.data = data != null ? data : new ArrayList<>();
 		}
 
 		@Override
 		public int getRowCount() {
-			if (wardIncomes == null) {
+			if (data == null) {
 				return 0;
 			}
-			return wardIncomes.size();
+			return data.size();
 		}
 
 		@Override
 		public Object getValueAt(int r, int c) {
-			Movement mov = wardIncomes.get(r);
+			Movement mov = data.get(r);
 			int pieces = mov.getQuantity();
 			int pcsPerPck = mov.getMedical().getPcsperpck();
 			if (c == -1) {
@@ -1293,100 +1603,27 @@ public class WardPharmacy extends ModalJFrame implements
 	class OutcomesModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
+		private List<MovementWard> data;
 
 		public OutcomesModel() {
-			wardOutcomes = new ArrayList<>();
-			try {
-				listMovementWardFromTo = movWardBrowserManager.getMovementWard(wardSelected.getCode(), dateFrom, dateTo);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-				listMovementWardFromTo = new ArrayList<>();
-			}
+			this.data = new ArrayList<>();
+		}
 
-			Medical medicalSelected;
-			if (jComboBoxMedicals.getSelectedItem() instanceof String) {
-				medicalSelected = null;
-			} else {
-				medicalSelected = (Medical) jComboBoxMedicals.getSelectedItem();
-			}
-
-			MedicalType medicalTypeSelected;
-			if (jComboBoxTypes.getSelectedItem() instanceof String) {
-				medicalTypeSelected = null;
-			} else {
-				medicalTypeSelected = (MedicalType) jComboBoxTypes.getSelectedItem();
-			}
-
-			char sex;
-			if (radioa.isSelected()) {
-				sex = 'A';
-			} else if (radiom.isSelected()) {
-				sex = 'M';
-			} else {
-				sex = 'F';
-			}
-
-			int ageFrom = Integer.parseInt(jAgeFromTextField.getText());
-			int ageTo = Integer.parseInt(jAgeToTextField.getText());
-
-			float weightFrom = Float.parseFloat(jWeightFromTextField.getText());
-			float weightTo = Float.parseFloat(jWeightToTextField.getText());
-
-			for (MovementWard mov : listMovementWardFromTo) {
-				boolean ok = true;
-				Patient patient = mov.getPatient();
-				Medical medical = mov.getMedical();
-				Lot lot = mov.getLot();
-				int age = mov.getAge();
-				float weight = mov.getWeight();
-				Ward wardFrom = mov.getWardFrom();
-
-				// Medical control
-				if (medicalSelected != null) {
-					ok = medical.equals(medicalSelected);
-				} else if (medicalTypeSelected != null) {
-					ok = medical.getType().equals(medicalTypeSelected);
-				}
-
-				// sex control if sex not 'A'
-				if (sex != 'A') {
-					ok = ok && patient.getSex() == sex;
-				}
-
-				// age control if ageTo > 0
-				if (ageTo != 0) {
-					ok = ok && age >= ageFrom && age <= ageTo;
-				}
-
-				// weight control if weightTo > 0
-				if (weightTo != 0) {
-					ok = ok && weight >= weightFrom && weight <= weightTo;
-				}
-
-				// filter out movements to this ward, already shown in 'Incomings' table
-				if (wardFrom != null) {
-					ok = false;
-				}
-
-				if (ok) {
-					wardOutcomes.add(mov);
-				}
-			}
-
-			Collections.reverse(wardOutcomes);
+		public OutcomesModel(List<MovementWard> data) {
+			this.data = data != null ? data : new ArrayList<>();
 		}
 
 		@Override
 		public int getRowCount() {
-			if (wardOutcomes == null) {
+			if (data == null) {
 				return 0;
 			}
-			return wardOutcomes.size();
+			return data.size();
 		}
 
 		@Override
 		public Object getValueAt(int r, int c) {
-			MovementWard mov = wardOutcomes.get(r);
+			MovementWard mov = data.get(r);
 			if (c == -1) {
 				return mov;
 			}
@@ -1459,14 +1696,11 @@ public class WardPharmacy extends ModalJFrame implements
 		private List<MedicalWard> tableModel;
 
 		public DrugsModel() {
-			try {
-				tableModel = movWardBrowserManager.getMedicalsWardTotalQuantity(wardSelected.getCode());
-				wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-				tableModel = new ArrayList<>();
-				wardDrugs = new ArrayList<>();
-			}
+			this.tableModel = new ArrayList<>();
+		}
+
+		public DrugsModel(List<MedicalWard> data) {
+			this.tableModel = data != null ? data : new ArrayList<>();
 		}
 
 		@Override
