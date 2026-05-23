@@ -2645,6 +2645,21 @@ public class PatientInsertExtended extends JDialog {
 		return jGeographicPositionPanel;
 	}
 
+	private JComboBox<String> getJGeographicPositionComboBox() {
+		if (jGeographicPositionComboBox == null) {
+			String[] positions = {"inconnu", "Dans l'air", "Hors de l'air", "Hors du district"};
+			jGeographicPositionComboBox = new JComboBox<>(positions);
+
+			if (!insert && patient.getGeographicPosition() != null) {
+				String value = patient.getGeographicPosition();
+				if ("dans_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Dans l'air");
+				else if ("hors_de_l_air".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors de l'air");
+				else if ("hors_du_district".equals(value)) jGeographicPositionComboBox.setSelectedItem("Hors du district");
+			}
+		}
+		return jGeographicPositionComboBox;
+	}
+
 	private JPanel getJParentsResidencePanel() {
 		if (jParentsResidencePanel == null) {
 			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
