@@ -85,6 +85,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.isf.utils.layout.SpringUtilities;
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
+import org.springframework.data.domain.Page;
 
 /**
  * Browsing of table BILLS
@@ -250,7 +251,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
 
-	private static final int PAGE_SIZE = 50;
+	private static final int PAGE_SIZE = 100;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JComboBox<Integer> pagesCombo;
@@ -282,26 +283,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		initComponents();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);
+		SwingUtilities.invokeLater(() -> loadCurrentPage());
 		setVisible(true);
-	}
-
-	private void initComponents() {
-		add(getJPanelRange(), BorderLayout.NORTH);
-		add(getJTabbedPaneBills(), BorderLayout.CENTER);
-		add(getJPanelSouth(), BorderLayout.SOUTH);
-		setTitle(MessageBundle.getMessage("angal.billbrowser.patientbillmanagment.title"));
-		setMinimumSize(new Dimension(1150, 600));
-		addWindowListener(new WindowAdapter() {
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-				// to free memory
-				billPeriod.clear();
-				users.clear();
-				dispose();
-			}
-		});
-		pack();
 	}
 
 	/**
@@ -378,108 +361,12 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			updatingPageCombo = false;
 		}
 
-		prevButton.setEnabled(currentPage > 0);
-		nextButton.setEnabled(currentPage < totalPages - 1);
+		boolean hasOnlyOnePage = totalPages <= 1;
+		prevButton.setEnabled(currentPage > 0 && !hasOnlyOnePage);
+		nextButton.setEnabled(currentPage < totalPages - 1 && !hasOnlyOnePage);
+		pagesCombo.setEnabled(!hasOnlyOnePage);
 		underLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 		rowCounter.setText(rowCounterText + totalRows);
-	}
-
-	/**
-	 * Load current page of bills
-	 */
-	private void loadCurrentPage() {
-		try {
-			PagedResponse<Bill> billPage;
-
-			if (patientParent != null) {
-				billPage = billBrowserManager.getBillsPageable(null, dateFrom, dateTo, patientParent, currentPage, PAGE_SIZE);
-			} else {
-				billPage = billBrowserManager.getBillsPageable(null, dateFrom, dateTo, null, currentPage, PAGE_SIZE);
-			}
-
-			List<Bill> bills = billPage.getData();
-			totalRows = billPage.getPageInfo().getTotalNbOfElements();
-			totalPages = billPage.getPageInfo().getTotalPages();
-
-			// Adjust current page if necessary
-			if (currentPage >= totalPages && currentPage > 0) {
-				currentPage = totalPages - 1;
-				loadCurrentPage();
-				return;
-			}
-
-			jTableBills.setModel(new BillTableModel(bills));
-			updatePaginationControls();
-
-			jTableBills.updateUI();
-		} catch (OHServiceException e) {
-			MessageDialog.showExceptions(e);
-		}
-	}
-
-	/**
-	 * Load current page of closed bills
-	 */
-	private void loadClosedBillsPage() {
-		try {
-			PagedResponse<Bill> billPage;
-
-			if (patientParent != null) {
-				billPage = billBrowserManager.getBillsPageable("C", dateFrom, dateTo, patientParent, closedCurrentPage, PAGE_SIZE);
-			} else {
-				billPage = billBrowserManager.getBillsPageable("C", dateFrom, dateTo, null, closedCurrentPage, PAGE_SIZE);
-			}
-
-			List<Bill> bills = billPage.getData();
-			closedTotalRows = billPage.getPageInfo().getTotalNbOfElements();
-			closedTotalPages = billPage.getPageInfo().getTotalPages();
-
-			// Adjust current page if necessary
-			if (closedCurrentPage >= closedTotalPages && closedCurrentPage > 0) {
-				closedCurrentPage = closedTotalPages - 1;
-				loadClosedBillsPage();
-				return;
-			}
-
-			jTableClosed.setModel(new BillTableModel(bills));
-			updateClosedPaginationControls();
-
-			jTableClosed.updateUI();
-		} catch (OHServiceException e) {
-			MessageDialog.showExceptions(e);
-		}
-	}
-	/**
-	 * Load current page of pending bills
-	 */
-	private void loadPendingBillsPage() {
-		try {
-			PagedResponse<Bill> billPage;
-
-			if (patientParent != null) {
-				billPage = billBrowserManager.getBillsPageable("O", dateFrom, dateTo, patientParent, pendingCurrentPage, PAGE_SIZE);
-			} else {
-				billPage = billBrowserManager.getBillsPageable("O", dateFrom, dateTo, null, pendingCurrentPage, PAGE_SIZE);
-			}
-
-			List<Bill> bills = billPage.getData();
-			pendingTotalRows = billPage.getPageInfo().getTotalNbOfElements();
-			pendingTotalPages = billPage.getPageInfo().getTotalPages();
-
-			// Adjust current page if necessary
-			if (pendingCurrentPage >= pendingTotalPages && pendingCurrentPage > 0) {
-				pendingCurrentPage = pendingTotalPages - 1;
-				loadPendingBillsPage();
-				return;
-			}
-
-			jTablePending.setModel(new BillTableModel(bills));
-			updatePendingPaginationControls();
-
-			jTablePending.updateUI();
-		} catch (OHServiceException e) {
-			MessageDialog.showExceptions(e);
-		}
 	}
 
 	/**
@@ -505,8 +392,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			updatingPageCombo = false;
 		}
 
-		closedPrevButton.setEnabled(closedCurrentPage > 0);
-		closedNextButton.setEnabled(closedCurrentPage < closedTotalPages - 1);
+		boolean hasOnlyOnePage = closedTotalPages <= 1;
+		closedPrevButton.setEnabled(closedCurrentPage > 0 && !hasOnlyOnePage);
+		closedNextButton.setEnabled(closedCurrentPage < closedTotalPages - 1 && !hasOnlyOnePage);
+		closedPagesCombo.setEnabled(!hasOnlyOnePage);
 		closedUnderLabel.setText("/ " + closedTotalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 		closedRowCounter.setText(rowCounterText + closedTotalRows);
 	}
@@ -534,8 +423,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			updatingPageCombo = false;
 		}
 
-		pendingPrevButton.setEnabled(pendingCurrentPage > 0);
-		pendingNextButton.setEnabled(pendingCurrentPage < pendingTotalPages - 1);
+		boolean hasOnlyOnePage = pendingTotalPages <= 1;
+		pendingPrevButton.setEnabled(pendingCurrentPage > 0 && !hasOnlyOnePage);
+		pendingNextButton.setEnabled(pendingCurrentPage < pendingTotalPages - 1 && !hasOnlyOnePage);
+		pendingPagesCombo.setEnabled(!hasOnlyOnePage);
 		pendingUnderLabel.setText("/ " + pendingTotalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 		pendingRowCounter.setText(rowCounterText + pendingTotalRows);
 	}
@@ -1220,55 +1111,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return panel;
 	}
 
-	/**
-	 * Pending Bills Pagination Panel
-	 */
-	private JPanel getPendingPaginationPanel() {
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
-		panel.setBorder(BorderFactory.createEtchedBorder());
-
-		pendingPrevButton = new JButton("<");
-		pendingPrevButton.addActionListener(e -> {
-			if (pendingCurrentPage > 0) {
-				pendingCurrentPage--;
-				loadPendingBillsPage();
-			}
-		});
-
-		pendingPagesCombo = new JComboBox<>();
-		pendingPagesCombo.setPreferredSize(new Dimension(70, 25));
-		pendingPagesCombo.addActionListener(e -> {
-			if (!updatingPageCombo && pendingPagesCombo.getSelectedItem() != null) {
-				int selected = (Integer) pendingPagesCombo.getSelectedItem();
-				if (selected - 1 != pendingCurrentPage) {
-					pendingCurrentPage = selected - 1;
-					loadPendingBillsPage();
-				}
-			}
-		});
-
-		pendingNextButton = new JButton(">");
-		pendingNextButton.addActionListener(e -> {
-			if (pendingCurrentPage < pendingTotalPages - 1) {
-				pendingCurrentPage++;
-				loadPendingBillsPage();
-			}
-		});
-
-		pendingUnderLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-		pendingUnderLabel.setPreferredSize(new Dimension(70, 25));
-
-		pendingRowCounter = new JLabel(rowCounterText + "0");
-
-		panel.add(pendingPrevButton);
-		panel.add(pendingPagesCombo);
-		panel.add(pendingUnderLabel);
-		panel.add(pendingNextButton);
-		panel.add(pendingRowCounter);
-
-		return panel;
-	}
-
 	public void patientSelected(Patient patient) throws OHServiceException {
 		patientParent = patient;
 		jAffiliatePersonJTextField.setText(patientParent != null ? patientParent.getName() : "");
@@ -1433,6 +1275,55 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jTableBills.addMouseListener(new MouseDoubleClickApapter());
 		}
 		return jTableBills;
+	}
+
+	/**
+	 * Pending Bills Pagination Panel
+	 */
+	private JPanel getPendingPaginationPanel() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
+		panel.setBorder(BorderFactory.createEtchedBorder());
+
+		pendingPrevButton = new JButton("<");
+		pendingPrevButton.addActionListener(e -> {
+			if (pendingCurrentPage > 0) {
+				pendingCurrentPage--;
+				loadPendingBillsPage();
+			}
+		});
+
+		pendingPagesCombo = new JComboBox<>();
+		pendingPagesCombo.setPreferredSize(new Dimension(70, 25));
+		pendingPagesCombo.addActionListener(e -> {
+			if (!updatingPageCombo && pendingPagesCombo.getSelectedItem() != null) {
+				int selected = (Integer) pendingPagesCombo.getSelectedItem();
+				if (selected - 1 != pendingCurrentPage) {
+					pendingCurrentPage = selected - 1;
+					loadPendingBillsPage();
+				}
+			}
+		});
+
+		pendingNextButton = new JButton(">");
+		pendingNextButton.addActionListener(e -> {
+			if (pendingCurrentPage < pendingTotalPages - 1) {
+				pendingCurrentPage++;
+				loadPendingBillsPage();
+			}
+		});
+
+		pendingUnderLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
+		pendingUnderLabel.setPreferredSize(new Dimension(70, 25));
+
+		pendingRowCounter = new JLabel(rowCounterText + "0");
+
+		panel.add(pendingPrevButton);
+		panel.add(pendingPagesCombo);
+		panel.add(pendingUnderLabel);
+		panel.add(pendingNextButton);
+		panel.add(pendingRowCounter);
+
+		return panel;
 	}
 
 	private JPanel getJContainPanel() {
@@ -1621,12 +1512,21 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	}
 
 	public void updateTables() {
-		if (jTabbedPaneBills != null && jTabbedPaneBills.getSelectedIndex() == 0) {
-			loadCurrentPage();
+		int selectedIndex = jTabbedPaneBills != null ? jTabbedPaneBills.getSelectedIndex() : 0;
+		switch (selectedIndex) {
+			case 0:
+				loadCurrentPage();
+				break;
+			case 1:
+				loadClosedBillsPage();
+				break;
+			case 2:
+				loadPendingBillsPage();
+				break;
+			default:
+				loadCurrentPage();
+				break;
 		}
-		jTableBills.updateUI();
-		jTablePending.updateUI();
-		jTableClosed.updateUI();
 	}
 
 	private void updateDataSet() {
@@ -1910,5 +1810,100 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				}
 			}
 		}
+	}
+
+	private User getSelectedGuarantor() {
+		if (jComboBoxGuarantor != null) {
+			return (User) jComboBoxGuarantor.getSelectedItem();
+		}
+		return null;
+	}
+
+	private void loadCurrentPage() {
+		try {
+			User guarantor = getSelectedGuarantor();
+			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
+					null, dateFrom, dateTo, patientParent, guarantor, currentPage, PAGE_SIZE);
+
+			List<Bill> bills = billPage.getContent();
+			totalRows = billPage.getTotalElements();
+			totalPages = billPage.getTotalPages();
+
+			if (currentPage >= totalPages && currentPage > 0) {
+				currentPage = totalPages - 1;
+				loadCurrentPage();
+				return;
+			}
+
+			jTableBills.setModel(new BillTableModel(bills));
+			updatePaginationControls();
+			jTableBills.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+
+	private void loadClosedBillsPage() {
+		try {
+			User guarantor = getSelectedGuarantor();
+			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
+					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, PAGE_SIZE);
+
+			List<Bill> bills = billPage.getContent();
+			closedTotalRows = billPage.getTotalElements();
+			closedTotalPages = billPage.getTotalPages();
+
+			if (closedCurrentPage >= closedTotalPages && closedCurrentPage > 0) {
+				closedCurrentPage = closedTotalPages - 1;
+				loadClosedBillsPage();
+				return;
+			}
+
+			jTableClosed.setModel(new BillTableModel(bills));
+			updateClosedPaginationControls();
+			jTableClosed.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+
+	private void loadPendingBillsPage() {
+		try {
+			User guarantor = getSelectedGuarantor();
+			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
+					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, PAGE_SIZE);
+
+			List<Bill> bills = billPage.getContent();
+			pendingTotalRows = billPage.getTotalElements();
+			pendingTotalPages = billPage.getTotalPages();
+
+			if (pendingCurrentPage >= pendingTotalPages && pendingCurrentPage > 0) {
+				pendingCurrentPage = pendingTotalPages - 1;
+				loadPendingBillsPage();
+				return;
+			}
+
+			jTablePending.setModel(new BillTableModel(bills));
+			updatePendingPaginationControls();
+			jTablePending.updateUI();
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+		}
+	}
+	private void initComponents() {
+		add(getJPanelRange(), BorderLayout.NORTH);
+		add(getJTabbedPaneBills(), BorderLayout.CENTER);
+		add(getJPanelSouth(), BorderLayout.SOUTH);
+		setTitle(MessageBundle.getMessage("angal.billbrowser.patientbillmanagment.title"));
+		setMinimumSize(new Dimension(1150, 600));
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				billPeriod.clear();
+				users.clear();
+				dispose();
+			}
+		});
+		pack();
 	}
 }
