@@ -31,7 +31,10 @@ import java.util.List;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.service.AccountingIoOperations;
+import org.isf.lab.manager.LabManager;
+import org.isf.operation.manager.OperationRowBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.therapy.manager.TherapyManager;
 import org.isf.utils.exception.OHServiceException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -43,6 +46,15 @@ class BillDataLoaderTest {
 	@Mock
 	private AccountingIoOperations accountingIoOperations;
 
+    @Mock
+    private TherapyManager therapyManager;
+
+    @Mock
+    private LabManager labManager;
+
+    @Mock
+    private OperationRowBrowserManager operationRowManager;
+
 	@Test
 	void shouldLoadPendingBillsFromManagerForParentPatient() throws OHServiceException {
 		// given:
@@ -52,7 +64,7 @@ class BillDataLoaderTest {
 						Collections.emptyList(),
 						Collections.emptyList(),
 						patientParent,
-						new BillBrowserManager(accountingIoOperations) {
+						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager) {
 
 							@Override
 							public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
@@ -81,7 +93,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "C"),
 										TestBill.notDeletedBillWithStatus(3, "O")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
@@ -101,7 +113,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("ALL", NO_USERNAME);
@@ -121,7 +133,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("C", NO_USERNAME);
@@ -129,5 +141,4 @@ class BillDataLoaderTest {
 		// then:
 		assertThat(result).hasSize(1);
 	}
-
 }
