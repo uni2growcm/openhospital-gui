@@ -31,6 +31,12 @@ import java.util.List;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.service.AccountingIoOperations;
+import org.isf.medicals.manager.MedicalBrowsingManager;
+import org.isf.medicalstock.manager.MovStockInsertingManager;
+import org.isf.medicalstockward.manager.MovWardBrowserManager;
+import org.isf.medicalstockward.service.MedicalStockWardIoOperations;
+import org.isf.patient.model.Patient;
+import org.isf.priceslist.manager.PriceListManager;
 import org.isf.lab.manager.LabManager;
 import org.isf.operation.manager.OperationRowBrowserManager;
 import org.isf.patient.model.Patient;
@@ -47,6 +53,16 @@ class BillDataLoaderTest {
 	private AccountingIoOperations accountingIoOperations;
 
     @Mock
+    private PriceListManager priceListManager;
+
+    @Mock
+    private MovWardBrowserManager mvtManager;
+
+    @Mock
+    private MedicalBrowsingManager medicalBrowsingManager;
+
+    @Mock
+    private MovStockInsertingManager movStockInsertingManager;
     private TherapyManager therapyManager;
 
     @Mock
@@ -64,7 +80,11 @@ class BillDataLoaderTest {
 						Collections.emptyList(),
 						Collections.emptyList(),
 						patientParent,
-						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager) {
+						new BillBrowserManager(
+							accountingIoOperations, mvtManager, priceListManager,
+							medicalBrowsingManager, movStockInsertingManager,
+							therapyManager, labManager, operationRowManager
+						) {
 
 							@Override
 							public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
@@ -93,7 +113,11 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "C"),
 										TestBill.notDeletedBillWithStatus(3, "O")),
 						null,
-						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
+						new BillBrowserManager(
+							accountingIoOperations, mvtManager, priceListManager,
+							medicalBrowsingManager, movStockInsertingManager,
+							therapyManager, labManager, operationRowManager
+						));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
@@ -113,7 +137,11 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
+						new BillBrowserManager(
+							accountingIoOperations, mvtManager, priceListManager,
+							medicalBrowsingManager, movStockInsertingManager,
+							therapyManager, labManager, operationRowManager
+						));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("ALL", NO_USERNAME);
@@ -133,7 +161,11 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations, therapyManager, labManager, operationRowManager));
+						new BillBrowserManager(
+							accountingIoOperations, mvtManager, priceListManager,
+							medicalBrowsingManager, movStockInsertingManager,
+							therapyManager, labManager, operationRowManager
+						));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("C", NO_USERNAME);
