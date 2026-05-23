@@ -14,89 +14,245 @@
 		<![CDATA[SELECT '1/PRENATAL VISITS' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC 
 
 UNION ALL
-(
-    SELECT 'Number of first prenatal visits' AS METRIC, '' AS DES, 
+
+SELECT 
+    'Number of first prenatal visits' AS METRIC,
+    '' AS DES, 
     COUNT(DISTINCT PRGV_PRG_ID) AS COUNT, 
-    (COUNT(DISTINCT PRGV_PRG_ID) / (SELECT COUNT(DISTINCT PAT) FROM (SELECT ADM_PAT_ID AS PAT FROM OH_ADMISSION WHERE ADM_PRG_DATE_DEL IS NOT NULL UNION ALL SELECT PRG_PAT_ID FROM OH_PREGNANCY) AS T) * 100) AS PERC
+    ROUND(
+        (
+            COUNT(DISTINCT PRGV_PRG_ID) * 100.0
+        ) / 
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC
+FROM OH_PREGNANCYVISIT
+JOIN OH_PREGNANCY
+    ON PRG_ID = PRGV_PRG_ID
+JOIN OH_PREGNANCYDELIVERY
+    ON PRG_ID = PRGDLV_PRG_ID 
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+AND PRGV_DATE <= PRGDLV_DATE
+
+UNION ALL
+
+SELECT 
+    'Number of second prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
     FROM OH_PREGNANCYVISIT
-    JOIN OH_PREGNANCY ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY ON PRG_ID = PRGDLV_PRG_ID 
-    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate} AND PRGV_DATE <= PRGDLV_DATE
-)
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID  
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 1 
+) AS C
 
 UNION ALL
-(
-    SELECT 'Number of second prenatal visits' AS METRIC, '' AS DES, COUNT(*) AS COUNT, 
-    (COUNT(*) / (SELECT COUNT(DISTINCT PAT) FROM (SELECT ADM_PAT_ID AS PAT FROM OH_ADMISSION WHERE ADM_PRG_DATE_DEL IS NOT NULL UNION ALL SELECT PRG_PAT_ID FROM OH_PREGNANCY) AS T) * 100) AS PERC 
-    FROM (
-        SELECT PRGV_PRG_ID
-        FROM OH_PREGNANCYVISIT
-    JOIN OH_PREGNANCY ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY ON PRG_ID = PRGDLV_PRG_ID  
-        WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate} AND PRGV_DATE <= PRGDLV_DATE
-        GROUP BY PRGV_PRG_ID 
-        HAVING COUNT(*) > 1 
-    ) AS C
-)
 
-UNION ALL
-(
-    SELECT 'Number of third prenatal visits' AS METRIC, '' AS DES, COUNT(*) AS COUNT, 
-    (COUNT(*) / (SELECT COUNT(DISTINCT PAT) FROM (SELECT ADM_PAT_ID AS PAT FROM OH_ADMISSION WHERE ADM_PRG_DATE_DEL IS NOT NULL UNION ALL SELECT PRG_PAT_ID FROM OH_PREGNANCY) AS T) * 100) AS PERC 
-    FROM (
-        SELECT PRGV_PRG_ID
-        FROM OH_PREGNANCYVISIT 
-    JOIN OH_PREGNANCY ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY ON PRG_ID = PRGDLV_PRG_ID 
-        WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate} AND PRGV_DATE <= PRGDLV_DATE
-        GROUP BY PRGV_PRG_ID 
-        HAVING COUNT(*) > 2 
-    ) AS C
-)
+SELECT 
+    'Number of third prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-UNION ALL
-(
-    SELECT 'Number of forth prenatal visits' AS METRIC, '' AS DES, COUNT(*) AS COUNT, 
-    (COUNT(*) / (SELECT COUNT(DISTINCT PAT) FROM (SELECT ADM_PAT_ID AS PAT FROM OH_ADMISSION WHERE ADM_PRG_DATE_DEL IS NOT NULL UNION ALL SELECT PRG_PAT_ID FROM OH_PREGNANCY) AS T) * 100) AS PERC 
-    FROM (
-        SELECT PRGV_PRG_ID
-        FROM OH_PREGNANCYVISIT 
-    JOIN OH_PREGNANCY ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY ON PRG_ID = PRGDLV_PRG_ID 
-        WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate} AND PRGV_DATE <= PRGDLV_DATE
-        GROUP BY PRGV_PRG_ID 
-        HAVING COUNT(*) > 3 
-    ) AS C
-)
+                UNION
 
-UNION ALL SELECT '' , '', '', ''
-UNION ALL SELECT '3/POSTNATAL VISITS', '', '', ''
-
-UNION ALL
-(
-    SELECT 'Postnatal visits ' AS METRIC, '' AS DES, COUNT(*) AS COUNT,  
-    (COUNT(*) / (SELECT COUNT(DISTINCT PAT) FROM (SELECT ADM_PAT_ID AS PAT FROM OH_ADMISSION WHERE ADM_PRG_DATE_DEL IS NOT NULL UNION ALL SELECT PRG_PAT_ID FROM OH_PREGNANCY) AS T) * 100) AS PERC
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
     FROM OH_PREGNANCYVISIT 
-    JOIN OH_PREGNANCY ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY ON PRG_ID = PRGDLV_PRG_ID 
-    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate} AND PRGV_DATE <= PRGDLV_DATE
-)
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID 
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 2 
+) AS C
 
-UNION ALL SELECT '' , '', '', ''
-UNION ALL SELECT '4/TOTAL', '', '', ''
+UNION ALL
+
+SELECT 
+    'Number of forth prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
+    FROM OH_PREGNANCYVISIT 
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID 
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 3 
+) AS C
+
+UNION ALL
+
+SELECT '2/DELIVERIES' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC
+
+UNION ALL
+
+SELECT  
+    DLT_DESC AS METRIC,
+    DRT_DESC AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC
+FROM OH_ADMISSION 
+JOIN OH_DELIVERYTYPE
+    ON ADM_PRG_DLT_ID_A = DLT_ID_A 
+JOIN OH_DELIVERYRESULTTYPE
+    ON ADM_PRG_DRT_ID_A = DRT_ID_A 
+JOIN OH_PATIENT
+    ON ADM_PAT_ID = PAT_ID 
+JOIN OH_PREGNANCY
+    ON PRG_PAT_ID = PAT_ID 
+JOIN OH_PREGNANCYDELIVERY
+    ON PRGDLV_PRG_ID = PRG_ID     
+WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
+GROUP BY DLT_ID_A, DRT_DESC, DLT_DESC
+
+UNION ALL
+
+SELECT '', '', '', ''
+
+UNION ALL
+
+SELECT '3/POSTNATAL VISITS', '', '', ''
+
+UNION ALL
+
+SELECT 
+    'Postnatal visits ' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,  
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC
+FROM OH_PREGNANCYVISIT 
+JOIN OH_PREGNANCY
+    ON PRG_ID = PRGV_PRG_ID
+JOIN OH_PREGNANCYDELIVERY
+    ON PRG_ID = PRGDLV_PRG_ID 
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+AND PRGV_DATE <= PRGDLV_DATE
+
+UNION ALL
+
+SELECT '', '', '', ''
+
+UNION ALL
+
+SELECT '4/TOTAL', '', '', ''
 
 UNION ALL 
-(
-    SELECT 'Number of deliveries' AS METRIC, '' AS DES, COUNT(*) AS COUNT, '' AS PERC
-    FROM OH_PREGNANCYDELIVERY 
-    WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
-)
+
+SELECT 
+    'Number of deliveries' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC
+FROM OH_PREGNANCYDELIVERY 
+WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
+
 UNION ALL
-(
-    SELECT 'Total number of pregnancy visits' AS METRIC, '' AS DES, COUNT(*) AS COUNT, '' AS PERC 
-    FROM OH_PREGNANCYVISIT
-    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-);]]>
+
+SELECT 
+    'Total number of pregnancy visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC 
+FROM OH_PREGNANCYVISIT
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 	</queryString>
 	<field name="METRIC" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="METRIC"/>
@@ -118,31 +274,31 @@ UNION ALL
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="76" splitType="Stretch">
+		<band height="92" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="73" y="60" width="73" height="14" uuid="55e5b9ae-2077-4963-b741-1d4075baa87e"/>
+				<reportElement key="textField-11" x="140" y="78" width="73" height="14" uuid="55e5b9ae-2077-4963-b741-1d4075baa87e"/>
 				<box leftPadding="1">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-12" x="0" y="60" width="73" height="14" uuid="3a719cc4-9861-44c8-9f41-599411e8d6fd"/>
-				<box leftPadding="1">
+				<reportElement key="textField-12" x="40" y="78" width="73" height="14" uuid="3a719cc4-9861-44c8-9f41-599411e8d6fd"/>
+				<box padding="0">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
@@ -153,6 +309,16 @@ UNION ALL
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pregnancyCareStat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="-2" y="74" width="42" height="18" uuid="67e03470-f387-4dea-b5e4-eefd9a474b3b"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
+				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="113" y="74" width="27" height="18" uuid="9875e15a-831f-4266-bddc-c522a06389eb"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
