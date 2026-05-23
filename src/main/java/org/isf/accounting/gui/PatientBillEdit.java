@@ -548,6 +548,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private JComboBox<User> jComboBoxGuarantor;
 	private JLabel jLabelGuarantor;
 	private JLabel jLabelWardDescription;
+	private JButton jButtonAddPrescription;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -727,38 +728,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         insert = inserting;
         if (insert) {
             thisBill = new Bill();
-
-            thisBill.setDate(today);
+			thisBill.setDate(today);
             thisBill.setPriceList(lstArray.get(0));
         } else {
             try {
                 thisBill = (Bill) bill.clone();
-                selectedPatient = thisBill.getBillPatient();
-
-                jCalendarDate = new GoodDateTimeToggleChooser(thisBill.getDate(), false);
-                jCalendarDate.setDateTime(thisBill.getDate());
-                today = thisBill.getDate();
-
-                thisBill.setDate(bill.getDate());
-                thisBill.setAdmission(bill.getAdmission());
-                thisBill.setBillPatient(bill.getBillPatient());
-                thisBill.setPriceList(bill.getPriceList());
-				
-				if (bill.getGuarantor() != null) {
-					thisBill.setGuarantor(bill.getGuarantor());
-				}
-
-                try {
-                    billItems = billBrowserManager.getItems(thisBill.getId());
-                    payItems = billBrowserManager.getPayments(thisBill.getId());
-                    applyReductionToBillItems();
-                } catch (OHServiceException e) {
-                    OHServiceExceptionUtil.showMessages(e, this);
+                if (thisBill.getBillPatient() != null && thisBill.getBillPatient().getCode() != 0) {
+                    updatePrescriptionButtonVisibility();
                 }
-                originalBillItems = billItems;
-                billItemsSaved = billItems.size();
-                payItemsSaved = payItems.size();
-
             } catch (CloneNotSupportedException cnse) {
                 LOGGER.debug("CloneNotSupportedException", cnse);
             }
@@ -1694,6 +1671,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 }
             }
         }
+        updatePrescriptionButtonVisibility();
 	}
 
 	private JPanel getJPanelTop() {
@@ -1901,6 +1879,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		if (jPanelButtonsBill == null) {
 			jPanelButtonsBill = new JPanel();
 			jPanelButtonsBill.setLayout(new BoxLayout(jPanelButtonsBill, BoxLayout.Y_AXIS));
+			jPanelButtonsBill.add(getJButtonAddPrescription());
 			jPanelButtonsBill.add(getJButtonAddMedical());
 			jPanelButtonsBill.add(getJButtonAddOperation());
 			jPanelButtonsBill.add(getJButtonAddExam());
@@ -3065,6 +3044,103 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			MessageDialog.error(null, "angal.newbill.youcannotdeletealreadysaveditems.msg");
 		}
 	}
+
+	private JButton getJButtonAddPrescription() {
+        if (jButtonAddPrescription == null) {
+            jButtonAddPrescription = new JButton(MessageBundle.getMessage("angal.newbill.prescription.btn"));
+            jButtonAddPrescription.setMaximumSize(BUTTON_ITEM_SIZE);
+            jButtonAddPrescription.setHorizontalAlignment(SwingConstants.LEFT);
+            jButtonAddPrescription.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+            jButtonAddPrescription.addActionListener(actionEvent -> {
+
+                if (thisBill.getBillPatient() == null || thisBill.getBillPatient().getCode() == 0) {
+                    MessageDialog.error(this, "angal.patvac.pleaseselectapatient.msg");
+                    return;
+                }
+
+                try {
+                    if (!billBrowserManager.hasPrescription(thisBill.getBillPatient().getCode())) {
+                        MessageDialog.info(this, "angal.newbill.noprescriptionforthispatient.msg");
+                        return;
+                    }
+                } catch (OHServiceException e) {
+                    MessageDialog.showExceptions(e);
+                    return;
+                }
+
+                try {
+                    SelectPrescriptions selectPrescriptions = new SelectPrescriptions(this, thisBill.getBillPatient());
+                    selectPrescriptions.addPrescriptionSelectedListener(prescriptions -> {
+						List<String> alreadyPaidItems = new ArrayList<>();
+                        for (BillItems item : prescriptions) {
+							boolean alreadyPaid = false;
+							try {
+								alreadyPaid = billBrowserManager.isPrescriptionAlreadyBilledAndPaid(
+										thisBill.getBillPatient().getCode(),
+										item.getPrescriptionId(),
+										item.getItemGroup()
+								);
+							} catch (OHServiceException ex) {
+							}
+
+							if (alreadyPaid) {
+								alreadyPaidItems.add(item.getItemDescription());
+								continue;
+							}
+
+							boolean itemExists = billItems.stream().anyMatch(bi ->
+									bi.getPrescriptionId() != null
+											&& bi.getPrescriptionId().equals(item.getPrescriptionId())
+											&& bi.getItemGroup() != null
+											&& bi.getItemGroup().equals(item.getItemGroup())
+							);
+
+							if (!itemExists) {
+								billItems.add(item);
+								modified = true;
+							} else {
+								MessageDialog.warning(PatientBillEdit.this,
+										MessageBundle.formatMessage("angal.newbill.prescriptionalreadyadded.fmt.msg",
+												item.getItemDescription()));
+							}
+                        }
+
+						if (!alreadyPaidItems.isEmpty()) {
+							MessageDialog.warning(PatientBillEdit.this,
+									MessageBundle.formatMessage(
+											"angal.newbill.prescriptionsalreadypaid.fmt.msg",
+											String.join(", ", alreadyPaidItems)));
+						}
+
+						updatePrescriptionButtonVisibility();
+                        updateTotals();
+                        updateGUI();
+                    });
+                    selectPrescriptions.setVisible(true);
+                } catch (Exception ex) {
+                    MessageDialog.error(this, MessageBundle.getMessage("angal.common.error.msg"));
+                    LOGGER.error("Error creating SelectPrescriptions", ex);
+                }
+            });
+            jButtonAddPrescription.setVisible(false);
+        }
+        return jButtonAddPrescription;
+    }
+
+    private void updatePrescriptionButtonVisibility() {
+        if (jButtonAddPrescription != null) {
+            if (thisBill.getBillPatient() != null && thisBill.getBillPatient().getCode() != 0) {
+                try {
+                    boolean hasPrescriptions = billBrowserManager.hasPrescription(thisBill.getBillPatient().getCode());
+                    jButtonAddPrescription.setVisible(hasPrescriptions);
+                } catch (OHServiceException e) {
+                    jButtonAddPrescription.setVisible(false);
+                }
+            } else {
+                jButtonAddPrescription.setVisible(false);
+            }
+        }
+    }
 
     private BillItems addOtherPrice(Price oth, int qty) {
         Icon icon;
