@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright � 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -48,20 +48,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -78,6 +65,7 @@ import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
+import org.isf.menu.model.User;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportBill;
@@ -85,6 +73,7 @@ import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
 import org.isf.stat.gui.report.GenericReportUserInDate;
 import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.JMonthChooser;
 import org.isf.utils.jobjects.JYearChooser;
@@ -94,7 +83,6 @@ import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.SpringLayout;
 import org.isf.utils.layout.SpringUtilities;
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -112,14 +100,23 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	@Override
 	public void billInserted(AWTEvent event) {
-		if (patientParent != null) {
-			try {
-				updateDataSet(dateFrom, dateTo, patientParent);
-			} catch (OHServiceException ohServiceException) {
-				LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+		User selectedGuarantor = (User) getJComboBoxGuarantor().getSelectedItem();
+		try {
+			if (patientParent != null) {
+				if (selectedGuarantor == null) {
+					updateDataSet(dateFrom, dateTo, patientParent);
+				} else {
+					updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+				}
+			} else {
+				if (selectedGuarantor == null) {
+					updateDataSet(dateFrom, dateTo);
+				} else {
+					updateDataSetByGuarantor(dateFrom, dateTo, null, selectedGuarantor);
+				}
 			}
-		} else {
-			updateDataSet(dateFrom, dateTo);
+		} catch (OHServiceException ohServiceException) {
+			LOGGER.error(ohServiceException.getMessage(), ohServiceException);
 		}
 		updateTables();
 		updateTotals();
@@ -177,8 +174,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private LocalDateTime dateTo = TimeTools.getNow();
 	private LocalDateTime dateToday0 = TimeTools.getDateToday0();
 	private LocalDateTime dateToday24 = TimeTools.getDateToday24();
-
+	private JLabel jLabelGuarantor;
 	private JButton jButtonToday;
+	private JComboBox<User> jComboBoxGuarantor;
 	// Closed Bills pagination components
 	private JButton closedPrevButton;
 	private JButton closedNextButton;
@@ -209,7 +207,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int[] columnsWidth = { 50, 50, 150, 50, 50, 100, 150, 50, 100, 50 };
 	private int[] maxWidth = { 70, 150, 150, 150, 200, 100, 150, 50, 100, 50 };
 	private boolean[] columnsResizable = { false, false, false, false, true, false, false, false, false, false };
-	private Class< ? >[] columnsClasses = { String.class, Integer.class, String.class, String.class, String.class, Double.class, String.class, String.class,
+	private Class<?>[] columnsClasses = { String.class, Integer.class, String.class, String.class, String.class, Double.class, String.class, String.class,
 			Double.class, ImageIcon.class };
 	private boolean[] alignStringCenter = { false, true, true, true, false, false, true, true, false, false };
 	private boolean[] alingStringBoldCenter = { false, true, false, false, false, false, false, false, false, false };
@@ -260,6 +258,12 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private boolean updatingPageCombo;
 	private JLabel rowCounter;
 	private String rowCounterText = MessageBundle.getMessage("angal.common.count.label") + ' ';
+
+	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+
+	public boolean hasBillGuarantor() {
+		return GeneralData.ALLOWBILLGUARANTOR;
+	}
 
 	public BillBrowser() {
 		try {
@@ -957,6 +961,17 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		billFromPayments = billBrowserManager.getBills(paymentsPeriod);
 	}
 
+	private void updateDataSetByGuarantor(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient, User guarantor) throws OHServiceException {
+		if (patient != null) {
+			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, patient, guarantor);
+			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, patient, guarantor);
+		} else {
+			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
+			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
+		}
+		billFromPayments = billBrowserManager.getBillsByGuarantor(paymentsPeriod, guarantor);
+	}
+
 	private JButton getJButtonNew() {
 		if (jButtonNew == null) {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.billbrowser.newbill.btn"));
@@ -1046,6 +1061,13 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jPanelRange;
 	}
 
+	private JLabel getJLabelGuarantor() {
+		if (jLabelGuarantor == null) {
+			jLabelGuarantor = new JLabel(MessageBundle.getMessage("angal.newbill.selectguarantor.label"));
+		}
+		return jLabelGuarantor;
+	}
+
 	private JPanel getPanelSupRange() {
 		if (panelSupRange == null) {
 			panelSupRange = new JPanel();
@@ -1060,8 +1082,46 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			panelSupRange.add(getJComboMonths());
 			panelSupRange.add(getJComboYears());
 			panelSupRange.add(getPanelChoosePatient());
+			if (hasBillGuarantor()) {
+				panelSupRange.add(getJLabelGuarantor());
+				panelSupRange.add(getJComboBoxGuarantor());
+			}
 		}
 		return panelSupRange;
+	}
+
+	private JComboBox<User> getJComboBoxGuarantor() {
+		if (jComboBoxGuarantor == null) {
+			jComboBoxGuarantor = new JComboBox<>();
+			try {
+				jComboBoxGuarantor.addItem(null);
+				List<User> users = userBrowserManager.getUser();
+				for (User user : users) {
+					jComboBoxGuarantor.addItem(user);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
+			jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
+			jComboBoxGuarantor.addActionListener(actionEvent -> {
+				User selectedGuarantor = (User) jComboBoxGuarantor.getSelectedItem();
+				try {
+					if (selectedGuarantor != null) {
+						updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
+					} else if (patientParent == null) {
+						updateDataSet(dateFrom, dateTo);
+					} else {
+						updateDataSet(dateFrom, dateTo, patientParent);
+					}
+					updateTables();
+					updateTotals();
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+				}
+			});
+		}
+		return jComboBoxGuarantor;
 	}
 
 	private JPanel getPanelChoosePatient() {
@@ -1381,7 +1441,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		jContainPanel.add(getJPanelButtons(), BorderLayout.SOUTH);
 		jContainPanel.add(getJSelectionPanel(), BorderLayout.WEST);
 
-		// Center: table + pagination panel stacked vertically
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		centerPanel.add(new JScrollPane(getJTableBills()), BorderLayout.CENTER);
 		centerPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
@@ -1427,25 +1486,21 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		if (jTabbedPaneBills == null) {
 			jTabbedPaneBills = new JTabbedPane();
 
-			// Panel ALL BILLS with pagination
 			JPanel allPanel = new JPanel(new BorderLayout());
 			allPanel.add(getJScrollPaneBills(), BorderLayout.CENTER);
 			allPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.bills.title"), allPanel);
 
-			// Panel CLOSED BILLS with pagination
 			JPanel closedPanel = new JPanel(new BorderLayout());
 			closedPanel.add(getJScrollPaneClosed(), BorderLayout.CENTER);
 			closedPanel.add(getClosedPaginationPanel(), BorderLayout.SOUTH);
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.closed.title"), closedPanel);
 
-			// Panel PENDING BILLS with pagination
 			JPanel pendingPanel = new JPanel(new BorderLayout());
 			pendingPanel.add(getJScrollPanePending(), BorderLayout.CENTER);
 			pendingPanel.add(getPendingPaginationPanel(), BorderLayout.SOUTH);
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.pending.title"), pendingPanel);
 
-			// Change listener
 			jTabbedPaneBills.addChangeListener(e -> {
 				int selectedIndex = jTabbedPaneBills.getSelectedIndex();
 				if (selectedIndex == 0) {
@@ -1477,10 +1532,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 							new String[] { "", "", "", "", "", "" }) {
 
 						private static final long serialVersionUID = 1L;
-						Class< ? >[] types = new Class< ? >[] { JLabel.class, JLabel.class, Double.class, JLabel.class, JLabel.class, Double.class };
+						Class<?>[] types = new Class<?>[] { JLabel.class, JLabel.class, Double.class, JLabel.class, JLabel.class, Double.class };
 
 						@Override
-						public Class< ? > getColumnClass(int columnIndex) {
+						public Class<?> getColumnClass(int columnIndex) {
 							return types[columnIndex];
 						}
 
@@ -1513,10 +1568,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					new String[] { "", "", "", "", "", "" }) {
 
 				private static final long serialVersionUID = 1L;
-				Class< ? >[] types = new Class< ? >[] { JLabel.class, JLabel.class, Double.class, JLabel.class, JLabel.class, Double.class };
+				Class<?>[] types = new Class<?>[] { JLabel.class, JLabel.class, Double.class, JLabel.class, JLabel.class, Double.class };
 
 				@Override
-				public Class< ? > getColumnClass(int columnIndex) {
+				public Class<?> getColumnClass(int columnIndex) {
 					return types[columnIndex];
 				}
 
@@ -1547,10 +1602,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 							new String[] { "", "", "", "" }) {
 
 						private static final long serialVersionUID = 1L;
-						Class< ? >[] types = new Class< ? >[] { JLabel.class, Double.class, JLabel.class, Double.class };
+						Class<?>[] types = new Class<?>[] { JLabel.class, Double.class, JLabel.class, Double.class };
 
 						@Override
-						public Class< ? > getColumnClass(int columnIndex) {
+						public Class<?> getColumnClass(int columnIndex) {
 							return types[columnIndex];
 						}
 
@@ -1667,6 +1722,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			this.tableArray = bills;
 		}
 
+		/*
+		 * All Bills
+		 */
 		public BillTableModel(String status, String username) {
 			loadData(status, username);
 		}
@@ -1680,7 +1738,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		}
 
 		@Override
-		public Class< ? > getColumnClass(int columnIndex) {
+		public Class<?> getColumnClass(int columnIndex) {
 			return columnsClasses[columnIndex];
 		}
 
