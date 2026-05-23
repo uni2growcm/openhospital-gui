@@ -251,7 +251,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
 
-	private static final int PAGE_SIZE = 100;
+	private static final int PAGE_SIZE = 3;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JComboBox<Integer> pagesCombo;
