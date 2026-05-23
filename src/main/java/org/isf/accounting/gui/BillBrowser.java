@@ -79,11 +79,11 @@ import org.isf.utils.jobjects.JMonthChooser;
 import org.isf.utils.jobjects.JYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
-import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.isf.utils.layout.SpringUtilities;
+
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 import org.springframework.data.domain.Page;
 
@@ -258,7 +258,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JLabel underLabel;
 	private boolean updatingPageCombo;
 	private JLabel rowCounter;
-	private String rowCounterText = MessageBundle.getMessage("angal.common.count.label") + ' ';
+	private String rowCounterText = MessageBundle.getMessage("angal.accounting.count.label") + ' ';
 
 	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 
