@@ -21,7 +21,6 @@
  */
 package org.isf.accounting.gui;
 
-import static org.isf.accounting.gui.BillItemGroupBrowser.*;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
 import java.awt.AWTEvent;
@@ -639,7 +638,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     private JTextField descriptionTextField;
     private JTextField priceTextField;
     private JPanel searchPanel;
-    private JPanel labelPanel;
     private JLabel searchLabel;
     private JLabel quantityLabel;
     private JLabel amountLabel;
@@ -1021,12 +1019,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		return jPanelData;
 	}
 
-	private JPanel getJPanelPrice() {
+	private JPanel getJPanelWardAndGuarantor() {
 		if (jPanelPrice == null) {
 			jPanelPrice = new JPanel();
 			jPanelPrice.setLayout(new FlowLayout(FlowLayout.LEFT));
-			jPanelPrice.add(getJLabelPriceList());
-			jPanelPrice.add(getJComboBoxPriceList());
+            jPanelPrice.add(getJLabelWard());
+            jPanelPrice.add(getWardComboBox());
 			if (hasBillGuarantor()) {
 				jPanelPrice.add(getJLabelGuarantor());
 				jPanelPrice.add(getJComboBoxGuarantor());
@@ -1045,8 +1043,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jPanelPatient.add(getJButtonTrashPatient());
             jPanelPatient.add(getJLabelPriceList());
             jPanelPatient.add(getJComboBoxPriceList());
-			jPanelPatient.add(getJLabelWard());
-			jPanelPatient.add(getWardComboBox());
 		}
 		return jPanelPatient;
 	}
@@ -1709,7 +1705,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jPanelTop = new JPanel();
 			jPanelTop.setLayout(new BoxLayout(jPanelTop, BoxLayout.Y_AXIS));
 			jPanelTop.add(getJPanelDate(), BorderLayout.NORTH);
-			jPanelTop.add(getJPanelPrice(), BorderLayout.CENTER);
+			jPanelTop.add(getJPanelWardAndGuarantor(), BorderLayout.CENTER);
 			jPanelTop.add(panel, BorderLayout.SOUTH);
 		}
 		return jPanelTop;
@@ -2845,13 +2841,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         });
         wardComboBox.setSelectedItem(ward);
         return wardComboBox;
-    }
-
-    private JLabel getWardLabel() {
-        if (wardLabel == null) {
-            wardLabel = new JLabel(MessageBundle.getMessage("angal.patientbill.editt"));
-        }
-        return wardLabel;
     }
 
 	private JButton getJButtonAddCustom() {

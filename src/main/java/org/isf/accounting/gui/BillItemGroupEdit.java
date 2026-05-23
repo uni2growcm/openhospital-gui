@@ -150,7 +150,7 @@ public class BillItemGroupEdit extends JDialog {
             this.billItemGroup = new BillItemGroup();
         }
 
-        setTitle(insert ? MessageBundle.getMessage("angal.newgroupitem.title") : MessageBundle.getMessage("angal.editgroupitem.title"));
+        setTitle(insert ? MessageBundle.getMessage("angal.newgroupitem.title") : MessageBundle.getMessage("angal.newbill.editgroupitem.title"));
         initialize();
         loadData();
         updateTotals();
@@ -214,7 +214,7 @@ public class BillItemGroupEdit extends JDialog {
             searchPanel.add(createLabel(MessageBundle.getMessage("angal.billbrowser.find")), gbc);
 
             gbc.gridx = 1;
-            searchPanel.add(createLabel(MessageBundle.getMessage("angal.patient.itemgrouptable.description")), gbc);
+            searchPanel.add(createLabel(MessageBundle.getMessage("angal.newbill.itemgrouptable.description")), gbc);
 
             gbc.gridx = 2;
             searchPanel.add(createLabel(MessageBundle.getMessage("angal.newbill.qty")), gbc);
@@ -817,7 +817,7 @@ public class BillItemGroupEdit extends JDialog {
         private static final long serialVersionUID = 1L;
 
         private final String[] columns = {
-                MessageBundle.getMessage("angal.patient.itemgrouptable.description"),
+                MessageBundle.getMessage("angal.newbill.itemgrouptable.description"),
                 MessageBundle.getMessage("angal.newbill.qty"),
                 MessageBundle.getMessage("angal.newbill.amount")
         };

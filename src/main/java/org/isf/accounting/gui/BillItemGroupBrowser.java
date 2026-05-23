@@ -23,8 +23,7 @@ package org.isf.accounting.gui;
 
 import static org.isf.utils.jobjects.MessageDialog.warning;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -111,7 +110,7 @@ public class BillItemGroupBrowser extends JDialog {
 
 		JScrollPane scrollPane = new JScrollPane(table);
 
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		buttonPanel.add(getNewButton());
 		buttonPanel.add(getEditButton());
 		buttonPanel.add(getApplyButton());
@@ -133,9 +132,8 @@ public class BillItemGroupBrowser extends JDialog {
 		if (newButton == null) {
 			newButton = new JButton(MessageBundle.getMessage("angal.newbill.additemgroup.newgroup"));
 			newButton.setMnemonic(KeyEvent.VK_N);
-			newButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
 			newButton.addActionListener(e -> createNewGroup());
-
+            newButton.setPreferredSize(new Dimension(140,25));
 		}
 		return newButton;
 	}
@@ -147,8 +145,8 @@ public class BillItemGroupBrowser extends JDialog {
 		if (editButton == null) {
 			editButton = new JButton(MessageBundle.getMessage("angal.newbill.additemgroup.editgroup"));
 			editButton.setMnemonic(KeyEvent.VK_E);
-			editButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
 			editButton.addActionListener(e -> editSelectedGroup());
+            editButton.setPreferredSize(new Dimension(140,25));
 		}
 		return editButton;
 	}
@@ -160,8 +158,8 @@ public class BillItemGroupBrowser extends JDialog {
 		if (deleteButton == null) {
 			deleteButton = new JButton(MessageBundle.getMessage("angal.newbill.additemgroup.delete"));
 			deleteButton.setMnemonic(KeyEvent.VK_D);
-			deleteButton.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
 			deleteButton.addActionListener(e -> deleteSelectedGroup());
+            deleteButton.setPreferredSize(new Dimension(100,25));
 		}
 		return deleteButton;
 	}
@@ -173,9 +171,9 @@ public class BillItemGroupBrowser extends JDialog {
 		if (applyButton == null) {
 			applyButton = new JButton(MessageBundle.getMessage("angal.newbill.additemgroup.apply"));
 			applyButton.setMnemonic(KeyEvent.VK_A);
-			applyButton.setIcon(new ImageIcon("rsc/icons/apply_button.png"));
 			applyButton.addActionListener(e -> applySelectedGroup());
 			applyButton.setEnabled(enableGroupSelection);
+            applyButton.setPreferredSize(new Dimension(1,25));
 		}
 		return applyButton;
 	}
@@ -317,9 +315,9 @@ public class BillItemGroupBrowser extends JDialog {
         private final List<BillItemGroup> data;
 
         private final String[] columnNames = {
-                MessageBundle.getMessage("angal.patient.itemgrouptable.title"),
-                MessageBundle.getMessage("angal.patient.itemgrouptable.description"),
-                MessageBundle.getMessage("angal.patient.itemgrouptable.total")
+                MessageBundle.getMessage("angal.newbill.itemgrouptable.title"),
+                MessageBundle.getMessage("angal.newbill.itemgrouptable.description"),
+                MessageBundle.getMessage("angal.newbill.itemgrouptable.total")
         };
 
         public BillItemGroupTableModel(List<BillItemGroup> data) {
