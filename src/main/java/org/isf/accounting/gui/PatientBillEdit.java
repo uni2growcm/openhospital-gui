@@ -21,6 +21,7 @@
  */
 package org.isf.accounting.gui;
 
+import static org.isf.accounting.gui.BillItemGroupBrowser.*;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
 import java.awt.AWTEvent;
@@ -47,15 +48,7 @@ import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.swing.Box;
@@ -84,6 +77,7 @@ import javax.swing.table.TableModel;
 
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
+import org.isf.accounting.model.BillItemGroupItem;
 import org.isf.accounting.model.BillItems;
 import org.isf.accounting.model.BillPayments;
 import org.isf.admission.gui.AdmittedPatientBrowser;
@@ -133,7 +127,7 @@ import com.github.lgooddatepicker.zinternaltools.TimeChangeEvent;
  *
  * @author Mwithi
  */
-public class PatientBillEdit extends JDialog implements SelectionListener {
+public class PatientBillEdit extends JDialog implements SelectionListener, BillItemGroupListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PatientBillEdit.class);
 	private static final ImageIcon ADMISSION_ICON = new ImageIcon("rsc/icons/bed_icon.png");
@@ -243,6 +237,267 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		checkBill();
 	}
 
+    @Override
+    public void groupSelected(List<BillItemGroupItem> items) {
+
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        if (selectedPatient == null) {
+            JOptionPane.showMessageDialog(
+                    PatientBillEdit.this,
+                    MessageBundle.getMessage("angal.newbill.pleaseselectapatient")
+            );
+            return;
+        }
+
+        boolean stockMovementEnabled = GeneralData.STOCKMVTONBILLSAVE;
+
+        if (stockMovementEnabled) {
+
+            Object selectedWard = wardComboBox.getSelectedItem();
+
+            if (!(selectedWard instanceof Ward ward)
+                    || ward.getCode() == null
+                    || ward.getCode().trim().isEmpty()) {
+
+                JOptionPane.showMessageDialog(
+                        PatientBillEdit.this,
+                        MessageBundle.getMessage("angal.newbill.pleaseselectaward")
+                );
+
+                return;
+            }
+        }
+
+        List<BillItems> validBillItems = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (BillItemGroupItem groupItem : items) {
+
+            try {
+
+                Price price = getPrice(groupItem.getPriceId());
+
+                if (price == null) {
+                    errors.add(
+                            MessageBundle.getMessage("angal.newbill.pricenotfoundforitem")
+                                    + " : "
+                                    + groupItem.getDescription()
+                    );
+                    continue;
+                }
+
+                /*
+                 * =========================
+                 * APPLY REDUCTION PLAN
+                 * =========================
+                 */
+                price = applyReduction(price);
+
+                /*
+                 * =========================
+                 * MEDICAL STOCK VALIDATION
+                 * =========================
+                 */
+                if ("MED".equals(price.getGroup()) && stockMovementEnabled) {
+
+                    MedicalWard medicalWard = getMedicalWard(price);
+
+                    if (medicalWard == null) {
+                        errors.add(
+                                price.getDesc()
+                                        + " - "
+                                        + MessageBundle.getMessage("angal.newbill.stocknotavailableforitem")
+                        );
+                        continue;
+                    }
+
+                    if (!containPrice(price, groupItem.getQuantity())) {
+                        errors.add(
+                                price.getDesc()
+                                        + " - "
+                                        + MessageBundle.getMessage("angal.newbill.qtynotinstock")
+                        );
+                        continue;
+                    }
+                }
+
+                /*
+                 * =========================
+                 * CREATE BILL ITEM
+                 * =========================
+                 */
+                BillItems billItem = new BillItems(
+                        0,
+                        thisBill,
+                        true,
+                        price.getGroup() + price.getItem(),
+                        price.getDesc(),
+                        price.getPrice(),
+                        groupItem.getQuantity()
+                );
+
+                billItem.setPriceID(groupItem.getPriceId());
+                billItem.setItemId(price.getItem());
+
+                /*
+                 * =========================
+                 * DISPLAY CODE
+                 * =========================
+                 */
+                if ("MED".equals(price.getGroup())) {
+
+                    MedicalWard medicalWard = getMedicalWard(price);
+
+                    if (medicalWard != null) {
+                        billItem.setItemDisplayCode(
+                                medicalWard.getMedical().getProdCode()
+                        );
+                    }
+
+                } else if ("OTH".equals(price.getGroup())) {
+
+                    try {
+
+                        List<PricesOthers> others = pricesOthersManager.getOthers();
+
+                        final int itemId = Integer.parseInt(price.getItem());
+
+                        PricesOthers other = others.stream()
+                                .filter(o -> o.getId() == itemId)
+                                .findFirst()
+                                .orElse(null);
+
+                        if (other != null) {
+
+                            billItem.setItemDisplayCode(other.getCode());
+
+                            /*
+                             * Handle discharge items
+                             */
+                            if (other.isDischarge()) {
+                                billItem.setItemAmount(
+                                        -Math.abs(billItem.getItemAmount())
+                                );
+                            }
+
+                            /*
+                             * Undefined prices
+                             */
+                            if (other.isUndefined()) {
+
+                                Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
+
+                                String value = (String) JOptionPane.showInputDialog(
+                                        this,
+                                        MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+                                        MessageBundle.getMessage("angal.common.undefined.txt"),
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        icon,
+                                        null,
+                                        "0"
+                                );
+
+                                if (value == null || value.trim().isEmpty()) {
+                                    continue;
+                                }
+
+                                try {
+                                    billItem.setItemAmount(
+                                            Double.parseDouble(value)
+                                    );
+                                } catch (Exception ex) {
+
+                                    errors.add(
+                                            other.getDescription()
+                                                    + " - "
+                                                    + MessageBundle.getMessage(
+                                                    "angal.newbill.invalidpricepleasetryagain"
+                                            )
+                                    );
+
+                                    continue;
+                                }
+                            }
+                        }
+
+                    } catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+
+                    billItem.setItemDisplayCode(groupItem.getDescription());
+                }
+
+                validBillItems.add(billItem);
+
+            } catch (Exception e) {
+
+                errors.add(
+                        groupItem.getDescription()
+                            + " - "
+                            + e.getMessage()
+                );
+            }
+        }
+
+        /*
+         * =========================
+         * HANDLE ERRORS
+         * =========================
+         */
+        if (!errors.isEmpty()) {
+
+            if (validBillItems.isEmpty()) {
+                MessageDialog.info(this, "angal.newbill.allitemscontainerrors", String.join("\n", errors));
+                return;
+            }
+
+            int action = JOptionPane.showConfirmDialog(
+                    PatientBillEdit.this,
+                    MessageBundle.getMessage("angal.newbill.someitemscontainerrors")
+                            + "\n\n"
+                            + String.join("\n", errors)
+                            + "\n\n"
+                            + MessageBundle.getMessage("angal.common.confirmactiondialogmessage"),
+                    MessageBundle.getMessage("angal.newbill.confirm.msg"),
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (action != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        /*
+         * =========================
+         * ADD VALID ITEMS
+         * =========================
+         */
+        billItems.addAll(validBillItems);
+
+        modified = true;
+
+        updateTotals();
+        updateGUI();
+
+        if (!validBillItems.isEmpty()) {
+
+            selectedBillItem = validBillItems.get(validBillItems.size() - 1);
+
+            loadFields();
+
+            quantityTextField.setText(
+                    String.valueOf(selectedBillItem.getItemQuantity())
+            );
+        }
+
+        jTableBill.updateUI();
+    }
+
 	private static final long serialVersionUID = 1L;
 	private JTable jTableBill;
 	private JScrollPane jScrollPaneBill;
@@ -259,7 +514,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JTextField jTextFieldPatient;
 	private JComboBox<PriceList> jComboBoxPriceList;
 	private JPanel jPanelData;
-	private JPanel jPanelPrice;
 	private JTable jTableTotal;
 	private JScrollPane jScrollPaneTotal;
 	private JTable jTableBigTotal;
@@ -287,7 +541,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonCustom;
 	private JButton jButtonPickPatient;
 	private JButton jButtonTrashPatient;
-    private JLabel jLabelWardDescription;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -385,7 +638,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
     private JLabel descriptionLabel;
     private BillItems selectedBillItem = null;
     private List<BillItems> originalBillItems;
-    private JPanel searchDisplayPanel;
+
+    private JButton JButtonAddGroup;
+    private JButton jButtonRemoveAllItem;
 
 	/**
 	 * new bill from {@link MainMenu}
@@ -1594,7 +1849,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelButtonsBill.add(getJButtonAddExam());
 			jPanelButtonsBill.add(getJButtonAddOther());
 			jPanelButtonsBill.add(getJButtonAddCustom());
+            jPanelButtonsBill.add(getJButtonAddGroup());
 			jPanelButtonsBill.add(getJButtonRemoveItem());
+            jPanelButtonsBill.add(getJButtonRemoveAllItem());
 			Dimension size = new Dimension(BUTTON_WIDTH, BILL_HEIGHT + TOTAL_HEIGHT);
 			jPanelButtonsBill.setMinimumSize(size);
 			jPanelButtonsBill.setMaximumSize(size);
@@ -2356,6 +2613,25 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jButtonAddMedical;
 	}
 
+    private JButton getJButtonAddGroup() {
+        if (JButtonAddGroup == null) {
+            JButtonAddGroup = new JButton();
+            JButtonAddGroup.setText(MessageBundle.getMessage("angal.newbill.additemgroup.btn"));
+            JButtonAddGroup.setMnemonic(MessageBundle.getMnemonic("angal.newbill.additemgroup.btn.key"));
+            JButtonAddGroup.setMaximumSize(BUTTON_ITEM_SIZE);
+            JButtonAddGroup.setHorizontalAlignment(SwingConstants.LEFT);
+            JButtonAddGroup.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+
+            JButtonAddGroup.addActionListener(e -> {
+                BillItemGroupBrowser billItemGroupBrowser = new BillItemGroupBrowser(this, true);
+                billItemGroupBrowser.addListener(this);
+                billItemGroupBrowser.setVisible(true);
+            });
+        }
+
+        return JButtonAddGroup;
+    }
+
     private JComboBox<Object> getWardComboBox() {
         WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
         MovWardBrowserManager manager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
@@ -2507,7 +2783,39 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jButtonRemoveItem;
 	}
 
-	private void updateTotal() { // only positive items make the bill's total
+    private JButton getJButtonRemoveAllItem() {
+        if (jButtonRemoveAllItem == null) {
+            jButtonRemoveAllItem = new JButton(MessageBundle.getMessage("angal.newbill.removeallitem.btn"));
+            jButtonRemoveAllItem.setMnemonic(MessageBundle.getMnemonic("angal.newbill.removeallitem.btn.key"));
+            jButtonRemoveAllItem.setMaximumSize(BUTTON_ITEM_SIZE);
+            jButtonRemoveAllItem.setHorizontalAlignment(SwingConstants.LEFT);
+            jButtonRemoveAllItem.setIcon(new ImageIcon("rsc/icons/delete_button.png"));
+            jButtonRemoveAllItem.addActionListener(actionEvent -> {
+                if (billItems.isEmpty()) {
+                    return;
+                }
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        MessageBundle.getMessage("angal.newbill.removeallitems.msg"),
+                        MessageBundle.getMessage("angal.newbill.confirm.msg"),
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirm != JOptionPane.YES_OPTION) {
+                    return;
+                }
+
+                billItems.clear();
+                updateTotals();
+                updateGUI();
+            });
+        }
+
+        return jButtonRemoveAllItem;
+    }
+
+    private void updateTotal() { // only positive items make the bill's total
 		total = new BigDecimal(0);
 		for (BillItems item : billItems) {
 			double amount = item.getItemAmount();
@@ -2571,8 +2879,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
         if (prc != null) {
 			double amount = prc.getPrice();
 			try {
-				 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount,
-								qty);
+                item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
 				billItems.add(item);
                 modified = true;
                 updateTotals();
@@ -3211,4 +3518,46 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			return false;
 		}
 	}
+
+    public ArrayList<BillItems> convertToBillItems(java.util.List<BillItemGroupItem> groupItems, int billID) throws OHException {
+        ArrayList<BillItems> billItemsList = new ArrayList<>();
+        for (BillItemGroupItem groupItem : groupItems) {
+            Price price = getPrice(groupItem.getPriceId());
+
+            if (price == null) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.newbill.pricenotfoundforitem"), groupItem.getDescription());
+            }
+
+            BillItems billItem = new BillItems(
+                    0, thisBill, true, price.getGroup() + price.getItem(), price.getDesc(),
+                    groupItem.getAmount(), groupItem.getQuantity());
+
+            billItem.setItemId(price.getItem());
+            billItem.setItemDisplayCode(groupItem.getDescription());
+
+            if (pbiID != 0) {
+                try {
+                    if (price.getGroup().equals("MED")) {
+                        price = reductionPlanManager.getMedicalPrice(price, pbiID);
+                        billItem.setItemAmount(price.getPrice());
+                    } else if (price.getGroup().equals("EXA")) {
+                        price = reductionPlanManager.getExamPrice(price, pbiID);
+                        billItem.setItemAmount(price.getPrice());
+                    } else if (price.getGroup().equals("OPE")) {
+                        price = reductionPlanManager.getOperationPrice(price, pbiID);
+                        billItem.setItemAmount(price.getPrice());
+                    } else if (price.getGroup().equals("OTH")) {
+                        price = reductionPlanManager.getOtherPrice(price, pbiID);
+                        billItem.setItemAmount(price.getPrice());
+                    }
+                } catch (OHServiceException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            billItemsList.add(billItem);
+        }
+
+        return billItemsList;
+    }
 }
