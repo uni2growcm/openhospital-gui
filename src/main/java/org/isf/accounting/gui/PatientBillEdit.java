@@ -77,7 +77,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.isf.accounting.gui.BillItemGroupBrowser.BillItemGroupListener;
-import org.isf.accounting.gui.PatientBillEdit.BillTableModel.PaymentTableModel;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillItemGroupItem;
@@ -2894,8 +2893,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
 						return;
 					}
-
-						}
+				}
 
 				try {
 					BillItems newItem = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), false, "", //$NON-NLS-1$
@@ -3042,6 +3040,30 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		updateTotal();
 		updateBigTotal();
 		updateBalance();
+	}
+
+	private void addItem(BillItems item) {
+		if (item != null) {
+			billItems.add(item);
+			modified = true;
+			updateTotals();
+			updateGUI();
+		}
+	}
+
+	private void addPayment(LocalDateTime datePay, double qty) {
+		if (qty != 0) {
+			try {
+				BillPayments pay = new BillPayments(0, billBrowserManager.getBill(thisBill.getId()), datePay, qty, user);
+				payItems.add(pay);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+			}
+			modified = true;
+			Collections.sort(payItems);
+			updateBalance();
+			updateGUI();
+		}
 	}
 
 	private void removeItem(int row) {
@@ -3450,21 +3472,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		}
 	}
 
-	private void addPayment(LocalDateTime datePay, double qty) {
-		if (qty != 0) {
-			try {
-				BillPayments pay = new BillPayments(0, billBrowserManager.getBill(thisBill.getId()), datePay, qty, user);
-				payItems.add(pay);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e, this);
-			}
-			modified = true;
-			Collections.sort(payItems);
-			updateBalance();
-			updateGUI();
-		}
-	}
-
 	public class BillTableModel implements TableModel {
 		public BillTableModel() {
 		}
@@ -3573,7 +3580,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			}
 			return null;
 		}
-
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return true;
@@ -3597,12 +3603,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			super(new Object[][] { { "<html><b>" + MessageBundle.getMessage("angal.common.total.txt").toUpperCase() + "</b></html>", currencyCod, total } },
 					new String[] { "", "", "" });
 		}
-
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
 			return types[columnIndex];
 		}
-
 		@Override
 		public boolean isCellEditable(int row, int column) {
 			return false;
@@ -3635,17 +3639,24 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		}
 	}
 
+    private final class JTableBigTotalModel extends DefaultTableModel {
 
-	private final class JTableBigTotalModel extends DefaultTableModel {
+        private static final long serialVersionUID = 1L;
+        Class< ? >[] types = new Class< ? >[] { JLabel.class, JLabel.class, Double.class, };
 
-		private static final long serialVersionUID = 1L;
-		Class<?>[] types = new Class<?>[] { JLabel.class, JLabel.class, Double.class };
-
-		private JTableBigTotalModel() {
-			super(new Object[][] { { "<html><b>" + MessageBundle.getMessage("angal.newbill.topay.txt") + "</b></html>", currencyCod, bigTotal } },
-					new String[] { "", "", "" });
-		}
-	}
+        private JTableBigTotalModel() {
+            super(new Object[][] { { "<html><b>" + MessageBundle.getMessage("angal.newbill.topay.txt") + "</b></html>", currencyCod, bigTotal } },
+                    new String[] { "", "", "" });
+        }
+        @Override
+        public Class< ? > getColumnClass(int columnIndex) {
+            return types[columnIndex];
+        }
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
 			
     public ArrayList<BillItems> convertToBillItems(java.util.List<BillItemGroupItem> groupItems, int billID) throws OHException {
         ArrayList<BillItems> billItemsList = new ArrayList<>();
