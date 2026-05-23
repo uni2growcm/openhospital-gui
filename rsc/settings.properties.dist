@@ -21,6 +21,7 @@ SMSENABLED=no
 VIDEOMODULEENABLED=yes
 XMPPMODULEENABLED=no
 PARAMSURL=https://conf.open-hospital.org/oh-conf.json
+ALLOWBILLGUARANTOR=no
 
 # application settings
 ENHANCEDSEARCH=no
