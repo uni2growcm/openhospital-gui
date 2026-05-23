@@ -27,12 +27,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
@@ -48,6 +43,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -93,7 +90,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 	}
 
-//---------------------------------------------------------------------------	
+//---------------------------------------------------------------------------
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelButtons;
 	private JPanel jPanelTop;
@@ -107,6 +104,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JButton jSearchButton;
 	private JPanel jPanelDataPatient;
 	private Patient patient;
+    private boolean femalesOnly = false;
 
 	public Patient getPatient() {
 		return patient;
@@ -247,6 +245,49 @@ public class SelectPatient extends JDialog implements PatientListener {
         }
 	}
 
+    public SelectPatient(JDialog owner, String searchText, boolean femaleOnly) {
+        super(owner, true);
+
+        femalesOnly = femaleOnly;
+
+        if (!GeneralData.ENHANCEDSEARCH) {
+            try {
+                patArray = femalesOnly ?
+                    patientBrowserManager.getFemalePatientsByOneOfFieldsLike(null) :
+                    patientBrowserManager.getPatientsByOneOfFieldsLike(null);
+            } catch (OHServiceException ohServiceException) {
+                MessageDialog.showExceptions(ohServiceException);
+                patArray = new ArrayList<>();
+            }
+            patSearch = patArray;
+        }
+        ps = new PatientSummary(patient);
+        initComponents();
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                patArray.clear();
+                patSearch.clear();
+                dispose();
+            }
+        });
+        setLocationRelativeTo(null);
+        jTextFieldSearchPatient.setText(searchText);
+        if (GeneralData.ENHANCEDSEARCH) {
+            jSearchButton.doClick();
+        } else {
+            try {
+                patArray = !femalesOnly ?
+                        patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText()) :
+                        patientBrowserManager.getFemalePatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+            filterPatient();
+        }
+    }
+
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
 		if (!GeneralData.ENHANCEDSEARCH) {
@@ -315,11 +356,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(abbleAddPatient);
 	}
 
-	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
-		this(owner, keywords);
-		buttonNew.setVisible(enablePatientAdd);
-	}
-
     private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
@@ -370,7 +406,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 						if (Character.isLetterOrDigit(e.getKeyChar())) {
 							lastKey = s;
 						}
-						filterPatient();
+                        try {
+                            patArray = !femalesOnly ?
+                                    patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText()) :
+                                    patientBrowserManager.getFemalePatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
+                        } catch (OHServiceException ex) {
+                            OHServiceExceptionUtil.showMessages(ex);
+                        }
+                        filterPatient();
 					}
 
 					@Override
@@ -594,7 +637,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jSearchButton.setPreferredSize(new Dimension(20, 20));
 			jSearchButton.addActionListener(actionEvent -> {
 				try {
-					patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
+
+					patArray = !femalesOnly ?
+                        patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText()) :
+                        patientBrowserManager.getFemalePatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
 				} catch (OHServiceException ohServiceException) {
 					MessageDialog.showExceptions(ohServiceException);
 					patArray = new ArrayList<>();

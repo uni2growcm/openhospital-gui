@@ -233,6 +233,10 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jBirthPlacePanel;
 	private JTextField jBirthPlaceTextField;
 
+	private JPanel jBirthPlace;
+	private JPanel jBirthPlaceLabelPanel;
+	private JPanel jBirthPlaceFieldPanel;
+
 	private JPanel jNumberOfChildrenPanel;
 	private JTextField jNumberOfChildrenTextField;
 
@@ -585,6 +589,7 @@ public class PatientInsertExtended extends JDialog {
 						patient.setTaxCode(jTaxCodeTextField.getText().trim());
 						patient.setAddress(jAddressTextField.getText().trim());
 						patient.setCity(jCityTextField.getText().trim());
+						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
 						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
 						patient.setTelephone(fullPhoneNumber);
@@ -642,8 +647,6 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setNote(jNoteTextArea.getText().trim());
-
-						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 
 						try {
 							int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
@@ -711,6 +714,7 @@ public class PatientInsertExtended extends JDialog {
 					patient.setTaxCode(jTaxCodeTextField.getText().trim());
 					patient.setAddress(jAddressTextField.getText().trim());
 					patient.setCity(jCityTextField.getText().trim());
+					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
 					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
 					patient.setTelephone(fullPhoneNumber);
@@ -766,8 +770,6 @@ public class PatientInsertExtended extends JDialog {
 						}
 					}
 					patient.setNote(jNoteTextArea.getText().trim());
-
-					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 
 					try {
 						int children = Integer.parseInt(jNumberOfChildrenTextField.getText().trim());
@@ -1175,6 +1177,63 @@ public class PatientInsertExtended extends JDialog {
 	}
 
 	/**
+	 * This method initializes jBirthPlaceLabelPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlaceLabelPanel() {
+		if (jBirthPlaceLabelPanel == null) {
+			JLabel jBirthPlaceLabel = new JLabel(MessageBundle.getMessage("angal.patient.birthplace.label"));
+			jBirthPlaceLabelPanel = new JPanel();
+			jBirthPlaceLabelPanel.add(jBirthPlaceLabel, BorderLayout.EAST);
+		}
+		return jBirthPlaceLabelPanel;
+	}
+
+	/**
+	 * This method initializes jBirthPlaceTextField
+	 *
+	 * @return javax.swing.JTextField
+	 */
+	private JTextField getJBirthPlaceTextField() {
+		if (jBirthPlaceTextField == null) {
+			jBirthPlaceTextField = new JTextField(15);
+			if (!insert) {
+				jBirthPlaceTextField.setText(patient.getBirthPlace() != null ? patient.getBirthPlace() : "");
+			}
+		}
+		return jBirthPlaceTextField;
+	}
+
+	/**
+	 * This method initializes jBirthPlaceFieldPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlaceFieldPanel() {
+		if (jBirthPlaceFieldPanel == null) {
+			jBirthPlaceFieldPanel = new JPanel();
+			jBirthPlaceFieldPanel.add(getJBirthPlaceTextField());
+		}
+		return jBirthPlaceFieldPanel;
+	}
+
+	/**
+	 * This method initializes jBirthPlace
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJBirthPlace() {
+		if (jBirthPlace == null) {
+			jBirthPlace = new JPanel();
+			jBirthPlace.setLayout(new BorderLayout());
+			jBirthPlace.add(getJBirthPlaceLabelPanel(), BorderLayout.WEST);
+			jBirthPlace.add(getJBirthPlaceFieldPanel(), BorderLayout.EAST);
+		}
+		return jBirthPlace;
+	}
+
+	/**
 	 * This method initializes jNextKinLabelPanel
 	 *
 	 * @return javax.swing.JPanel
@@ -1296,11 +1355,11 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getSexPanel(), null);
 			jAnagraphPanel.add(getJAddressPanel(), null);
 			jAnagraphPanel.add(getJCity(), null);
+			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJParentsResidencePanel(), null);
 			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
-			jAnagraphPanel.add(getJBirthPlacePanel(), null);
 			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
 			jAnagraphPanel.add(getJGeographicPositionPanel(), null);
 			jAnagraphPanel.add(getJTransportMeansPanel(), null);
@@ -2434,7 +2493,6 @@ public class PatientInsertExtended extends JDialog {
 			return;
 		}
 
-		System.out.println("patient.getAgetype() = " + patient.getAgetype());
 		if (patient.getAgetype() != null && !patient.getAgetype().isEmpty()) {
 			jAgeTypeDescription.setSelected(true);
 
@@ -2492,29 +2550,6 @@ public class PatientInsertExtended extends JDialog {
 			jAgeMonths.setText("0");
 			jAgeDays.setText("0");
 		}
-	}
-
-	private JPanel getJBirthPlacePanel() {
-		if (jBirthPlacePanel == null) {
-			JLabel jBirthPlaceLabel = new JLabel(MessageBundle.getMessage("angal.patient.birthplace"));
-			jBirthPlacePanel = new JPanel();
-			jBirthPlacePanel.setLayout(new BorderLayout());
-			jBirthPlacePanel.add(jBirthPlaceLabel, BorderLayout.WEST);
-			jBirthPlacePanel.add(getJBirthPlaceFieldPanel(), BorderLayout.EAST);
-		}
-		return jBirthPlacePanel;
-	}
-
-	private JPanel getJBirthPlaceFieldPanel() {
-		if (jBirthPlaceTextField == null) {
-			jBirthPlaceTextField = new JTextField(15);
-			if (!insert && patient.getBirthPlace() != null) {
-				jBirthPlaceTextField.setText(patient.getBirthPlace());
-			}
-		}
-		JPanel panel = new JPanel();
-		panel.add(jBirthPlaceTextField);
-		return panel;
 	}
 
 	private JPanel getJNumberOfChildrenPanel() {
@@ -3026,14 +3061,14 @@ public class PatientInsertExtended extends JDialog {
 		reductionPlanComboBox = new JComboBox<>();
 		reductionPlanComboBox.addItem(MessageBundle.getMessage("angal.patient.selectareductionplan"));
 
-		 try {
-		     List<ReductionPlan> reductions = reductionPlanManager.getAll();
-		     for (ReductionPlan reduction : reductions) {
-		         reductionPlanComboBox.addItem(reduction);
-		     }
-		 } catch (OHServiceException e) {
-		     throw new RuntimeException(e);
-		 }
+		try {
+			List<ReductionPlan> reductions = reductionPlanManager.getAll();
+			for (ReductionPlan reduction : reductions) {
+				reductionPlanComboBox.addItem(reduction);
+			}
+		} catch (OHServiceException e) {
+			throw new RuntimeException(e);
+		}
 		billingPanel.add(reductionPlanComboBox);
 	}
 }
