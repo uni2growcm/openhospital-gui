@@ -3026,16 +3026,14 @@ public class PatientInsertExtended extends JDialog {
 		reductionPlanComboBox = new JComboBox<>();
 		reductionPlanComboBox.addItem(MessageBundle.getMessage("angal.patient.selectareductionplan"));
 
-		// TEMPORARILY COMMENTED TO FINALIZE THE MERGE
-		// try {
-		//     List<ReductionPlan> reductions = reductionPlanManager.getAll();
-		//     for (ReductionPlan reduction : reductions) {
-		//         reductionPlanComboBox.addItem(reduction);
-		//     }
-		// } catch (OHServiceException e) {
-		//     throw new RuntimeException(e);
-		// }
-
+		 try {
+		     List<ReductionPlan> reductions = reductionPlanManager.getAll();
+		     for (ReductionPlan reduction : reductions) {
+		         reductionPlanComboBox.addItem(reduction);
+		     }
+		 } catch (OHServiceException e) {
+		     throw new RuntimeException(e);
+		 }
 		billingPanel.add(reductionPlanComboBox);
 	}
 }
