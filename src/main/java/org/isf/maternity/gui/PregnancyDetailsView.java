@@ -451,6 +451,7 @@ public class PregnancyDetailsView extends JDialog {
             return;
         }
         new GenericReportPregnancyBirthDeclaration(newborn.getId().longValue());
+        dispose();
     }
 
     private void printBirthCertificate(ActionEvent e) {
@@ -459,5 +460,6 @@ public class PregnancyDetailsView extends JDialog {
             return;
         }
         new GenericReportPregnancyCertificateOfDeclaration(pregnancy.getId().longValue());
+        dispose();
     }
 }
