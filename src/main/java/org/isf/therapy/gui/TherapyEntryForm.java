@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -721,7 +721,19 @@ public class TherapyEntryForm extends JDialog {
 					thRow = therapyManager.getTherapyRow(therapyID, patID, startDate, endDate, medical, qty, unitID, freqInDay, freqInPeriod, note, notify, sms);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e, this);
+					return;
 				}
+
+				try {
+					TherapyRow savedRow = therapyManager.newTherapy(thRow);
+					if (savedRow != null && savedRow.getTherapyID() > 0) {
+						thRow.setTherapyID(savedRow.getTherapyID());
+					}
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+					return;
+				}
+
 				setVisible(false);
 
 			});
