@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PregnancyCareReport" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="PregnancyCareReport" uuid="8cedee6a-f82a-4445-bf46-ca20259dad3b">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT '1/PRENATAL VISITS' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC 
+
+UNION ALL
+
+SELECT 
+    'Number of first prenatal visits' AS METRIC,
+    '' AS DES, 
+    COUNT(DISTINCT PRGV_PRG_ID) AS COUNT, 
+    ROUND(
+        (
+            COUNT(DISTINCT PRGV_PRG_ID) * 100.0
+        ) / 
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC
+FROM OH_PREGNANCYVISIT
+JOIN OH_PREGNANCY
+    ON PRG_ID = PRGV_PRG_ID
+JOIN OH_PREGNANCYDELIVERY
+    ON PRG_ID = PRGDLV_PRG_ID 
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+AND PRGV_DATE <= PRGDLV_DATE
+
+UNION ALL
+
+SELECT 
+    'Number of second prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
+    FROM OH_PREGNANCYVISIT
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID  
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 1 
+) AS C
+
+UNION ALL
+
+SELECT 
+    'Number of third prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
+    FROM OH_PREGNANCYVISIT 
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID 
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 2 
+) AS C
+
+UNION ALL
+
+SELECT 
+    'Number of forth prenatal visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC 
+FROM (
+    SELECT PRGV_PRG_ID
+    FROM OH_PREGNANCYVISIT 
+    JOIN OH_PREGNANCY
+        ON PRG_ID = PRGV_PRG_ID
+    JOIN OH_PREGNANCYDELIVERY
+        ON PRG_ID = PRGDLV_PRG_ID 
+    WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+    AND PRGV_DATE <= PRGDLV_DATE
+    GROUP BY PRGV_PRG_ID 
+    HAVING COUNT(*) > 3 
+) AS C
+
+UNION ALL
+
+SELECT '2/DELIVERIES' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC
+
+UNION ALL
+
+SELECT  
+    DLT_DESC AS METRIC,
+    DRT_DESC AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC
+FROM OH_ADMISSION 
+JOIN OH_DELIVERYTYPE
+    ON ADM_PRG_DLT_ID_A = DLT_ID_A 
+JOIN OH_DELIVERYRESULTTYPE
+    ON ADM_PRG_DRT_ID_A = DRT_ID_A 
+JOIN OH_PATIENT
+    ON ADM_PAT_ID = PAT_ID 
+JOIN OH_PREGNANCY
+    ON PRG_PAT_ID = PAT_ID 
+JOIN OH_PREGNANCYDELIVERY
+    ON PRGDLV_PRG_ID = PRG_ID     
+WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
+GROUP BY DLT_ID_A, DRT_DESC, DLT_DESC
+
+UNION ALL
+
+SELECT '', '', '', ''
+
+UNION ALL
+
+SELECT '3/POSTNATAL VISITS', '', '', ''
+
+UNION ALL
+
+SELECT 
+    'Postnatal visits ' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,  
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        (
+            SELECT COUNT(DISTINCT PAT)
+            FROM (
+                SELECT ADM_PAT_ID AS PAT
+                FROM OH_ADMISSION
+                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                UNION
+
+                SELECT PRG_PAT_ID
+                FROM OH_PREGNANCY
+            ) AS T
+        ),
+        2
+    ) AS PERC
+FROM OH_PREGNANCYVISIT 
+JOIN OH_PREGNANCY
+    ON PRG_ID = PRGV_PRG_ID
+JOIN OH_PREGNANCYDELIVERY
+    ON PRG_ID = PRGDLV_PRG_ID 
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
+AND PRGV_DATE <= PRGDLV_DATE
+
+UNION ALL
+
+SELECT '', '', '', ''
+
+UNION ALL
+
+SELECT '4/TOTAL', '', '', ''
+
+UNION ALL 
+
+SELECT 
+    'Number of deliveries' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC
+FROM OH_PREGNANCYDELIVERY 
+WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
+
+UNION ALL
+
+SELECT 
+    'Total number of pregnancy visits' AS METRIC,
+    '' AS DES,
+    COUNT(*) AS COUNT,
+    '' AS PERC 
+FROM OH_PREGNANCYVISIT
+WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
+	</queryString>
+	<field name="METRIC" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="METRIC"/>
+		<property name="com.jaspersoft.studio.field.label" value="METRIC"/>
+	</field>
+	<field name="DES" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="DES"/>
+		<property name="com.jaspersoft.studio.field.label" value="DES"/>
+	</field>
+	<field name="COUNT" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="COUNT"/>
+		<property name="com.jaspersoft.studio.field.label" value="COUNT"/>
+	</field>
+	<field name="PERC" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PERC"/>
+		<property name="com.jaspersoft.studio.field.label" value="PERC"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="92" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-11" x="140" y="78" width="73" height="14" uuid="55e5b9ae-2077-4963-b741-1d4075baa87e"/>
+				<box leftPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-12" x="40" y="78" width="73" height="14" uuid="3a719cc4-9861-44c8-9f41-599411e8d6fd"/>
+				<box padding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-15" mode="Opaque" x="120" y="0" width="294" height="28" forecolor="#FFFFFF" backcolor="#000000" uuid="d99abea8-5b06-4d41-936b-8a1f8100585a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pregnancyCareStat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="-2" y="74" width="42" height="18" uuid="67e03470-f387-4dea-b5e4-eefd9a474b3b"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
+				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="113" y="74" width="27" height="18" uuid="9875e15a-831f-4266-bddc-c522a06389eb"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="13" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="38" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-16" x="0" y="0" width="354" height="38" uuid="d5a83029-9cef-4a71-b898-fa28ca03e148"/>
+				<box>
+					<pen lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{metric}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-17" x="354" y="0" width="88" height="38" uuid="bfd8de71-5f2a-45e5-a082-f62708a56092"/>
+				<box>
+					<pen lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalAccount}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-18" x="442" y="0" width="88" height="38" uuid="268cd5c6-78b6-4131-83eb-49653ffc9434"/>
+				<box>
+					<pen lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{percentage}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="0" y="0" width="183" height="13" uuid="8a665c25-e272-4b4c-ae17-1b45cb992668"/>
+				<box leftPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{METRIC}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-2" x="354" y="0" width="88" height="13" uuid="6b892e22-cfd7-46f8-931f-3183cdc5fa57"/>
+				<box leftPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[( $F{COUNT}.toString().equals("0") ? "" : $F{COUNT}.toString())]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
+				<reportElement key="textField-13" x="442" y="0" width="88" height="13" uuid="a8214354-6cbf-4662-a93d-c182b58e4b22"/>
+				<box leftPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PERC}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-14" x="183" y="0" width="171" height="13" uuid="af033a8a-e3d0-4f6f-bec4-ce021a76d682"/>
+				<box leftPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DES}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="30" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="50" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" x="0" y="7" width="100" height="18" uuid="75ef6f64-b876-42e1-8264-9dc8d0c78ecf"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="50" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-5" x="0" y="13" width="100" height="18" uuid="6fa4e298-e927-40ac-b3e7-9b40eb3bcf54"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="50" splitType="Stretch"/>
+	</summary>
+</jasperReport>
