@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -31,10 +31,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -104,6 +105,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
+import org.springframework.data.domain.Page;
 
 /**
  * MovStockBrowser - list medicals movement. Let the user search for movements and insert a new movement.
@@ -123,6 +125,27 @@ public class MovStockBrowser extends ModalJFrame {
 	private static final String TEXT_ALLDISCHARGES = MessageBundle.getMessage("angal.medicalstock.alldischarges.txt");
 
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT_DD_MM_YYYY);
+
+	private int currentPage = 0;
+	private long totalElements = 0;
+	private static final int PAGE_SIZE = 100;
+	private int totalPages = 0;
+	private JButton jPrevButton;
+	private JButton jNextButton;
+	private JLabel jPageLabel;
+	private JLabel jElementsLabel;
+	private JComboBox<Integer> jPageComboBox;
+
+	private Integer lastMedicalCode = null;
+	private String lastMedicalType = null;
+	private String lastWard = null;
+	private String lastMovType = null;
+	private LocalDateTime lastMovFrom = null;
+	private LocalDateTime lastMovTo = null;
+	private LocalDateTime lastLotPrepFrom = null;
+	private LocalDateTime lastLotPrepTo = null;
+	private LocalDateTime lastLotDueFrom = null;
+	private LocalDateTime lastLotDueTo = null;
 
 	private final JFrame myFrame;
 	private JButton filterButton;
@@ -200,7 +223,10 @@ public class MovStockBrowser extends ModalJFrame {
 		}
 		setContentPane(getContentpane());
 
-		updateTotals();
+		lastMovFrom = TimeTools.getBeginningOfDay(LocalDateTime.now().minusWeeks(1));
+		lastMovTo = TimeTools.getBeginningOfNextDay(LocalDateTime.now());
+		loadPage(0);
+
 		setMinimumSize(new Dimension(775, 655));
 		pack();
 		setVisible(true);
@@ -289,11 +315,107 @@ public class MovStockBrowser extends ModalJFrame {
 	}
 
 	private JPanel getTablesPanel() {
-		JPanel tablePanel = new JPanel();
-		tablePanel.setLayout(new BorderLayout());
+		JPanel tablePanel = new JPanel(new BorderLayout());
 		tablePanel.add(getTable(), BorderLayout.CENTER);
-		tablePanel.add(getTableTotal(), BorderLayout.SOUTH);
+		JPanel bottomPanel = new JPanel(new BorderLayout());
+		bottomPanel.add(getTableTotal(), BorderLayout.NORTH);
+		bottomPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		tablePanel.add(bottomPanel, BorderLayout.SOUTH);
 		return tablePanel;
+	}
+
+	private JPanel getPaginationPanel() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButton = new JButton("<");
+		jPrevButton.setEnabled(false);
+		jPrevButton.addActionListener(e -> loadPage(currentPage - 1));
+		jPageComboBox = new JComboBox<>();
+		jPageComboBox.addActionListener(e -> {
+			if (jPageComboBox.getSelectedItem() != null) {
+				int selected = (int) jPageComboBox.getSelectedItem() - 1;
+				if (selected != currentPage) {
+					loadPage(selected);
+				}
+			}
+		});
+
+		jPageLabel = new JLabel(MessageBundle.formatMessage("angal.medicalstock.pagination.pages.fmt", 0));
+		jNextButton = new JButton(">");
+		jNextButton.setEnabled(false);
+		jNextButton.addActionListener(e -> loadPage(currentPage + 1));
+
+		jElementsLabel = new JLabel(MessageBundle.formatMessage("angal.medicalstock.pagination.elements.found.fmt", 0));
+
+		panel.add(jPrevButton);
+		panel.add(jPageComboBox);
+		panel.add(jPageLabel);
+		panel.add(jNextButton);
+		panel.add(jElementsLabel);
+
+		return panel;
+	}
+
+	private void loadPage(int page) {
+		try {
+			Page<Movement> result = movBrowserManager.getMovements(
+					lastMedicalCode, lastMedicalType, lastWard, lastMovType,
+					lastMovFrom, lastMovTo,
+					lastLotPrepFrom, lastLotPrepTo,
+					lastLotDueFrom, lastLotDueTo,
+					page, PAGE_SIZE);
+
+			moves = new ArrayList<>(result.getContent());
+			currentPage = result.getNumber();
+			totalPages = result.getTotalPages();
+			totalElements = result.getTotalElements();
+
+			model.fireTableDataChanged();
+			movTable.updateUI();
+			updateTotals();
+			updatePaginationControls();
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private void updatePaginationControls() {
+		if (jPrevButton == null || jNextButton == null
+				|| jPageLabel == null || jPageComboBox == null
+				|| jElementsLabel == null) {
+			return;
+		}
+
+		ActionListener[] listeners = jPageComboBox.getActionListeners();
+		for (ActionListener l : listeners) {
+			jPageComboBox.removeActionListener(l);
+		}
+		jPageComboBox.removeAllItems();
+
+		if (totalPages > 1) {
+			for (int i = 1; i <= totalPages; i++) {
+				jPageComboBox.addItem(i);
+			}
+			jPageComboBox.setSelectedItem(currentPage + 1);
+			jPageComboBox.setEnabled(true);
+		} else if (totalPages == 1) {
+			jPageComboBox.addItem(1);
+			jPageComboBox.setSelectedItem(1);
+			jPageComboBox.setEnabled(false);
+		} else {
+			jPageComboBox.addItem(0);
+			jPageComboBox.setEnabled(false);
+		}
+		jPageLabel.setText(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.pages.fmt", totalPages));
+		jElementsLabel.setText(MessageBundle.formatMessage(
+				"angal.medicalstock.pagination.elements.found.fmt", totalElements));
+		for (ActionListener l : listeners) {
+			jPageComboBox.addActionListener(l);
+		}
+		jPrevButton.setEnabled(currentPage > 0);
+		jNextButton.setEnabled(totalPages > 1 && currentPage < totalPages - 1);
 	}
 
 	private JScrollPane getTable() {
@@ -699,7 +821,7 @@ public class MovStockBrowser extends ModalJFrame {
 		LocalDateTime now = TimeTools.getBeginningOfNextDay(TimeTools.getNow());
 		LocalDateTime old = TimeTools.getBeginningOfDay(now.minusWeeks(1));
 
-		model = new MovBrowserModel(null, null, null, null, old, now, null, null, null, null);
+		model = new MovBrowserModel();
 		movTable = new JTable(model);
 
 		for (int i = 0; i < pColumns.length; i++) {
@@ -889,34 +1011,20 @@ public class MovStockBrowser extends ModalJFrame {
 					wardSelected = ((Ward) wardBox.getSelectedItem())
 									.getCode();
 				}
-				if (!isAutomaticLot()) {
-					model = new MovBrowserModel(medicalSelected,
-									medicalTypeSelected, wardSelected, movementTypeSelected,
-									TimeTools.getBeginningOfDay(movDateFrom.getDateStartOfDay()),
-									TimeTools.getBeginningOfNextDay(movDateTo.getDateStartOfDay()),
-									TimeTools.getBeginningOfDay(lotPrepFrom.getDateStartOfDay()),
-									TimeTools.getBeginningOfNextDay(lotPrepTo.getDateStartOfDay()),
-									TimeTools.getBeginningOfDay(lotDueFrom.getDateStartOfDay()),
-									TimeTools.getBeginningOfNextDay(lotDueTo.getDateStartOfDay()));
-				} else {
-					model = new MovBrowserModel(medicalSelected,
-									medicalTypeSelected, wardSelected, movementTypeSelected,
-									TimeTools.getBeginningOfDay(movDateFrom.getDateStartOfDay()),
-									TimeTools.getBeginningOfNextDay(movDateTo.getDateStartOfDay()),
-									null,
-									null,
-									TimeTools.getBeginningOfDay(lotDueFrom.getDateStartOfDay()),
-									TimeTools.getBeginningOfNextDay(lotDueTo.getDateStartOfDay()));
-				}
+				lastMedicalCode = medicalSelected;
+				lastMedicalType = medicalTypeSelected;
+				lastWard = wardSelected;
+				lastMovType = movementTypeSelected;
+				lastMovFrom = TimeTools.getBeginningOfDay(movDateFrom.getDateStartOfDay());
+				lastMovTo = TimeTools.getBeginningOfNextDay(movDateTo.getDateStartOfDay());
+				lastLotPrepFrom = !isAutomaticLot()
+						? TimeTools.getBeginningOfDay(lotPrepFrom.getDateStartOfDay()) : null;
+				lastLotPrepTo = !isAutomaticLot()
+						? TimeTools.getBeginningOfNextDay(lotPrepTo.getDateStartOfDay()) : null;
+				lastLotDueFrom = TimeTools.getBeginningOfDay(lotDueFrom.getDateStartOfDay());
+				lastLotDueTo = TimeTools.getBeginningOfNextDay(lotDueTo.getDateStartOfDay());
 
-				if (moves != null)
-
-				{
-					model.fireTableDataChanged();
-					movTable.updateUI();
-
-				}
-				updateTotals();
+				loadPage(0);
 			}
 		});
 		return filterButton;
@@ -973,9 +1081,7 @@ public class MovStockBrowser extends ModalJFrame {
 		chargeButton.setMnemonic(MessageBundle.getMnemonic("angal.medicalstock.charge.btn.key"));
 		chargeButton.addActionListener(actionEvent -> {
 			new MovStockMultipleCharging(myFrame);
-			model = new MovBrowserModel();
-			movTable.updateUI();
-			updateTotals();
+			loadPage(currentPage);
 			if (jCheckBoxKeepFilter.isSelected()) {
 				filterButton.doClick();
 			}
@@ -993,9 +1099,7 @@ public class MovStockBrowser extends ModalJFrame {
 		dischargeButton.setMnemonic(MessageBundle.getMnemonic("angal.medicalstock.discharge.btn.key"));
 		dischargeButton.addActionListener(actionEvent -> {
 			new MovStockMultipleDischarging(myFrame);
-			model = new MovBrowserModel();
-			movTable.updateUI();
-			updateTotals();
+			loadPage(currentPage);
 			if (jCheckBoxKeepFilter.isSelected()) {
 				filterButton.doClick();
 			}
@@ -1041,7 +1145,7 @@ public class MovStockBrowser extends ModalJFrame {
 				return;
 			}
 			MessageDialog.info(this, "angal.medicalstock.deletemovementsuccess.msg");
-			filterButton.doClick();
+			loadPage(currentPage);
 		});
 		return deleteMovementButton;
 
@@ -1147,11 +1251,7 @@ public class MovStockBrowser extends ModalJFrame {
 		private static final long serialVersionUID = 1L;
 
 		public MovBrowserModel() {
-			LocalDateTime now = TimeTools.getBeginningOfNextDay(TimeTools.getNow());
-			LocalDateTime old = TimeTools.getBeginningOfDay(now.minusWeeks(1));
 
-			new MovBrowserModel(null, null, null, null, old, now, null, null, null, null);
-			updateTotals();
 		}
 
 		public MovBrowserModel(Integer medicalCode, String medicalType, String ward, String movType, LocalDateTime movFrom, LocalDateTime movTo,
