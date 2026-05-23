@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -22,13 +22,15 @@
 package org.isf.admission.gui;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -50,6 +52,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -73,6 +77,8 @@ import org.isf.anamnesis.gui.PatientHistoryEdit;
 import org.isf.anamnesis.manager.PatientHistoryManager;
 import org.isf.anamnesis.model.PatientHistory;
 import org.isf.anamnesis.model.PatientPatientHistory;
+import org.isf.country.manager.CountryBrowserManager;
+import org.isf.country.model.Country;
 import org.isf.dicom.gui.DicomGui;
 import org.isf.disease.model.Disease;
 import org.isf.exa.model.Exam;
@@ -97,7 +103,6 @@ import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.therapy.gui.TherapyEdit;
-import org.isf.utils.db.NormalizeString;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -109,6 +114,7 @@ import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
+import org.springframework.data.domain.Page;
 
 /**
  * This class shows a list of all known patients and for each if (and where) they are actually admitted,
@@ -120,7 +126,7 @@ import com.github.lgooddatepicker.zinternaltools.WrapLayout;
  * add an admission record (or modify existing admission record, or set a discharge) of a selected patient
  */
 public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert.PatientListener, PatientListener,
-				AdmissionListener, DeleteAdmissionListener {
+		AdmissionListener, DeleteAdmissionListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -138,6 +144,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private String[] patientSexItems = { MessageBundle.getMessage("angal.common.all.txt"), MessageBundle.getMessage("angal.common.male.txt"),
 			MessageBundle.getMessage("angal.common.female.txt") };
 	private JComboBox patientSexBox = new JComboBox(patientSexItems);
+	private JComboBox<Country> patientCountryBox;
 	private JCheckBox[] wardCheck;
 	private JTextField searchString;
 	private JButton jSearchButton;
@@ -150,17 +157,29 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(), MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
-			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase() };
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false };
+			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.country.txt").toUpperCase()};
+	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120 };
+	private boolean[] pColumnResizable = { false, false, false, false, true, false, false };
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
+
+	private int currentPage = 0;
+	private static final int PAGE_SIZE = 100;
+	private int totalPages = 0;
+	private JButton jPrevButton;
+	private JButton jNextButton;
+	private JLabel jPageLabel;
+	private JComboBox<Integer> jPageComboBox;
+	private long totalElements = 0;
+	private JLabel jTotalLabel;
 
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private ExaminationBrowserManager examinationBrowserManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
+	private CountryBrowserManager countryBrowserManager = Context.getApplicationContext().getBean(CountryBrowserManager.class);
 
 	protected boolean altKeyReleased = true;
 	protected Timer ageTimer = new Timer(1000, e -> filterPatient(null));
@@ -286,13 +305,14 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 	/*
 	 * manage PatientEdit messages
-	 * 
+	 *
 	 * mind PatientEdit return a patient patientInserted create a new AdmittedPatient for table
 	 */
 	@Override
 	public void patientInserted(AWTEvent e) {
 		Patient u = (Patient) e.getSource();
 		pPatient.add(0, new AdmittedPatient(u, null));
+		loadCountryList();
 		lastKey = "";
 		filterPatient(searchString.getText());
 		try {
@@ -352,6 +372,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		setVisible(true);
 
 		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", pPatient.size()));
+		loadPage(0, null);
+		searchString.requestFocus();
 		searchString.requestFocus();
 
 		myFrame.addWindowListener(new WindowAdapter() {
@@ -378,8 +400,15 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JPanel getDataAndControlPanel() {
 		JPanel dataAndControlPanel = new JPanel(new BorderLayout());
 		dataAndControlPanel.add(new JScrollPane(getControlPanel()), BorderLayout.WEST);
-		dataAndControlPanel.add(getScrollPane(), BorderLayout.CENTER);
+		dataAndControlPanel.add(getCenterPanel(), BorderLayout.CENTER);
 		return dataAndControlPanel;
+	}
+
+	private JPanel getCenterPanel() {
+		JPanel centerPanel = new JPanel(new BorderLayout());
+		centerPanel.add(getScrollPane(), BorderLayout.CENTER);
+		centerPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
+		return centerPanel;
 	}
 
 	/*
@@ -423,7 +452,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		for (int i = 0; i < wardList.size(); i++) {
 			checkPanel[i] = new JPanel(new BorderLayout());
 			wardCheck[i] = new JCheckBox();
-			wardCheck[i].setSelected(true);
+			wardCheck[i].setSelected(false);
 			if (!GeneralData.ENHANCEDSEARCH) {
 				wardCheck[i].addActionListener(listener);
 			}
@@ -482,6 +511,19 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		sexPanel.add(patientSexBox, BorderLayout.CENTER);
 		sexPanel = setMyBorder(sexPanel, MessageBundle.getMessage("angal.admission.sex.border"));
 
+		patientCountryBox = new JComboBox<>();
+		patientCountryBox.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
+		loadCountryList();
+		if (!GeneralData.ENHANCEDSEARCH) {
+			patientCountryBox.addActionListener(listener);
+		}
+
+		JPanel countryPanel = new JPanel();
+		countryPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
+		countryPanel.setLayout(new BorderLayout());
+		countryPanel.add(patientCountryBox, BorderLayout.CENTER);
+		countryPanel = setMyBorder(countryPanel, MessageBundle.getMessage("angal.common.country.txt"));
+
 		JPanel searchPanel = new JPanel(new BorderLayout());
 		searchPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
 		searchString = new JTextField();
@@ -537,29 +579,33 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		layout.setAutoCreateContainerGaps(true);
 		int width = calendarPanel.getMinimumSize().width;
 		layout.setHorizontalGroup(layout.createSequentialGroup() //
-						.addGroup(layout.createParallelGroup() //
-										.addComponent(classPanel, width, width, width) //
-										.addComponent(wardPanel, width, width, width) //
-										.addComponent(calendarPanel, width, width, width) //
-										.addComponent(agePanel, width, width, width) //
-										.addComponent(sexPanel, width, width, width) //
-										.addComponent(searchPanel, width, width, width)));
+				.addGroup(layout.createParallelGroup() //
+						.addComponent(classPanel, width, width, width) //
+						.addComponent(wardPanel, width, width, width) //
+						.addComponent(calendarPanel, width, width, width) //
+						.addComponent(agePanel, width, width, width) //
+						.addComponent(sexPanel, width, width, width) //
+						.addComponent(countryPanel, width, width, width)//
+						.addComponent(searchPanel, width, width, width)));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(classPanel, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-										.addComponent(wardPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-										.addComponent(calendarPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-						.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-										.addComponent(agePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sexPanel, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
-						.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-										.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(classPanel, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+						.addComponent(wardPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+						.addComponent(calendarPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+				.addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+						.addComponent(agePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sexPanel, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(countryPanel, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))//
+				.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+						.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
 
 		mainPanel.setLayout(layout);
 		return mainPanel;
@@ -1040,9 +1086,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 			// ASK CONFIRMATION
 			int ok = MessageDialog.yesNo(this,
-							"angal.admission.withthisoperationthepatientwillbedeletedandthehistorytransferredtothepatient.fmt.msg", patient2.getCode(),
-							patient2.getName(), patient2.getAge(), patient2.getAddress(), mergedPatient.getCode(), mergedPatient.getName(),
-							mergedPatient.getAge(), mergedPatient.getAddress());
+					"angal.admission.withthisoperationthepatientwillbedeletedandthehistorytransferredtothepatient.fmt.msg", patient2.getCode(),
+					patient2.getName(), patient2.getAge(), patient2.getAddress(), mergedPatient.getCode(), mergedPatient.getName(),
+					mergedPatient.getAge(), mergedPatient.getAddress());
 			if (ok != JOptionPane.YES_OPTION) {
 				return;
 			}
@@ -1050,7 +1096,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			if (mergedPatient.getName().toUpperCase().compareTo(patient2.getName().toUpperCase()) != 0) {
 				String[] names = { mergedPatient.getName(), patient2.getName() };
 				String whichName = (String) JOptionPane.showInputDialog(null, MessageBundle.getMessage("angal.admission.pleaseselectthefinalname.msg"),
-								MessageDialog.QUESTION, JOptionPane.QUESTION_MESSAGE, null, names, null);
+						MessageDialog.QUESTION, JOptionPane.QUESTION_MESSAGE, null, names, null);
 				if (whichName == null) {
 					return;
 				}
@@ -1088,9 +1134,172 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	}
 
 	private void filterPatient(String key) {
-		table.setModel(new AdmittedPatientBrowserModel(key));
-		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", table.getRowCount()));
-		searchString.requestFocus();
+		loadPage(0, key);
+	}
+
+	private void loadPage(int page, String key) {
+		try {
+			String searchTerms = (key != null && !key.isBlank()) ? key :
+					(!searchString.getText().isBlank() ? searchString.getText() : null);
+
+			String admissionStatus = null;
+			int selectedIndex = patientClassBox.getSelectedIndex();
+
+			switch (selectedIndex) {
+				case 1:
+					admissionStatus = "admitted";
+					break;
+				case 2:
+					admissionStatus = "notAdmitted";
+					break;
+				default:
+					admissionStatus = null;
+					break;
+			}
+
+			List<String> wardCodes = new ArrayList<>();
+			for (int i = 0; i < wardList.size(); i++) {
+				if (wardCheck[i].isSelected()) {
+					wardCodes.add(wardList.get(i).getCode());
+				}
+			}
+
+			if (wardCodes.isEmpty()) {
+				wardCodes = null;
+			}
+
+			Integer ageFrom = null;
+			Integer ageTo = null;
+			String ageFromText = patientAgeFromTextField.getText();
+			String ageToText = patientAgeToTextField.getText();
+			if (DIGIT_PATTERN.matcher(ageFromText).matches()) {
+				ageFrom = Integer.parseInt(ageFromText);
+			}
+			if (DIGIT_PATTERN.matcher(ageToText).matches()) {
+				ageTo = Integer.parseInt(ageToText);
+			}
+
+			Character sex = switch (patientSexBox.getSelectedIndex()) {
+				case 1 -> 'M';
+				case 2 -> 'F';
+				default -> null;
+			};
+
+			Integer countryId = null;
+			Country selectedCountry = (Country) patientCountryBox.getSelectedItem();
+			if (selectedCountry != null) {
+				countryId = selectedCountry.getId();
+			}
+
+			LocalDateTime admissionDateFrom = null;
+			LocalDateTime admissionDateTo = null;
+			LocalDateTime dischargeDateFrom = null;
+			LocalDateTime dischargeDateTo = null;
+			if (GeneralData.ENHANCEDSEARCH) {
+				if (dateChoosers[0].getDate() != null) {
+					admissionDateFrom = dateChoosers[0].getDateStartOfDay();
+				}
+
+				if (dateChoosers[1].getDate() != null) {
+					admissionDateTo = dateChoosers[1].getDateEndOfDay();
+				}
+
+				if  (dateChoosers[2].getDate() != null) {
+					dischargeDateFrom = dateChoosers[2].getDateStartOfDay();
+				}
+
+				if (dateChoosers[3].getDate() != null) {
+					dischargeDateTo = dateChoosers[3].getDateEndOfDay();
+				}
+			}
+
+			Page<AdmittedPatient> result = admissionBrowserManager.getAdmittedPatientsPaginated(
+					searchTerms,
+					admissionStatus,
+					wardCodes,
+					admissionDateFrom,
+					admissionDateTo,
+					dischargeDateFrom,
+					dischargeDateTo,
+					ageFrom, ageTo, sex,countryId,
+					page, PAGE_SIZE
+			);
+
+			pPatient = new ArrayList<>(result.getContent());
+			currentPage = result.getNumber();
+			totalPages = result.getTotalPages();
+			totalElements = result.getTotalElements();
+
+			table.setModel(new AdmittedPatientBrowserModel(null));
+			rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", result.getTotalElements()));
+			updatePaginationControls();
+			searchString.requestFocus();
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private void updatePaginationControls() {
+		jPrevButton.setEnabled(currentPage > 0);
+		jNextButton.setEnabled(currentPage < totalPages - 1);
+		jPageComboBox.setEnabled(totalPages > 1);
+
+		if (jPageComboBox.getItemCount() != totalPages) {
+			ActionListener[] listeners = jPageComboBox.getActionListeners();
+			for (ActionListener l : listeners) {
+				jPageComboBox.removeActionListener(l);
+			}
+
+			jPageComboBox.removeAllItems();
+			for (int i = 1; i <= totalPages; i++) {
+				jPageComboBox.addItem(i);
+			}
+
+			jPageComboBox.addActionListener(e -> {
+				Integer selected = (Integer) jPageComboBox.getSelectedItem();
+				if (selected != null && selected - 1 != currentPage) {
+					loadPage(selected - 1, null);
+				}
+			});
+		}
+
+		jPageComboBox.setSelectedItem(currentPage + 1);
+		jPageLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		jTotalLabel.setText(MessageBundle.formatMessage("angal.common.totalpatients.txt", totalElements));
+	}
+
+	private JPanel getPaginationPanel() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButton = new JButton("<");
+		jPrevButton.setEnabled(false);
+		jPrevButton.addActionListener(e -> loadPage(currentPage - 1, null));
+
+		jPageComboBox = new JComboBox<>();
+		jPageComboBox.addItem(1);
+		jPageComboBox.addActionListener(e -> {
+			Integer selected = (Integer) jPageComboBox.getSelectedItem();
+			if (selected != null && selected - 1 != currentPage) {
+				loadPage(selected - 1, null);
+			}
+		});
+
+		jPageLabel = new JLabel("/ 1");
+
+		jNextButton = new JButton(">");
+		jNextButton.setEnabled(false);
+		jNextButton.addActionListener(e -> loadPage(currentPage + 1, null));
+
+		panel.add(jPrevButton);
+		panel.add(jPageComboBox);
+		panel.add(jPageLabel);
+		panel.add(jNextButton);
+
+		jTotalLabel = new JLabel();
+		jTotalLabel.setFont(jTotalLabel.getFont().deriveFont(Font.BOLD));
+		panel.add(jTotalLabel);
+
+		return panel;
 	}
 
 	private void searchPatient() {
@@ -1108,27 +1317,27 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			}
 		}
 
-		LocalDateTime[] admissionRange = new LocalDateTime[2];
-		LocalDateTime[] dischargeRange = new LocalDateTime[2];
+		LocalDateTime[] admissionFrom = new LocalDateTime[2];
+		LocalDateTime[] admissionTo = new LocalDateTime[2];
 		for (int i = 0; i <= dateChoosers.length - 1; i++) {
 			switch (i) {
-			case 0:
-				admissionRange[0] = dateChoosers[i].getDateStartOfDay();
-				break;
-			case 1:
-				admissionRange[1] = dateChoosers[i].getDateEndOfDay();
-				break;
-			case 2:
-				dischargeRange[0] = dateChoosers[i].getDateStartOfDay();
-				break;
-			case 3:
-				dischargeRange[1] = dateChoosers[i].getDateEndOfDay();
-				break;
+				case 0:
+					admissionFrom[0] = dateChoosers[i].getDateStartOfDay();
+					break;
+				case 1:
+					admissionFrom[1] = dateChoosers[i].getDateEndOfDay();
+					break;
+				case 2:
+					admissionTo[0] = dateChoosers[i].getDateStartOfDay();
+					break;
+				case 3:
+					admissionTo[1] = dateChoosers[i].getDateEndOfDay();
+					break;
 			}
 		}
 
 		try {
-			pPatient = admissionBrowserManager.getAdmittedPatients(admissionRange, dischargeRange, searchString.getText());
+			pPatient = admissionBrowserManager.getAdmittedPatients(admissionFrom, admissionTo, searchString.getText());
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -1155,91 +1364,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		private static final long serialVersionUID = 1L;
 
-		List<AdmittedPatient> patientList = new ArrayList<>();
+		List<AdmittedPatient> patientList;
 
 		public AdmittedPatientBrowserModel(String key) {
-			for (AdmittedPatient ap : pPatient) {
-				Admission adm = ap.getAdmission();
-				// if not admitted stripes admitted
-				if (patientClassBox.getSelectedItem().equals(patientClassItems[2])) {
-					if (adm != null) {
-						continue;
-					}
-				}
-				// if admitted stripes not admitted
-				else if (patientClassBox.getSelectedItem().equals(patientClassItems[1])) {
-					if (adm == null) {
-						continue;
-					}
-				}
-
-				// if all or admitted filters not matching ward
-				if (!patientClassBox.getSelectedItem().equals(patientClassItems[2])) {
-					if (adm != null) {
-						int cc = -1;
-						for (int j = 0; j < wardList.size(); j++) {
-							if (adm.getWard().getCode().equalsIgnoreCase(wardList.get(j).getCode())) {
-								cc = j;
-								break;
-							}
-						}
-						if (!wardCheck[cc].isSelected()) {
-							continue;
-						}
-					}
-				}
-
-				// lower age limit
-				String ageLimit = patientAgeFromTextField.getText();
-				if (DIGIT_PATTERN.matcher(ageLimit).matches()) {
-					if (!(ap.getPatient().getAge() >= Integer.parseInt(ageLimit))) {
-						continue;
-					}
-				}
-
-				// upper age limit
-				ageLimit = patientAgeToTextField.getText();
-				if (DIGIT_PATTERN.matcher(ageLimit).matches()) {
-					if (!(ap.getPatient().getAge() <= Integer.parseInt(ageLimit))) {
-						continue;
-					}
-				}
-
-				// sex patient type
-				Character sex = switch (patientSexBox.getSelectedIndex()) {
-					case 1 -> 'M';
-					case 2 -> 'F';
-					default -> null;
-				};
-
-				if (sex != null && !sex.equals(ap.getPatient().getSex())) {
-					continue;
-				}
-
-				if (key != null) {
-					String s = key + lastKey;
-					s = s.trim();
-					String[] tokens = s.split(" ");
-
-					if (!s.isEmpty()) {
-						String name = ap.getPatient().getSearchString();
-						int a = 0;
-						for (String value : tokens) {
-							String token = value.toLowerCase();
-							if (NormalizeString.normalizeContains(name, token)) {
-								a++;
-							}
-						}
-						if (a == tokens.length) {
-							patientList.add(ap);
-						}
-					} else {
-						patientList.add(ap);
-					}
-				} else {
-					patientList.add(ap);
-				}
-			}
+			patientList = new ArrayList<>(pPatient);
 		}
 
 		@Override
@@ -1277,7 +1405,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				return patient.getSex();
 			} else if (c == 4) {
 				return patient.getInformations();
-			} else if (c == 5) {
+			} else if (c == 5){
 				if (admission == null) {
 					return "";
 				} else {
@@ -1287,6 +1415,15 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 						}
 					}
 					return "?";
+				}
+			} else if (c == 6) {
+				try{
+					Country country = admPat.getPatient().getCountry();
+					if (country != null) {
+						return country.getName();
+					}
+				}catch(Exception e){
+					return "";
 				}
 			}
 
@@ -1313,4 +1450,26 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		}
 	}
 
+	private void loadCountryList() {
+		patientCountryBox.removeAllItems();
+		patientCountryBox.addItem(null);
+		try {
+			List<Country> countries = countryBrowserManager.getCountries();
+			countries.forEach(patientCountryBox::addItem);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		patientCountryBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value == null) {
+					setText(MessageBundle.getMessage("angal.common.all.txt"));
+				} else {
+					setText(((Country) value).getName());
+				}
+				return this;
+			}
+		});
+	}
 }

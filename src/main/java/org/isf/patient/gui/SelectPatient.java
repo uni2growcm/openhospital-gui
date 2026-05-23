@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -174,6 +174,43 @@ public class SelectPatient extends JDialog implements PatientListener {
 			}
 		});
 		setLocationRelativeTo(null);
+	}
+
+	SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
+		super(owner, true);
+
+		try {
+			PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+
+			String keyword = (searchText != null && !searchText.trim().isEmpty()) ? searchText : null;
+			patArray = patientBrowserManager.getPatientsByOneOfFieldsLikeWithLimit(keyword, maxPatients);
+
+			patSearch = new ArrayList<>(patArray);
+
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+			patArray = new ArrayList<>();
+			patSearch = new ArrayList<>();
+		}
+
+		ps = new PatientSummary(patient);
+		initComponents();
+
+		if (searchText != null && !searchText.trim().isEmpty()) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				patArray.clear();
+				patSearch.clear();
+				dispose();
+			}
+		});
+
+		setLocationRelativeTo(null);
+		buttonNew.setVisible(ableAddPatient);
 	}
 
 	public SelectPatient(JDialog owner, String search) {
@@ -487,7 +524,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		try {
 			return patientBrowserManager.getPatientById(code);
 		} catch (OHServiceException ex) {
-			throw new RuntimeException("Unable to load patient");
+			throw new RuntimeException(MessageBundle.getMessage("angal.patient.unable.to.load.patient"));
 		}
 	}
 
@@ -558,6 +595,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 		return jSearchButton;
 	}
+
 	private JButton getButtonNew() {
 		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
