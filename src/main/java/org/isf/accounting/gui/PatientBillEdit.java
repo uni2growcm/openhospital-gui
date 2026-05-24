@@ -229,67 +229,196 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             return;
         }
 
+        /*
+         * =========================
+         * PATIENT VALIDATION
+         * =========================
+         */
         if (selectedPatient == null) {
+
             JOptionPane.showMessageDialog(
                     PatientBillEdit.this,
                     MessageBundle.getMessage("angal.newbill.pleaseselectapatient")
             );
+
             return;
         }
 
         boolean stockMovementEnabled = GeneralData.STOCKMVTONBILLSAVE;
 
-        if (stockMovementEnabled) {
+        /*
+         * =========================
+         * WARD VALIDATION
+         * =========================
+         */
+        Ward selectedWard = null;
+        String wardCode = "";
 
-            Object selectedWard = wardComboBox.getSelectedItem();
+        Object selected = wardComboBox.getSelectedItem();
 
-            if (!(selectedWard instanceof Ward ward)
-                    || ward.getCode() == null
-                    || ward.getCode().trim().isEmpty()) {
-
-                JOptionPane.showMessageDialog(
-                        PatientBillEdit.this,
-                        MessageBundle.getMessage("angal.newbill.pleaseselectaward")
-                );
-
-                return;
-            }
+        if (selected instanceof Ward) {
+            selectedWard = (Ward) selected;
+            wardCode = selectedWard.getCode();
         }
 
-        List<BillItems> validBillItems = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
+        if ((wardCode == null || wardCode.isEmpty()) && stockMovementEnabled) {
 
+            JOptionPane.showMessageDialog(
+                    PatientBillEdit.this,
+                    MessageBundle.getMessage("angal.newbill.pleaseselectaward")
+            );
+
+            return;
+        }
+
+        List<String> errors = new ArrayList<>();
+        List<BillItems> validBillItems = new ArrayList<>();
+
+        /*
+         * =========================
+         * BUILD + VALIDATE ITEMS
+         * =========================
+         */
         for (BillItemGroupItem groupItem : items) {
 
             try {
+
                 Price price = getPrice(groupItem.getPriceId());
 
                 if (price == null) {
-                    errors.add(MessageBundle.getMessage("angal.newbill.pricenotfoundforitem") + " : " + groupItem.getDescription());
+
+                    errors.add(
+                            MessageBundle.getMessage("angal.newbill.pricenotfoundforitem")
+                                    + " : "
+                                    + groupItem.getDescription()
+                    );
+
                     continue;
                 }
 
-                BillItems billItem = buildBillItem(price, groupItem.getQuantity(), groupItem.getDescription());
+                /*
+                 * =========================
+                 * MEDICAL STOCK VALIDATION
+                 * =========================
+                 */
+                if ("MED".equals(price.getGroup())) {
 
-                if (billItem != null) {
-                    validBillItems.add(billItem);
+                    MedicalWard medicalWard = getMedicalWard(price);
+
+                    /*
+                     * OUT OF STOCK
+                     */
+                    if (medicalWard == null) {
+
+                        errors.add(
+                                groupItem.getDescription()
+                                        + " - "
+                                        + MessageBundle.getMessage("angal.newbill.stocknotavailableforitem")
+                        );
+
+                        continue;
+                    }
                 }
+
+                /*
+                 * =========================
+                 * BUILD ITEM ONLY
+                 * DO NOT ADD DIRECTLY
+                 * =========================
+                 */
+                BillItems billItem = buildBillItem(
+                        price,
+                        groupItem.getQuantity(),
+                        groupItem.getDescription()
+                );
+
+                if (billItem == null) {
+                    continue;
+                }
+
+                /*
+                 * =========================
+                 * DISPLAY CODE
+                 * =========================
+                 */
+                if ("MED".equals(price.getGroup())) {
+
+                    MedicalWard medicalWard = getMedicalWard(price);
+
+                    if (medicalWard != null
+                            && medicalWard.getMedical() != null) {
+
+                        billItem.setItemDisplayCode(
+                                medicalWard.getMedical().getProdCode()
+                        );
+                    }
+
+                } else if ("OTH".equals(price.getGroup())) {
+
+                    try {
+
+                        othPrices = pricesOthersManager.getOthers();
+
+                        PricesOthers pricesOther = null;
+
+                        if (othPrices != null) {
+
+                            pricesOther = othPrices.stream()
+                                    .filter(p ->
+                                            p.getId() == Integer.parseInt(price.getItem()))
+                                    .findFirst()
+                                    .orElse(null);
+                        }
+
+                        if (pricesOther != null) {
+                            billItem.setItemDisplayCode(pricesOther.getCode());
+                        }
+
+                    } catch (OHServiceException e) {
+
+                        LOGGER.error("Error loading other prices", e);
+                    }
+                }
+
+                validBillItems.add(billItem);
+
             } catch (Exception e) {
-                errors.add(groupItem.getDescription() + " - " + e.getMessage());
+
+                errors.add(
+                        groupItem.getDescription()
+                                + " - "
+                                + e.getMessage()
+                );
             }
         }
 
         /*
          * =========================
-         * HANDLE ERRORS
+         * ALL INVALID
+         * =========================
+         */
+        if (!errors.isEmpty() && validBillItems.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    PatientBillEdit.this,
+                    MessageBundle.getMessage("angal.newbill.allitemscontainerrors")
+                            + "\n"
+                            + String.join("\n", errors),
+                    MessageBundle.getMessage("angal.common.errordialogtitle"),
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        /*
+         * =========================
+         * SOME INVALID
+         * YES = ADD VALID ONES
+         * NO = ADD NOTHING
          * =========================
          */
         if (!errors.isEmpty()) {
-
-            if (validBillItems.isEmpty()) {
-                MessageDialog.info(this, "angal.newbill.allitemscontainerrors", String.join("\n", errors));
-                return;
-            }
 
             int action = JOptionPane.showConfirmDialog(
                     PatientBillEdit.this,
@@ -297,11 +426,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                             + "\n\n"
                             + String.join("\n", errors)
                             + "\n\n"
-                            + MessageBundle.getMessage("angal.common.confirmactiondialogmessage"),
-                    MessageBundle.getMessage("angal.newbill.confirm.msg"),
+                            + MessageBundle.getMessage("angal.newbill.addvaliditemsonly"),
+                    MessageBundle.getMessage("angal.common.confirmactiondialogtitle"),
                     JOptionPane.YES_NO_OPTION
             );
 
+            /*
+             * NO = CANCEL EVERYTHING
+             */
             if (action != JOptionPane.YES_OPTION) {
                 return;
             }
@@ -309,7 +441,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
         /*
          * =========================
-         * ADD VALID ITEMS
+         * ADD VALID ITEMS ONCE ONLY
          * =========================
          */
         billItems.addAll(validBillItems);
@@ -3001,18 +3133,70 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 										continue;
 									}
 
-									BillItems validatedItem = buildBillItem(
-											price,
-											item.getItemQuantity(),
-											item.getItemDescription()
-									);
+                                    if ("MED".equals(item.getItemGroup())) {
 
-									if (validatedItem != null) {
-										validatedItem.setPrescriptionId(item.getPrescriptionId());
-										validatedItem.setItemGroup(item.getItemGroup());
-										billItems.add(validatedItem);
-										modified = true;
-									}
+                                        MedicalWard medicalWard = getMedicalWard(price);
+
+                                        if (medicalWard == null) {
+
+                                            MessageDialog.error(
+                                                    PatientBillEdit.this,
+                                                    MessageBundle.getMessage("angal.newbill.stocknotavailableforitem")
+                                                            + ": " + item.getItemDescription()
+                                            );
+
+                                            continue;
+                                        }
+
+                                        BillItems validatedItem =
+                                                addMedical(medicalWard, item.getItemQuantity());
+
+                                        if (validatedItem != null) {
+
+                                            validatedItem.setPrescriptionId(item.getPrescriptionId());
+
+                                            validatedItem.setItemAmount(item.getItemAmount());
+
+                                            validatedItem.setItemAmountBrut(item.getItemAmountBrut());
+
+                                            validatedItem.setPrice(true);
+
+                                            validatedItem.setItemGroup(item.getItemGroup());
+
+                                            validatedItem.setItemDisplayCode(
+                                                    medicalWard.getMedical().getProdCode()
+                                            );
+
+                                            billItems.add(validatedItem);
+
+                                            modified = true;
+                                        }
+
+                                    } else {
+
+                                        BillItems validatedItem = buildBillItem(
+                                                price,
+                                                item.getItemQuantity(),
+                                                item.getItemDescription()
+                                        );
+
+                                        if (validatedItem != null) {
+
+                                            validatedItem.setPrescriptionId(item.getPrescriptionId());
+
+                                            validatedItem.setItemGroup(item.getItemGroup());
+
+                                            validatedItem.setItemAmount(item.getItemAmount());
+
+                                            validatedItem.setItemAmountBrut(item.getItemAmountBrut());
+
+                                            validatedItem.setPrice(true);
+
+                                            billItems.add(validatedItem);
+
+                                            modified = true;
+                                        }
+                                    }
 								} catch (OHServiceException ex) {
 									MessageDialog.error(PatientBillEdit.this, ex.getMessage());
 								}
