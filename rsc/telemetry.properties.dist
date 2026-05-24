@@ -8,4 +8,4 @@ telemetry.daemon.thread.loop.seconds=14400
 telemetry.enabled.geo.ip.lookup.service=geoiplookup-remote-service
 # endpoints remote services
 geoiplookup-remote-service.ribbon.base-url=https://json.geoiplookup.io
-ipapi-remote-service.ribbon.base-url=http://ip-api.com/json 
+ipapi-remote-service.ribbon.base-url=http://ip-api.com/json

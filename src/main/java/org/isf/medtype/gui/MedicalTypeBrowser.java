@@ -255,7 +255,7 @@ public class MedicalTypeBrowser extends ModalJFrame implements MedicalTypeListen
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
-		
+
 		@Override
 		public Class getColumnClass(int column) {
 			return (column == 2) ? Boolean.class : String.class;
