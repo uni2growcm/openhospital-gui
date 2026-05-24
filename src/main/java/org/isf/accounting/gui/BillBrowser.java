@@ -213,7 +213,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int pendingCurrentPage = 0;
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
-	private static final int PAGE_SIZE = 3;
+	private static final int PAGE_SIZE = 100;
 
 	public boolean hasBillGuarantor() {
 		return GeneralData.ALLOWBILLGUARANTOR;
