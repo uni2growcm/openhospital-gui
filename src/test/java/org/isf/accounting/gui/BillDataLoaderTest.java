@@ -31,6 +31,12 @@ import java.util.List;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.service.AccountingIoOperations;
+import org.isf.medicals.manager.MedicalBrowsingManager;
+import org.isf.medicalstock.manager.MovStockInsertingManager;
+import org.isf.medicalstockward.manager.MovWardBrowserManager;
+import org.isf.medicalstockward.service.MedicalStockWardIoOperations;
+import org.isf.patient.model.Patient;
+import org.isf.priceslist.manager.PriceListManager;
 import org.isf.lab.manager.LabManager;
 import org.isf.operation.manager.OperationRowBrowserManager;
 import org.isf.medicals.manager.MedicalBrowsingManager;
@@ -50,6 +56,18 @@ class BillDataLoaderTest {
 	@Mock
 	private AccountingIoOperations accountingIoOperations;
 
+    @Mock
+    private PriceListManager priceListManager;
+
+    @Mock
+    private MovWardBrowserManager mvtManager;
+
+    @Mock
+    private MedicalBrowsingManager medicalBrowsingManager;
+
+    @Mock
+    private MovStockInsertingManager movStockInsertingManager;
+
 	@Mock
 	private TherapyManager therapyManager;
 
@@ -58,18 +76,6 @@ class BillDataLoaderTest {
 
 	@Mock
 	private OperationRowBrowserManager operationRowManager;
-
-	@Mock
-	private MovWardBrowserManager mvtManager;
-
-	@Mock
-	private PriceListManager priceListManager;
-
-	@Mock
-	private MedicalBrowsingManager medicalBrowsingManager;
-
-	@Mock
-	private MovStockInsertingManager movStockInsertingManager;
 
 	@Test
 	void shouldLoadPendingBillsFromManagerForParentPatient() throws OHServiceException {
@@ -107,25 +113,20 @@ class BillDataLoaderTest {
 
 	@Test
 	void shouldLoadPendingBillsFromPeriodOnly() throws OHServiceException {
-		BillBrowserManager billBrowserManager = new BillBrowserManager(
-				accountingIoOperations,
-				mvtManager,
-				priceListManager,
-				medicalBrowsingManager,
-				movStockInsertingManager,
-				therapyManager,
-				labManager,
-				operationRowManager);
-
+		// given:
 		BillDataLoader billDataLoader = new BillDataLoader(
-				Arrays.asList(
-						TestBill.notDeletedBillWithStatus(1, "C"),
-						TestBill.notDeletedBillWithStatus(2, "O")),
-				Arrays.asList(
-						TestBill.notDeletedBillWithStatus(1, "C"),
-						TestBill.notDeletedBillWithStatus(3, "O")),
-				null,
-				billBrowserManager);
+						Arrays.asList(
+										TestBill.notDeletedBillWithStatus(1, "C"),
+										TestBill.notDeletedBillWithStatus(2, "O")),
+						Arrays.asList(
+										TestBill.notDeletedBillWithStatus(1, "C"),
+										TestBill.notDeletedBillWithStatus(3, "O")),
+						null,
+						new BillBrowserManager(
+							accountingIoOperations, mvtManager, priceListManager,
+							medicalBrowsingManager, movStockInsertingManager,
+							therapyManager, labManager, operationRowManager
+						));
 
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
 

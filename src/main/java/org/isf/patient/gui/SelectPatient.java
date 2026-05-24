@@ -245,8 +245,9 @@ public class SelectPatient extends JDialog implements PatientListener {
         }
 	}
 
-    public SelectPatient(JDialog owner, String searchText, boolean femaleOnly) {
+    public SelectPatient(JDialog owner, String searchText, boolean enableAddPatient, boolean femaleOnly) {
         super(owner, true);
+		buttonNew.setVisible(enableAddPatient);
 
         femalesOnly = femaleOnly;
 
@@ -354,6 +355,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 		});
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
+	}
+
+	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
+		this(owner, keywords);
+		buttonNew.setVisible(enablePatientAdd);
 	}
 
     private void initComponents() {
