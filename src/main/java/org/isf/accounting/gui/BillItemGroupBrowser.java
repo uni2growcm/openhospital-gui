@@ -173,7 +173,7 @@ public class BillItemGroupBrowser extends JDialog {
 			applyButton.setMnemonic(KeyEvent.VK_A);
 			applyButton.addActionListener(e -> applySelectedGroup());
 			applyButton.setEnabled(enableGroupSelection);
-            applyButton.setPreferredSize(new Dimension(1,25));
+            applyButton.setPreferredSize(new Dimension(100,25));
 		}
 		return applyButton;
 	}

@@ -34,10 +34,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -559,7 +556,18 @@ public class BillItemGroupEdit extends JDialog {
             return;
         }
 
-        OhTableModel<Price> model = new OhTableModel<>(prcListArray, true);
+        Map<String, Price> uniquePrices = new LinkedHashMap<>();
+
+        for (Price p : prcListArray) {
+
+            String key = p.getGroup() + "_" + p.getItem();
+
+            uniquePrices.putIfAbsent(key, p);
+        }
+
+        List<Price> uniqueList = new ArrayList<>(uniquePrices.values());
+
+        OhTableModel<Price> model = new OhTableModel<>(uniqueList, true);
         Price selected = null;
 
         try {
@@ -602,7 +610,20 @@ public class BillItemGroupEdit extends JDialog {
     }
 
     private void addItemFromGroup(String group) {
-        List<Price> filtered = prcListArray.stream().filter(p -> group.equals(p.getGroup())).toList();
+        Map<String, Price> uniquePrices = new HashMap<>();
+
+        for (Price p : prcListArray) {
+
+            if (!group.equals(p.getGroup())) {
+                continue;
+            }
+
+            String key = p.getGroup() + "_" + p.getItem();
+
+            uniquePrices.putIfAbsent(key, p);
+        }
+
+        List<Price> filtered = new ArrayList<>(uniquePrices.values());
 
         OhTableModel<Price> model = new OhTableModel<>(filtered);
 

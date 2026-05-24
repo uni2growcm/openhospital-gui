@@ -2191,7 +2191,18 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel getJPanelConsensus() {
 		try {
 			if (patient != null && patient.getCode() != null) {
-				consensus = this.patientConsensusManager.getPatientConsensusByUserId(patient.getCode()).get();
+                var optionalConsensus =
+                        patientConsensusManager
+                                .getPatientConsensusByUserId(patient.getCode());
+
+                if (optionalConsensus != null && optionalConsensus.isPresent()) {
+
+                    consensus = optionalConsensus.get();
+
+                } else {
+
+                    consensus = new PatientConsensus();
+                }
 			} else {
 				consensus = new PatientConsensus();
 			}
