@@ -31,10 +31,13 @@ import java.util.List;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.service.AccountingIoOperations;
+import org.isf.lab.manager.LabManager;
+import org.isf.operation.manager.OperationRowBrowserManager;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicalstock.manager.MovStockInsertingManager;
 import org.isf.medicalstockward.manager.MovWardBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.therapy.manager.TherapyManager;
 import org.isf.priceslist.manager.PriceListManager;
 import org.isf.utils.exception.OHServiceException;
 import org.junit.jupiter.api.Test;
@@ -47,126 +50,139 @@ class BillDataLoaderTest {
 	@Mock
 	private AccountingIoOperations accountingIoOperations;
 
-    @Mock
-    private MovWardBrowserManager mvtManager;
+	@Mock
+	private TherapyManager therapyManager;
 
-    @Mock
-    private PriceListManager priceListManager;
+	@Mock
+	private LabManager labManager;
 
-    @Mock
-    private MedicalBrowsingManager medicalBrowsingManager;
+	@Mock
+	private OperationRowBrowserManager operationRowManager;
 
-    @Mock
-    private MovStockInsertingManager movStockInsertingManager;
+	@Mock
+	private MovWardBrowserManager mvtManager;
+
+	@Mock
+	private PriceListManager priceListManager;
+
+	@Mock
+	private MedicalBrowsingManager medicalBrowsingManager;
+
+	@Mock
+	private MovStockInsertingManager movStockInsertingManager;
 
 	@Test
 	void shouldLoadPendingBillsFromManagerForParentPatient() throws OHServiceException {
-		// given:
 		Patient patientParent = new Patient();
 		patientParent.setCode(1);
+
+		BillBrowserManager billBrowserManager = new BillBrowserManager(
+				accountingIoOperations,
+				mvtManager,
+				priceListManager,
+				medicalBrowsingManager,
+				movStockInsertingManager,
+				therapyManager,
+				labManager,
+				operationRowManager) {
+			@Override
+			public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
+				return new ArrayList<>(Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "O"),
+						TestBill.notDeletedBillWithStatus(2, "O"),
+						TestBill.notDeletedBillWithStatus(3, "O")));
+			}
+		};
+
 		BillDataLoader billDataLoader = new BillDataLoader(
-						Collections.emptyList(),
-						Collections.emptyList(),
-						patientParent,
-						new BillBrowserManager(
-                                accountingIoOperations,
-                                mvtManager,
-                                priceListManager,
-                                medicalBrowsingManager,
-                                movStockInsertingManager
-                        ) {
+				Collections.emptyList(),
+				Collections.emptyList(),
+				patientParent,
+				billBrowserManager);
 
-							@Override
-							public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
-								return new ArrayList<>(Arrays.asList(
-												TestBill.notDeletedBillWithStatus(1, "O"),
-												TestBill.notDeletedBillWithStatus(2, "O"),
-												TestBill.notDeletedBillWithStatus(3, "O")));
-							}
-						});
-
-		// when:
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
 
-		// then:
 		assertThat(result).hasSize(3);
 	}
 
 	@Test
 	void shouldLoadPendingBillsFromPeriodOnly() throws OHServiceException {
-		// given:
-		BillDataLoader billDataLoader = new BillDataLoader(
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "C"),
-										TestBill.notDeletedBillWithStatus(2, "O")),
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "C"),
-										TestBill.notDeletedBillWithStatus(3, "O")),
-						null,
-						new BillBrowserManager(
-                                accountingIoOperations,
-                                mvtManager,
-                                priceListManager,
-                                medicalBrowsingManager,
-                                movStockInsertingManager));
+		BillBrowserManager billBrowserManager = new BillBrowserManager(
+				accountingIoOperations,
+				mvtManager,
+				priceListManager,
+				medicalBrowsingManager,
+				movStockInsertingManager,
+				therapyManager,
+				labManager,
+				operationRowManager);
 
-		// when:
+		BillDataLoader billDataLoader = new BillDataLoader(
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "C"),
+						TestBill.notDeletedBillWithStatus(2, "O")),
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "C"),
+						TestBill.notDeletedBillWithStatus(3, "O")),
+				null,
+				billBrowserManager);
+
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
 
-		// then:
 		assertThat(result).hasSize(1);
 	}
 
 	@Test
 	void shouldLoadAllBillsMergedWithBillsFromPaymentWithoutDuplicates() throws OHServiceException {
-		// given:
-		BillDataLoader billDataLoader = new BillDataLoader(
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "O"),
-										TestBill.notDeletedBillWithStatus(2, "C")),
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "0"),
-										TestBill.notDeletedBillWithStatus(3, "C")),
-						null,
-						new BillBrowserManager(
-                                accountingIoOperations,
-                                mvtManager,
-                                priceListManager,
-                                medicalBrowsingManager,
-                                movStockInsertingManager
-                        ));
+		BillBrowserManager billBrowserManager = new BillBrowserManager(
+				accountingIoOperations,
+				mvtManager,
+				priceListManager,
+				medicalBrowsingManager,
+				movStockInsertingManager,
+				therapyManager,
+				labManager,
+				operationRowManager);
 
-		// when:
+		BillDataLoader billDataLoader = new BillDataLoader(
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "O"),
+						TestBill.notDeletedBillWithStatus(2, "C")),
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "0"),
+						TestBill.notDeletedBillWithStatus(3, "C")),
+				null,
+				billBrowserManager);
+
 		List<Bill> result = billDataLoader.loadBills("ALL", NO_USERNAME);
 
-		// then:
 		assertThat(result).hasSize(3);
 	}
 
 	@Test
 	void shouldLoadClosedBillFromGivenPeriod() throws OHServiceException {
-		// given:
-		BillDataLoader billDataLoader = new BillDataLoader(
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "O"),
-										TestBill.notDeletedBillWithStatus(2, "C")),
-						Arrays.asList(
-										TestBill.notDeletedBillWithStatus(1, "0"),
-										TestBill.notDeletedBillWithStatus(3, "C")),
-						null,
-						new BillBrowserManager(
-                                accountingIoOperations,
-                                mvtManager,
-                                priceListManager,
-                                medicalBrowsingManager,
-                                movStockInsertingManager
-                        ));
+		BillBrowserManager billBrowserManager = new BillBrowserManager(
+				accountingIoOperations,
+				mvtManager,
+				priceListManager,
+				medicalBrowsingManager,
+				movStockInsertingManager,
+				therapyManager,
+				labManager,
+				operationRowManager);
 
-		// when:
+		BillDataLoader billDataLoader = new BillDataLoader(
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "O"),
+						TestBill.notDeletedBillWithStatus(2, "C")),
+				Arrays.asList(
+						TestBill.notDeletedBillWithStatus(1, "0"),
+						TestBill.notDeletedBillWithStatus(3, "C")),
+				null,
+				billBrowserManager);
+
 		List<Bill> result = billDataLoader.loadBills("C", NO_USERNAME);
 
-		// then:
 		assertThat(result).hasSize(1);
 	}
-
 }
