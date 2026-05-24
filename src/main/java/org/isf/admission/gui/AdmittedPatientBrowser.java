@@ -356,15 +356,6 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		setTitle(MessageBundle.getMessage("angal.admission.patientbrowser.title"));
 		myFrame = this;
 
-		if (!GeneralData.ENHANCEDSEARCH) {
-			// Load the whole list of patients
-			try {
-				pPatient = admissionBrowserManager.getAdmittedPatients(null);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		}
-
 		initComponents();
 		setMinimumSize(new Dimension(1270, 570));
 		pack();

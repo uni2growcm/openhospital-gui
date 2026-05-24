@@ -38,6 +38,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -277,7 +278,14 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					users.add(user);
 					jComboUsers.addItem(user);
 				}
+				ActionListener[] listeners = jComboUsers.getActionListeners();
+				for (ActionListener l : listeners) {
+					jComboUsers.removeActionListener(l);
+				}
 				jComboUsers.setSelectedItem(user);
+				for (ActionListener l : listeners) {
+					jComboUsers.addActionListener(l);
+				}
 			}
 		}
 	}
@@ -432,7 +440,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		});
 
 		underLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-		underLabel.setPreferredSize(new Dimension(70, 25));
 
 		rowCounter = new JLabel(rowCounterText + "0");
 		rowCounter.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -1384,9 +1391,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.todaycolon.txt") + "</b></html>", 0, 0);
 				jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.periodcolon.txt") + "</b></html>", 0, 2);
 				updateTotals();
-				jTableBills.setModel(new BillTableModel("ALL", user));
-				jTablePending.setModel(new BillTableModel("O", user));
-				jTableClosed.setModel(new BillTableModel("C", user));
+				currentPage = 0;
+				closedCurrentPage = 0;
+				pendingCurrentPage = 0;
+				updateTables();
 			});
 		}
 		return jComboUsers;
@@ -1505,7 +1513,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		});
 
 		closedUnderLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-		closedUnderLabel.setPreferredSize(new Dimension(70, 25));
 
 		closedRowCounter = new JLabel(rowCounterText + "0");
 
@@ -1551,7 +1558,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		});
 
 		pendingUnderLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-		pendingUnderLabel.setPreferredSize(new Dimension(70, 25));
 
 		pendingRowCounter = new JLabel(rowCounterText + "0");
 

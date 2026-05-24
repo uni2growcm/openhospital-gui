@@ -131,6 +131,7 @@ public class DeliveryEdit extends JDialog {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.delivery.info.txt")));
         deliveryDateField = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
+        deliveryDateField.setMaxDate(LocalDate.now());
         deliveryTypeCombo = new JComboBox<>();
         try {
             Context.getApplicationContext().getBean(TypologyBrowserManager.class).getTypologies(Family.DELIVERYTYPE).forEach(deliveryTypeCombo::addItem);
@@ -485,6 +486,10 @@ public class DeliveryEdit extends JDialog {
         }
         if (deliveryTypeCombo.getSelectedItem() == null) {
             MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.typerequired.msg"));
+            return false;
+        }
+        if (deliveryDateField.getLocalDateTime().isAfter(LocalDateTime.now())) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.futuredatenotallowed.msg"));
             return false;
         }
         return true;
