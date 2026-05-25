@@ -232,7 +232,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 		}
-		updateDataSet();
 		initComponents();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);
@@ -290,27 +289,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		}
 	}
 
-	private void updateDataSet() {
-		updateDataSet(LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(1).atStartOfDay());
-	}
+	private void updateDataSet() {}
 
-	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {
-		try {
-			billPeriod = billBrowserManager.getBills(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-		try {
-			paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-		try {
-			billFromPayments = billBrowserManager.getBills(paymentsPeriod);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-	}
+	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {}
 
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
 		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient);
@@ -319,48 +300,25 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	}
 
 	private void updateTotals() {
-		List<Bill> billToday = null;
-		List<BillPayments> paymentsToday = null;
-		if (UserBrowsingManager.getCurrentUser().equals("admin")) {
-			try {
-				billToday = billBrowserManager.getBills(dateToday0, dateToday24);
-				paymentsToday = billBrowserManager.getPayments(dateToday0, dateToday24);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
+		try {
+			User guarantor = getSelectedGuarantor();
+			double totalToday = billBrowserManager.sumPaymentsByFilters(dateToday0, dateToday24, patientParent, guarantor);
+			double balanceToday = billBrowserManager.sumBalanceByFilters(null, dateToday0, dateToday24, patientParent, guarantor);
+			double totalPeriod = billBrowserManager.sumPaymentsByFilters(dateFrom, dateTo, patientParent, guarantor);
+			double balancePeriod = billBrowserManager.sumBalanceByFilters(null, dateFrom, dateTo, patientParent, guarantor);
+			double userToday = billBrowserManager.sumPaymentsByUserAndFilters(user, dateToday0, dateToday24, patientParent, guarantor);
+			double userPeriod = billBrowserManager.sumPaymentsByUserAndFilters(user, dateFrom, dateTo, patientParent, guarantor);
+
+			jTableToday.setValueAt(totalToday, 0, 2);
+			jTableToday.setValueAt(balanceToday, 0, 5);
+			jTablePeriod.setValueAt(totalPeriod, 0, 2);
+			jTablePeriod.setValueAt(balancePeriod, 0, 5);
+			if (jTableUser != null) {
+				jTableUser.setValueAt(userToday, 0, 1);
+				jTableUser.setValueAt(userPeriod, 0, 3);
 			}
-		} else {
-			billToday = billPeriod;
-			paymentsToday = paymentsPeriod;
-		}
-
-		totalPeriod = new BigDecimal(0);
-		balancePeriod = new BigDecimal(0);
-		totalToday = new BigDecimal(0);
-		balanceToday = new BigDecimal(0);
-		userToday = new BigDecimal(0);
-		userPeriod = new BigDecimal(0);
-
-		List<Integer> notDeletedBills = billPeriod.stream()
-				.filter(bill -> !bill.getStatus().equals("D"))
-				.map(Bill::getId)
-				.collect(Collectors.toList());
-
-		balancePeriod = new BalanceTotal(billPeriod).getValue();
-		balanceToday = new BalanceTotal(billToday).getValue();
-
-		userPeriod = new UserTotal(notDeletedBills, paymentsPeriod, user).getValue();
-		totalPeriod = new PaymentsTotal(notDeletedBills, paymentsPeriod).getValue();
-
-		userToday = new UserTotal(notDeletedBills, paymentsToday, user).getValue();
-		totalToday = new PaymentsTotal(notDeletedBills, paymentsToday).getValue();
-
-		jTableToday.setValueAt(totalToday, 0, 2);
-		jTableToday.setValueAt(balanceToday, 0, 5);
-		jTablePeriod.setValueAt(totalPeriod, 0, 2);
-		jTablePeriod.setValueAt(balancePeriod, 0, 5);
-		if (jTableUser != null) {
-			jTableUser.setValueAt(userToday, 0, 1);
-			jTableUser.setValueAt(userPeriod, 0, 3);
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
 		}
 	}
 
@@ -557,6 +515,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jTableBills.setModel(new BillTableModel(bills));
 			updatePaginationControls();
 			jTableBills.updateUI();
+			updateTotals();
 		} catch (OHServiceException e) {
 			MessageDialog.showExceptions(e);
 		}
@@ -1318,8 +1277,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jButtonClose = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 			jButtonClose.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 			jButtonClose.addActionListener(actionEvent -> {
-				billPeriod.clear();
-				users.clear();
 				dispose();
 			});
 		}
@@ -1333,8 +1290,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				LocalDate newDate = event.getNewDate();
 				if (newDate != null) {
 					dateFrom = newDate.atStartOfDay();
+					currentPage = 0;
 					jButtonToday.setEnabled(true);
-					billInserted(null);
+					loadCurrentPage();
 				}
 			});
 		}
@@ -1348,8 +1306,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				LocalDate newDate = event.getNewDate();
 				if (newDate != null) {
 					dateTo = newDate.atTime(LocalTime.MAX);
+					currentPage = 0;
 					jButtonToday.setEnabled(true);
-					billInserted(null);
+					loadCurrentPage();
 				}
 			});
 		}
@@ -1633,8 +1592,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				billPeriod.clear();
-				users.clear();
 				dispose();
 			}
 		});
