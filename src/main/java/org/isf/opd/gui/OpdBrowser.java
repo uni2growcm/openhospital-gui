@@ -727,7 +727,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		JPanel userPanel = new JPanel();
 		ButtonGroup groupUserFilter = new ButtonGroup();
 		radioMyPatients = new JRadioButton(MessageBundle.getMessage("angal.opd.mypatient.btn"));
-		radioAllPatients = new JRadioButton(MessageBundle.getMessage("angal.common.all.btn"));
+		radioAllPatients = new JRadioButton(MessageBundle.getMessage("angal.opd.all.btn"));
 		radioAllPatients.setSelected(true);
 		groupUserFilter.add(radioMyPatients);
 		groupUserFilter.add(radioAllPatients);
