@@ -1481,7 +1481,12 @@ public class WardPharmacy extends ModalJFrame implements
 				Object ward = jComboBoxWard.getSelectedItem();
 				if (ward instanceof Ward) {
 					wardSelected = (Ward) ward;
-					wardDrugs = null;
+					try {
+						wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+						wardDrugs = new ArrayList<>();
+					}
 					if (!added) {
 						add(getJPanelCentral());
 						jCalendarFrom.setEnabled(true);
