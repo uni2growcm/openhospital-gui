@@ -721,7 +721,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 					} else {
 						medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(key, description, null, false, page, size);
 					}
-					medicalList = medicalPage.getContent();
+					medicalList = new ArrayList<>(medicalPage.getContent());
 					TOTAL_PAGES = medicalPage.getTotalElements();
 					PAGES = medicalPage.getTotalPages();
 				} catch (OHServiceException e) {
@@ -975,7 +975,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			);
 
 			if (medicalPage != null) {
-				medicalList = medicalPage.getContent();
+				medicalList = new ArrayList<>(medicalPage.getContent());
 				TOTAL_PAGES = medicalPage.getTotalElements();
 				PAGES = medicalPage.getTotalPages();
 			} else {
