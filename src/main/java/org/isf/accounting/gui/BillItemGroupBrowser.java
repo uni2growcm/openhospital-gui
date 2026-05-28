@@ -123,7 +123,6 @@ public class BillItemGroupBrowser extends JDialog {
 		this.add(scrollPane, BorderLayout.CENTER);
 		this.add(buttonPanel, BorderLayout.SOUTH);
 
-		// Reduced width from 700 to 600 for better layout
 		this.setSize(600, 400);
 		this.setMinimumSize(new Dimension(500, 300));
 		this.setResizable(true);

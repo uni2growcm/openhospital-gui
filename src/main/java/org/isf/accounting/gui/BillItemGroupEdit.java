@@ -159,7 +159,6 @@ public class BillItemGroupEdit extends JDialog {
 
     private void initialize() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        // Reduced width from 1100 to 900, matching PatientBillEdit style
         setSize(900, 700);
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(getOwner());
@@ -814,13 +813,32 @@ public class BillItemGroupEdit extends JDialog {
         billItemGroup.setDescription(description);
         billItemGroup.setTotal(total.doubleValue());
 
-        billItemGroup.setItems(items);
-
         try {
             if (insert) {
+                billItemGroup.setItems(items);
                 billItemGroup = manager.addBillItemGroup(billItemGroup);
             } else {
-                manager.updateBillItemGroup(billItemGroup);
+                billItemGroup = manager.updateBillItemGroup(billItemGroup);
+
+                List<BillItemGroupItem> existingItems = manager.getItemsByGroupId(billItemGroup.getId());
+                for (BillItemGroupItem existingItem : existingItems) {
+                    boolean found = items.stream().anyMatch(item -> item.getId() == existingItem.getId());
+                    if (!found) {
+                        manager.deleteBillItemGroupItem(existingItem.getId());
+                    }
+                }
+
+                for (BillItemGroupItem item : items) {
+                    if (item.getId() == 0) {
+                        // New item
+                        item.setBillItemGroup(billItemGroup);
+                        manager.updateBillItemGroupItem(item);
+                    } else if (item.getId() > 0) {
+                        // Update existing item
+                        item.setBillItemGroup(billItemGroup);
+                        manager.updateBillItemGroupItem(item);
+                    }
+                }
             }
 
             confirmed = true;
