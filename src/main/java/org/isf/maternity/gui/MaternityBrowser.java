@@ -62,6 +62,7 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.gui.PatVacBrowser;
+import org.isf.stat.gui.report.GenericReportPregnancyCertificateOfDeclaration;
 import org.isf.stat.gui.report.GenericReportPregnancy;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.typology.manager.TypologyBrowserManager;
@@ -85,7 +86,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private static final int MIN_AGE = 10;
     private static final int MAX_AGE = 60;
-    
+
     private final String[] columnHeaders = {
         MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
         MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
