@@ -1384,9 +1384,6 @@ public class WardPharmacy extends ModalJFrame implements
 			protected Page<MedicalWard> doInBackground() throws Exception {
 				Page<MedicalWard> result = movWardBrowserManager
 						.getMedicalsWardTotalQuantity(wardSelected.getCode(), page, PAGE_SIZE);
-				if (wardDrugs == null) {
-					wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
-				}
 				return result;
 			}
 
@@ -1678,7 +1675,6 @@ public class WardPharmacy extends ModalJFrame implements
 				return mov.getUnits();
 			}
 			if (c == 8) {
-                System.out.println("Mov: " + mov);
 				return mov.getLot().getCode();
 			}
 			if (c == 9) {
