@@ -194,6 +194,9 @@ public class SelectPrescriptions extends JDialog {
 
     private double getTherapyPrice(TherapyRow therapy, boolean withReduction) {
         try {
+            if (therapy == null || therapy.getMedicalId() == null) {
+                return 0.0;
+            }
             Price price;
             if (withReduction) {
                 price = billManager.getPrice(String.valueOf(therapy.getMedicalId()), ItemGroup.MEDICAL, patient);
@@ -208,6 +211,9 @@ public class SelectPrescriptions extends JDialog {
 
     private double getExamPrice(Laboratory lab, boolean withReduction) {
         try {
+            if (lab == null || lab.getExam() == null || lab.getExam().getCode() == null) {
+                return 0.0;
+            }
             Price price;
             if (withReduction) {
                 price = billManager.getPrice(lab.getExam().getCode(), ItemGroup.EXAM, patient);
@@ -222,6 +228,9 @@ public class SelectPrescriptions extends JDialog {
 
     private double getOperationPrice(OperationRow op, boolean withReduction) {
         try {
+            if (op == null || op.getOperation() == null || op.getOperation().getCode() == null) {
+                return 0.0;
+            }
             Price price;
             if (withReduction) {
                 price = billManager.getPrice(op.getOperation().getCode(), ItemGroup.OPERATION, patient);

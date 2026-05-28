@@ -708,7 +708,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		jAffiliatePersonJButtonAdd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				SelectPatient selectPatient = new SelectPatient(BillBrowser.this, false, true);
+				SelectPatient selectPatient = new SelectPatient(BillBrowser.this, false, "", 100);
 				selectPatient.addSelectionListener(BillBrowser.this);
 				selectPatient.setVisible(true);
 				Patient pat = selectPatient.getPatient();

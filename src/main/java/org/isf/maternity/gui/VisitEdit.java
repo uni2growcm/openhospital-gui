@@ -42,7 +42,9 @@ import javax.swing.SpringLayout;
 import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
+import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
+import org.isf.maternity.model.PregnancyDelivery;
 import org.isf.menu.manager.Context;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
@@ -104,8 +106,7 @@ public class VisitEdit extends JDialog {
 
     private GoodDateTimeSpinnerChooser visitDateField;
     private JComboBox<Typology> typologyCombo;
-    private JTextField gestationalWeeksField;
-    private JTextField gestationalDaysField;
+    private JTextField gestationalAgeField;
     private JTextField maternalWeightField;
     private JTextField systolicBPField;
     private JTextField diastolicBPField;
@@ -182,12 +183,6 @@ public class VisitEdit extends JDialog {
             }
             if (visit.getVisitType() != null) {
                 typologyCombo.setSelectedItem(visit.getVisitType());
-            }
-            if (visit.getGestationalWeeks() != null) {
-                gestationalWeeksField.setText(String.valueOf(visit.getGestationalWeeks()));
-            }
-            if (visit.getGestationalDays() != null) {
-                gestationalDaysField.setText(String.valueOf(visit.getGestationalDays()));
             }
             if (visit.getMaternalWeight() != null) {
                 maternalWeightField.setText(String.valueOf(visit.getMaternalWeight()));
@@ -267,13 +262,16 @@ public class VisitEdit extends JDialog {
             dataPanel.add(getTypologyCombo());
 
             // Gestational Age - Row 4
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.gestational.age")));
-            JPanel gestationalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            gestationalPanel.add(getGestationalWeeksField());
-            gestationalPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.common.weeks.txt") + " "));
-            gestationalPanel.add(getGestationalDaysField());
-            gestationalPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.common.days.txt")));
-            dataPanel.add(gestationalPanel);
+            try {
+                PregnancyDelivery delivery = pregnancyDeliveryBrowserManager.getDeliveryByPregnancy(pregnancy.getId());
+
+                if (delivery == null) {
+                    dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.gestational.age")));
+                    dataPanel.add(getGestationalAgeField());
+                }
+            } catch (OHServiceException e) {
+                throw new RuntimeException(e);
+            }
 
             // Maternal Weight - Row 5
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.maternal.weight") + " (kg)"));
@@ -368,20 +366,15 @@ public class VisitEdit extends JDialog {
         return typologyCombo;
     }
 
-    private JTextField getGestationalWeeksField() {
-        if (gestationalWeeksField == null) {
-            gestationalWeeksField = new VoLimitedTextField(2, 2);
-            gestationalWeeksField.setColumns(3);
-        }
-        return gestationalWeeksField;
-    }
+    PregnancyDeliveryBrowserManager pregnancyDeliveryBrowserManager = Context.getApplicationContext().getBean(PregnancyDeliveryBrowserManager.class);
 
-    private JTextField getGestationalDaysField() {
-        if (gestationalDaysField == null) {
-            gestationalDaysField = new VoLimitedTextField(1, 1);
-            gestationalDaysField.setColumns(3);
+    private JTextField getGestationalAgeField() {
+        if (gestationalAgeField == null) {
+            gestationalAgeField = new JTextField(visit == null ? pregnancy.getCurrentGestationalAge() : visit.getVisitDate() == null ? pregnancy.getGestationalAge(LocalDate.now()) : visit.getGestationalAge());
+            gestationalAgeField.setColumns(8);
+            gestationalAgeField.setEnabled(false);
         }
-        return gestationalDaysField;
+        return gestationalAgeField;
     }
 
     private JTextField getMaternalWeightField() {
@@ -543,12 +536,6 @@ public class VisitEdit extends JDialog {
             visit.setVisitDate(visitDate);
             visit.setVisitType(typology);
 
-            if (!gestationalWeeksField.getText().trim().isEmpty()) {
-                visit.setGestationalWeeks(Integer.parseInt(gestationalWeeksField.getText()));
-            }
-            if (!gestationalDaysField.getText().trim().isEmpty()) {
-                visit.setGestationalDays(Integer.parseInt(gestationalDaysField.getText()));
-            }
             if (!maternalWeightField.getText().trim().isEmpty()) {
                 visit.setMaternalWeight(Double.parseDouble(maternalWeightField.getText()));
             }

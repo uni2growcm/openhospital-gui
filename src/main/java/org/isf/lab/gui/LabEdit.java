@@ -59,13 +59,13 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.elements.ExamComboBox;
 import org.isf.lab.gui.elements.ExamRowSubPanel;
 import org.isf.lab.gui.elements.MatComboBox;
-import org.isf.lab.gui.elements.PatientComboBox;
 import org.isf.lab.manager.LabManager;
 import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
 import org.isf.menu.manager.Context;
+import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.serviceprinting.manager.PrintManager;
@@ -134,7 +134,7 @@ public class LabEdit extends ModalJFrame {
 	private JComboBox matComboBox;
 	private ExamComboBox examComboBox;
 	private JComboBox examRowComboBox;
-	private PatientComboBox patientComboBox;
+	private JTextField jTextFieldPatient;
 	private Exam examSelected;
 	private JScrollPane noteScrollPane;
 
@@ -232,8 +232,8 @@ public class LabEdit extends ModalJFrame {
 			patientLabel.setBounds(5, 65, LABEL_WIDTH, 20);
 			inPatientCheckBox = getInPatientCheckBox();
 			inPatientCheckBox.setBounds(LABEL_WIDTH + 5, 65, LABEL_WIDTH, 20);
-			patientComboBox = getPatientComboBox();
-			patientComboBox.setBounds((LABEL_WIDTH + 5) * 2, 65, 395, 20);
+			jTextFieldPatient = getJTextFieldPatient();
+			jTextFieldPatient.setBounds((LABEL_WIDTH + 5) * 2, 65, 250, 20);
 
 			JLabel nameLabel = new JLabel(MessageBundle.getMessage("angal.common.name.txt"));
 			nameLabel.setBounds(5, 90, LABEL_WIDTH, 20);
@@ -264,7 +264,7 @@ public class LabEdit extends ModalJFrame {
 			dataPanel.add(examComboBox, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
-			dataPanel.add(patientComboBox, null);
+			dataPanel.add(jTextFieldPatient, null);
 			dataPanel.add(nameLabel, null);
 			dataPanel.add(patTextField);
 			dataPanel.add(ageLabel, null);
@@ -316,35 +316,35 @@ public class LabEdit extends ModalJFrame {
 	}
 
 	/*
-	 * TODO: Patient Selection like in LabNew with the difference that here will be optional If no patient is chosen only Name, Age and Sex will be saved in
-	 * LABORATORY table (Name can be empty)
+	 * Patient Selection with 100-limit optimization
+	 * Shows patient name in text field, with optional patient selection button
 	 */
-	private PatientComboBox getPatientComboBox() {
-		if (patientComboBox == null) {
-			patientComboBox = new PatientComboBox();
-			patSelected = null;
-			List<Patient> pat = null;
-			try {
-				pat = patientBrowserManager.getPatient();
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
+	private JTextField getJTextFieldPatient() {
+		if (jTextFieldPatient == null) {
+			jTextFieldPatient = new JTextField();
+			jTextFieldPatient.setEditable(false);
+			if (patSelected != null) {
+				jTextFieldPatient.setText(patSelected.getName());
 			}
-
-			patientComboBox = PatientComboBox.withPatientsAndPatientFromLaboratorySelected(pat, lab, insert);
-			patSelected = patientComboBox.getSelectedPatient().orElse(null);
-
-			patientComboBox.addActionListener(actionEvent -> {
-				if (patientComboBox.getSelectedIndex() > 0) {
-					patSelected = (Patient) patientComboBox.getSelectedItem();
-					patTextField.setText(patSelected.getName());
-					ageTextField.setText(String.valueOf(patSelected.getAge()));
-					sexTextField.setText(String.valueOf(patSelected.getSex()));
-					Admission admission = admissionBrowserManager.getCurrentAdmission(patSelected);
-					inPatientCheckBox.setSelected(admission != null);
+			jTextFieldPatient.addActionListener(actionEvent -> {
+				String text = jTextFieldPatient.getText().trim();
+				if (!text.isEmpty()) {
+					SelectPatient dialog = new SelectPatient(LabEdit.this, false, text, 100);
+					dialog.setVisible(true);
+					Patient selected = dialog.getPatient();
+					if (selected != null) {
+						patSelected = selected;
+						jTextFieldPatient.setText(patSelected.getName());
+						patTextField.setText(patSelected.getName());
+						ageTextField.setText(String.valueOf(patSelected.getAge()));
+						sexTextField.setText(String.valueOf(patSelected.getSex()));
+						Admission admission = admissionBrowserManager.getCurrentAdmission(patSelected);
+						inPatientCheckBox.setSelected(admission != null);
+					}
 				}
 			});
 		}
-		return patientComboBox;
+		return jTextFieldPatient;
 	}
 
 	private JPanel getButtonPanel() {

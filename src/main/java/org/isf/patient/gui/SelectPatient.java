@@ -176,12 +176,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 	}
 
-	SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
+	public SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
 		super(owner, true);
 
 		try {
-			PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
-
 			String keyword = (searchText != null && !searchText.trim().isEmpty()) ? searchText : null;
 			patArray = patientBrowserManager.getPatientsByOneOfFieldsLikeWithLimit(keyword, maxPatients);
 
@@ -212,6 +210,41 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(ableAddPatient);
 	}
+
+    public SelectPatient(JFrame owner, boolean ableAddPatient, String searchText, int maxPatients) {
+        super(owner, true);
+
+        try {
+            String keyword = (searchText != null && !searchText.trim().isEmpty()) ? searchText : null;
+            patArray = patientBrowserManager.getPatientsByOneOfFieldsLikeWithLimit(keyword, maxPatients);
+
+            patSearch = new ArrayList<>(patArray);
+
+        } catch (OHServiceException e) {
+            MessageDialog.showExceptions(e);
+            patArray = new ArrayList<>();
+            patSearch = new ArrayList<>();
+        }
+
+        ps = new PatientSummary(patient);
+        initComponents();
+
+        if (searchText != null && !searchText.trim().isEmpty()) {
+            jTextFieldSearchPatient.setText(searchText);
+        }
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                patArray.clear();
+                patSearch.clear();
+                dispose();
+            }
+        });
+
+        setLocationRelativeTo(null);
+        buttonNew.setVisible(ableAddPatient);
+    }
 
 	public SelectPatient(JDialog owner, String search) {
 		super(owner, true);
@@ -247,8 +280,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 
     public SelectPatient(JDialog owner, String searchText, boolean enableAddPatient, boolean femaleOnly) {
         super(owner, true);
-		buttonNew.setVisible(enableAddPatient);
-
         femalesOnly = femaleOnly;
 
         if (!GeneralData.ENHANCEDSEARCH) {
@@ -264,6 +295,7 @@ public class SelectPatient extends JDialog implements PatientListener {
         }
         ps = new PatientSummary(patient);
         initComponents();
+        buttonNew.setVisible(enableAddPatient);
         addWindowListener(new WindowAdapter() {
 
             @Override

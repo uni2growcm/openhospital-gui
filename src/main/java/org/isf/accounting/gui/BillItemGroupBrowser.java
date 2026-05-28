@@ -23,7 +23,9 @@ package org.isf.accounting.gui;
 
 import static org.isf.utils.jobjects.MessageDialog.warning;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -121,7 +123,9 @@ public class BillItemGroupBrowser extends JDialog {
 		this.add(scrollPane, BorderLayout.CENTER);
 		this.add(buttonPanel, BorderLayout.SOUTH);
 
-		this.setSize(700, 400);
+		// Reduced width from 700 to 600 for better layout
+		this.setSize(600, 400);
+		this.setMinimumSize(new Dimension(500, 300));
 		this.setResizable(true);
 	}
 
