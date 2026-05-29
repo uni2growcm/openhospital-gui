@@ -67,7 +67,7 @@ public class GenericReportFromDateToDate extends DisplayReport {
 				}
             } else {
                 JasperReportResultDto jasperReportResultDto = 
-                				jasperReportsManager.getGenericReportFromDateToDatePdf(fromDate, toDate, jasperFileFolder, jasperFileName);
+                    jasperReportsManager.getGenericReportFromDateToDatePdf(fromDate, toDate, jasperFileFolder, jasperFileName);
 				showReport(jasperReportResultDto);
             }
 		} catch (OHReportException e) {

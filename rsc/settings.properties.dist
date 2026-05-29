@@ -11,6 +11,7 @@ GUI_INTERFACE=on
 UI_INTERFACE=off
 
 # internal settings, modules, directories
+ALLOWBILLGUARANTOR=no
 LANGUAGE=OH_LANGUAGE
 SINGLEUSER=YES_OR_NO
 DEBUG=no
@@ -23,6 +24,7 @@ XMPPMODULEENABLED=no
 PARAMSURL=https://conf.open-hospital.org/oh-conf.json
 
 # application settings
+ENABLEMORTUARYMODULE=no
 ENHANCEDSEARCH=no
 INTERNALPHARMACIES=yes
 LABEXTENDED=yes
@@ -46,14 +48,21 @@ PATIENTBILL=PatientBill
 PATIENTBILLGROUPED=PatientBillGrouped
 PATIENTBILLSTATEMENT=PatientBillStatement
 RECEIPTPRINTER=yes
+STOCKMVTONBILLSAVE=yes
+ALLOWBILLGUARANTOR=no
 
 # pharmacy
 AUTOMATICLOT_IN=no
 AUTOMATICLOT_OUT=no
 AUTOMATICLOTWARD_TOWARD=no
 LOTWITHCOST=yes
+# Enable/disable expiring medical highlighting (yes/no)
+HIGHLIGHTEXPIRINGMEDICAL=yes
+# Days before expiry to highlight in orange (expired = gray)
+HIGHLIGHTEXPIRINGMEDICALDAYS=30
 PHARMACEUTICALORDER=PharmaceuticalOrder
 PHARMACEUTICALSTOCK=PharmaceuticalStock_ver4
+PHARMACEUTICALSTOCKNOZERO=PharmaceuticalStock_ver4_1
 PHARMACEUTICALSTOCKLOT=PharmaceuticalStock_ver5
 PHARMACEUTICALAMC=PharmaceuticalAMC_ver2
 

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="certificateOfDeclaration" pageWidth="421" pageHeight="595" whenNoDataType="NoPages" columnWidth="361" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="certificateOfDeclaration" uuid="25ec697b-1f1c-4c24-ae45-052b3debe3ef">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["./rpt/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="admission_id" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="LOGO_PATH" class="java.lang.String"/>
+	<parameter name="fax" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Prg_id" class="java.lang.Long"/>
+	<queryString>
+		<![CDATA[SELECT  	
+	DATE_FORMAT(PDEL.PRGDLV_DATE, '%d/%m/%Y') as PRGDLV_DATE,
+	PAT_NAME,
+	PAT_BIRTH_PLACE,
+	PAT_TAXCODE,
+	PAT_NAME,        
+	DATE_FORMAT(PAT_BDATE, '%d/%m/%Y') as PAT_BDATE		
+FROM oh_pregnancydelivery PDEL
+	JOIN oh_pregnancy OP ON PDEL.PRGDLV_PRG_ID = OP.PRG_ID 
+	JOIN oh_patient PAT ON OP.PRG_PAT_ID = PAT.PAT_ID 
+WHERE OP.PRG_ID = $P{Prg_id} limit 1]]>
+	</queryString>
+	<field name="PRGDLV_DATE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PRGDLV_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRGDLV_DATE"/>
+	</field>
+	<field name="PAT_NAME" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_BIRTH_PLACE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_BIRTH_PLACE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_BIRTH_PLACE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_TAXCODE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_TAXCODE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_TAXCODE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="COLUMN_5" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="PAT_BDATE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_BDATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAT_BDATE"/>
+	</field>
+	<variable name="TOTAL_ITEM" class="java.math.BigDecimal"/>
+	<variable name="TOTAL_BILL" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{TOTAL_ITEM}]]></variableExpression>
+	</variable>
+	<variable name="PERCENTAGE_REDUCTION" class="java.lang.Double"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="90" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-18" x="127" y="0" width="234" height="22" uuid="831b8a1c-56d1-4d97-be76-63494ad157e0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="127" y="22" width="234" height="17" uuid="57ded830-7171-4877-82f8-51be1ec712b9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$R{misscatho}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-20" x="127" y="39" width="234" height="17" uuid="c998a3e4-749f-414e-8588-670cc8d37b26"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{Address}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-21" x="127" y="56" width="234" height="17" uuid="bab33e40-f3fe-4507-86eb-fa537707cf43"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Telephone}+ ($P{fax} != null ? " / "+$P{fax} : "") +" Mobile: "+$P{Telephone}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement key="image-1" x="2" y="0" width="78" height="73" uuid="602b57b2-ec79-45ab-b039-24ccf11f4618"/>
+				<imageExpression><![CDATA[$P{LOGO_PATH}]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="460" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-22" x="5" y="19" width="95" height="17" uuid="65d58a68-f789-4066-a924-74115eef2346"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{autor}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-23" x="5" y="44" width="61" height="17" uuid="999d28f9-f80c-4b85-9bd4-63b5321ce499"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-24" x="111" y="19" width="243" height="17" uuid="835cb82b-64b6-4e8c-a8a4-a4f267ba4bd4"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-25" x="174" y="44" width="25" height="17" uuid="cb943997-836f-49dc-8058-3675da15af2e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{at}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-26" x="72" y="44" width="96" height="17" uuid="119c04fa-8c39-4c44-a64e-f9f4baca3305"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_BDATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-27" x="210" y="44" width="144" height="17" uuid="88f89398-d28a-4a49-b27b-c0a1701985cf"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_BIRTH_PLACE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-28" x="5" y="67" width="136" height="17" uuid="a06faca8-7639-4d59-a1fe-e4bbbe69419c"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{birthcertificatenum}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-29" x="146" y="67" width="208" height="17" uuid="9849b117-4620-4932-9fb7-296a967f339e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-30" x="66" y="91" width="288" height="17" uuid="372c613a-da69-4dd8-8a85-d7da88f11818"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_TAXCODE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-31" x="5" y="91" width="55" height="17" uuid="49fe3a33-7a21-4821-8d37-87900136d52e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{id}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-32" x="5" y="128" width="349" height="17" uuid="bc3ca359-375e-4c74-bd76-fbfd9ddc8298"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{iborn}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-33" x="5" y="148" width="73" height="17" uuid="54803e11-8c8c-40ed-a2b3-85748747f972"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{dateborn}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-35" x="5" y="181" width="349" height="34" uuid="7fa2e4e5-5950-4ef9-aea9-324ae4d950c8"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{icertify}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-36" x="5" y="233" width="349" height="34" uuid="e626c7af-f33c-4ae7-b2a2-bf94f0076dc1"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{iknow}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-37" x="5" y="285" width="349" height="34" uuid="cd2ef2ea-fa05-416e-991e-558ac752d0d0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infaith}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-38" x="111" y="389" width="113" height="17" uuid="c1378a33-91c2-4790-a0c1-793c141c2130"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cert_paceanddate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-39" x="235" y="389" width="122" height="17" uuid="794b3bf2-2bc9-4ee9-b0fb-fc4dc9de1427"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[(new SimpleDateFormat("dd/MM/yyyy")).format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-40" x="162" y="419" width="138" height="17" uuid="85cfb252-0b66-4f05-90b9-2745134ca8a0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{mothersignature}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="148" width="264" height="17" uuid="5a570cd0-bc68-47c5-a2f0-aa97906f22bd"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PRGDLV_DATE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -28,6 +28,9 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  * Created on 15/Jun/08
  */
@@ -37,8 +40,14 @@ public class GenericReportPharmaceuticalOrder extends DisplayReport{
     private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 
     public GenericReportPharmaceuticalOrder(String jasperFileName) {
+        this(jasperFileName, true);
+    }
+
+    public GenericReportPharmaceuticalOrder(String jasperFileName, boolean includeNonZeroQty) {
         try {
-            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getGenericReportPharmaceuticalOrderPdf(jasperFileName);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("includeNonZeroQty", includeNonZeroQty);
+            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getGenericReportPharmaceuticalOrderPdf(jasperFileName, parameters);
             showReport(jasperReportResultDto);
         } catch (Exception e) {
             LOGGER.error("", e);
