@@ -562,10 +562,20 @@ public class DeliveryEdit extends JDialog {
     }
 
     static class DateTimeCellEditor extends AbstractCellEditor implements TableCellEditor {
-        private final GoodDateTimeSpinnerChooser chooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
+        private final GoodDateTimeSpinnerChooser chooser;
+        public DateTimeCellEditor() {
+            chooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
+            chooser.setMaxDate(LocalDate.now());
+        }
         @Override public Object getCellEditorValue() { return chooser.getLocalDateTime(); }
         @Override public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            if (value instanceof LocalDateTime ldt) chooser.setDateTime(ldt);
+            if (value instanceof LocalDateTime ldt) {
+                if (ldt.isAfter(LocalDateTime.now())) {
+                    ldt = LocalDateTime.now();
+                }
+                chooser.setDateTime(ldt);
+            }
+
             return chooser;
         }
     }
