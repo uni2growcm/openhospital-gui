@@ -808,13 +808,12 @@ public class BillItemGroupEdit extends JDialog {
         billItemGroup.setDescription(description);
         billItemGroup.setTotal(total.doubleValue());
 
-        billItemGroup.setItems(items);
-
         try {
             if (insert) {
+                billItemGroup.setItems(items);
                 billItemGroup = manager.addBillItemGroup(billItemGroup);
             } else {
-                manager.updateBillItemGroup(billItemGroup);
+                manager.updateBillItemGroupWithItems(billItemGroup, items);
             }
 
             confirmed = true;
