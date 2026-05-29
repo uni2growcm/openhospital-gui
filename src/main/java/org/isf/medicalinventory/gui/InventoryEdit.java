@@ -1605,15 +1605,20 @@ public class InventoryEdit extends ModalJFrame {
 		List<Lot> lots = null;
 		Medical medical = null;
 		MedicalInventoryRow inventoryRowTemp = null;
-		if (code != null) {
-			medical = medicalBrowsingManager.getMedicalByMedicalCode(code);
+		if (code != null && !code.trim().isEmpty()) {
+			String trimmedCode = code.trim();
+
+			medical = medicalBrowsingManager.getMedicalByMedicalCode(trimmedCode);
+
+			if (medical == null) {
+				medical = chooseMedical(trimmedCode);
+			}
+
 			if (medical != null) {
 				medicalList.add(medical);
 			} else {
-				medical = chooseMedical(code);
-				if (medical != null) {
-					medicalList.add(medical);
-				}
+				MessageDialog.error(this, "angal.inventory.medicalnotfound.msg");
+				return;
 			}
 		} else {
 			medicalList = medicals;
@@ -1643,7 +1648,7 @@ public class InventoryEdit extends ModalJFrame {
 					inventoryRowTemp = new MedicalInventoryRow(0, lot.getMainStoreQuantity(), lot.getMainStoreQuantity(), null, med, lot);
 					if (!existInInventorySearchList(inventoryRowTemp)) {
 						inventoryRowsList.add(inventoryRowTemp);
-						numberOfMedicalWithoutSameLotAdded = numberOfMedicalWithoutSameLotAdded + 1;
+						numberOfMedicalWithoutSameLotAdded++;
 					}
 				}
 			}
@@ -1663,26 +1668,22 @@ public class InventoryEdit extends ModalJFrame {
 	}
 
 	private Medical chooseMedical(String text) throws OHServiceException {
-		Map<String, Medical> medicalMap = new HashMap<>();
-		for (Medical med : medicals) {
-			String key = med.getCode().toString().toLowerCase();
-			medicalMap.put(key, med);
-		}
 		List<Medical> medList = new ArrayList<>();
-		for (Medical aMed : medicalMap.values()) {
-			if (NormalizeString.normalizeContains(aMed.getDescription().toLowerCase(), text)) {
-				medList.add(aMed);
+		for (Medical med : medicals) {
+			String description = med.getDescription().toLowerCase();
+			String searchText = text.toLowerCase();
+			if (description.contains(searchText)) {
+				medList.add(med);
 			}
 		}
-		Collections.sort(medList);
+		medList.sort(Comparator.comparing(Medical::getDescription));
+
 		Medical med = null;
 		if (!medList.isEmpty()) {
 			MedicalPicker framas = new MedicalPicker(new StockMedModel(medList), medList);
-			framas.setSize(300, 400);
 			JDialog dialog = new JDialog();
 			dialog.setLocationRelativeTo(null);
 			dialog.setSize(600, 350);
-			dialog.setLocationRelativeTo(null);
 			dialog.setModal(true);
 			dialog.setTitle(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chooseamedical"));
 			framas.setParentFrame(dialog);
@@ -1690,6 +1691,11 @@ public class InventoryEdit extends ModalJFrame {
 			dialog.setVisible(true);
 			dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			med = framas.getSelectedMedical();
+		} else {
+			JOptionPane.showMessageDialog(this,
+					"Aucun médicament trouvé pour: " + text,
+					MessageBundle.getMessage("angal.common.error.title"),
+					JOptionPane.ERROR_MESSAGE);
 		}
 		return med;
 	}
