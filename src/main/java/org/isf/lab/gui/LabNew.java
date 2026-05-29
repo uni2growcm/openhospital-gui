@@ -90,7 +90,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LabNew.class);
 
-//LISTENER INTERFACE --------------------------------------------------------
+	//LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList labListener = new EventListenerList();
 
 	public interface LabListener extends EventListener {
@@ -363,7 +363,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelNote = new JPanel();
 			jPanelNote.setLayout(new BoxLayout(jPanelNote, BoxLayout.Y_AXIS));
 			jPanelNote.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.note")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.note")));
 			jPanelNote.add(getJScrollPaneNote());
 		}
 		return jPanelNote;
@@ -374,7 +374,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelResults = new JPanel();
 			jPanelResults.setPreferredSize(new Dimension(EAST_WIDTH, RESULT_HEIGHT));
 			jPanelResults.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.common.result.txt")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.common.result.txt")));
 		} else {
 			jPanelResults.removeAll();
 			int selectedRow = jTableExams.getSelectedRow();
@@ -425,9 +425,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				jPanelResults.setLayout(new BoxLayout(jPanelResults, BoxLayout.Y_AXIS));
 
 				List<LaboratoryRow> checking = examResults.get(jTableExams.getSelectedRow());
-				boolean checked;
 				JPanel resultsContainer = new JPanel();
-				resultsContainer.setLayout(new GridLayout(0, 1));
+				resultsContainer.setLayout(new GridLayout(0, 1, 5, 5));
 				JScrollPane resultsContainerScroll = new JScrollPane(resultsContainer);
 				resultsContainerScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 				resultsContainerScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -444,14 +443,21 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					for (ExamRow exaRow : exaRowArray) {
 						if (selectedExam.getCode().compareTo(exaRow.getExamCode().getCode()) == 0) {
 
-							checked = false;
-							LaboratoryRow labRow = new LaboratoryRow();
-							labRow.setDescription(exaRow.getDescription());
-							if (checking.contains(labRow)) {
-								checked = true;
+							LaboratoryRow matchingLabRow = null;
+							for (LaboratoryRow lr : checking) {
+								if (lr.getDescription().equals(exaRow.getDescription())) {
+									matchingLabRow = lr;
+									break;
+								}
 							}
 
-							resultsContainer.add(new CheckBox(exaRow, checked));
+							boolean checked = (matchingLabRow != null);
+							LaboratoryRow labRow = checked ? matchingLabRow : new LaboratoryRow();
+							if (!checked) {
+								labRow.setDescription(exaRow.getDescription());
+							}
+
+							resultsContainer.add(new Procedure2RowPanel(labRow, checking, checked));
 						}
 					}
 				}
@@ -489,25 +495,56 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		return jPanelResults;
 	}
 
-	public class CheckBox extends JCheckBox {
+	public class Procedure2RowPanel extends JPanel {
 
 		private static final long serialVersionUID = 1L;
-		private JCheckBox check = this;
 
-		public CheckBox(ExamRow exaRow, boolean checked) {
-			this.setText(exaRow.getDescription());
-			this.setSelected(checked);
-			this.addActionListener(actionEvent -> {
-				if (check.isSelected()) {
-					LaboratoryRow laboratoryRow = new LaboratoryRow();
-					laboratoryRow.setDescription(actionEvent.getActionCommand());
-					examResults.get(jTableExams.getSelectedRow()).add(laboratoryRow);
+		public Procedure2RowPanel(LaboratoryRow labRow, List<LaboratoryRow> selectedList, boolean isChecked) {
+			setLayout(new BorderLayout(5, 0));
+			setBackground(Color.WHITE);
+
+			JCheckBox checkBox = new JCheckBox(labRow.getDescription());
+			checkBox.setSelected(isChecked);
+			checkBox.setBackground(Color.WHITE);
+
+			JTextField txtValue = new JTextField();
+			txtValue.setPreferredSize(new Dimension(60, COMPONENT_HEIGHT));
+			txtValue.setText(labRow.getResValue() != null ? labRow.getResValue() : "");
+			txtValue.setEnabled(isChecked);
+
+			checkBox.addActionListener(actionEvent -> {
+				if (checkBox.isSelected()) {
+					txtValue.setEnabled(true);
+					if (!selectedList.contains(labRow)) {
+						selectedList.add(labRow);
+					}
 				} else {
-					LaboratoryRow laboratoryRow = new LaboratoryRow();
-					laboratoryRow.setDescription(actionEvent.getActionCommand());
-					examResults.get(jTableExams.getSelectedRow()).remove(laboratoryRow);
+					txtValue.setEnabled(false);
+					txtValue.setText("");
+					labRow.setResValue("");
+					selectedList.remove(labRow);
 				}
 			});
+
+			txtValue.getDocument().addDocumentListener(new DocumentListener() {
+				private void updateValue() {
+					if (checkBox.isSelected()) {
+						labRow.setResValue(txtValue.getText().trim());
+					}
+				}
+
+				@Override
+				public void insertUpdate(DocumentEvent e) { updateValue(); }
+
+				@Override
+				public void removeUpdate(DocumentEvent e) { updateValue(); }
+
+				@Override
+				public void changedUpdate(DocumentEvent e) { updateValue(); }
+			});
+
+			add(checkBox, BorderLayout.CENTER);
+			add(txtValue, BorderLayout.EAST);
 		}
 	}
 
@@ -533,7 +570,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelMaterial = new JPanel();
 			jPanelMaterial.setLayout(new BoxLayout(jPanelMaterial, BoxLayout.Y_AXIS));
 			jPanelMaterial.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.material")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.material")));
 			jPanelMaterial.add(getJComboBoxMaterial());
 		}
 		return jPanelMaterial;
