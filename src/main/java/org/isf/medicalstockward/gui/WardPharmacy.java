@@ -897,7 +897,7 @@ public class WardPharmacy extends ModalJFrame implements
 	private VoLimitedTextField getJAgeToTextField() {
 		if (jAgeToTextField == null) {
 			jAgeToTextField = new VoLimitedTextField(3, 3);
-			jAgeToTextField.setText("0"); //$NON-NLS-1$
+			jAgeToTextField.setText("50"); //$NON-NLS-1$
 			jAgeToTextField.setMaximumSize(new Dimension(100, 50));
 			jAgeToTextField.addFocusListener(new FocusListener() {
 
@@ -911,7 +911,7 @@ public class WardPharmacy extends ModalJFrame implements
 							MessageDialog.error(WardPharmacy.this, "angal.medicalstockward.insertvalidage");
 						}
 					} catch (NumberFormatException ex) {
-						jAgeToTextField.setText("0");
+						jAgeToTextField.setText("50");
 					}
 				}
 
