@@ -46,8 +46,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
