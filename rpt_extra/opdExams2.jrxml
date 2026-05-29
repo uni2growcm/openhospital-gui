@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="opdExams2" pageWidth="84" pageHeight="37" orientation="Landscape" whenNoDataType="NoPages" columnWidth="84" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="opdExams2" uuid="4cc4cd7c-5b2f-4699-92b8-415adaa2edfe">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="idPatient" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="opdDate" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["../rpt_extra/"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select  GROUP_CONCAT(LAB_EXA_ID_A) 
+from    oh_laboratory
+where   LAB_PAT_ID = $P{idPatient}
+       
+ and DATE_FORMAT(LAB_DATE, '%d/%m/%Y') = $P{opdDate}]]>
+	</queryString>
+	<field name="GROUP_CONCAT(LAB_EXA_ID_A)" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GROUP_CONCAT(LAB_EXA_ID_A)"/>
+		<property name="com.jaspersoft.studio.field.label" value="GROUP_CONCAT(LAB_EXA_ID_A)"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="0" y="0" width="83" height="28" uuid="12fe7126-9faf-4fe7-a96d-3895d0c144c1"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{GROUP_CONCAT(LAB_EXA_ID_A)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="opdDiseases2" pageWidth="94" pageHeight="28" orientation="Landscape" whenNoDataType="NoPages" columnWidth="94" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="opdDiseases2" uuid="89e76c36-22f6-4d8c-a5a2-c97b2db34c7f">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="idPatient" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="opdDate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="idOpd" class="java.lang.Integer" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select  GROUP_CONCAT(DIS_DESC) 
+from    oh_disease
+where   DIS_ID_A IN (
+		      select OPD_DIS_ID_A
+		      from oh_opd
+                      where  OPD_ID = $P{idOpd}
+		     ) or 
+        DIS_ID_A IN (
+		      select OPD_DIS_ID_A_2
+		      from oh_opd
+                      where  OPD_ID = $P{idOpd}
+		     ) or
+	DIS_ID_A IN (
+		      select OPD_DIS_ID_A_3
+		      from oh_opd
+                      where  OPD_ID = $P{idOpd}
+		     )]]>
+	</queryString>
+	<field name="GROUP_CONCAT(DIS_DESC)" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GROUP_CONCAT(DIS_DESC)"/>
+		<property name="com.jaspersoft.studio.field.label" value="GROUP_CONCAT(DIS_DESC)"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" x="0" y="0" width="93" height="28" isPrintInFirstWholeBand="true" uuid="1293c106-7f8a-42d2-ab49-52fb527a74aa"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{GROUP_CONCAT(DIS_DESC)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
