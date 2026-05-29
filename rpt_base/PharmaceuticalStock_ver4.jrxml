@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PharmaceuticalStock_ver4" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="PharmaceuticalStock_ver4" whenResourceMissingType="Key" uuid="3b4ad867-b6eb-4382-9eee-db98328ee9cd">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -33,33 +35,117 @@
 		<defaultValueExpression><![CDATA["%"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, SUM(QTY_INPUT - QTY_OUTPUT) AS STOCK, SUM(CHARGE - DISCHARGE) AS VALUE
+		<![CDATA[SELECT 
+    MDSR_ID,
+    MDSRT_DESC,
+    MDSR_CODE,
+    MDSR_DESC,
+    MDSR_MIN_STOCK_QTI,
+    SUM(QTY_INPUT - QTY_OUTPUT) AS STOCK,
+    SUM(CHARGE - DISCHARGE) AS VALUE
 FROM (
-	SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, LT_ID_A, LT_COST, SUM(INPUT) AS QTY_INPUT, SUM(OUTPUT) AS QTY_OUTPUT, LT_COST * SUM(INPUT) AS CHARGE, LT_COST * SUM(OUTPUT) AS DISCHARGE
-	FROM (
-		SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, MMV_LT_ID_A, MMV_MMVT_ID_A, MMV_QTY, SUM(IF(MMVT_TYPE LIKE '%+%',MMV_QTY,0)) AS INPUT, SUM(IF(MMVT_TYPE LIKE '%-%', MMV_QTY, 0)) AS OUTPUT		
-		FROM OH_MEDICALDSR
-		LEFT JOIN OH_MEDICALDSRSTOCKMOV ON MDSR_ID = MMV_MDSR_ID
-		LEFT JOIN OH_MEDICALDSRTYPE ON MDSRT_ID_A = MDSR_MDSRT_ID_A
-		LEFT JOIN OH_MEDICALDSRSTOCKMOVTYPE ON MMV_MMVT_ID_A = MMVT_ID_A
-		WHERE DATE(MMV_DATE) <= $P{todate}
-		AND (MDSR_DESC LIKE $P{filter} OR MDSR_CODE LIKE $P{filter})
-		GROUP BY MDSR_ID, MMV_LT_ID_A, MMV_MMVT_ID_A) AS QUANTITY
-	JOIN OH_MEDICALDSRLOT ON MMV_LT_ID_A = LT_ID_A
-	GROUP BY LT_ID_A) AS VALUE
+    
+    SELECT 
+        MDSR_ID,
+        MDSRT_DESC,
+        MDSR_CODE,
+        MDSR_DESC,
+        MDSR_MIN_STOCK_QTI,
+        LT_ID_A,
+        LT_COST,
+        SUM(INPUT) AS QTY_INPUT,
+        SUM(OUTPUT) AS QTY_OUTPUT,
+        LT_COST * SUM(INPUT) AS CHARGE,
+        LT_COST * SUM(OUTPUT) AS DISCHARGE
+        
+    FROM (
+        
+        SELECT 
+            MDSR_ID,
+            MDSRT_DESC,
+            MDSR_CODE,
+            MDSR_DESC,
+            MDSR_MIN_STOCK_QTI,
+            MMV_LT_ID_A,
+            MMV_MMVT_ID_A,
+            
+            SUM(IF(MMVT_TYPE LIKE '%+%', MMV_QTY, 0)) AS INPUT,
+            SUM(IF(MMVT_TYPE LIKE '%-%', MMV_QTY, 0)) AS OUTPUT
+        
+        FROM OH_MEDICALDSR
+        
+        LEFT JOIN OH_MEDICALDSRSTOCKMOV 
+            ON MDSR_ID = MMV_MDSR_ID
+            
+        LEFT JOIN OH_MEDICALDSRTYPE 
+            ON MDSRT_ID_A = MDSR_MDSRT_ID_A
+            
+        LEFT JOIN OH_MEDICALDSRSTOCKMOVTYPE 
+            ON MMV_MMVT_ID_A = MMVT_ID_A
+            
+        WHERE DATE(MMV_DATE) <= $P{todate}
+          AND (
+                MDSR_DESC LIKE $P{filter} 
+                OR MDSR_CODE LIKE $P{filter}
+              )
+              
+        GROUP BY 
+            MDSR_ID,
+            MDSRT_DESC,
+            MDSR_CODE,
+            MDSR_DESC,
+            MDSR_MIN_STOCK_QTI,
+            MMV_LT_ID_A,
+            MMV_MMVT_ID_A
+            
+    ) AS QUANTITY
+    
+    JOIN OH_MEDICALDSRLOT 
+        ON MMV_LT_ID_A = LT_ID_A
+        
+    GROUP BY 
+        MDSR_ID,
+        MDSRT_DESC,
+        MDSR_CODE,
+        MDSR_DESC,
+        MDSR_MIN_STOCK_QTI,
+        LT_ID_A,
+        LT_COST
+        
+) AS VALUE
+
 WHERE MDSRT_DESC LIKE $P{groupBy}
-GROUP BY MDSRT_DESC, MDSR_ID
+
+GROUP BY 
+    MDSR_ID,
+    MDSRT_DESC,
+    MDSR_CODE,
+    MDSR_DESC,
+    MDSR_MIN_STOCK_QTI
 
 UNION ALL 
 
-SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, 0 AS STOCK, 0 AS VALUE	
+SELECT 
+    MDSR_ID,
+    MDSRT_DESC,
+    MDSR_CODE,
+    MDSR_DESC,
+    MDSR_MIN_STOCK_QTI,
+    0 AS STOCK,
+    0 AS VALUE
+    
 FROM OH_MEDICALDSR
-LEFT JOIN OH_MEDICALDSRTYPE ON MDSRT_ID_A = MDSR_MDSRT_ID_A
-LEFT JOIN OH_MEDICALDSRSTOCKMOV ON MDSR_ID = MMV_MDSR_ID
+
+LEFT JOIN OH_MEDICALDSRTYPE 
+    ON MDSRT_ID_A = MDSR_MDSRT_ID_A
+    
+LEFT JOIN OH_MEDICALDSRSTOCKMOV 
+    ON MDSR_ID = MMV_MDSR_ID
+    
 WHERE MMV_MDSR_ID IS NULL
-AND MDSR_DESC LIKE $P{filter}
-AND MDSRT_DESC LIKE $P{groupBy}
-            
+  AND MDSR_DESC LIKE $P{filter}
+  AND MDSRT_DESC LIKE $P{groupBy}
+
 ORDER BY $P!{sortBy}]]>
 	</queryString>
 	<field name="MDSR_ID" class="java.lang.Integer"/>

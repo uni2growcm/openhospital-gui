@@ -253,7 +253,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     }
 
     private void searchPatient(String searchText) {
-        SelectPatient sp = new SelectPatient(this, searchText, true);
+        SelectPatient sp = new SelectPatient(this, searchText, true, true);
         sp.addSelectionListener(this);
         sp.setVisible(true);
     }
@@ -337,7 +337,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     private void openPatientSearch() {
         String searchText = patientSearchField.getText();
-        SelectPatient sp = new SelectPatient(this, searchText, true);
+        SelectPatient sp = new SelectPatient(this, searchText, true, true);
         sp.addSelectionListener(this);
         sp.setVisible(true);
     }

@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -95,7 +95,7 @@ public class ExamEdit extends JDialog {
 			((ExamListener) listener).examUpdated(event);
 		}
 	}
-    
+
 	private JPanel jContentPane;
 	private JPanel dataPanel;
 	private JPanel buttonPanel;
@@ -108,9 +108,9 @@ public class ExamEdit extends JDialog {
 	private JComboBox<ExamType> examTypeComboBox;
 	private Exam exam;
 	private boolean insert;
-	
+
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
-    
+
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
      * because we need to update them
@@ -126,13 +126,13 @@ public class ExamEdit extends JDialog {
 	 * This method initializes this
 	 */
 	private void initialize() {
-		
+
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screensize = kit.getScreenSize();
         final int pfrmBase = 20;
         final int pfrmWidth = 7;
         final int pfrmHeight = 8;
-        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2, 
+        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
                 screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
 		if (insert) {
@@ -159,9 +159,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes dataPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes dataPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
@@ -187,9 +187,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes buttonPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
@@ -201,9 +201,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes cancelButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes cancelButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
@@ -215,9 +215,9 @@ public class ExamEdit extends JDialog {
 	}
 
 	/**
-	 * This method initializes okButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes okButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getOkButton() {
 		if (okButton == null) {
@@ -273,11 +273,11 @@ public class ExamEdit extends JDialog {
 		}
 		return okButton;
 	}
-	 
+
 	/**
-	 * This method initializes descriptionTextField	
-	 * 	
-	 * @return javax.swing.JTextField	
+	 * This method initializes descriptionTextField
+	 *
+	 * @return javax.swing.JTextField
 	 */
 	private JTextField getDescriptionTextField() {
 		if (descriptionTextField == null) {
@@ -289,7 +289,7 @@ public class ExamEdit extends JDialog {
 		}
 		return descriptionTextField;
 	}
-	
+
 	private JTextField getDefTextField() {
 		if (defTextField == null) {
 				defTextField = new VoLimitedTextField(50);
@@ -299,7 +299,7 @@ public class ExamEdit extends JDialog {
 		}
 		return defTextField;
 	}
-	
+
 	private JTextField getCodeTextField() {
 		if (codeTextField == null) {
                         codeTextField = new VoLimitedTextField(10);
@@ -325,11 +325,11 @@ public class ExamEdit extends JDialog {
 		}
 		return procComboBox;
 	}
-	
+
 	/**
 	 * This method initializes examTypeComboBox
-	 * 	
-	 * @return javax.swing.JComboBox	
+	 *
+	 * @return javax.swing.JComboBox
 	 */
 	private JComboBox<ExamType> getExamTypeComboBox() {
 		if (examTypeComboBox == null) {

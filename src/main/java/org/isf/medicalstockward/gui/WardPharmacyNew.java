@@ -841,9 +841,9 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 				LOGGER.error(ex.getMessage(), ex);
 			}
 			wardBox.addItem("");
-			if (wardList != null) {
+			if (wardList != null ) {
 				for (Ward elem : wardList) {
-					if (!wardSelected.getCode().equals(elem.getCode())) {
+					if (!wardSelected.getCode().equals(elem.getCode()) && elem.isPharmacy()) {
 						wardBox.addItem(elem);
 					}
 				}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PharmaceuticalOrder" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="PharmaceuticalOrder" whenResourceMissingType="Key" uuid="c2ba327f-8236-47da-8bc7-e78075a71b3f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -13,9 +13,22 @@
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="includeNonZeroQty" class="java.lang.Boolean">
+		<defaultValueExpression><![CDATA[true]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT M.*, SUM(MDSR_INI_STOCK_QTI + MDSR_IN_QTI - MDSR_OUT_QTI) QTY FROM OH_MEDICALDSR M
+		<![CDATA[SELECT M.*, SUM(MDSR_INI_STOCK_QTI + MDSR_IN_QTI - MDSR_OUT_QTI) AS QTY 
+FROM OH_MEDICALDSR M
 GROUP BY MDSR_ID
+HAVING (
+    $P{includeNonZeroQty} = false 
+    OR (
+        SUM(MDSR_INI_STOCK_QTI + MDSR_IN_QTI - MDSR_OUT_QTI) <= COALESCE(MDSR_MIN_STOCK_QTI, 0)
+        AND MDSR_MIN_STOCK_QTI IS NOT NULL 
+        AND MDSR_MIN_STOCK_QTI > 0
+    )
+    OR SUM(MDSR_INI_STOCK_QTI + MDSR_IN_QTI - MDSR_OUT_QTI) = 0
+)
 ORDER BY MDSR_DESC]]>
 	</queryString>
 	<field name="MDSR_ID" class="java.lang.Integer"/>

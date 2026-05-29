@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -54,6 +54,8 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.mortuary.gui.DeathBrowser;
+import org.isf.mortuary.gui.DeathEdit;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -111,7 +113,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JButton buttonNew;
 	private PatientSummary ps;
 	private String[] patColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
+		MessageBundle.getMessage("angal.common.name.txt").toUpperCase() };
 	private int[] patColumnsWidth = { 100, 250 };
 	private boolean[] patColumnsResizable = { false, true };
 
@@ -174,6 +176,43 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 	}
 
+	SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
+		super(owner, true);
+
+		try {
+			PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+
+			String keyword = (searchText != null && !searchText.trim().isEmpty()) ? searchText : null;
+			patArray = patientBrowserManager.getPatientsByOneOfFieldsLikeWithLimit(keyword, maxPatients);
+
+			patSearch = new ArrayList<>(patArray);
+
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
+			patArray = new ArrayList<>();
+			patSearch = new ArrayList<>();
+		}
+
+		ps = new PatientSummary(patient);
+		initComponents();
+
+		if (searchText != null && !searchText.trim().isEmpty()) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				patArray.clear();
+				patSearch.clear();
+				dispose();
+			}
+		});
+
+		setLocationRelativeTo(null);
+		buttonNew.setVisible(ableAddPatient);
+	}
+
 	public SelectPatient(JDialog owner, String search) {
 		super(owner, true);
 		if (!GeneralData.ENHANCEDSEARCH) {
@@ -201,11 +240,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.setText(search);
 		if (GeneralData.ENHANCEDSEARCH) {
 			jSearchButton.doClick();
-		}
+		} else {
+            filterPatient();
+        }
 	}
 
-    public SelectPatient(JDialog owner, String searchText, boolean femaleOnly) {
+    public SelectPatient(JDialog owner, String searchText, boolean enableAddPatient, boolean femaleOnly) {
         super(owner, true);
+		buttonNew.setVisible(enableAddPatient);
 
         femalesOnly = femaleOnly;
 
@@ -315,7 +357,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 		buttonNew.setVisible(abbleAddPatient);
 	}
 
-	private void initComponents() {
+	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
+		this(owner, keywords);
+		buttonNew.setVisible(enablePatientAdd);
+	}
+
+    private void initComponents() {
 		add(getJPanelTop(), BorderLayout.NORTH);
 		add(getJPanelCenter(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
@@ -535,7 +582,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		try {
 			return patientBrowserManager.getPatientById(code);
 		} catch (OHServiceException ex) {
-			throw new RuntimeException("Unable to load patient");
+			throw new RuntimeException(MessageBundle.getMessage("angal.patient.unable.to.load.patient"));
 		}
 	}
 
@@ -703,6 +750,18 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public void addSelectionListener(BillBrowser l) {
 		billBrowserListeners.add(l);
+	}
+
+	List<DeathBrowser> deathBrowsersListeners = new ArrayList<>();
+
+	public void addSelectionListener(DeathBrowser l) {
+		deathBrowsersListeners.add(l);
+	}
+
+	List<DeathEdit> mortuaryEditsListeners = new ArrayList<>();
+
+	public void addSelectionListener(DeathEdit l) {
+		mortuaryEditsListeners.add(l);
 	}
 
 	@Override
