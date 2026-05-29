@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="opdExams" pageWidth="84" pageHeight="37" orientation="Landscape" whenNoDataType="NoPages" columnWidth="84" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="opdExams" uuid="4cc4cd7c-5b2f-4699-92b8-415adaa2edfe">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="opdtherapies2" pageWidth="94" pageHeight="37" orientation="Landscape" whenNoDataType="NoPages" columnWidth="94" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="opdtherapies2" uuid="6eeed635-b2ff-4c32-88a0-878f2151f980">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
@@ -10,19 +10,20 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="idPatient" class="java.lang.Integer" isForPrompting="false"/>
 	<parameter name="opdDate" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="SUBREPORT_DIR" class="java.lang.String">
-		<defaultValueExpression><![CDATA["../rpt_extra/"]]></defaultValueExpression>
-	</parameter>
+	<parameter name="idOpd" class="java.lang.Integer" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[select  GROUP_CONCAT(LAB_EXA_ID_A) 
-from    oh_laboratory
-where   LAB_PAT_ID = $P{idPatient}
-       
- and DATE_FORMAT(LAB_DATE, '%d/%m/%Y') = $P{opdDate}  ]]>
+		<![CDATA[select  GROUP_CONCAT(MDSR_DESC) 
+from    oh_medicaldsr
+where   MDSR_ID IN (
+		      select THR_MDSR_ID
+		      from oh_therapies
+                      where  THR_PAT_ID = $P{idPatient} 
+                             and DATE_FORMAT(THR_PRESCRIPTION_DATE, '%d/%m/%Y') = $P{opdDate}
+		     )]]>
 	</queryString>
-	<field name="GROUP_CONCAT(LAB_EXA_ID_A)" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="GROUP_CONCAT(LAB_EXA_ID_A)"/>
-		<property name="com.jaspersoft.studio.field.label" value="GROUP_CONCAT(LAB_EXA_ID_A)"/>
+	<field name="GROUP_CONCAT(MDSR_DESC)" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GROUP_CONCAT(MDSR_DESC)"/>
+		<property name="com.jaspersoft.studio.field.label" value="GROUP_CONCAT(MDSR_DESC)"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -39,7 +40,7 @@ where   LAB_PAT_ID = $P{idPatient}
 	<detail>
 		<band height="28" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="0" y="0" width="83" height="28" uuid="12fe7126-9faf-4fe7-a96d-3895d0c144c1"/>
+				<reportElement key="textField" x="0" y="0" width="93" height="28" uuid="cbac7b81-9b26-49e7-8332-dc93a6597484"/>
 				<box>
 					<topPen lineWidth="0.25"/>
 					<leftPen lineWidth="0.25"/>
@@ -49,7 +50,7 @@ where   LAB_PAT_ID = $P{idPatient}
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{GROUP_CONCAT(LAB_EXA_ID_A)}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{GROUP_CONCAT(MDSR_DESC)}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
