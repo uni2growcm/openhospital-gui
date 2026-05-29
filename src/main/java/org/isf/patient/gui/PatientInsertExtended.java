@@ -21,7 +21,16 @@
  */
 package org.isf.patient.gui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Color;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Image;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -36,7 +45,27 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JButton;
+import javax.swing.BoxLayout;
+import javax.swing.WindowConstants;
+import javax.swing.UIManager;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JRadioButton;
+import javax.swing.BorderFactory;
+import javax.swing.JTextArea;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.ButtonGroup;
+import javax.swing.JFrame;
+import javax.swing.JComboBox;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -52,7 +81,6 @@ import org.isf.country.model.Country;
 import org.isf.country.service.CountryIoOperations;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
-import org.isf.generaldata.SmsParameters;
 import org.isf.menu.manager.Context;
 import org.isf.patconsensus.manager.PatientConsensusBrowserManager;
 import org.isf.patconsensus.model.PatientConsensus;
@@ -376,49 +404,80 @@ public class PatientInsertExtended extends JDialog {
 	}
 
 	/**
-	 * Initializes the phone fields when editing an existing patient
+	 * Initializes the phone fields when editing an existing patient.
+	 * Matches the stored phone number against known country phone codes
+	 * to correctly split code and local number, even for patients registered
+	 * before the code/number split was introduced.
 	 */
 	private void initializePhoneFields() {
-		if (!insert && patient != null && patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
-			String fullPhone = patient.getTelephone().trim();
-			String phoneCode = "+";
-			String localNumber = "";
+		if (insert || patient == null || patient.getTelephone() == null || patient.getTelephone().isEmpty()) {
+			return;
+		}
 
-			if (fullPhone.startsWith("+")) {
+		String fullPhone = patient.getTelephone().trim();
+		String phoneCode = "+";
+		String localNumber = "";
 
-				if (fullPhone.startsWith("+(")) {
-					int closingParen = fullPhone.indexOf(')');
-					if (closingParen != -1) {
-						phoneCode = fullPhone.substring(0, closingParen + 1);
-						localNumber = fullPhone.substring(closingParen + 1).trim();
-					} else {
+		if (fullPhone.startsWith("+")) {
 
-						localNumber = fullPhone;
-					}
-				} else {
+			int firstSpace = fullPhone.indexOf(' ');
+			if (firstSpace > 1) {
+				String candidateCode  = fullPhone.substring(0, firstSpace);
+				String candidateLocal = fullPhone.substring(firstSpace + 1).trim();
 
-					int codeLength = 1;
-					while (codeLength < fullPhone.length()
-							&& codeLength <= 4
-							&& Character.isDigit(fullPhone.charAt(codeLength))) {
-						codeLength++;
-					}
-					phoneCode = fullPhone.substring(0, codeLength);
-					localNumber = fullPhone.substring(codeLength).trim();
+				if (isKnownPhoneCode(candidateCode)) {
+					phoneCode   = candidateCode;
+					localNumber = candidateLocal;
 				}
-			} else {
+			}
 
+			if (phoneCode.equals("+")) {
+				String digits = fullPhone.substring(1);
+				for (int len = 4; len >= 1; len--) {
+					if (digits.length() > len) {
+						String candidate = "+" + digits.substring(0, len);
+						if (isKnownPhoneCode(candidate)) {
+							phoneCode   = candidate;
+							localNumber = digits.substring(len);
+							break;
+						}
+					}
+				}
+			}
+
+			if (phoneCode.equals("+")) {
 				localNumber = fullPhone;
 			}
 
-			if (jPhoneCodeTextField != null) {
-				jPhoneCodeTextField.setText(phoneCode);
-			}
+		} else {
+			localNumber = fullPhone;
+		}
 
-			if (jLocalNumberTextField != null) {
-				jLocalNumberTextField.setText(localNumber);
+		if (jPhoneCodeTextField != null) {
+			jPhoneCodeTextField.setText(phoneCode);
+		}
+		if (jLocalNumberTextField != null) {
+			jLocalNumberTextField.setText(localNumber);
+		}
+	}
+
+	private boolean isKnownPhoneCode(String candidate) {
+		if (jCountryComboBox == null) {
+			return false;
+		}
+		for (int i = 0; i < jCountryComboBox.getItemCount(); i++) {
+			Country c = jCountryComboBox.getItemAt(i);
+			if (c != null && c.getPhoneCode() != null) {
+				String code = c.getPhoneCode().trim();
+				if (!code.startsWith("+")) {
+					code = "+" + code;
+				}
+				if (code.equals(candidate)) {
+					return true;
+				}
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -846,11 +905,19 @@ public class PatientInsertExtended extends JDialog {
 				MessageDialog.error(this, "angal.patient.insertvalidage.msg");
 				return false;
 			}
+			patient.setAge(years);
+			patient.setBirthDate(birthDate);
+			patient.setAgetype("A");
+
 		} else if (jAgeTypeBirthDate.isSelected()) {
 			if (birthDate == null) {
 				return false;
 			}
 			calcAge(birthDate);
+			patient.setAge(years);
+			patient.setBirthDate(birthDate);
+			patient.setAgetype("B");
+
 		} else if (jAgeTypeDescription.isSelected()) {
 			int index = jAgeDescComboBox.getSelectedIndex();
 			AgeType ageType = null;
@@ -868,15 +935,16 @@ public class PatientInsertExtended extends JDialog {
 			years = ageType.getFrom();
 			if (index == 1) {
 				months = jAgeMonthsComboBox.getSelectedIndex();
-				patient.setAgetype(ageType.getCode() + '/' + months);
 				birthDate = LocalDate.now().minusYears(years).minusMonths(months);
+				patient.setAgetype(ageType.getCode() + '/' + months);
 			} else {
 				birthDate = LocalDate.now().minusYears(years);
+				patient.setAgetype(ageType.getCode());
 			}
+			patient.setAge(years);
+			patient.setBirthDate(birthDate);
 		}
-		patient.setAge(years);
-		patient.setBirthDate(birthDate);
-		patient.setAgetype("");
+
 		return true;
 	}
 
@@ -2597,28 +2665,49 @@ public class PatientInsertExtended extends JDialog {
 			return;
 		}
 
-		if (patient.getAgetype() != null && !patient.getAgetype().isEmpty()) {
+		String agetype = patient.getAgetype();
+
+		if ("A".equals(agetype)) {
+			jAgeTypeAge.setSelected(true);
+			if (patient.getBirthDate() != null) {
+				Period p = Period.between(patient.getBirthDate(), LocalDate.now());
+				getJAgeFieldYears().setText(String.valueOf(p.getYears()));
+				getJAgeFieldMonths().setText(String.valueOf(p.getMonths()));
+				getJAgeFieldDays().setText(String.valueOf(p.getDays()));
+			} else {
+				getJAgeFieldYears().setText(String.valueOf(patient.getAge()));
+				getJAgeFieldMonths().setText("0");
+				getJAgeFieldDays().setText("0");
+			}
+			refreshAgeTypePanel();
+
+		} else if ("B".equals(agetype)) {
+			jAgeTypeBirthDate.setSelected(true);
+			if (patient.getBirthDate() != null) {
+				birthDate = patient.getBirthDate();
+				calcAge(birthDate);
+			}
+			refreshAgeTypePanel();
+
+		} else if (agetype != null && !agetype.isEmpty()) {
 			jAgeTypeDescription.setSelected(true);
 
-			String agetypeValue = patient.getAgetype();
-
-			if (agetypeValue.contains("/")) {
-				String[] parts = agetypeValue.split("/");
+			if (agetype.contains("/")) {
+				String[] parts = agetype.split("/");
 				if (parts.length == 2) {
 					String label = parts[0];
 					String monthsStr = parts[1];
 
 					for (int i = 0; i < jAgeDescComboBox.getItemCount(); i++) {
-						String item = jAgeDescComboBox.getItemAt(i).toString();
-						if (item.equals(label)) {
+						if (jAgeDescComboBox.getItemAt(i).toString().equals(label)) {
 							jAgeDescComboBox.setSelectedIndex(i);
 							break;
 						}
 					}
 					try {
-						int months = Integer.parseInt(monthsStr);
-						if (months >= 0 && months < jAgeMonthsComboBox.getItemCount()) {
-							jAgeMonthsComboBox.setSelectedIndex(months);
+						int m = Integer.parseInt(monthsStr);
+						if (m >= 0 && m < jAgeMonthsComboBox.getItemCount()) {
+							jAgeMonthsComboBox.setSelectedIndex(m);
 						}
 						jAgeMonthsComboBox.setEnabled(true);
 					} catch (NumberFormatException e) {
@@ -2626,33 +2715,38 @@ public class PatientInsertExtended extends JDialog {
 					}
 				}
 			} else {
-				String label = agetypeValue;
-
-				boolean found = false;
 				for (int i = 0; i < jAgeDescComboBox.getItemCount(); i++) {
-					String item = jAgeDescComboBox.getItemAt(i).toString();
-					if (item.equals(label)) {
+					if (jAgeDescComboBox.getItemAt(i).toString().equals(agetype)) {
 						jAgeDescComboBox.setSelectedIndex(i);
-						found = true;
 						break;
 					}
 				}
-
-				if (!found && patient.getAgetype() != null) {
-					System.err.println("Warning: Could not find category: " + label);
-				}
-
 				jAgeMonthsComboBox.setEnabled(false);
 			}
+			refreshAgeTypePanel();
 
-		} else if (patient.getBirthDate() != null) {
-			jAgeTypeBirthDate.setSelected(true);
-			calcAge(patient.getBirthDate());
-		} else if (patient.getAge() > 0) {
-			jAgeTypeAge.setSelected(true);
-			jAgeYears.setText(String.valueOf(patient.getAge()));
-			jAgeMonths.setText("0");
-			jAgeDays.setText("0");
+		} else {
+			if (patient.getBirthDate() != null) {
+				jAgeTypeBirthDate.setSelected(true);
+				birthDate = patient.getBirthDate();
+				calcAge(birthDate);
+			} else if (patient.getAge() > 0) {
+				jAgeTypeAge.setSelected(true);
+				getJAgeFieldYears().setText(String.valueOf(patient.getAge()));
+				getJAgeFieldMonths().setText("0");
+				getJAgeFieldDays().setText("0");
+			}
+			refreshAgeTypePanel();
+		}
+	}
+
+	private void refreshAgeTypePanel() {
+		if (jAgeType != null && jAgeTypeSelection != null) {
+			jAgeType.remove(jAgeTypeSelection);
+			jAgeTypeSelection = getJAgeTypeSelection();
+			jAgeType.add(jAgeTypeSelection, BorderLayout.CENTER);
+			jAgeType.revalidate();
+			jAgeType.repaint();
 		}
 	}
 

@@ -3,6 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PharmaceuticalStock_ver4" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="PharmaceuticalStock_ver4" whenResourceMissingType="Key" uuid="3b4ad867-b6eb-4382-9eee-db98328ee9cd">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter.jrdax"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -38,7 +39,7 @@
     FROM (
         SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, LT_ID_A, LT_COST, SUM(INPUT) AS QTY_INPUT, SUM(OUTPUT) AS QTY_OUTPUT, LT_COST * SUM(INPUT) AS CHARGE, LT_COST * SUM(OUTPUT) AS DISCHARGE
         FROM (
-            SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, MMV_LT_ID_A, MMV_MMVT_ID_A, MMV_QTY, SUM(IF(MMVT_TYPE LIKE '%+%',MMV_QTY,0)) AS INPUT, SUM(IF(MMVT_TYPE LIKE '%-%', MMV_QTY, 0)) AS OUTPUT		
+            SELECT MDSR_ID, MDSRT_DESC, MDSR_CODE, MDSR_DESC, MDSR_MIN_STOCK_QTI, MMV_LT_ID_A, MMV_MMVT_ID_A, SUM(IF(MMVT_TYPE LIKE '%+%',MMV_QTY,0)) AS INPUT, SUM(IF(MMVT_TYPE LIKE '%-%', MMV_QTY, 0)) AS OUTPUT		
             FROM OH_MEDICALDSR
             LEFT JOIN OH_MEDICALDSRSTOCKMOV ON MDSR_ID = MMV_MDSR_ID
             LEFT JOIN OH_MEDICALDSRTYPE ON MDSRT_ID_A = MDSR_MDSRT_ID_A
