@@ -1302,7 +1302,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				if (iRetVal == JFileChooser.APPROVE_OPTION) {
 					File txtSageDirectory = fcTxt.getSelectedFile();
 
-					// Vérifier/créer le répertoire
 					if (!txtSageDirectory.exists()) {
 						txtSageDirectory.mkdirs();
 					}
@@ -1311,13 +1310,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					String from = dateFrom.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 					String to = dateTo.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 
-					// Déclarer les fichiers comme final pour les utiliser dans SwingWorker
 					final File salesFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
 							+ "exportvente_" + strDate + "_from_" + from + "_to_" + to + ".txt");
 					final File cashFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
 							+ "exportcaisse_" + strDate + "_from_" + from + "_to_" + to + ".txt");
-
-					// Exécuter l'export en arrière-plan pour ne pas bloquer l'UI
 					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 						@Override
 						protected Void doInBackground() throws Exception {
