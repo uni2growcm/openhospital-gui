@@ -521,6 +521,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJNewDeliveryButton());
         buttonPanel.add(getJAdmissionButton());
         buttonPanel.add(getJExamsButton());
+        buttonPanel.add(getJReportButton());
         buttonPanel.add(getJVaccinButton());
         buttonPanel.add(getJReportButton());
         buttonPanel.add(getJTherapyButton());
