@@ -84,7 +84,6 @@ public class LabEditExtended extends ModalJFrame {
 
 	private static final long serialVersionUID = -6576310684918676344L;
 
-	// LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList labEditExtendedListener = new EventListenerList();
 
 	public interface LabEditExtendedListener extends EventListener {
@@ -107,8 +106,6 @@ public class LabEditExtended extends ModalJFrame {
 			((LabEditExtendedListener) listener).labUpdated();
 		}
 	}
-
-	// ---------------------------------------------------------------------------
 
 	private boolean insert;
 
@@ -189,7 +186,6 @@ public class LabEditExtended extends ModalJFrame {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(null);
-			// data panel
 			jContentPane.add(getDataPatient());
 			jContentPane.add(getDataPanel());
 			resultPanel = new JPanel();
@@ -214,28 +210,24 @@ public class LabEditExtended extends ModalJFrame {
 
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
-			// initialize data panel
 			dataPanel = new JPanel();
 			dataPanel.setLayout(null);
 			dataPanel.setBounds(0, 0, PANEL_WIDTH, DATA_PANEL_HEIGHT);
-			// exam date
 			JLabel examDateLabel = new JLabel(MessageBundle.getMessage("angal.common.date.txt"));
 			examDateLabel.setBounds(5, 10, LABEL_WIDTH, 25);
 			examDateFieldCal = getExamDateFieldCal();
 			examDateFieldCal.setBounds(LABEL_WIDTH + 5, 10, 200, 25);
-			// material
+
 			JLabel materialLabel = new JLabel(MessageBundle.getMessage("angal.lab.material"));
 			materialLabel.setBounds(290, 10, 140, 20);
 			matComboBox = getMatComboBox();
 			matComboBox.setBounds(360, 10, 185, 20);
 
-			// exam combo
 			JLabel examLabel = new JLabel(MessageBundle.getMessage("angal.lab.exam"));
 			examLabel.setBounds(5, 40, LABEL_WIDTH, 20);
 			examComboBox = getExamComboBox();
 			examComboBox.setBounds(LABEL_WIDTH + 5, 40, 470, 20);
 
-			// patient (in or out) data
 			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.lab.patientcode"));
 			patientLabel.setBounds(LABEL_WIDTH + 5, 65, 120, 20);
 			inPatientCheckBox = getInPatientCheckBox();
@@ -269,7 +261,6 @@ public class LabEditExtended extends ModalJFrame {
 			patientComboBox = getPatientComboBox();
 			patientComboBox.setBounds(LABEL_WIDTH + 170, 65, 305, 20);
 
-			// add all to the data panel
 			dataPanel.add(examDateLabel, null);
 			dataPanel.add(examDateFieldCal, null);
 			dataPanel.add(materialLabel, null);
@@ -278,7 +269,6 @@ public class LabEditExtended extends ModalJFrame {
 			dataPanel.add(examComboBox, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
-			// ADDED: Alex
 			dataPanel.add(jTextPatientSrc, null);
 			dataPanel.add(patientComboBox, null);
 
@@ -315,9 +305,6 @@ public class LabEditExtended extends ModalJFrame {
 			noteTextArea.setWrapStyleWord(true);
 			noteTextArea.setAutoscrolls(true);
 
-			/*
-			 * Teo : Adding scroll capabilities at note textArea
-			 */
 			if (noteScrollPane == null) {
 				noteScrollPane = new JScrollPane(noteTextArea);
 				noteScrollPane.setBounds(LABEL_WIDTH + 5, 50, 460, 35);
@@ -607,7 +594,6 @@ public class LabEditExtended extends ModalJFrame {
 					return;
 				}
 
-				// CORRECTION : Retour à List<String> pour respecter la signature de labManager
 				List<String> labRow = new ArrayList<>();
 
 				lab.setLabDate(examDate);
@@ -626,8 +612,6 @@ public class LabEditExtended extends ModalJFrame {
 					lab.setResult(MessageBundle.getMessage("angal.lab.multipleresults.txt"));
 					for (EditProcedure2RowPanel componentRow : procedure2RowsComponents) {
 						if (componentRow.isChecked()) {
-							// ASTUCE : On concatène la description et la valeur saisie séparées par un "$"
-							// pour pouvoir stocker les deux informations dans la chaîne de caractères
 							String serializedValue = componentRow.getLabRowDescription();
 							if (!componentRow.getValueText().isEmpty()) {
 								serializedValue += "$" + componentRow.getValueText();
@@ -721,13 +705,11 @@ public class LabEditExtended extends ModalJFrame {
 				LaboratoryRow matchingRow = null;
 				String savedValueText = "";
 
-				// CORRECTION : Recherche de correspondance avec désérialisation
 				for (LaboratoryRow lr : lRows) {
 					String descInDb = lr.getDescription();
 					String cleanDesc = descInDb;
 					String extractedValue = "";
 
-					// Si la description contient notre séparateur "$", on extrait la description propre et la valeur
 					if (descInDb != null && descInDb.contains("$")) {
 						int sepIndex = descInDb.indexOf("$");
 						cleanDesc = descInDb.substring(0, sepIndex);
@@ -753,13 +735,11 @@ public class LabEditExtended extends ModalJFrame {
 				}
 			}
 
-			// 1. Examens positifs en haut
 			for (EditProcedure2RowPanel rowPanel : positiveRows) {
 				procedure2RowsComponents.add(rowPanel);
 				innerPanel.add(rowPanel);
 			}
 
-			// 2. Examens négatifs en bas
 			for (EditProcedure2RowPanel rowPanel : negativeRows) {
 				procedure2RowsComponents.add(rowPanel);
 				innerPanel.add(rowPanel);
