@@ -34,37 +34,22 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -77,6 +62,7 @@ import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillPayments;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.generaldata.SageConfig;
 import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
@@ -214,6 +200,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
 	private static final int PAGE_SIZE = 100;
+
+	private JButton exportSageButton;
 
 	public boolean hasBillGuarantor() {
 		return GeneralData.ALLOWBILLGUARANTOR;
@@ -611,6 +599,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
 			}
+			if (SageConfig.ENABLE_SAGE_INTEGRATION) {
+				jPanelButtons.add(getExportSageButton());
+			}
 			jPanelButtons.add(getJButtonClose());
 		}
 		return jPanelButtons;
@@ -736,7 +727,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable getJTableBills() {
 		if (jTableBills == null) {
 			jTableBills = new JTable();
-			jTableBills.setModel(new BillTableModel("ALL", NO_USERNAME));
+			jTableBills.setModel(new BillTableModel(new ArrayList<>()));
 			decorateTable(jTableBills);
 			jTableBills.setAutoCreateColumnsFromModel(false);
 			jTableBills.setDefaultRenderer(String.class, new StringTableCellRenderer());
@@ -1299,6 +1290,60 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jCalendarFrom;
 	}
 
+	private JButton getExportSageButton() {
+		if (exportSageButton == null) {
+			exportSageButton = new JButton(MessageBundle.getMessage("angal.billbrowser.exportsage"));
+			exportSageButton.setMnemonic(KeyEvent.VK_E);
+			exportSageButton.addActionListener(e -> {
+				JFileChooser fcTxt = new JFileChooser();
+				fcTxt.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+				int iRetVal = fcTxt.showSaveDialog(this);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File txtSageDirectory = fcTxt.getSelectedFile();
+
+					// Vérifier/créer le répertoire
+					if (!txtSageDirectory.exists()) {
+						txtSageDirectory.mkdirs();
+					}
+
+					String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String from = dateFrom.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String to = dateTo.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+					// Déclarer les fichiers comme final pour les utiliser dans SwingWorker
+					final File salesFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportvente_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+					final File cashFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportcaisse_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+
+					// Exécuter l'export en arrière-plan pour ne pas bloquer l'UI
+					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+						@Override
+						protected Void doInBackground() throws Exception {
+							billBrowserManager.exportSagePaymentsStreaming(cashFile, dateFrom, dateTo);
+							billBrowserManager.exportSagePaymentsStreaming(salesFile, dateFrom, dateTo);
+							return null;
+						}
+
+						@Override
+						protected void done() {
+							try {
+								get();
+								MessageDialog.info(BillBrowser.this, "angal.medicalstock.exportsage.succes");
+							} catch (Exception ex) {
+								MessageDialog.error(BillBrowser.this, "angal.medicalstock.exportsage.error");
+								LOGGER.error("Export to sage error: ", ex);
+							}
+						}
+					};
+					worker.execute();
+				}
+			});
+		}
+		return exportSageButton;
+	}
+
 	private GoodDateChooser getJCalendarTo() {
 		if (jCalendarTo == null) {
 			jCalendarTo = new GoodDateChooser(LocalDate.now());
@@ -1604,11 +1649,11 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		private List<Bill> tableArray = new ArrayList<>();
 
 		public BillTableModel(List<Bill> bills) {
-			this.tableArray = bills;
+			this.tableArray = bills != null ? bills : new ArrayList<>();
 		}
 
 		public BillTableModel(String status, String username) {
-			loadData(status, username);
+			this.tableArray = new ArrayList<>();
 		}
 
 		private void loadData(String status, String username) {
