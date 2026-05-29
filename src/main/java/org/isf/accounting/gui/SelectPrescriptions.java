@@ -190,7 +190,6 @@ public class SelectPrescriptions extends JDialog {
             if (operations == null) {
                 operations = new ArrayList<>();
             }
-            System.out.println(patient.getCode());
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e, this);
             operations = new ArrayList<>();
