@@ -63,6 +63,7 @@ import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.gui.PatVacBrowser;
 import org.isf.stat.gui.report.GenericReportPregnancyCertificateOfDeclaration;
+import org.isf.stat.gui.report.GenericReportPregnancy;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
@@ -72,6 +73,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.isf.stat.manager.JasperReportsManager;
 
 import org.springframework.data.domain.Page;
 
@@ -114,6 +116,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private PregnancyBrowserManager pregnancyManager;
     private PregnancyVisitBrowserManager visitManager;
+    private JasperReportsManager jasperReportsManager;
 
     private JTable pregnancyTable;
     private JTable visitTable;
@@ -192,6 +195,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private void initManagers() {
         pregnancyManager = Context.getApplicationContext().getBean(PregnancyBrowserManager.class);
         visitManager = Context.getApplicationContext().getBean(PregnancyVisitBrowserManager.class);
+        jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
     }
 
     private void loadTypologies() {
@@ -517,7 +521,9 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJNewDeliveryButton());
         buttonPanel.add(getJAdmissionButton());
         buttonPanel.add(getJExamsButton());
+        buttonPanel.add(getJReportButton());
         buttonPanel.add(getJVaccinButton());
+        buttonPanel.add(getJReportButton());
         buttonPanel.add(getJTherapyButton());
         buttonPanel.add(getJCloseButton());
 
@@ -581,6 +587,12 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private JButton getJVaccinButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.cpn.vaccin.btn"));
         button.addActionListener(e -> vaccins());
+        return button;
+    }
+
+    private JButton getJReportButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+        button.addActionListener(e -> report());
         return button;
     }
 
@@ -984,6 +996,15 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         PatVacBrowser patVacBrowser = new PatVacBrowser();
         patVacBrowser.setVisible(true);
+    }
+
+    private void report() {
+        if (selectedPregnancy == null) {
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
+            return;
+        }
+
+        new GenericReportPregnancy(selectedPregnancy.getId());
     }
 
     private void therapy() {
