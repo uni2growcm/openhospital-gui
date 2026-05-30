@@ -260,7 +260,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					if (selectedrow < 0) {
 						int ok = MessageDialog.yesNoCancel(this, "angal.lab.nopatientselectedprintempylabel.msg");
 						if (ok == JOptionPane.NO_OPTION) {
-							SelectPatient selectPatient = new SelectPatient(this, null);
+							SelectPatient selectPatient = new SelectPatient(this, (Patient) null);
 							selectPatient.setVisible(true);
 							Patient patient = selectPatient.getPatient();
 							if (patient != null) {
