@@ -2296,63 +2296,68 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jButtonAddPayment.setMaximumSize(BUTTON_PAYMENT_SIZE);
 			jButtonAddPayment.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonAddPayment.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
-            jButtonAddPayment.addActionListener(actionEvent -> {
+			jButtonAddPayment.addActionListener(actionEvent -> {
 
-                Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
-                BigDecimal amount = BigDecimal.valueOf(balance.doubleValue());
-
-				if (balance.compareTo(BigDecimal.ZERO) != 0) {
-					if (balance.equals(bigTotal)) {
-						amount = balance;
-						String quantity = (String) JOptionPane.showInputDialog(
-							this,
-							MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
-							MessageBundle.getMessage("angal.common.quantity.txt"),
-							JOptionPane.PLAIN_MESSAGE,
-							icon,
-							null,
-							amount
-						);
-
-						if (quantity != null) {
-							try {
-								amount = new BigDecimal(quantity);
-								if (amount.equals(BigDecimal.ZERO)) {
-									return;
-								}
-							} catch (Exception e) {
-								MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
-								return;
-							}
-						} else {
-							return;
-						}
-					} else {
-						amount = balance;
-						String quantity = (String) MessageDialog.inputDialog(this, icon, null, amount, "angal.newbill.insertquantity.txt");
-					}
-				} else {
+				if (balance.compareTo(BigDecimal.ZERO) == 0) {
+					MessageDialog.error(this, "angal.newbill.balance.zero.msg");
 					return;
 				}
 
-                GoodDateTimeSpinnerChooser datePayChooser =
-                        new GoodDateTimeSpinnerChooser(TimeTools.getNow());
+				Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
 
-                int r = JOptionPane.showConfirmDialog(
-                    this,
-                    datePayChooser,
-                    MessageBundle.getMessage("angal.newbill.dateofpayment.title"),
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE
-                );
+				BigDecimal defaultAmount = balance;
 
-                if (r != JOptionPane.OK_OPTION) return;
+				String quantity = (String) JOptionPane.showInputDialog(
+						this,
+						MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+						MessageBundle.getMessage("angal.common.quantity.txt"),
+						JOptionPane.PLAIN_MESSAGE,
+						icon,
+						null,
+						defaultAmount.toString()
+				);
 
-                LocalDateTime datePay = datePayChooser.getLocalDateTime();
+				if (quantity == null) {
+					return;
+				}
 
-                if (!isValidPaymentDate(datePay)) return;
-                addPayment(datePay, amount.doubleValue());
-            });
+				BigDecimal amount;
+				try {
+					amount = new BigDecimal(quantity);
+					if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+						MessageDialog.error(this, "angal.newbill.amount.greater.than.zero.msg");
+						return;
+					}
+					if (amount.compareTo(balance) > 0) {
+						MessageDialog.error(this,
+								MessageBundle.formatMessage("angal.newbill.payment.exceeds.balance.msg",
+										amount, balance));
+						return;
+					}
+				} catch (Exception e) {
+					MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+					return;
+				}
+
+				GoodDateTimeSpinnerChooser datePayChooser =
+						new GoodDateTimeSpinnerChooser(TimeTools.getNow());
+
+				int r = JOptionPane.showConfirmDialog(
+						this,
+						datePayChooser,
+						MessageBundle.getMessage("angal.newbill.dateofpayment.title"),
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.PLAIN_MESSAGE
+				);
+
+				if (r != JOptionPane.OK_OPTION) return;
+
+				LocalDateTime datePay = datePayChooser.getLocalDateTime();
+
+				if (!isValidPaymentDate(datePay)) return;
+
+				addPayment(datePay, amount.doubleValue());
+			});
 		}
 		return jButtonAddPayment;
 	}
