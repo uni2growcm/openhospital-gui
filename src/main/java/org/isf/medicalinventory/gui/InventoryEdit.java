@@ -1448,8 +1448,7 @@ public class InventoryEdit extends ModalJFrame {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						code = medicalCodeTextField.getText();
-						code = code.toLowerCase();
+						code = medicalCodeTextField.getText().trim();
 						try {
 							addInventoryRow(code);
 						} catch (OHServiceException e1) {
@@ -1490,15 +1489,10 @@ public class InventoryEdit extends ModalJFrame {
 		List<Lot> lots = null;
 		Medical medical = null;
 		MedicalInventoryRow inventoryRowTemp = null;
-		if (code != null) {
-			medical = medicalBrowsingManager.getMedicalByMedicalCode(code);
+		if (code != null && !code.trim().isEmpty()) {
+			medical = findMedicalByCodeOrDescription(code);
 			if (medical != null) {
 				medicalList.add(medical);
-			} else {
-				medical = chooseMedical(code);
-				if (medical != null) {
-					medicalList.add(medical);
-				}
 			}
 		} else {
 			medicalList = medicals;
@@ -1605,15 +1599,13 @@ public class InventoryEdit extends ModalJFrame {
 		List<Lot> lots = null;
 		Medical medical = null;
 		MedicalInventoryRow inventoryRowTemp = null;
-		if (code != null) {
-			medical = medicalBrowsingManager.getMedicalByMedicalCode(code);
+		if (code != null && !code.trim().isEmpty()) {
+			medical = findMedicalByCodeOrDescription(code);
+
 			if (medical != null) {
 				medicalList.add(medical);
 			} else {
-				medical = chooseMedical(code);
-				if (medical != null) {
-					medicalList.add(medical);
-				}
+				return;
 			}
 		} else {
 			medicalList = medicals;
@@ -1643,7 +1635,7 @@ public class InventoryEdit extends ModalJFrame {
 					inventoryRowTemp = new MedicalInventoryRow(0, lot.getMainStoreQuantity(), lot.getMainStoreQuantity(), null, med, lot);
 					if (!existInInventorySearchList(inventoryRowTemp)) {
 						inventoryRowsList.add(inventoryRowTemp);
-						numberOfMedicalWithoutSameLotAdded = numberOfMedicalWithoutSameLotAdded + 1;
+						numberOfMedicalWithoutSameLotAdded++;
 					}
 				}
 			}
@@ -1662,27 +1654,33 @@ public class InventoryEdit extends ModalJFrame {
 		jTableInventoryRow.updateUI();
 	}
 
-	private Medical chooseMedical(String text) throws OHServiceException {
-		Map<String, Medical> medicalMap = new HashMap<>();
-		for (Medical med : medicals) {
-			String key = med.getCode().toString().toLowerCase();
-			medicalMap.put(key, med);
+	private Medical findMedicalByCodeOrDescription(String text) throws OHServiceException {
+		String searchText = text.trim();
+		Medical medical = medicalBrowsingManager.getMedicalByMedicalCode(searchText);
+		if (medical == null) {
+			medical = chooseMedical(searchText);
 		}
+		return medical;
+	}
+
+	private Medical chooseMedical(String text) throws OHServiceException {
 		List<Medical> medList = new ArrayList<>();
-		for (Medical aMed : medicalMap.values()) {
-			if (NormalizeString.normalizeContains(aMed.getDescription().toLowerCase(), text)) {
-				medList.add(aMed);
+
+		String searchText = text.trim();
+
+		for (Medical med : medicals) {
+			if (matchesMedicalSearch(med, searchText)) {
+				medList.add(med);
 			}
 		}
-		Collections.sort(medList);
+
+		medList.sort(Comparator.comparing(Medical::getDescription));
 		Medical med = null;
 		if (!medList.isEmpty()) {
 			MedicalPicker framas = new MedicalPicker(new StockMedModel(medList), medList);
-			framas.setSize(300, 400);
 			JDialog dialog = new JDialog();
 			dialog.setLocationRelativeTo(null);
 			dialog.setSize(600, 350);
-			dialog.setLocationRelativeTo(null);
 			dialog.setModal(true);
 			dialog.setTitle(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chooseamedical"));
 			framas.setParentFrame(dialog);
@@ -1692,6 +1690,36 @@ public class InventoryEdit extends ModalJFrame {
 			med = framas.getSelectedMedical();
 		}
 		return med;
+	}
+
+	private boolean matchesMedicalSearch(Medical medical, String searchText) {
+		String productCode = Objects.toString(medical.getProdCode(), "");
+		String description = Objects.toString(medical.getDescription(), "");
+		String searchableText = normalizeSearchValue(productCode + " " + description);
+		String normalizedSearch = normalizeSearchValue(searchText);
+
+		return productCode.equalsIgnoreCase(searchText)
+			|| searchableText.contains(normalizedSearch)
+			|| matchesAllSearchTokens(searchableText, normalizedSearch);
+	}
+
+	private String normalizeSearchValue(String value) {
+		return NormalizeString.normalizeString(value)
+			.toLowerCase()
+			.replaceAll("\\s+", " ")
+			.trim();
+	}
+
+	private boolean matchesAllSearchTokens(String searchableText, String normalizedSearch) {
+		if (normalizedSearch.isEmpty()) {
+			return false;
+		}
+		for (String token : normalizedSearch.split(" ")) {
+			if (!searchableText.contains(token)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private JLabel getReferenceLabel() {
