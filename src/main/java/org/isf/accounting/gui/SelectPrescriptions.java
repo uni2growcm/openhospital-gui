@@ -22,7 +22,7 @@
 package org.isf.accounting.gui;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -44,6 +44,7 @@ import org.isf.operation.model.OperationRow;
 import org.isf.patient.model.Patient;
 import org.isf.priceslist.model.ItemGroup;
 import org.isf.priceslist.model.Price;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.therapy.manager.TherapyManager;
 import org.isf.therapy.model.TherapyRow;
 import org.isf.utils.exception.OHServiceException;
@@ -86,6 +87,9 @@ public class SelectPrescriptions extends JDialog {
     private LabManager labManager;
     private OperationRowBrowserManager opManager;
     private BillBrowserManager billManager;
+    private String medicalPriceID;
+    private String examPriceID;
+    private String operationPriceID;
 
     public interface PrescriptionSelectionListener extends EventListener {
         void prescriptionSelected(List<BillItems> prescriptions);
@@ -200,6 +204,10 @@ public class SelectPrescriptions extends JDialog {
             } else {
                 price = billManager.getPriceFromListWithoutReduction(String.valueOf(therapy.getMedicalId()), ItemGroup.MEDICAL, patient);
             }
+
+            if (price != null && price.getItem() != null) {
+                medicalPriceID = price.getGroup() + price.getItem();
+            }
             return price != null ? price.getPrice() : 0.0;
         } catch (OHServiceException e) {
             return 0.0;
@@ -214,6 +222,10 @@ public class SelectPrescriptions extends JDialog {
             } else {
                 price = billManager.getPriceFromListWithoutReduction(lab.getExam().getCode(), ItemGroup.EXAM, patient);
             }
+
+            if (price != null && price.getItem() != null) {
+                examPriceID = price.getGroup() + price.getItem();
+            }
             return price != null ? price.getPrice() : 0.0;
         } catch (OHServiceException e) {
             return 0.0;
@@ -227,6 +239,10 @@ public class SelectPrescriptions extends JDialog {
                 price = billManager.getPrice(op.getOperation().getCode(), ItemGroup.OPERATION, patient);
             } else {
                 price = billManager.getPriceFromListWithoutReduction(op.getOperation().getCode(), ItemGroup.OPERATION, patient);
+            }
+
+            if (price != null && price.getItem() != null) {
+                operationPriceID = price.getGroup() + price.getItem();
             }
             return price != null ? price.getPrice() : 0.0;
         } catch (OHServiceException e) {
@@ -255,14 +271,19 @@ public class SelectPrescriptions extends JDialog {
                         item.setItemGroup(ItemGroup.MEDICAL.getCode());
                         item.setItemId(String.valueOf(therapy.getMedicalId()));
                         item.setItemQuantity(quantityToBill);
-                        // Convert int to Integer using valueOf
                         item.setPrescriptionId(Integer.valueOf(therapy.getTherapyID()));
 
-                        // Get prices with and without reductions
-                        double priceWithReduction = getTherapyPrice(therapy, true);
                         double priceBrut = getTherapyPrice(therapy, false);
+                        double priceWithReduction = priceBrut;
+
+                        if (patient.getReductionPlan() != null) {
+                            ReductionPlan reductionPlan = patient.getReductionPlan();
+                            priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getOperationRate());
+                        }
+
                         item.setItemAmount(priceWithReduction);
                         item.setItemAmountBrut(priceBrut);
+                        item.setPriceID(medicalPriceID);
                         item.setPrice(true);
 
                         prescriptions.add(item);
@@ -285,10 +306,17 @@ public class SelectPrescriptions extends JDialog {
                     item.setPrescriptionId(lab.getCode());
                     item.setItemQuantity(1);
 
-                    double priceWithReduction = getExamPrice(lab, true);
                     double priceBrut = getExamPrice(lab, false);
+                    double priceWithReduction = priceBrut;
+
+                    if (patient.getReductionPlan() != null) {
+                        ReductionPlan reductionPlan = patient.getReductionPlan();
+                        priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getExamRate());
+                    }
+
                     item.setItemAmount(priceWithReduction);
                     item.setItemAmountBrut(priceBrut);
+                    item.setPriceID(examPriceID);
                     item.setPrice(true);
 
                     prescriptions.add(item);
@@ -310,10 +338,17 @@ public class SelectPrescriptions extends JDialog {
                     item.setPrescriptionId(Integer.valueOf(op.getId()));
                     item.setItemQuantity(1);
 
-                    double priceWithReduction = getOperationPrice(op, true);
                     double priceBrut = getOperationPrice(op, false);
+                    double priceWithReduction = priceBrut;
+
+                    if (patient.getReductionPlan() != null) {
+                        ReductionPlan reductionPlan = patient.getReductionPlan();
+                        priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getOperationRate());
+                    }
+
                     item.setItemAmount(priceWithReduction);
                     item.setItemAmountBrut(priceBrut);
+                    item.setPriceID(operationPriceID);
                     item.setPrice(true);
 
                     prescriptions.add(item);
@@ -336,6 +371,17 @@ public class SelectPrescriptions extends JDialog {
         } catch (OHServiceException e) {
             return String.valueOf(medicalId);
         }
+    }
+
+    private double applyReductionPlan(double initialPrice, BigDecimal reductionPlanPercentage) {
+
+        if (reductionPlanPercentage != null && reductionPlanPercentage.compareTo(BigDecimal.ZERO) > 0) {
+            double percentage = reductionPlanPercentage.doubleValue();
+            double reductionAmount = initialPrice * (percentage / 100);
+            return initialPrice - reductionAmount;
+        }
+
+        return initialPrice;
     }
 
     private void initComponents() {

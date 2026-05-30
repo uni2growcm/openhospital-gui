@@ -3167,8 +3167,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                                                     medicalWard.getMedical().getProdCode()
                                             );
 
-                                            billItems.add(validatedItem);
-
                                             modified = true;
                                         }
 
