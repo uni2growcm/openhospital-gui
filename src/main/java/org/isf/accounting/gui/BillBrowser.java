@@ -36,7 +36,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
