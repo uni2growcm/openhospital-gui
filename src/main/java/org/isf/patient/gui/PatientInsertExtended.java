@@ -3173,9 +3173,26 @@ public class PatientInsertExtended extends JDialog {
 			});
 
 			if (!insert && patient.getAffiliatedPatient() != null) {
-				jAffiliatedPatientTextField.setText(patient.getAffiliatedPatient().getName());
-				jAffiliatedPatientTextField.setEditable(false);
-				jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+				try {
+					String affiliatedName = patient.getAffiliatedPatient().getName();
+					jAffiliatedPatientTextField.setText(affiliatedName);
+					jAffiliatedPatientTextField.setEditable(false);
+					jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+				} catch (LazyInitializationException ex) {
+					try {
+						Integer affiliatedCode = patient.getAffiliatedPatient().getCode();
+						Patient reloaded = patientBrowserManager.getPatientById(affiliatedCode);
+						if (reloaded != null) {
+							patient.setAffiliatedPatient(reloaded);
+							jAffiliatedPatientTextField.setText(reloaded.getName());
+							jAffiliatedPatientTextField.setEditable(false);
+							jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+						}
+					} catch (OHServiceException ohEx) {
+						OHServiceExceptionUtil.showMessages(ohEx);
+						LOGGER.error("Impossible de recharger le patient affilié: {}", ohEx.getMessage(), ohEx);
+					}
+				}
 			}
 		}
 		return jAffiliatedPatientTextField;

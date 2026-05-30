@@ -183,7 +183,7 @@ public class TherapyEntryForm extends JDialog {
 			setTitle(MessageBundle.getMessage("angal.therapy.edittherapyentryform.title"));
 			getContentPane().setBackground(Color.RED);
 		}
-		setSize(new Dimension(740, 400));
+		setSize(new Dimension(820, 400));
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		getContentPane().add(getTherapyPanel(), BorderLayout.CENTER);
 		getContentPane().add(getButtonPanel(), BorderLayout.SOUTH);
@@ -264,6 +264,7 @@ public class TherapyEntryForm extends JDialog {
 		if (medicalListscrollPane == null) {
 			medicalListscrollPane = new JScrollPane(getMedicalsList());
 			medicalListscrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+			medicalListscrollPane.setPreferredSize(new Dimension(350, ONE_LINE_COMPONENTS_HEIGHT * VISIBLE_MEDICALS_ROWS));
 			medicalListscrollPane.setMaximumSize(new Dimension(Short.MAX_VALUE,
 					ONE_LINE_COMPONENTS_HEIGHT * VISIBLE_MEDICALS_ROWS));
 		}
@@ -549,6 +550,8 @@ public class TherapyEntryForm extends JDialog {
 		if (noteScrollPane == null) {
 			noteScrollPane = new JScrollPane(getNoteTextArea());
 			noteScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			noteScrollPane.setPreferredSize(new Dimension(300, 120));
+			noteScrollPane.setMinimumSize(new Dimension(300, 120));
 		}
 		return noteScrollPane;
 	}
