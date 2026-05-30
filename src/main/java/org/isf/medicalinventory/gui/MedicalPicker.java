@@ -175,6 +175,8 @@ public class MedicalPicker extends JPanel {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					validateSelection();
+					e.consume();
+					return;
 				}
 				super.keyPressed(e);
 			}
@@ -264,6 +266,8 @@ public class MedicalPicker extends JPanel {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					validateSelection();
+					e.consume();
+					return;
 				} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 					int selectedRow = jTableData.getSelectedRow();
 					if (jTableData.getRowCount() > 0 && selectedRow >= 0) {
@@ -311,6 +315,7 @@ public class MedicalPicker extends JPanel {
 				jButtonQuitMouseClicked(evt);
 			}
 		});
+		jButtonQuit.addActionListener(actionEvent -> closePicker());
 		add(jPanel2, BorderLayout.SOUTH);
 		jPanel2.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 		jPanel2.add(jButtonSelect);
@@ -327,22 +332,31 @@ public class MedicalPicker extends JPanel {
 	}
 
 	private void validateSelection() {
-		this.setSelectedRow(this.jTableData.getSelectedRow());
-		this.setVisible(false);
-		this.getParentFrame().dispose();
+		int row = this.jTableData.getSelectedRow();
+		if (row < 0 && this.jTableData.getRowCount() > 0) {
+			row = 0;
+			this.jTableData.setRowSelectionInterval(row, row);
+		}
+		if (row < 0) {
+			return;
+		}
+		this.setSelectedRow(row);
+		closePicker();
 	}
 
 	private void jButtonSelectActionPerformed(ActionEvent evt) {
-
+		validateSelection();
 	}
 
 	private void jButtonSelectMouseClicked(MouseEvent evt) {
-		this.setSelectedRow(this.jTableData.getSelectedRow());
-		this.setVisible(false);
-		this.getParentFrame().dispose();
+		validateSelection();
 	}
 
 	private void jButtonQuitMouseClicked(MouseEvent evt) {
+		closePicker();
+	}
+
+	private void closePicker() {
 		this.setVisible(false);
 		this.getParentFrame().dispose();
 	}

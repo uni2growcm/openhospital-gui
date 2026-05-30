@@ -743,7 +743,7 @@ public class MovStockMultipleDischarging extends JDialog {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 			for (Ward elem : wardsList) {
-				jComboBoxDestination.addItem(elem);
+				if (elem.isPharmacy()) jComboBoxDestination.addItem(elem);
 			}
 		}
 		return jComboBoxDestination;
