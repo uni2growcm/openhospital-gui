@@ -3145,9 +3145,7 @@ public class PatientInsertExtended extends JDialog {
 						if (!searchText.isEmpty()) {
 							SelectPatient selectPatient = new SelectPatient(
 									PatientInsertExtended.this,
-									true,
-									searchText,
-									100
+									searchText
 							);
 							selectPatient.addSelectionListener(selectedPatient -> {
 								patient.setAffiliatedPatient(selectedPatient);
@@ -3173,9 +3171,26 @@ public class PatientInsertExtended extends JDialog {
 			});
 
 			if (!insert && patient.getAffiliatedPatient() != null) {
-				jAffiliatedPatientTextField.setText(patient.getAffiliatedPatient().getName());
-				jAffiliatedPatientTextField.setEditable(false);
-				jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+				try {
+					String affiliatedName = patient.getAffiliatedPatient().getName();
+					jAffiliatedPatientTextField.setText(affiliatedName);
+					jAffiliatedPatientTextField.setEditable(false);
+					jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+				} catch (LazyInitializationException ex) {
+					try {
+						Integer affiliatedCode = patient.getAffiliatedPatient().getCode();
+						Patient reloaded = patientBrowserManager.getPatientById(affiliatedCode);
+						if (reloaded != null) {
+							patient.setAffiliatedPatient(reloaded);
+							jAffiliatedPatientTextField.setText(reloaded.getName());
+							jAffiliatedPatientTextField.setEditable(false);
+							jAffiliatedPatientTextField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+						}
+					} catch (OHServiceException ohEx) {
+						OHServiceExceptionUtil.showMessages(ohEx);
+						LOGGER.error("Unable to reload affiliated patient: {}", ohEx.getMessage(), ohEx);
+					}
+				}
 			}
 		}
 		return jAffiliatedPatientTextField;
@@ -3190,9 +3205,7 @@ public class PatientInsertExtended extends JDialog {
 			jAffiliatedPatientSearchButton.addActionListener(e -> {
 				SelectPatient selectPatient = new SelectPatient(
 						this,
-						true,
-						searchText,
-						100
+                        jAffiliatedPatientTextField.getText().trim()
 				);
 				selectPatient.addSelectionListener(selectedPatient -> {
 					patient.setAffiliatedPatient(selectedPatient);

@@ -633,9 +633,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
             jTextFieldPatient.addActionListener(actionEvent -> {
                 SelectPatient selectPatient = new SelectPatient(
                         (JFrame) SwingUtilities.getWindowAncestor(jTextFieldPatient),
-                        true,
-                        jTextFieldPatient.getText(),
-                        100
+                        jTextFieldPatient.getText()
                 );
 
                 selectPatient.setVisible(true);

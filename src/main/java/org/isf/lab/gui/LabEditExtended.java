@@ -312,9 +312,7 @@ public class LabEditExtended extends ModalJFrame {
                 if (!text.isEmpty()) {
                     SelectPatient dialog = new SelectPatient(
                             this,
-                            false,
-                            text,
-                            100
+                            text
                     );
 
                     dialog.setVisible(true);
