@@ -1693,7 +1693,7 @@ public class InventoryEdit extends ModalJFrame {
 			med = framas.getSelectedMedical();
 		} else {
 			JOptionPane.showMessageDialog(this,
-					"Aucun médicament trouvé pour: " + text,
+					"No medical found for this search: " + text,
 					MessageBundle.getMessage("angal.common.error.title"),
 					JOptionPane.ERROR_MESSAGE);
 		}
