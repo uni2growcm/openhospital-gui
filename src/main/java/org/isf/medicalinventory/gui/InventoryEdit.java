@@ -1675,7 +1675,6 @@ public class InventoryEdit extends ModalJFrame {
 		}
 
 		medList.sort(Comparator.comparing(Medical::getDescription));
-
 		Medical med = null;
 		if (!medList.isEmpty()) {
 			MedicalPicker framas = new MedicalPicker(new StockMedModel(medList), medList);
