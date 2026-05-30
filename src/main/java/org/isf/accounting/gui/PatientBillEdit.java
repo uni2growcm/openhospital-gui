@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -671,7 +672,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         } else {
             try {
                 thisBill = (Bill) bill.clone();
-
+				jCalendarDate.setDate(LocalDate.from(thisBill.getDate() != null ? thisBill.getDate() : today));
                 if (thisBill.getBillPatient() != null && thisBill.getBillPatient().getCode() != 0) {
                     updatePrescriptionButtonVisibility();
                 }
