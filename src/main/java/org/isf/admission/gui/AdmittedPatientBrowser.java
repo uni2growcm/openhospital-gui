@@ -64,6 +64,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -515,54 +517,42 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		countryPanel.add(patientCountryBox, BorderLayout.CENTER);
 		countryPanel = setMyBorder(countryPanel, MessageBundle.getMessage("angal.common.country.txt"));
 
-		JPanel searchPanel = new JPanel(new BorderLayout());
-		searchPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
-		searchString = new JTextField();
-		searchString.setColumns(15);
-		if (GeneralData.ENHANCEDSEARCH) {
-			searchString.addKeyListener(new KeyAdapter() {
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
 
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						jSearchButton.doClick();
-					}
-				}
-			});
-		} else {
-			searchString.addKeyListener(new KeyListener() {
+        searchString = new JTextField();
+        searchString.setColumns(15);
 
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if (altKeyReleased) {
-						lastKey = "";
-						String s = String.valueOf(e.getKeyChar());
-						if (Character.isLetterOrDigit(e.getKeyChar())) {
-							lastKey = s;
-						}
-						filterPatient(searchString.getText());
-					}
-				}
+        Timer searchTimer = new Timer(200, e -> {
+            String text = searchString.getText();
+            filterPatient(text == null ? "" : text.trim());
+        });
+        searchTimer.setRepeats(false);
 
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ALT) {
-						altKeyReleased = false;
-					}
-				}
+        searchString.getDocument().addDocumentListener(new DocumentListener() {
 
-				@Override
-				public void keyReleased(KeyEvent e) {
-					altKeyReleased = true;
-				}
-			});
-		}
-		searchPanel.add(searchString, BorderLayout.CENTER);
-		if (GeneralData.ENHANCEDSEARCH) {
-			searchPanel.add(getButtonSearch(), BorderLayout.EAST);
-		}
+            private void trigger() {
+                searchTimer.restart();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                trigger();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                trigger();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                trigger();
+            }
+        });
+
+        searchPanel.add(searchString, BorderLayout.CENTER);
+
 		searchPanel = setMyBorder(searchPanel, MessageBundle.getMessage("angal.admission.searchkey.border"));
 
 		JPanel mainPanel = new JPanel();

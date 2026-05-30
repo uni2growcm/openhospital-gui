@@ -34,7 +34,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -155,7 +159,8 @@ public class BillItemGroupEdit extends JDialog {
 
     private void initialize() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(1100, 700);
+        setSize(900, 700);
+        setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(getOwner());
         Image iconImage = new ImageIcon(getClass().getResource("/icons/oh.png")).getImage();
         setIconImage(iconImage);
