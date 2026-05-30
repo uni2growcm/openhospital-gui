@@ -1415,7 +1415,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				wardComboBox.setEnabled(false);
 			} else {
 				for (Ward elem : wardList) {
-					wardComboBox.addItem(elem);
+					if (elem.isPharmacy()) wardComboBox.addItem(elem);
 				}
 				wardComboBox.setSelectedIndex(-1);
 			}
