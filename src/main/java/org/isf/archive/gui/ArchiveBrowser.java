@@ -78,6 +78,8 @@ import org.isf.utils.time.TimeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.data.domain.Page;
+
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
 public class ArchiveBrowser extends ModalJFrame {
@@ -437,14 +439,12 @@ public class ArchiveBrowser extends ModalJFrame {
         try {
             String guarantorId = getSelectedGuarantorId();
             Integer patientId = getSelectedPatientId();
-            List<ArchivedBill> allBills = archiveManager.getArchivedBillsWithFilters(
-                    null, dateFrom, dateTo, patientId, guarantorId);
+            Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
+                    null, dateFrom, dateTo, patientId, guarantorId, currentPage, PAGE_SIZE);
 
-            totalRows = allBills.size();
-            totalPages = (int) Math.ceil((double) totalRows / PAGE_SIZE);
-            if (totalPages == 0) {
-                totalPages = 1;
-            }
+            List<ArchivedBill> bills = billPage.getContent();
+            totalRows = billPage.getTotalElements();
+            totalPages = billPage.getTotalPages();
 
             if (currentPage >= totalPages && currentPage > 0) {
                 currentPage = totalPages - 1;
@@ -452,11 +452,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 return;
             }
 
-            int fromIndex = currentPage * PAGE_SIZE;
-            int toIndex = Math.min(fromIndex + PAGE_SIZE, allBills.size());
-            List<ArchivedBill> pageBills = allBills.subList(fromIndex, toIndex);
-
-            jTableArchives.setModel(new ArchivedBillTableModel(pageBills));
+            jTableArchives.setModel(new ArchivedBillTableModel(bills));
             updatePaginationControls();
             jTableArchives.updateUI();
             updateTotals();
@@ -469,14 +465,12 @@ public class ArchiveBrowser extends ModalJFrame {
         try {
             String guarantorId = getSelectedGuarantorId();
             Integer patientId = getSelectedPatientId();
-            List<ArchivedBill> allBills = archiveManager.getArchivedBillsWithFilters(
-                    "C", dateFrom, dateTo, patientId, guarantorId);
+            Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
+                    "C", dateFrom, dateTo, patientId, guarantorId, closedCurrentPage, PAGE_SIZE);
 
-            closedTotalRows = allBills.size();
-            closedTotalPages = (int) Math.ceil((double) closedTotalRows / PAGE_SIZE);
-            if (closedTotalPages == 0) {
-                closedTotalPages = 1;
-            }
+            List<ArchivedBill> bills = billPage.getContent();
+            closedTotalRows = billPage.getTotalElements();
+            closedTotalPages = billPage.getTotalPages();
 
             if (closedCurrentPage >= closedTotalPages && closedCurrentPage > 0) {
                 closedCurrentPage = closedTotalPages - 1;
@@ -484,11 +478,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 return;
             }
 
-            int fromIndex = closedCurrentPage * PAGE_SIZE;
-            int toIndex = Math.min(fromIndex + PAGE_SIZE, allBills.size());
-            List<ArchivedBill> pageBills = allBills.subList(fromIndex, toIndex);
-
-            jTableClosed.setModel(new ArchivedBillTableModel(pageBills));
+            jTableClosed.setModel(new ArchivedBillTableModel(bills));
             updateClosedPaginationControls();
             jTableClosed.updateUI();
         } catch (OHServiceException e) {
@@ -500,14 +490,12 @@ public class ArchiveBrowser extends ModalJFrame {
         try {
             String guarantorId = getSelectedGuarantorId();
             Integer patientId = getSelectedPatientId();
-            List<ArchivedBill> allBills = archiveManager.getArchivedBillsWithFilters(
-                    "O", dateFrom, dateTo, patientId, guarantorId);
+            Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
+                    "O", dateFrom, dateTo, patientId, guarantorId, pendingCurrentPage, PAGE_SIZE);
 
-            pendingTotalRows = allBills.size();
-            pendingTotalPages = (int) Math.ceil((double) pendingTotalRows / PAGE_SIZE);
-            if (pendingTotalPages == 0) {
-                pendingTotalPages = 1;
-            }
+            List<ArchivedBill> bills = billPage.getContent();
+            pendingTotalRows = billPage.getTotalElements();
+            pendingTotalPages = billPage.getTotalPages();
 
             if (pendingCurrentPage >= pendingTotalPages && pendingCurrentPage > 0) {
                 pendingCurrentPage = pendingTotalPages - 1;
@@ -515,11 +503,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 return;
             }
 
-            int fromIndex = pendingCurrentPage * PAGE_SIZE;
-            int toIndex = Math.min(fromIndex + PAGE_SIZE, allBills.size());
-            List<ArchivedBill> pageBills = allBills.subList(fromIndex, toIndex);
-
-            jTablePending.setModel(new ArchivedBillTableModel(pageBills));
+            jTablePending.setModel(new ArchivedBillTableModel(bills));
             updatePendingPaginationControls();
             jTablePending.updateUI();
         } catch (OHServiceException e) {
