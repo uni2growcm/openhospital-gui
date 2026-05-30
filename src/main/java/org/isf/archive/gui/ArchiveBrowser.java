@@ -942,7 +942,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 int i = 0;
 
                 if (patientParent != null && options.indexOf(option) == i) {
-                    new GenericReportPatient(patientParent.getCode(), GeneralData.PATIENTBILLSTATEMENT);
+                    new GenericReportPatient(patientParent.getCode(), GeneralData.PATIENTARCHIVEBILLSTATEMENT);
                     return;
                 }
                 if (options.indexOf(option) == i) {
@@ -1053,7 +1053,7 @@ public class ArchiveBrowser extends ModalJFrame {
                         MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
                         return;
                     }
-                    new GenericReportPatient(patient.getCode(), GeneralData.PATIENTBILLSTATEMENT);
+                    new GenericReportPatient(patient.getCode(), GeneralData.PATIENTARCHIVEBILLSTATEMENT);
                     return;
                 }
 
