@@ -89,10 +89,6 @@ public class ArchiveBrowser extends ModalJFrame {
     private static final ImageIcon ADMISSION_ICON = new ImageIcon("rsc/icons/bed_icon.png");
 
     private JTabbedPane jTabbedPaneArchives;
-    private JTable jTableArchives;
-    private JScrollPane jScrollPaneArchives;
-    private JTable jTablePending;
-    private JScrollPane jScrollPanePending;
     private JTable jTableClosed;
     private JScrollPane jScrollPaneClosed;
     private JTable jTableToday;
@@ -126,17 +122,7 @@ public class ArchiveBrowser extends ModalJFrame {
     private JComboBox<Integer> closedPagesCombo;
     private JLabel closedUnderLabel;
     private JLabel closedRowCounter;
-    private JButton pendingPrevButton;
-    private JButton pendingNextButton;
-    private JComboBox<Integer> pendingPagesCombo;
-    private JLabel pendingUnderLabel;
-    private JLabel pendingRowCounter;
-    private JButton prevButton;
-    private JButton nextButton;
-    private JComboBox<Integer> pagesCombo;
-    private JLabel underLabel;
     private boolean updatingPageCombo;
-    private JLabel rowCounter;
     private String rowCounterText = MessageBundle.getMessage("angal.accounting.count.label") + ' ';
 
     private String[] columnNames = {
@@ -179,15 +165,9 @@ public class ArchiveBrowser extends ModalJFrame {
     private List<String> users;
     private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 
-    private int currentPage = 0;
-    private long totalRows = 0;
-    private int totalPages = 0;
     private int closedCurrentPage = 0;
     private long closedTotalRows = 0;
     private int closedTotalPages = 0;
-    private int pendingCurrentPage = 0;
-    private long pendingTotalRows = 0;
-    private int pendingTotalPages = 0;
     private static final int PAGE_SIZE = 100;
 
     private JButton exportSageButton;
@@ -213,7 +193,7 @@ public class ArchiveBrowser extends ModalJFrame {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         SwingUtilities.invokeLater(() -> {
-            loadCurrentPage();
+            loadClosedBillsPage();
             updateTotals();
         });
         setVisible(true);
@@ -244,21 +224,7 @@ public class ArchiveBrowser extends ModalJFrame {
     }
 
     public void updateTables() {
-        int selectedIndex = jTabbedPaneArchives != null ? jTabbedPaneArchives.getSelectedIndex() : 0;
-        switch (selectedIndex) {
-            case 0:
-                loadCurrentPage();
-                break;
-            case 1:
-                loadClosedBillsPage();
-                break;
-            case 2:
-                loadPendingBillsPage();
-                break;
-            default:
-                loadCurrentPage();
-                break;
-        }
+        loadClosedBillsPage();
     }
 
     private JLabel getJLabelGuarantor() {
@@ -282,81 +248,6 @@ public class ArchiveBrowser extends ModalJFrame {
 
     private Integer getSelectedPatientId() {
         return patientParent != null ? patientParent.getCode() : null;
-    }
-
-    private JPanel getPaginationPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
-        panel.setBorder(BorderFactory.createEtchedBorder());
-
-        prevButton = new JButton("<");
-        prevButton.addActionListener(e -> {
-            if (currentPage > 0) {
-                currentPage--;
-                loadCurrentPage();
-            }
-        });
-
-        pagesCombo = new JComboBox<>();
-        pagesCombo.setPreferredSize(new Dimension(70, 25));
-        pagesCombo.addActionListener(e -> {
-            if (!updatingPageCombo && pagesCombo.getSelectedItem() != null) {
-                int selected = (Integer) pagesCombo.getSelectedItem();
-                if (selected - 1 != currentPage) {
-                    currentPage = selected - 1;
-                    loadCurrentPage();
-                }
-            }
-        });
-
-        nextButton = new JButton(">");
-        nextButton.addActionListener(e -> {
-            if (currentPage < totalPages - 1) {
-                currentPage++;
-                loadCurrentPage();
-            }
-        });
-
-        underLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-
-        rowCounter = new JLabel(rowCounterText + "0");
-        rowCounter.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        panel.add(prevButton);
-        panel.add(pagesCombo);
-        panel.add(underLabel);
-        panel.add(nextButton);
-        panel.add(rowCounter);
-
-        updatePaginationControls();
-        return panel;
-    }
-
-    private void updatePaginationControls() {
-        if (prevButton == null || nextButton == null || pagesCombo == null || underLabel == null) {
-            return;
-        }
-
-        int comboCount = pagesCombo.getItemCount();
-        if (comboCount != totalPages) {
-            updatingPageCombo = true;
-            pagesCombo.removeAllItems();
-            for (int i = 1; i <= totalPages; i++) {
-                pagesCombo.addItem(i);
-            }
-            updatingPageCombo = false;
-        }
-        if (totalPages > 0) {
-            updatingPageCombo = true;
-            pagesCombo.setSelectedItem(currentPage + 1);
-            updatingPageCombo = false;
-        }
-
-        boolean hasOnlyOnePage = totalPages <= 1;
-        prevButton.setEnabled(currentPage > 0 && !hasOnlyOnePage);
-        nextButton.setEnabled(currentPage < totalPages - 1 && !hasOnlyOnePage);
-        pagesCombo.setEnabled(!hasOnlyOnePage);
-        underLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-        rowCounter.setText(rowCounterText + totalRows);
     }
 
     private void updateClosedPaginationControls() {
@@ -387,59 +278,6 @@ public class ArchiveBrowser extends ModalJFrame {
         closedRowCounter.setText(rowCounterText + closedTotalRows);
     }
 
-    private void updatePendingPaginationControls() {
-        if (pendingPrevButton == null || pendingNextButton == null || pendingPagesCombo == null || pendingUnderLabel == null) {
-            return;
-        }
-
-        int comboCount = pendingPagesCombo.getItemCount();
-        if (comboCount != pendingTotalPages) {
-            updatingPageCombo = true;
-            pendingPagesCombo.removeAllItems();
-            for (int i = 1; i <= pendingTotalPages; i++) {
-                pendingPagesCombo.addItem(i);
-            }
-            updatingPageCombo = false;
-        }
-        if (pendingTotalPages > 0) {
-            updatingPageCombo = true;
-            pendingPagesCombo.setSelectedItem(pendingCurrentPage + 1);
-            updatingPageCombo = false;
-        }
-
-        boolean hasOnlyOnePage = pendingTotalPages <= 1;
-        pendingPrevButton.setEnabled(pendingCurrentPage > 0 && !hasOnlyOnePage);
-        pendingNextButton.setEnabled(pendingCurrentPage < pendingTotalPages - 1 && !hasOnlyOnePage);
-        pendingPagesCombo.setEnabled(!hasOnlyOnePage);
-        pendingUnderLabel.setText("/ " + pendingTotalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-        pendingRowCounter.setText(rowCounterText + pendingTotalRows);
-    }
-
-    private void loadCurrentPage() {
-        try {
-            String guarantorId = getSelectedGuarantorId();
-            Integer patientId = getSelectedPatientId();
-            Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
-                    null, dateFrom, dateTo, patientId, guarantorId, currentPage, PAGE_SIZE);
-
-            List<ArchivedBill> bills = billPage.getContent();
-            totalRows = billPage.getTotalElements();
-            totalPages = billPage.getTotalPages();
-
-            if (currentPage >= totalPages && currentPage > 0) {
-                currentPage = totalPages - 1;
-                loadCurrentPage();
-                return;
-            }
-
-            jTableArchives.setModel(new ArchivedBillTableModel(bills));
-            updatePaginationControls();
-            jTableArchives.updateUI();
-        } catch (OHServiceException e) {
-            MessageDialog.showExceptions(e);
-        }
-    }
-
     private void loadClosedBillsPage() {
         try {
             String guarantorId = getSelectedGuarantorId();
@@ -460,31 +298,6 @@ public class ArchiveBrowser extends ModalJFrame {
             jTableClosed.setModel(new ArchivedBillTableModel(bills));
             updateClosedPaginationControls();
             jTableClosed.updateUI();
-        } catch (OHServiceException e) {
-            MessageDialog.showExceptions(e);
-        }
-    }
-
-    private void loadPendingBillsPage() {
-        try {
-            String guarantorId = getSelectedGuarantorId();
-            Integer patientId = getSelectedPatientId();
-            Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
-                    "O", dateFrom, dateTo, patientId, guarantorId, pendingCurrentPage, PAGE_SIZE);
-
-            List<ArchivedBill> bills = billPage.getContent();
-            pendingTotalRows = billPage.getTotalElements();
-            pendingTotalPages = billPage.getTotalPages();
-
-            if (pendingCurrentPage >= pendingTotalPages && pendingCurrentPage > 0) {
-                pendingCurrentPage = pendingTotalPages - 1;
-                loadPendingBillsPage();
-                return;
-            }
-
-            jTablePending.setModel(new ArchivedBillTableModel(bills));
-            updatePendingPaginationControls();
-            jTablePending.updateUI();
         } catch (OHServiceException e) {
             MessageDialog.showExceptions(e);
         }
@@ -611,77 +424,12 @@ public class ArchiveBrowser extends ModalJFrame {
         if (jTabbedPaneArchives == null) {
             jTabbedPaneArchives = new JTabbedPane();
 
-            JPanel allPanel = new JPanel(new BorderLayout());
-            allPanel.add(getJScrollPaneArchives(), BorderLayout.CENTER);
-            allPanel.add(getPaginationPanel(), BorderLayout.SOUTH);
-            jTabbedPaneArchives.addTab(MessageBundle.getMessage("angal.billbrowser.bills.title"), allPanel);
-
             JPanel closedPanel = new JPanel(new BorderLayout());
             closedPanel.add(getJScrollPaneClosed(), BorderLayout.CENTER);
             closedPanel.add(getClosedPaginationPanel(), BorderLayout.SOUTH);
             jTabbedPaneArchives.addTab(MessageBundle.getMessage("angal.billbrowser.closed.title"), closedPanel);
-
-            JPanel pendingPanel = new JPanel(new BorderLayout());
-            pendingPanel.add(getJScrollPanePending(), BorderLayout.CENTER);
-            pendingPanel.add(getPendingPaginationPanel(), BorderLayout.SOUTH);
-            jTabbedPaneArchives.addTab(MessageBundle.getMessage("angal.billbrowser.pending.title"), pendingPanel);
-
-            jTabbedPaneArchives.addChangeListener(e -> {
-                int selectedIndex = jTabbedPaneArchives.getSelectedIndex();
-                if (selectedIndex == 0) {
-                    loadCurrentPage();
-                } else if (selectedIndex == 1) {
-                    loadClosedBillsPage();
-                } else if (selectedIndex == 2) {
-                    loadPendingBillsPage();
-                }
-            });
         }
         return jTabbedPaneArchives;
-    }
-
-    private JScrollPane getJScrollPaneArchives() {
-        if (jScrollPaneArchives == null) {
-            jScrollPaneArchives = new JScrollPane();
-            jScrollPaneArchives.setViewportView(getJTableArchives());
-        }
-        return jScrollPaneArchives;
-    }
-
-    private JTable getJTableArchives() {
-        if (jTableArchives == null) {
-            jTableArchives = new JTable();
-            jTableArchives.setModel(new ArchivedBillTableModel(new ArrayList<>()));
-            decorateTable(jTableArchives);
-            jTableArchives.setAutoCreateColumnsFromModel(false);
-            jTableArchives.setDefaultRenderer(String.class, new StringTableCellRenderer());
-            jTableArchives.setDefaultRenderer(Integer.class, new IntegerTableCellRenderer());
-            jTableArchives.setDefaultRenderer(Double.class, new DoubleTableCellRenderer());
-            jTableArchives.addMouseListener(new MouseDoubleClickApapter());
-        }
-        return jTableArchives;
-    }
-
-    private JScrollPane getJScrollPanePending() {
-        if (jScrollPanePending == null) {
-            jScrollPanePending = new JScrollPane();
-            jScrollPanePending.setViewportView(getJTablePending());
-        }
-        return jScrollPanePending;
-    }
-
-    private JTable getJTablePending() {
-        if (jTablePending == null) {
-            jTablePending = new JTable();
-            jTablePending.setModel(new ArchivedBillTableModel("O", NO_USERNAME));
-            decorateTable(jTablePending);
-            jTablePending.setAutoCreateColumnsFromModel(false);
-            jTablePending.setDefaultRenderer(String.class, new StringTableCellRenderer());
-            jTablePending.setDefaultRenderer(Integer.class, new IntegerTableCellRenderer());
-            jTablePending.setDefaultRenderer(Double.class, new DoubleTableCellRenderer());
-            jTablePending.addMouseListener(new MouseDoubleClickApapter());
-        }
-        return jTablePending;
     }
 
     private JScrollPane getJScrollPaneClosed() {
@@ -816,85 +564,12 @@ public class ArchiveBrowser extends ModalJFrame {
             jButtonPrintReceipt.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.receipt.btn.key"));
             jButtonPrintReceipt.addActionListener(actionEvent -> {
                 try {
-                    if (jScrollPaneArchives.isShowing()) {
-                        int rowsSelected = jTableArchives.getSelectedRowCount();
-                        if (rowsSelected == 1) {
-                            int rowSelected = jTableArchives.getSelectedRow();
-                            ArchivedBill editBill = (ArchivedBill) jTableArchives.getValueAt(rowSelected, -1);
-                            if (editBill.getStatus().equals("C")) {
-                                new GenericReportBill(editBill.getId(), GeneralData.PATIENTBILL, true, true);
-                            } else if (editBill.getStatus().equals("D")) {
-                                MessageDialog.error(this, "angal.billbrowser.thebilldeleted.msg");
-                                return;
-                            } else if (editBill.getStatus().equals("O") && GeneralData.ALLOWPRINTOPENEDBILL) {
-                                new GenericReportBill(editBill.getId(), GeneralData.PATIENTBILL, true, true);
-                            } else {
-                                MessageDialog.error(this, "angal.billbrowser.thebillisstillopen.msg");
-                                return;
-                            }
-                        } else if (rowsSelected > 1) {
-                            if (patientParent == null) {
-                                MessageDialog.error(this, "angal.billbrowser.pleaseselectonlyonebill.msg");
-                                return;
-                            }
-                            ArchivedBill billTemp;
-                            int[] billIdIndex = jTableArchives.getSelectedRows();
-                            List<Integer> billsIdList = new ArrayList<>();
-
-                            for (int idIndex : billIdIndex) {
-                                billTemp = (ArchivedBill) jTableArchives.getValueAt(idIndex, -1);
-                                if (!billTemp.getStatus().equals("D")) {
-                                    billsIdList.add(billTemp.getId());
-                                }
-                            }
-                            String fromDate = dateFrom.format(DATE_TIME_FORMATTER);
-                            String toDate = dateTo.format(DATE_TIME_FORMATTER);
-                            new GenericReportBill(billsIdList.get(0), GeneralData.PATIENTBILLGROUPED, patientParent, billsIdList, fromDate, toDate, true, true);
-                        } else {
-                            throw new Exception();
-                        }
-                    }
-                    if (jScrollPanePending.isShowing()) {
-                        int rowsSelected = jTablePending.getSelectedRowCount();
-                        if (rowsSelected == 1) {
-                            int rowSelected = jTablePending.getSelectedRow();
-                            ArchivedBill editBill = (ArchivedBill) jTablePending.getValueAt(rowSelected, -1);
-                            if (editBill.getStatus().equals("O") && GeneralData.ALLOWPRINTOPENEDBILL) {
-                                new GenericReportBill(editBill.getId(), GeneralData.PATIENTBILL, true, true);
-                            } else {
-                                MessageDialog.error(this, "angal.billbrowser.thebillisstillopen.msg");
-                                return;
-                            }
-                        } else if (rowsSelected > 1) {
-                            if (patientParent == null) {
-                                MessageDialog.error(this, "angal.billbrowser.pleaseselectonlyonebill.msg");
-                                return;
-                            } else if (GeneralData.ALLOWPRINTOPENEDBILL) {
-                                ArchivedBill billTemp;
-                                int[] billIdIndex = jTablePending.getSelectedRows();
-                                List<Integer> billsIdList = new ArrayList<>();
-
-                                for (int idIndex : billIdIndex) {
-                                    billTemp = (ArchivedBill) jTablePending.getValueAt(idIndex, -1);
-                                    billsIdList.add(billTemp.getId());
-                                }
-                                String fromDate = dateFrom.format(DATE_TIME_FORMATTER);
-                                String toDate = dateTo.format(DATE_TIME_FORMATTER);
-                                new GenericReportBill(billsIdList.get(0), GeneralData.PATIENTBILLGROUPED, patientParent, billsIdList, fromDate, toDate, true, true);
-                            } else {
-                                MessageDialog.error(this, "angal.billbrowser.thebillisstillopen.msg");
-                                return;
-                            }
-                        } else {
-                            throw new Exception();
-                        }
-                    }
                     if (jScrollPaneClosed.isShowing()) {
                         int rowsSelected = jTableClosed.getSelectedRowCount();
                         if (rowsSelected == 1) {
                             int rowSelected = jTableClosed.getSelectedRow();
                             ArchivedBill editBill = (ArchivedBill) jTableClosed.getValueAt(rowSelected, -1);
-                            new GenericReportBill(editBill.getId(), GeneralData.PATIENTBILL);
+                            new GenericReportBill(editBill.getId(), GeneralData.PATIENTARCHIVEDBILL);
                         } else if (rowsSelected > 1) {
                             MessageDialog.error(this, "angal.billbrowser.pleaseselectonlyonebill.msg");
                         } else {
@@ -1018,29 +693,9 @@ public class ArchiveBrowser extends ModalJFrame {
                 if (patientParent == null && options.indexOf(option) == ++i) {
                     Patient patient = null;
                     ArchivedBill bill = null;
-                    int selectedRow;
-                    int currentTab = jTabbedPaneArchives.getSelectedIndex();
-                    switch (currentTab) {
-                        case 0:
-                            selectedRow = jTableArchives.getSelectedRow();
-                            if (selectedRow >= 0) {
-                                bill = (ArchivedBill) jTableArchives.getValueAt(selectedRow, -1);
-                            }
-                            break;
-                        case 1:
-                            selectedRow = jTablePending.getSelectedRow();
-                            if (selectedRow >= 0) {
-                                bill = (ArchivedBill) jTablePending.getValueAt(selectedRow, -1);
-                            }
-                            break;
-                        case 2:
-                            selectedRow = jTableClosed.getSelectedRow();
-                            if (selectedRow >= 0) {
-                                bill = (ArchivedBill) jTableClosed.getValueAt(selectedRow, -1);
-                            }
-                            break;
-                        default:
-                            break;
+                    int selectedRow = jTableClosed.getSelectedRow();
+                    if (selectedRow >= 0) {
+                        bill = (ArchivedBill) jTableClosed.getValueAt(selectedRow, -1);
                     }
                     if (bill != null) {
                         Integer patId = bill.getBillPatientId();
@@ -1116,9 +771,9 @@ public class ArchiveBrowser extends ModalJFrame {
                 LocalDate newDate = event.getNewDate();
                 if (newDate != null) {
                     dateFrom = newDate.atStartOfDay();
-                    currentPage = 0;
+                    closedCurrentPage = 0;
                     jButtonToday.setEnabled(true);
-                    loadCurrentPage();
+                    loadClosedBillsPage();
                     updateTotals();
                 }
             });
@@ -1183,9 +838,9 @@ public class ArchiveBrowser extends ModalJFrame {
                 LocalDate newDate = event.getNewDate();
                 if (newDate != null) {
                     dateTo = newDate.atTime(LocalTime.MAX);
-                    currentPage = 0;
+                    closedCurrentPage = 0;
                     jButtonToday.setEnabled(true);
-                    loadCurrentPage();
+                    loadClosedBillsPage();
                     updateTotals();
                 }
             });
@@ -1229,9 +884,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.todaycolon.txt") + "</b></html>", 0, 0);
                 jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.periodcolon.txt") + "</b></html>", 0, 2);
                 updateTotals();
-                currentPage = 0;
                 closedCurrentPage = 0;
-                pendingCurrentPage = 0;
                 updateTables();
             });
         }
@@ -1351,51 +1004,6 @@ public class ArchiveBrowser extends ModalJFrame {
         return panel;
     }
 
-    private JPanel getPendingPaginationPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
-        panel.setBorder(BorderFactory.createEtchedBorder());
-
-        pendingPrevButton = new JButton("<");
-        pendingPrevButton.addActionListener(e -> {
-            if (pendingCurrentPage > 0) {
-                pendingCurrentPage--;
-                loadPendingBillsPage();
-            }
-        });
-
-        pendingPagesCombo = new JComboBox<>();
-        pendingPagesCombo.setPreferredSize(new Dimension(70, 25));
-        pendingPagesCombo.addActionListener(e -> {
-            if (!updatingPageCombo && pendingPagesCombo.getSelectedItem() != null) {
-                int selected = (Integer) pendingPagesCombo.getSelectedItem();
-                if (selected - 1 != pendingCurrentPage) {
-                    pendingCurrentPage = selected - 1;
-                    loadPendingBillsPage();
-                }
-            }
-        });
-
-        pendingNextButton = new JButton(">");
-        pendingNextButton.addActionListener(e -> {
-            if (pendingCurrentPage < pendingTotalPages - 1) {
-                pendingCurrentPage++;
-                loadPendingBillsPage();
-            }
-        });
-
-        pendingUnderLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
-
-        pendingRowCounter = new JLabel(rowCounterText + "0");
-
-        panel.add(pendingPrevButton);
-        panel.add(pendingPagesCombo);
-        panel.add(pendingUnderLabel);
-        panel.add(pendingNextButton);
-        panel.add(pendingRowCounter);
-
-        return panel;
-    }
-
     private void decorateTable(JTable table) {
         IntStream.range(0, columnsWidth.length).forEach(idx -> {
             table.getColumnModel().getColumn(idx).setMinWidth(columnsWidth[idx]);
@@ -1420,9 +1028,6 @@ public class ArchiveBrowser extends ModalJFrame {
         int statusColumn = table.getColumnModel().getColumnIndex(MessageBundle.getMessage("angal.common.status.txt").toUpperCase());
         if ((table.getValueAt(row, statusColumn)).equals("C")) {
             cell.setForeground(Color.GRAY);
-        }
-        if ((table.getValueAt(row, statusColumn)).equals("D")) {
-            cell.setForeground(Color.RED);
         }
     }
 
@@ -1462,7 +1067,7 @@ public class ArchiveBrowser extends ModalJFrame {
         add(getJPanelRange(), BorderLayout.NORTH);
         add(getJTabbedPaneArchives(), BorderLayout.CENTER);
         add(getJPanelSouth(), BorderLayout.SOUTH);
-        setTitle(MessageBundle.getMessage("angal.billbrowser.patientbillmanagment.title"));
+        setTitle(MessageBundle.getMessage("angal.billbrowser.patientarchivebillmanagment.title"));
         setMinimumSize(new Dimension(1150, 600));
         addWindowListener(new WindowAdapter() {
             @Override
