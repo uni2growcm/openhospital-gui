@@ -304,12 +304,6 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					lab.setPrescriber(prescriber);
 					lab.setStatus(LaboratoryStatus.done.toString());
 					int procedure = lab.getExam().getProcedure();
-					if ((procedure == 1 || procedure == 3) && lab.getResult().isEmpty()) {
-						MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
-						// select the first exam with the missing value
-						jTableExams.setRowSelectionInterval(row, row);
-						return;
-					}
 					row++;
 				}
 
