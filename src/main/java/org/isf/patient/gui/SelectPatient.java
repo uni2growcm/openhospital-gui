@@ -176,7 +176,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		setLocationRelativeTo(null);
 	}
 
-	SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
+	public SelectPatient(JDialog owner, boolean ableAddPatient, String searchText, int maxPatients) {
 		super(owner, true);
 
 		try {

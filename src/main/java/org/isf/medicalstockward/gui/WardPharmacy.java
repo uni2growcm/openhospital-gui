@@ -51,25 +51,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
+import javax.swing.JTextField;
+import javax.swing.JScrollPane;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.BorderFactory;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
+import javax.swing.JRadioButton;
 import javax.swing.WindowConstants;
+import javax.swing.ListSelectionModel;
+import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -84,7 +85,6 @@ import org.isf.medicalstockward.gui.WardPharmacyRectify.MovementWardListeners;
 import org.isf.medicalstockward.manager.MovWardBrowserManager;
 import org.isf.medicalstockward.model.MedicalWard;
 import org.isf.medicalstockward.model.MovementWard;
-import org.isf.medstockmovtype.model.MovementType;
 import org.isf.medtype.manager.MedicalTypeBrowserManager;
 import org.isf.medtype.model.MedicalType;
 import org.isf.menu.gui.MainMenu;
@@ -108,6 +108,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
+import org.springframework.data.domain.Page;
 
 public class WardPharmacy extends ModalJFrame implements
 				WardPharmacyNew.MovementWardListeners,
@@ -115,12 +116,14 @@ public class WardPharmacy extends ModalJFrame implements
 
 	@Override
 	public void movementInserted(AWTEvent e) {
+		wardDrugs = null;
 		loadPageOutcomes(0);
 		loadPageDrugs(0);
 	}
 
 	@Override
 	public void movementUpdated(AWTEvent e) {
+		wardDrugs = null;
 		loadPageOutcomes(0);
 		loadPageDrugs(0);
 	}
@@ -216,7 +219,7 @@ public class WardPharmacy extends ModalJFrame implements
 	private JButton jButtonStockLedger;
 	private JButton jButtonDelete;
 
-	private static final int PAGE_SIZE = 3;
+	private static final int PAGE_SIZE = 100;
 
 	// Outcomes
 	private int currentPageOutcomes = 0;
@@ -894,7 +897,7 @@ public class WardPharmacy extends ModalJFrame implements
 	private VoLimitedTextField getJAgeToTextField() {
 		if (jAgeToTextField == null) {
 			jAgeToTextField = new VoLimitedTextField(3, 3);
-			jAgeToTextField.setText("0"); //$NON-NLS-1$
+			jAgeToTextField.setText("50"); //$NON-NLS-1$
 			jAgeToTextField.setMaximumSize(new Dimension(100, 50));
 			jAgeToTextField.addFocusListener(new FocusListener() {
 
@@ -908,7 +911,7 @@ public class WardPharmacy extends ModalJFrame implements
 							MessageDialog.error(WardPharmacy.this, "angal.medicalstockward.insertvalidage");
 						}
 					} catch (NumberFormatException ex) {
-						jAgeToTextField.setText("0");
+						jAgeToTextField.setText("50");
 					}
 				}
 
@@ -1276,126 +1279,137 @@ public class WardPharmacy extends ModalJFrame implements
 
 	private void loadPageOutcomes(int page) {
 		if (wardSelected == null) return;
-		try {
-			String medicalTypeCode = null;
-			if (jComboBoxTypes.getSelectedItem() instanceof MedicalType) {
-				medicalTypeCode = ((MedicalType) jComboBoxTypes.getSelectedItem()).getCode();
+
+		new SwingWorker<Page<MovementWard>, Void>() {
+
+			Page<MovementWard> result;
+
+			@Override
+			protected Page<MovementWard> doInBackground() throws Exception {
+				String medicalTypeCode = null;
+				if (jComboBoxTypes.getSelectedItem() instanceof MedicalType) {
+					medicalTypeCode = ((MedicalType) jComboBoxTypes.getSelectedItem()).getCode();
+				}
+				Integer medicalCode = null;
+				if (jComboBoxMedicals.getSelectedItem() instanceof Medical) {
+					medicalCode = ((Medical) jComboBoxMedicals.getSelectedItem()).getCode();
+				}
+				char sexChar = radioa.isSelected() ? 'A' : radiom.isSelected() ? 'M' : 'F';
+				String sex = String.valueOf(sexChar);
+				int ageFromVal = Integer.parseInt(jAgeFromTextField.getText());
+				int ageToVal = Integer.parseInt(jAgeToTextField.getText());
+				float weightFromVal = Float.parseFloat(jWeightFromTextField.getText());
+				float weightToVal = Float.parseFloat(jWeightToTextField.getText());
+
+				return movWardBrowserManager.getMovementWardWithFilter(
+						wardSelected.getCode(),
+						dateFrom, dateTo,
+						medicalTypeCode, medicalCode,
+						sex,
+						ageFromVal, ageToVal,
+						weightFromVal, weightToVal,
+						page, PAGE_SIZE);
 			}
-			Integer medicalCode = null;
-			if (jComboBoxMedicals.getSelectedItem() instanceof Medical) {
-				medicalCode = ((Medical) jComboBoxMedicals.getSelectedItem()).getCode();
+
+			@Override
+			protected void done() {
+				try {
+					result = get();
+					wardOutcomes = new ArrayList<>(result.getContent());
+					currentPageOutcomes = result.getNumber();
+					totalPagesOutcomes = result.getTotalPages();
+					totalElementsOutcomes = result.getTotalElements();
+
+					jTableOutcomes.setModel(new OutcomesModel(wardOutcomes));
+					jTableOutcomes.revalidate();
+					jTableOutcomes.repaint();
+
+					updatePaginationControls(
+							jPrevButtonOutcomes, jNextButtonOutcomes,
+							jPageComboBoxOutcomes, jPageLabelOutcomes,
+							jElementsLabelOutcomes,
+							currentPageOutcomes, totalPagesOutcomes, totalElementsOutcomes);
+					rowCounter.setText(rowCounterText + totalElementsOutcomes);
+
+				} catch (Exception e) {
+					OHServiceExceptionUtil.showMessages((OHServiceException) e.getCause());
+				}
 			}
-			char sexChar = radioa.isSelected() ? 'A' : radiom.isSelected() ? 'M' : 'F';
-			String sex = String.valueOf(sexChar);
-			int ageFromVal = Integer.parseInt(jAgeFromTextField.getText());
-			int ageToVal = Integer.parseInt(jAgeToTextField.getText());
-			float weightFromVal = Float.parseFloat(jWeightFromTextField.getText());
-			float weightToVal = Float.parseFloat(jWeightToTextField.getText());
-
-			org.springframework.data.domain.Page<MovementWard> result =
-					movWardBrowserManager.getMovementWardWithFilter(
-							wardSelected.getCode(),
-							dateFrom, dateTo,
-							medicalTypeCode, medicalCode,
-							sex,
-							ageFromVal, ageToVal,
-							weightFromVal, weightToVal,
-							page, PAGE_SIZE);
-
-			wardOutcomes = new ArrayList<>(result.getContent());
-			currentPageOutcomes = result.getNumber();
-			totalPagesOutcomes = result.getTotalPages();
-			totalElementsOutcomes = result.getTotalElements();
-
-			jTableOutcomes.setModel(new OutcomesModel(wardOutcomes));
-			jTableOutcomes.updateUI();
-			updatePaginationControls(
-					jPrevButtonOutcomes, jNextButtonOutcomes,
-					jPageComboBoxOutcomes, jPageLabelOutcomes,
-					jElementsLabelOutcomes,
-					currentPageOutcomes, totalPagesOutcomes, totalElementsOutcomes);
-			rowCounter.setText(rowCounterText + totalElementsOutcomes);
-
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
-		}
+		}.execute();
 	}
 
 	private void loadPageIncomings(int page) {
 		if (wardSelected == null) return;
-		try {
-			List<Movement> allIncomes = new ArrayList<>();
 
-			List<Movement> centralMovements = movBrowserManager.getMovements(
-					wardSelected.getCode(), dateFrom, dateTo);
-			for (Movement mov : centralMovements) {
-				if (mov.getWard() != null && mov.getWard().equals(wardSelected)) {
-					allIncomes.add(mov);
-				}
+		new SwingWorker<Page<Movement>, Void>() {
+
+			@Override
+			protected Page<Movement> doInBackground() throws Exception {
+				return movWardBrowserManager.getIncomingMovements(
+						wardSelected.getCode(), dateFrom, dateTo, page, PAGE_SIZE);
 			}
 
-			List<MovementWard> wardMovementsTo = movWardBrowserManager.getWardMovementsToWard(
-					wardSelected.getCode(), dateFrom, dateTo);
-			for (MovementWard wMvnt : wardMovementsTo) {
-				if (wMvnt.getWardTo() != null && wMvnt.getWardTo().equals(wardSelected)) {
-					MovementType typeCharge = new MovementType(
-							"fromward", wMvnt.getWard().getDescription(), "*", "*");
-					allIncomes.add(new Movement(
-							wMvnt.getMedical(), typeCharge, wardSelected,
-							wMvnt.getLot(), wMvnt.getDate(),
-							wMvnt.getQuantity().intValue(), null, null));
+			@Override
+			protected void done() {
+				try {
+					Page<Movement> result = get();
+					wardIncomes = new ArrayList<>(result.getContent());
+					currentPageIncomings = result.getNumber();
+					totalPagesIncomings = result.getTotalPages();
+					totalElementsIncomings = result.getTotalElements();
+
+					jTableIncomes.setModel(new IncomesModel(wardIncomes));
+					jTableIncomes.revalidate();
+					jTableIncomes.repaint();
+
+					updatePaginationControls(
+							jPrevButtonIncomings, jNextButtonIncomings,
+							jPageComboBoxIncomings, jPageLabelIncomings,
+							jElementsLabelIncomings,
+							currentPageIncomings, totalPagesIncomings, totalElementsIncomings);
+
+				} catch (Exception e) {
+					OHServiceExceptionUtil.showMessages((OHServiceException) e.getCause());
 				}
 			}
-
-			int total = allIncomes.size();
-			int fromIndex = page * PAGE_SIZE;
-			int toIndex = Math.min(fromIndex + PAGE_SIZE, total);
-			List<Movement> pageContent = fromIndex >= total
-					? new ArrayList<>()
-					: allIncomes.subList(fromIndex, toIndex);
-
-			wardIncomes = pageContent;
-			currentPageIncomings = page;
-			totalPagesIncomings = (int) Math.ceil((double) total / PAGE_SIZE);
-			totalElementsIncomings = total;
-
-			jTableIncomes.setModel(new IncomesModel(wardIncomes));
-			jTableIncomes.updateUI();
-			updatePaginationControls(
-					jPrevButtonIncomings, jNextButtonIncomings,
-					jPageComboBoxIncomings, jPageLabelIncomings,
-					jElementsLabelIncomings,
-					currentPageIncomings, totalPagesIncomings, totalElementsIncomings);
-
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
-		}
+		}.execute();
 	}
 
 	private void loadPageDrugs(int page) {
 		if (wardSelected == null) return;
-		try {
-			org.springframework.data.domain.Page<MedicalWard> result =
-					movWardBrowserManager.getMedicalsWardTotalQuantity(
-							wardSelected.getCode(), page, PAGE_SIZE);
 
-			List<MedicalWard> drugsPage = new ArrayList<>(result.getContent());
-			wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
-			currentPageDrugs = result.getNumber();
-			totalPagesDrugs = result.getTotalPages();
-			totalElementsDrugs = result.getTotalElements();
+		new SwingWorker<Page<MedicalWard>, Void>() {
 
-			jTableDrugs.setModel(new DrugsModel(drugsPage));
-			jTableDrugs.updateUI();
-			updatePaginationControls(
-					jPrevButtonDrugs, jNextButtonDrugs,
-					jPageComboBoxDrugs, jPageLabelDrugs,
-					jElementsLabelDrugs,
-					currentPageDrugs, totalPagesDrugs, totalElementsDrugs);
+			@Override
+			protected Page<MedicalWard> doInBackground() throws Exception {
+				Page<MedicalWard> result = movWardBrowserManager
+						.getMedicalsWardTotalQuantity(wardSelected.getCode(), page, PAGE_SIZE);
+				return result;
+			}
 
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
-		}
+			@Override
+			protected void done() {
+				try {
+					Page<MedicalWard> result = get();
+					currentPageDrugs = result.getNumber();
+					totalPagesDrugs = result.getTotalPages();
+					totalElementsDrugs = result.getTotalElements();
+
+					jTableDrugs.setModel(new DrugsModel(new ArrayList<>(result.getContent())));
+					jTableDrugs.revalidate();
+					jTableDrugs.repaint();
+
+					updatePaginationControls(
+							jPrevButtonDrugs, jNextButtonDrugs,
+							jPageComboBoxDrugs, jPageLabelDrugs,
+							jElementsLabelDrugs,
+							currentPageDrugs, totalPagesDrugs, totalElementsDrugs);
+
+				} catch (Exception e) {
+					OHServiceExceptionUtil.showMessages((OHServiceException) e.getCause());
+				}
+			}
+		}.execute();
 	}
 
 	private JScrollPane getJScrollPaneOutcomes() {
@@ -1455,7 +1469,7 @@ public class WardPharmacy extends ModalJFrame implements
 				wardList = new ArrayList<>();
 				OHServiceExceptionUtil.showMessages(e);
 			}
-			jComboBoxWard.addItem(MessageBundle.getMessage("angal.medicalstockward.selectaward")); //$NON-NLS-1$
+			jComboBoxWard.addItem(MessageBundle.getMessage("angal.medicalstockward.selectaward"));
 			for (Ward ward : wardList) {
 				if (ward.isPharmacy()) {
 					jComboBoxWard.addItem(ward);
@@ -1467,6 +1481,12 @@ public class WardPharmacy extends ModalJFrame implements
 				Object ward = jComboBoxWard.getSelectedItem();
 				if (ward instanceof Ward) {
 					wardSelected = (Ward) ward;
+					try {
+						wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+						wardDrugs = new ArrayList<>();
+					}
 					if (!added) {
 						add(getJPanelCentral());
 						jCalendarFrom.setEnabled(true);
@@ -1489,15 +1509,8 @@ public class WardPharmacy extends ModalJFrame implements
 						validate();
 						setLocationRelativeTo(null);
 						added = true;
-						loadPageOutcomes(0);
-						loadPageIncomings(0);
-						loadPageDrugs(0);
 					} else {
-						if (wardSelected != null) {
-							loadPageOutcomes(0);
-							loadPageIncomings(0);
-							loadPageDrugs(0);
-						} else {
+						if (wardSelected == null) {
 							remove(jTabbedPaneWard);
 							jButtonNew.setVisible(false);
 							if (MainMenu.checkUserGrants("btnmedicalswardreport")) {
@@ -1510,12 +1523,15 @@ public class WardPharmacy extends ModalJFrame implements
 								jRectifyButton.setVisible(false);
 							}
 							added = false;
+							return;
 						}
 					}
 					jComboBoxWard.setEnabled(false);
-					rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
 					validate();
 					repaint();
+					loadPageOutcomes(0);
+					loadPageIncomings(0);
+					loadPageDrugs(0);
 				}
 			});
 		}
@@ -1664,7 +1680,6 @@ public class WardPharmacy extends ModalJFrame implements
 				return mov.getUnits();
 			}
 			if (c == 8) {
-                System.out.println("Mov: " + mov);
 				return mov.getLot().getCode();
 			}
 			if (c == 9) {
