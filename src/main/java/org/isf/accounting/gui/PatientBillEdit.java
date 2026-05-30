@@ -2041,8 +2041,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 				} else {
 					Bill updateBill = new Bill(
                         thisBill.getId(), // Bill ID
-                        today, // from calendar
-                        null, // updateDate from most recent payment, will be set later
+                        thisBill.getDate(), // from calendar
+                        today, // updateDate from most recent payment, will be set later
                         true, // is a PriceList? always true, non-pricelist not managed
                         thisBill.getPriceList(), // List
                         thisBill.getPriceList().getName(), // List name
