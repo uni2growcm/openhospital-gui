@@ -2775,9 +2775,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 throw new RuntimeException(e);
             }
 
-            if (!insert) {
-                ward = this.thisBill.getWard();
-            }
+			if (!insert && this.thisBill.getWard() != null) {
+				ward = this.thisBill.getWard();
+			}
 
             List<Ward> wardList = null;
             try {
@@ -2820,7 +2820,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 }
             }
         });
-        wardComboBox.setSelectedItem(ward);
+		if (ward != null) {
+			wardComboBox.setSelectedItem(ward);
+		}
         return wardComboBox;
     }
 
@@ -3141,8 +3143,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                                             validatedItem.setItemDisplayCode(
                                                     medicalWard.getMedical().getProdCode()
                                             );
-
-                                            billItems.add(validatedItem);
 
                                             modified = true;
                                         }

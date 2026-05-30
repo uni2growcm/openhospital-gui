@@ -34,37 +34,22 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -77,6 +62,7 @@ import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillPayments;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.generaldata.SageConfig;
 import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
@@ -215,6 +201,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int pendingTotalPages = 0;
 	private static final int PAGE_SIZE = 100;
 
+	private JButton exportSageButton;
+
 	public boolean hasBillGuarantor() {
 		return GeneralData.ALLOWBILLGUARANTOR;
 	}
@@ -232,7 +220,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 		}
-		updateDataSet();
 		initComponents();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);
@@ -290,27 +277,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		}
 	}
 
-	private void updateDataSet() {
-		updateDataSet(LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(1).atStartOfDay());
-	}
+	private void updateDataSet() {}
 
-	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {
-		try {
-			billPeriod = billBrowserManager.getBills(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-		try {
-			paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-		try {
-			billFromPayments = billBrowserManager.getBills(paymentsPeriod);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
-		}
-	}
+	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {}
 
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
 		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient);
@@ -319,48 +288,25 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	}
 
 	private void updateTotals() {
-		List<Bill> billToday = null;
-		List<BillPayments> paymentsToday = null;
-		if (UserBrowsingManager.getCurrentUser().equals("admin")) {
-			try {
-				billToday = billBrowserManager.getBills(dateToday0, dateToday24);
-				paymentsToday = billBrowserManager.getPayments(dateToday0, dateToday24);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
+		try {
+			User guarantor = getSelectedGuarantor();
+			double totalToday = billBrowserManager.sumPaymentsByFilters(dateToday0, dateToday24, patientParent, guarantor);
+			double balanceToday = billBrowserManager.sumBalanceByFilters(null, dateToday0, dateToday24, patientParent, guarantor);
+			double totalPeriod = billBrowserManager.sumPaymentsByFilters(dateFrom, dateTo, patientParent, guarantor);
+			double balancePeriod = billBrowserManager.sumBalanceByFilters(null, dateFrom, dateTo, patientParent, guarantor);
+			double userToday = billBrowserManager.sumPaymentsByUserAndFilters(user, dateToday0, dateToday24, patientParent, guarantor);
+			double userPeriod = billBrowserManager.sumPaymentsByUserAndFilters(user, dateFrom, dateTo, patientParent, guarantor);
+
+			jTableToday.setValueAt(totalToday, 0, 2);
+			jTableToday.setValueAt(balanceToday, 0, 5);
+			jTablePeriod.setValueAt(totalPeriod, 0, 2);
+			jTablePeriod.setValueAt(balancePeriod, 0, 5);
+			if (jTableUser != null) {
+				jTableUser.setValueAt(userToday, 0, 1);
+				jTableUser.setValueAt(userPeriod, 0, 3);
 			}
-		} else {
-			billToday = billPeriod;
-			paymentsToday = paymentsPeriod;
-		}
-
-		totalPeriod = new BigDecimal(0);
-		balancePeriod = new BigDecimal(0);
-		totalToday = new BigDecimal(0);
-		balanceToday = new BigDecimal(0);
-		userToday = new BigDecimal(0);
-		userPeriod = new BigDecimal(0);
-
-		List<Integer> notDeletedBills = billPeriod.stream()
-				.filter(bill -> !bill.getStatus().equals("D"))
-				.map(Bill::getId)
-				.collect(Collectors.toList());
-
-		balancePeriod = new BalanceTotal(billPeriod).getValue();
-		balanceToday = new BalanceTotal(billToday).getValue();
-
-		userPeriod = new UserTotal(notDeletedBills, paymentsPeriod, user).getValue();
-		totalPeriod = new PaymentsTotal(notDeletedBills, paymentsPeriod).getValue();
-
-		userToday = new UserTotal(notDeletedBills, paymentsToday, user).getValue();
-		totalToday = new PaymentsTotal(notDeletedBills, paymentsToday).getValue();
-
-		jTableToday.setValueAt(totalToday, 0, 2);
-		jTableToday.setValueAt(balanceToday, 0, 5);
-		jTablePeriod.setValueAt(totalPeriod, 0, 2);
-		jTablePeriod.setValueAt(balancePeriod, 0, 5);
-		if (jTableUser != null) {
-			jTableUser.setValueAt(userToday, 0, 1);
-			jTableUser.setValueAt(userPeriod, 0, 3);
+		} catch (OHServiceException e) {
+			MessageDialog.showExceptions(e);
 		}
 	}
 
@@ -557,6 +503,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jTableBills.setModel(new BillTableModel(bills));
 			updatePaginationControls();
 			jTableBills.updateUI();
+			updateTotals();
 		} catch (OHServiceException e) {
 			MessageDialog.showExceptions(e);
 		}
@@ -651,6 +598,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			}
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
+			}
+			if (SageConfig.ENABLE_SAGE_INTEGRATION) {
+				jPanelButtons.add(getExportSageButton());
 			}
 			jPanelButtons.add(getJButtonClose());
 		}
@@ -777,7 +727,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable getJTableBills() {
 		if (jTableBills == null) {
 			jTableBills = new JTable();
-			jTableBills.setModel(new BillTableModel("ALL", NO_USERNAME));
+			jTableBills.setModel(new BillTableModel(new ArrayList<>()));
 			decorateTable(jTableBills);
 			jTableBills.setAutoCreateColumnsFromModel(false);
 			jTableBills.setDefaultRenderer(String.class, new StringTableCellRenderer());
@@ -1318,8 +1268,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jButtonClose = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 			jButtonClose.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 			jButtonClose.addActionListener(actionEvent -> {
-				billPeriod.clear();
-				users.clear();
 				dispose();
 			});
 		}
@@ -1333,12 +1281,63 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				LocalDate newDate = event.getNewDate();
 				if (newDate != null) {
 					dateFrom = newDate.atStartOfDay();
+					currentPage = 0;
 					jButtonToday.setEnabled(true);
-					billInserted(null);
+					loadCurrentPage();
 				}
 			});
 		}
 		return jCalendarFrom;
+	}
+
+	private JButton getExportSageButton() {
+		if (exportSageButton == null) {
+			exportSageButton = new JButton(MessageBundle.getMessage("angal.billbrowser.exportsage"));
+			exportSageButton.setMnemonic(KeyEvent.VK_E);
+			exportSageButton.addActionListener(e -> {
+				JFileChooser fcTxt = new JFileChooser();
+				fcTxt.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+				int iRetVal = fcTxt.showSaveDialog(this);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File txtSageDirectory = fcTxt.getSelectedFile();
+
+					if (!txtSageDirectory.exists()) {
+						txtSageDirectory.mkdirs();
+					}
+
+					String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String from = dateFrom.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+					String to = dateTo.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+					final File salesFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportvente_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+					final File cashFile = new File(txtSageDirectory.getAbsoluteFile() + File.separator
+							+ "exportcaisse_" + strDate + "_from_" + from + "_to_" + to + ".txt");
+					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+						@Override
+						protected Void doInBackground() throws Exception {
+							billBrowserManager.exportSagePaymentsStreaming(cashFile, dateFrom, dateTo);
+							billBrowserManager.exportSagePaymentsStreaming(salesFile, dateFrom, dateTo);
+							return null;
+						}
+
+						@Override
+						protected void done() {
+							try {
+								get();
+								MessageDialog.info(BillBrowser.this, "angal.medicalstock.exportsage.succes");
+							} catch (Exception ex) {
+								MessageDialog.error(BillBrowser.this, "angal.medicalstock.exportsage.error");
+								LOGGER.error("Export to sage error: ", ex);
+							}
+						}
+					};
+					worker.execute();
+				}
+			});
+		}
+		return exportSageButton;
 	}
 
 	private GoodDateChooser getJCalendarTo() {
@@ -1348,8 +1347,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				LocalDate newDate = event.getNewDate();
 				if (newDate != null) {
 					dateTo = newDate.atTime(LocalTime.MAX);
+					currentPage = 0;
 					jButtonToday.setEnabled(true);
-					billInserted(null);
+					loadCurrentPage();
 				}
 			});
 		}
@@ -1633,8 +1633,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				billPeriod.clear();
-				users.clear();
 				dispose();
 			}
 		});
@@ -1647,11 +1645,11 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		private List<Bill> tableArray = new ArrayList<>();
 
 		public BillTableModel(List<Bill> bills) {
-			this.tableArray = bills;
+			this.tableArray = bills != null ? bills : new ArrayList<>();
 		}
 
 		public BillTableModel(String status, String username) {
-			loadData(status, username);
+			this.tableArray = new ArrayList<>();
 		}
 
 		private void loadData(String status, String username) {

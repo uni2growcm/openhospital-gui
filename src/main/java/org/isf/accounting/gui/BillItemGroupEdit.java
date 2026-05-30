@@ -818,27 +818,7 @@ public class BillItemGroupEdit extends JDialog {
                 billItemGroup.setItems(items);
                 billItemGroup = manager.addBillItemGroup(billItemGroup);
             } else {
-                billItemGroup = manager.updateBillItemGroup(billItemGroup);
-
-                List<BillItemGroupItem> existingItems = manager.getItemsByGroupId(billItemGroup.getId());
-                for (BillItemGroupItem existingItem : existingItems) {
-                    boolean found = items.stream().anyMatch(item -> item.getId() == existingItem.getId());
-                    if (!found) {
-                        manager.deleteBillItemGroupItem(existingItem.getId());
-                    }
-                }
-
-                for (BillItemGroupItem item : items) {
-                    if (item.getId() == 0) {
-                        // New item
-                        item.setBillItemGroup(billItemGroup);
-                        manager.updateBillItemGroupItem(item);
-                    } else if (item.getId() > 0) {
-                        // Update existing item
-                        item.setBillItemGroup(billItemGroup);
-                        manager.updateBillItemGroupItem(item);
-                    }
-                }
+                manager.updateBillItemGroupWithItems(billItemGroup, items);
             }
 
             confirmed = true;
