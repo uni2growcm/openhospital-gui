@@ -34,6 +34,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,6 +67,7 @@ import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
 import org.isf.stat.gui.report.GenericReportUserInDate;
+import org.isf.utils.excel.ExcelExporter;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -617,7 +619,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 int i = 0;
 
                 if (patientParent != null && options.indexOf(option) == i) {
-                    new GenericReportPatient(patientParent.getCode(), GeneralData.PATIENTBILLSTATEMENT);
+                    new GenericReportPatient(patientParent.getCode(), GeneralData.PATIENTARCHIVEBILLSTATEMENT);
                     return;
                 }
                 if (options.indexOf(option) == i) {
@@ -708,7 +710,7 @@ public class ArchiveBrowser extends ModalJFrame {
                         MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
                         return;
                     }
-                    new GenericReportPatient(patient.getCode(), GeneralData.PATIENTBILLSTATEMENT);
+                    new GenericReportPatient(patient.getCode(), GeneralData.PATIENTARCHIVEBILLSTATEMENT);
                     return;
                 }
 
@@ -744,13 +746,48 @@ public class ArchiveBrowser extends ModalJFrame {
             jButtonExcel = new JButton(MessageBundle.getMessage("angal.common.excel.btn"));
             jButtonExcel.setMnemonic(MessageBundle.getMnemonic("angal.common.excel.btn.key"));
             jButtonExcel.addActionListener(actionEvent -> {
-                String from = TimeTools.formatDateTime(dateFrom, DATE_FORMAT_DD_MM_YYYY);
-                String to = TimeTools.formatDateTime(dateTo, DATE_FORMAT_DD_MM_YYYY);
-                new GenericReportFromDateToDate(from, to, "rpt_stat", GeneralData.BILLSREPORT,
-                        MessageBundle.getMessage("angal.billbrowser.fullreportallbills.txt"), true);
+                String fileName = "ArchivedBills";
+                File defaultFileName = new File(fileName);
+                JFileChooser fcExcel = ExcelExporter.getJFileChooserExcel(defaultFileName);
+                int iRetVal = fcExcel.showSaveDialog(this);
+                if (iRetVal == JFileChooser.APPROVE_OPTION) {
+                    File exportFile = fcExcel.getSelectedFile();
+                    if (!exportFile.getName().endsWith(".xls") && !exportFile.getName().endsWith(".xlsx")) {
+                        if (fcExcel.getFileFilter().getDescription().contains("*.xlsx")) {
+                            exportFile = new File(exportFile.getAbsoluteFile() + ".xlsx");
+                        } else {
+                            exportFile = new File(exportFile.getAbsoluteFile() + ".xls");
+                        }
+                    }
+                    ExcelExporter xlsExport = new ExcelExporter();
+                    try {
+                        JTable currentTable = getCurrentExcelTable();
+                        if (exportFile.getName().endsWith(".xlsx")) {
+                            xlsExport.exportTableToExcel(currentTable, exportFile);
+                        } else {
+                            xlsExport.exportTableToExcelOLD(currentTable, exportFile);
+                        }
+                    } catch (IOException exc) {
+                        JOptionPane.showMessageDialog(ArchiveBrowser.this, exc.getMessage(),
+                                MessageBundle.getMessage("angal.messagedialog.error.title"), JOptionPane.PLAIN_MESSAGE);
+                        LOGGER.error("Export to excel error : {}", exc.getMessage());
+                    }
+                }
             });
         }
         return jButtonExcel;
+    }
+
+    private JTable getCurrentExcelTable() {
+        int selectedIndex = jTabbedPaneArchives.getSelectedIndex();
+        switch (selectedIndex) {
+            case 1:
+                return jTableClosed;
+            case 2:
+                return jTablePending;
+            default:
+                return jTableArchives;
+        }
     }
 
     private JButton getJButtonClose() {
