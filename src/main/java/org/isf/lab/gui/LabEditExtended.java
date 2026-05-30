@@ -21,9 +21,7 @@
  */
 package org.isf.lab.gui;
 
-import java.awt.AWTEvent;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EventListener;

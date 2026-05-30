@@ -657,7 +657,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 item.setItemAmount(reducedPrice != null ? reducedPrice.getPrice() : price.getPrice());
 
             } catch (Exception e) {
-                LOGGER.error("Error applying reduction to bill items", e);
+                e.printStackTrace();
             }
         }
     }
@@ -703,8 +703,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     return priceCopy;
             }
         } catch (OHServiceException e) {
-            LOGGER.error("Error applying reduction", e);
-            return price;
+            throw new RuntimeException(e);
         }
     }
 
@@ -865,9 +864,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         updateTitle();
         pack();
         Dimension size = getSize();
-        int minHeight = Math.max(size.height, 800);
-        setMinimumSize(new Dimension(Math.max(size.width, 900), minHeight));
-        setSize(Math.max(size.width, 900), minHeight);
+        setMinimumSize(new Dimension(size.width, size.height + 10));
     }
 
 	private void checkBill() {
