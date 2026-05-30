@@ -25,27 +25,47 @@
 	<parameter name="Nbn_id" class="java.lang.Long"/>
 	<queryString>
 		<![CDATA[SELECT 
-	PAT2.PAT_SEX,
-	PAT2.PAT_NAME as CHILD_NAME,
-	PDEL.PRGDLV_DATE,
-	PDEL.PRGDLV_FATHER_BIRTHPLACE ,
-	PDEL.PRGDLV_FATHER_AGE,
-	PDEL.PRGDLV_FATHER_ADDRESS ,
-	PDEL.PRGDLV_FATHER_PROFESSION ,
-	PDEL.PRGDLV_FATHER_NAME,
-	PAT1.PAT_NAME,
-	PAT1.PAT_BIRTH_PLACE,
-	IF(PAT1.PAT_BDATE is not null, ROUND(DATEDIFF(CURDATE(), DATE(PAT1.PAT_BDATE)) / 365,0),PAT1.PAT_AGE) as age,
-	PAT1.PAT_CITY, 
+    PAT2.PAT_ID AS CHILD_ID,
+    PAT2.PAT_SEX,
+    PAT2.PAT_NAME AS CHILD_NAME,
+
+    PDEL.PRGDLV_DATE,
+    PDEL.PRGDLV_FATHER_BIRTHPLACE,
+    PDEL.PRGDLV_FATHER_AGE,
+    PDEL.PRGDLV_FATHER_ADDRESS,
+    PDEL.PRGDLV_FATHER_PROFESSION,
+    PDEL.PRGDLV_FATHER_NAME,
+
+    PAT1.PAT_ID AS MOTHER_ID,
+    PAT1.PAT_NAME AS MOTH_NAME,
+    PAT1.PAT_BIRTH_PLACE,
+
+    IF(
+        PAT1.PAT_BDATE IS NOT NULL,
+        ROUND(DATEDIFF(CURDATE(), DATE(PAT1.PAT_BDATE)) / 365, 0),
+        PAT1.PAT_AGE
+    ) AS age,
+
+    PAT1.PAT_CITY,
     PAT1.PAT_ADDR,
     PAT1.PAT_PROFESSION,
     PAT1.PAT_TELE
-FROM oh_pregnancydelivery PDEL
-JOIN oh_pregnancy OP ON PDEL.PRGDLV_PRG_ID = OP.PRG_ID 
-JOIN oh_patient PAT1 ON OP.PRG_PAT_ID = PAT1.PAT_ID 
-JOIN oh_newborn t ON t.NBN_DLV_ID = PDEL.PRGDLV_ID 
-JOIN oh_patient PAT2 ON t.NBN_PAT_ID = PAT2.PAT_ID 
-WHERE t.NBN_ID = $P{Nbn_id}]]>
+
+FROM OH_PREGNANCYDELIVERY PDEL
+
+INNER JOIN OH_PREGNANCY OP
+    ON PDEL.PRGDLV_PRG_ID = OP.PRG_ID
+
+INNER JOIN OH_PATIENT PAT1
+    ON OP.PRG_PAT_ID = PAT1.PAT_ID
+
+INNER JOIN OH_NEWBORN T
+    ON T.NBN_DLV_ID = PDEL.PRGDLV_ID
+
+INNER JOIN OH_PATIENT PAT2
+    ON T.NBN_PAT_ID = PAT2.PAT_ID
+
+WHERE T.NBN_ID = $P{Nbn_id};]]>
 	</queryString>
 	<field name="PAT_SEX" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="PAT_SEX"/>
@@ -87,7 +107,7 @@ WHERE t.NBN_ID = $P{Nbn_id}]]>
 		<property name="com.jaspersoft.studio.field.label" value="PRGDLV_FATHER_NAME"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancydelivery"/>
 	</field>
-	<field name="PAT_NAME" class="java.lang.String">
+	<field name="MOTH_NAME" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
 		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
@@ -363,7 +383,7 @@ $R{female}]]></textFieldExpression>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-47" x="154" y="149" width="122" height="17" uuid="184d78ad-cffe-41d4-825a-90f36188921c"/>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MOTH_NAME}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-48" x="154" y="166" width="122" height="17" uuid="163e4575-6c3a-4fbb-86ba-d711c0405e18"/>

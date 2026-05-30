@@ -50,6 +50,8 @@ import org.isf.admission.model.Admission;
 import org.isf.admission.model.AdmittedPatient;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabBrowser;
+import org.isf.lab.gui.LabEditExtended;
+import org.isf.lab.gui.LabNew;
 import org.isf.maternity.manager.PregnancyBrowserManager;
 import org.isf.maternity.manager.PregnancyVisitBrowserManager;
 import org.isf.maternity.model.Pregnancy;
@@ -212,9 +214,15 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         setLayout(new BorderLayout());
         initializeStatusCombo();
         initializeRiskLevelCombo();
-        add(getTopPanel(), BorderLayout.NORTH);
-        add(getMiddlePanel(), BorderLayout.CENTER);
+
+        JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainSplit.setTopComponent(getTopPanel());
+        mainSplit.setBottomComponent(getMiddlePanel());
+        mainSplit.setResizeWeight(0.6);
+
+        add(mainSplit, BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
+
         performSearch();
     }
 
@@ -245,7 +253,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
         filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
-        filterPanel.setPreferredSize(new Dimension(350, 650));
+        filterPanel.setMinimumSize(new Dimension(300, 400));
 
         JPanel codePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         codePanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
@@ -319,6 +327,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         pregnancyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         pregnancyTable.setAutoCreateRowSorter(true);
         pregnancyTable.setRowHeight(20);
+        pregnancyTable.setFillsViewportHeight(true);
+        pregnancyTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         for (int i = 0; i < columnHeaders.length; i++) {
             pregnancyTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
@@ -341,7 +351,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         pregnancyTable.getSelectionModel().addListSelectionListener(new TableListener());
 
         JScrollPane pregnancyScrollPane = new JScrollPane(pregnancyTable);
-        pregnancyScrollPane.setPreferredSize(new Dimension(950, 400));
         return pregnancyScrollPane;
     }
     class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -509,7 +518,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JPanel getButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonPanel = new JPanel(new WrapLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
 
         buttonPanel.add(getJNewPregnancyButton());
@@ -984,8 +993,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             return;
         }
 
-        LabBrowser labBrowser = new LabBrowser();
-        labBrowser.setVisible(true);
+        LabNew labNew = new LabNew(this, selectedPregnancy.getPatient());
+        labNew.setVisible(true);
     }
 
     private void vaccins() {
