@@ -779,15 +779,7 @@ public class ArchiveBrowser extends ModalJFrame {
     }
 
     private JTable getCurrentExcelTable() {
-        int selectedIndex = jTabbedPaneArchives.getSelectedIndex();
-        switch (selectedIndex) {
-            case 1:
-                return jTableClosed;
-            case 2:
-                return jTablePending;
-            default:
-                return jTableArchives;
-        }
+        return jTableClosed;
     }
 
     private JButton getJButtonClose() {
