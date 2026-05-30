@@ -327,7 +327,7 @@ public class LabEdit extends ModalJFrame {
 			jTextFieldPatient.addActionListener(actionEvent -> {
 				String text = jTextFieldPatient.getText().trim();
 				if (!text.isEmpty()) {
-					SelectPatient dialog = new SelectPatient(LabEdit.this, false, text, 100);
+					SelectPatient dialog = new SelectPatient(LabEdit.this, patSelected);
 					dialog.setVisible(true);
 					Patient selected = dialog.getPatient();
 					if (selected != null) {

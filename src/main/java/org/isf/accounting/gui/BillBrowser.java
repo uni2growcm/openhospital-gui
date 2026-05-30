@@ -36,7 +36,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,7 +45,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.swing.*;
@@ -54,9 +52,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
-import org.isf.accounting.gui.totals.BalanceTotal;
-import org.isf.accounting.gui.totals.PaymentsTotal;
-import org.isf.accounting.gui.totals.UserTotal;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillPayments;
@@ -658,7 +653,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		jAffiliatePersonJButtonAdd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				SelectPatient selectPatient = new SelectPatient(BillBrowser.this, false, "", 100);
+				SelectPatient selectPatient = new SelectPatient(BillBrowser.this, false, true);
 				selectPatient.addSelectionListener(BillBrowser.this);
 				selectPatient.setVisible(true);
 				Patient pat = selectPatient.getPatient();

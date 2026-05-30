@@ -267,7 +267,7 @@ public class PatVacEdit extends JDialog {
 	private JTextField getJTextFieldPatient() {
 		if (jTextFieldPatient == null) {
 			jTextFieldPatient = new JTextField();
-			jTextFieldPatient.setText("");
+			jTextFieldPatient.setText(selectedPatient != null ? selectedPatient.getName() : "");
 			jTextFieldPatient.setPreferredSize(new Dimension(250, 20));
 			
 			jTextFieldPatient.addActionListener(actionEvent -> {
@@ -276,9 +276,7 @@ public class PatVacEdit extends JDialog {
 				if (!text.isEmpty()) {
 					SelectPatient dialog = new SelectPatient(
 						PatVacEdit.this,
-						false,
-						text,
-						100
+						text
 					);
 					
 					dialog.setVisible(true);
@@ -306,9 +304,7 @@ public class PatVacEdit extends JDialog {
 			jButtonPickPatient.addActionListener(actionEvent -> {
 				SelectPatient dialog = new SelectPatient(
 					PatVacEdit.this,
-					false,
-					jTextFieldPatient.getText(),
-					100
+					selectedPatient
 				);
 				
 				dialog.setVisible(true);
