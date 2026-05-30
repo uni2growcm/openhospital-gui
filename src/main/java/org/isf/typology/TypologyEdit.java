@@ -179,10 +179,8 @@ public class TypologyEdit extends JDialog {
                 manager.newTypology(typology);
                 fireInserted();
             } else {
-                if (!descriptionField.getText().equals(description)) {
-                    manager.updateTypology(typology);
-                    fireUpdated();
-                }
+                manager.updateTypology(typology);
+                fireUpdated();
             }
 
             dispose();

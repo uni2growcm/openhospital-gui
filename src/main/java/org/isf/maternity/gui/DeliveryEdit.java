@@ -133,6 +133,7 @@ public class DeliveryEdit extends JDialog {
         deliveryDateField = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
         deliveryDateField.setMaxDate(LocalDate.now());
         deliveryTypeCombo = new JComboBox<>();
+        deliveryTypeCombo.setPreferredSize(new Dimension(deliveryDateField.getPreferredSize().width, deliveryDateField.getPreferredSize().height));
         try {
             Context.getApplicationContext().getBean(TypologyBrowserManager.class).getTypologies(Family.DELIVERYTYPE).forEach(deliveryTypeCombo::addItem);
         } catch (Exception ignored) {
