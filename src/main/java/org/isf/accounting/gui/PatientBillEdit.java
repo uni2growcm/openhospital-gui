@@ -1411,11 +1411,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 String text = jTextFieldPatient.getText().trim();
 
                 if (!text.isEmpty()) {
-                    SelectPatient dialog = new SelectPatient(
-                        (JDialog) SwingUtilities.getWindowAncestor(jTextFieldPatient),
-                        text,
-                        true
-                    );
+					SelectPatient dialog = new SelectPatient(
+							PatientBillEdit.this, true, text, 100
+					);
 
                     dialog.setVisible(true);
 
