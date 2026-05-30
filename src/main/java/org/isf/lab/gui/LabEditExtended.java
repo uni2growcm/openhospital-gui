@@ -568,6 +568,13 @@ public class LabEditExtended extends ModalJFrame {
 					return;
 				}
 				String matSelected = (String) matComboBox.getSelectedItem();
+
+				if (!insert && (matSelected == null || matSelected.isEmpty() ||
+						MessageBundle.getMessage("angal.lab.undefined.txt").equals(matSelected))) {
+					MessageDialog.error(this, "angal.lab.pleaseselectamaterial.msg");
+					return;
+				}
+
 				examSelected = (Exam) examComboBox.getSelectedItem();
 				LocalDateTime examDate;
 				try {
@@ -576,8 +583,9 @@ public class LabEditExtended extends ModalJFrame {
 					MessageDialog.error(this, "angal.lab.pleaseinsertavalidexamdate.msg");
 					return;
 				}
-				if (examSelected.getProcedure() == 3 && examTextField.getText().isEmpty()) {
-					MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
+
+				if (!insert && labPat == null) {
+					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
 					return;
 				}
 
@@ -592,10 +600,14 @@ public class LabEditExtended extends ModalJFrame {
 				lab.setNote(noteTextArea.getText());
 				lab.setInOutPatient(inPatientCheckBox.isSelected() ? "I" : "O");
 				lab.setPatient(labPat);
-				lab.setPatName(labPat.getName());
-				lab.setSex(String.valueOf(labPat.getSex()));
+				lab.setPatName(labPat != null ? labPat.getName() : "");
+				lab.setSex(labPat != null ? String.valueOf(labPat.getSex()) : "");
 
 				if (examSelected.getProcedure() == 1) {
+					if (!insert && examRowComboBox.getSelectedItem() == null) {
+						MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
+						return;
+					}
 					lab.setResult(examRowComboBox.getSelectedItem().toString());
 				} else if (examSelected.getProcedure() == 2) {
 					lab.setResult(MessageBundle.getMessage("angal.lab.multipleresults.txt"));
@@ -608,11 +620,19 @@ public class LabEditExtended extends ModalJFrame {
 							labRow.add(serializedValue);
 						}
 					}
+					if (!insert && labRow.isEmpty()) {
+						MessageDialog.error(this, "angal.labnew.someexamswithoutresultpleasecheck.msg");
+						return;
+					}
 				} else if (examSelected.getProcedure() == 3) {
+					if (!insert && (examTextField.getText() == null || examTextField.getText().trim().isEmpty())) {
+						MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
+						return;
+					}
 					lab.setResult(examTextField.getText());
 				}
 				if (insert) {
-					lab.setAge(labPat.getAge());
+					lab.setAge(labPat != null ? labPat.getAge() : 0);
 					try {
 						labManager.newLaboratory(lab, labRow);
 						firePrescribersUpdated();
