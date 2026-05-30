@@ -229,11 +229,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             return;
         }
 
-        /*
-         * =========================
-         * PATIENT VALIDATION
-         * =========================
-         */
         if (selectedPatient == null) {
 
             JOptionPane.showMessageDialog(
@@ -246,11 +241,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
         boolean stockMovementEnabled = GeneralData.STOCKMVTONBILLSAVE;
 
-        /*
-         * =========================
-         * WARD VALIDATION
-         * =========================
-         */
         Ward selectedWard = null;
         String wardCode = "";
 
@@ -274,11 +264,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         List<String> errors = new ArrayList<>();
         List<BillItems> validBillItems = new ArrayList<>();
 
-        /*
-         * =========================
-         * BUILD + VALIDATE ITEMS
-         * =========================
-         */
         for (BillItemGroupItem groupItem : items) {
 
             try {
@@ -296,23 +281,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     continue;
                 }
 
-                /*
-                 * =========================
-                 * MEDICAL STOCK VALIDATION
-                 * =========================
-                 */
                 if ("MED".equals(price.getGroup())) {
 
                     MedicalWard medicalWard = getMedicalWard(price);
-
-                    /*
-                     * OUT OF STOCK
-                     */
                     if (medicalWard == null) {
 
-                        errors.add(
-                                groupItem.getDescription()
-                                        + " - "
+                        errors.add(groupItem.getDescription()
+                                + " - "
                                         + MessageBundle.getMessage("angal.newbill.stocknotavailableforitem")
                         );
 
@@ -320,12 +295,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     }
                 }
 
-                /*
-                 * =========================
-                 * BUILD ITEM ONLY
-                 * DO NOT ADD DIRECTLY
-                 * =========================
-                 */
                 BillItems billItem = buildBillItem(
                         price,
                         groupItem.getQuantity(),
@@ -336,11 +305,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     continue;
                 }
 
-                /*
-                 * =========================
-                 * DISPLAY CODE
-                 * =========================
-                 */
                 if ("MED".equals(price.getGroup())) {
 
                     MedicalWard medicalWard = getMedicalWard(price);
@@ -392,11 +356,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
         }
 
-        /*
-         * =========================
-         * ALL INVALID
-         * =========================
-         */
         if (!errors.isEmpty() && validBillItems.isEmpty()) {
 
             JOptionPane.showMessageDialog(
@@ -411,13 +370,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             return;
         }
 
-        /*
-         * =========================
-         * SOME INVALID
-         * YES = ADD VALID ONES
-         * NO = ADD NOTHING
-         * =========================
-         */
         if (!errors.isEmpty()) {
 
             int action = JOptionPane.showConfirmDialog(
@@ -439,11 +391,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
         }
 
-        /*
-         * =========================
-         * ADD VALID ITEMS ONCE ONLY
-         * =========================
-         */
         billItems.addAll(validBillItems);
 
         modified = true;
@@ -522,7 +469,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private static final int PRICE_WIDTH = 190;
 	private static final int CURRENCY_CODE_WIDTH = 40;
 	private static final int QUANTITY_WIDTH = 40;
-	private static final int BILL_HEIGHT = 200;
+	private static final int BILL_HEIGHT = 280;
 	private static final int TOTAL_HEIGHT = 20;
 	private static final int BIG_TOTAL_HEIGHT = 20;
 	private static final int PAYMENT_HEIGHT = 150;
@@ -704,10 +651,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
                 if (price == null) continue;
 
-                Price reducedPrice = applyReduction(price);
+                Price priceCopy = createPriceCopy(price);
+                Price reducedPrice = applyReduction(priceCopy);
 
-                // 🔥 Update item amount
-                item.setItemAmount(reducedPrice.getPrice());
+                item.setItemAmount(reducedPrice != null ? reducedPrice.getPrice() : price.getPrice());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -722,22 +669,38 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         return getPrice(item.getPriceID());
     }
 
+    private Price createPriceCopy(Price original) {
+        if (original == null) return null;
+        Price copy = new Price();
+        copy.setId(original.getId());
+        copy.setGroup(original.getGroup());
+        copy.setItem(original.getItem());
+        copy.setDesc(original.getDesc());
+        copy.setPrice(original.getPrice());
+    
+        if (original.getList() != null) {
+            copy.setList(original.getList());
+        }
+        return copy;
+    }
+
     private Price applyReduction(Price price) {
 
         if (price == null || pbiID == 0) return price;
 
         try {
-            switch (price.getGroup()) {
+            Price priceCopy = createPriceCopy(price);
+            switch (priceCopy.getGroup()) {
                 case "MED":
-                    return reductionPlanManager.getMedicalPrice(price, pbiID);
+                    return reductionPlanManager.getMedicalPrice(priceCopy, pbiID);
                 case "EXA":
-                    return reductionPlanManager.getExamPrice(price, pbiID);
+                    return reductionPlanManager.getExamPrice(priceCopy, pbiID);
                 case "OPE":
-                    return reductionPlanManager.getOperationPrice(price, pbiID);
+                    return reductionPlanManager.getOperationPrice(priceCopy, pbiID);
                 case "OTH":
-                    return reductionPlanManager.getOtherPrice(price, pbiID);
+                    return reductionPlanManager.getOtherPrice(priceCopy, pbiID);
                 default:
-                    return price;
+                    return priceCopy;
             }
         } catch (OHServiceException e) {
             throw new RuntimeException(e);
@@ -754,7 +717,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             return null;
         }
 
-        Price price = applyReduction(originalPrice);
+        Price priceCopy = createPriceCopy(originalPrice);
+        Price price = applyReduction(priceCopy);
+        if (price == null) {
+            price = priceCopy;
+        }
 
         boolean stockMovementEnabled = GeneralData.STOCKMVTONBILLSAVE;
 
@@ -764,10 +731,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
             if (medicalWard == null) {
                 MessageDialog.error(this, "angal.newbill.stocknotavailableforitem");
+                return null;
             }
 
             if (!containPrice(price, quantity)) {
                 MessageDialog.error(this, "angal.newbill.qtynotinstock");
+                return null;
             }
         }
 
@@ -775,8 +744,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 0,
                 thisBill,
                 true,
-                price.getGroup() + price.getItem(),
-                price.getDesc(),
+                originalPrice.getGroup() + originalPrice.getItem(),
+                originalPrice.getDesc(),
                 price.getPrice(),
                 quantity
         );
@@ -894,13 +863,15 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         add(getJPanelButtons(), BorderLayout.EAST);
         updateTitle();
         pack();
+        Dimension size = getSize();
+        setMinimumSize(new Dimension(size.width, size.height + 10));
     }
 
 	private void checkBill() {
 		if (thisBill.isList()) {
 			Optional<PriceList> priceList = lstArray.stream().filter(pl -> pl.getId() == thisBill.getPriceList().getId()).findFirst();
 
-			if (priceList.isEmpty()) { // PriceList not found
+			if (priceList.isEmpty()) {
 				Icon icon = new ImageIcon("rsc/icons/list_dialog.png");
 				PriceList list = (PriceList) JOptionPane.showInputDialog(this,
 						MessageBundle.getMessage("angal.newbill.thepricelistassociatedwiththisbillnolongerexists.msg"),
@@ -1412,7 +1383,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
                 if (!text.isEmpty()) {
 					SelectPatient dialog = new SelectPatient(
-							PatientBillEdit.this, true, text, 100
+                            (JDialog) SwingUtilities.getWindowAncestor(jTextFieldPatient),
+                            text,
+                            true
 					);
 
                     dialog.setVisible(true);
@@ -1663,7 +1636,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jButtonPickPatient.addActionListener(actionEvent -> {
 
                 selectedPatient = thisBill.getBillPatient();
-				SelectPatient sp = new SelectPatient(this, selectedPatient);
+				SelectPatient sp = new SelectPatient(this,"");
 				sp.addSelectionListener(this);
 				sp.pack();
 				sp.setVisible(true);
@@ -2822,7 +2795,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 wardComboBox.addItem(elem);
                 if(insert && elem.getDescription().equalsIgnoreCase("PHARMACIE"))
 
-					if(this.thisBill.getWard() != null && this.thisBill.getWard().getCode().equals(elem.getCode()))
+                if(thisBill.getWard() != null && this.thisBill.getWard().getCode().equals(elem.getCode()))
                     wardComboBox.setSelectedItem(elem);
             }
 
@@ -3352,17 +3325,25 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     }
 
     private MedicalWard getMedicalWard(Price price) {
-        if (GeneralData.STOCKMVTONBILLSAVE && (price == null || medWardList.isEmpty())) {
-            JOptionPane.showMessageDialog(
-                    PatientBillEdit.this,
-                    MessageBundle.getMessage("angal.newbill.stocknotavailableforitem") + price.getDesc()
-            );
-
+        if (price == null) {
             return null;
         }
 
+        if ("MED".equals(price.getGroup()) && GeneralData.STOCKMVTONBILLSAVE && medWardList != null && medWardList.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    PatientBillEdit.this,
+                    MessageBundle.getMessage("angal.newbill.stocknotavailableforitem") + (price != null ? price.getDesc() : "")
+            );
+            return null;
+        }
+
+        if (medWardList == null || medWardList.isEmpty()) {
+            return null;
+        }
+        
         for (MedicalWard medicalWard : medWardList) {
-            if (medicalWard.getMedical().getDescription().equals(price.getDesc())) {
+            if (medicalWard != null && medicalWard.getMedical() != null && medicalWard.getMedical().getDescription() != null &&
+                medicalWard.getMedical().getDescription().equals(price.getDesc())) {
                 return medicalWard;
             }
         }
@@ -3371,9 +3352,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     }
 
     private boolean containPrice(Price price, double qty) {
-        if (price == null || medWardList == null) return false;
+        if (price == null || medWardList == null || medWardList.isEmpty()) return false;
 
         for (MedicalWard medicalWard : medWardList) {
+            if (medicalWard == null || medicalWard.getMedical() == null || medicalWard.getMedical().getDescription() == null) {
+                continue;
+            }
             String desc = medicalWard.getMedical().getDescription();
             if (desc.equals(price.getDesc()) && medicalWard.getQty() >= qty) {
                 return true;

@@ -377,17 +377,22 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			lotOptions.add(MessageBundle.getMessage("angal.medicals.onlyquantity"));
 			lotOptions.add(MessageBundle.getMessage("angal.medicals.withlot"));
 
-			String lotOption = (String) MessageDialog.inputDialog(this, icon, lotOptions.toArray(), lotOptions.get(0), "angal.medicals.pleaseselectareport.msg");
-			if (lotOption == null) return;
+			String lotOption = (String) MessageDialog.inputDialog(this,
+							icon,
+							lotOptions.toArray(),
+							lotOptions.get(0),
+							"angal.medicals.pleaseselectareport.msg");
 
-			boolean includeZeroQuantity = true;
-			if (lotOptions.indexOf(lotOption) == 0) {
-				int ok = MessageDialog.yesNoCancel(this, "angal.medicals.includezeroqtyinstock");
-				if (ok == JOptionPane.CANCEL_OPTION) return;
-				if (ok == JOptionPane.NO_OPTION) {
-					includeZeroQuantity = false;
-				}
-			}
+            if (lotOption == null ) return;
+
+            boolean includeZeroQuantity = true;
+            if (lotOptions.indexOf(lotOption) == 0) {
+                int ok = MessageDialog.yesNoCancel(this, "angal.medicals.includezeroqtyinstock");
+                if (ok == JOptionPane.CANCEL_OPTION) return;
+                if (ok == JOptionPane.NO_OPTION) {
+                    includeZeroQuantity=false;
+                }
+            }
 
 			String sortBy;
 			String groupBy = null;
@@ -432,9 +437,17 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				return;
 			}
 			if (dateOptions.indexOf(dateOption) == ++i) {
-				icon = new ImageIcon("rsc/icons/calendar_dialog.png");
+
+				icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
+
 				GoodDateChooser dateChooser = new GoodDateChooser(LocalDate.now(), true, false);
-				int r = JOptionPane.showConfirmDialog(this, dateChooser, MessageBundle.getMessage("angal.common.date.txt"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, icon);
+				int r = JOptionPane.showConfirmDialog(this,
+								dateChooser,
+								MessageBundle.getMessage("angal.common.date.txt"),
+								JOptionPane.OK_CANCEL_OPTION,
+								JOptionPane.PLAIN_MESSAGE,
+								icon);
+
 				if (r == JOptionPane.OK_OPTION) {
 					new GenericReportPharmaceuticalStock(dateChooser.getDateEndOfDay(), report, filter, groupBy, sortBy, false);
 					new GenericReportPharmaceuticalStock(dateChooser.getDateEndOfDay(), report, filter, groupBy, sortBy, true);

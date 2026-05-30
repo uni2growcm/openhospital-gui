@@ -22,8 +22,6 @@
 package org.isf.lab.gui;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -48,7 +46,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.EventListenerList;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
-import org.isf.admission.model.Admission;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.exa.model.Exam;
@@ -57,13 +54,13 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.elements.ExamComboBox;
 import org.isf.lab.gui.elements.ExamRowComboBox;
 import org.isf.lab.gui.elements.MatComboBox;
-import org.isf.lab.gui.elements.PatientComboBox;
 import org.isf.lab.manager.LabManager;
 import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
 import org.isf.menu.manager.Context;
+import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.serviceprinting.manager.PrintManager;
@@ -130,7 +127,6 @@ public class LabEditExtended extends ModalJFrame {
 	private JComboBox<String> prescriberComboBox;
 	private ExamComboBox examComboBox;
 	private ExamRowComboBox examRowComboBox;
-	private PatientComboBox patientComboBox;
 	private Exam examSelected;
 	private JScrollPane noteScrollPane;
 	private JTextField prescriberTextField;
@@ -141,10 +137,8 @@ public class LabEditExtended extends ModalJFrame {
 	private VoLimitedTextField sexTextField;
 
 	private JPanel dataPatient;
-	private VoLimitedTextField jTextPatientSrc;
+	private JTextField jTextFieldPatient;
 	private Patient labPat;
-	private String lastKey;
-	private List<Patient> pat;
 
 	private GoodDateTimeSpinnerChooser examDateFieldCal;
 
@@ -174,6 +168,7 @@ public class LabEditExtended extends ModalJFrame {
 	public LabEditExtended(JFrame owner, Laboratory laboratory, boolean inserting) {
 		insert = inserting;
 		lab = laboratory;
+        labPat = laboratory.getPatient();
 		initialize();
 		showAsModal(owner);
 	}
@@ -278,31 +273,14 @@ public class LabEditExtended extends ModalJFrame {
 			});
 			prescriberComboBox.setBounds(LABEL_WIDTH + 185, 70, 255, 20);
 
-			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.lab.patientcode"));
-			patientLabel.setBounds(LABEL_WIDTH + 5, 100, 120, 20);
+			// patient (in or out) data
+			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.common.searchpatient.txt"));
+			patientLabel.setBounds(LABEL_WIDTH + 20, 100, 120, 20);
 			inPatientCheckBox = getInPatientCheckBox();
 			inPatientCheckBox.setBounds(5, 100, LABEL_WIDTH, 20);
-			jTextPatientSrc = new VoLimitedTextField(200, 20);
-			jTextPatientSrc.setBounds(LABEL_WIDTH + 70, 100, 90, 20);
-
-			jTextPatientSrc.addKeyListener(new KeyListener() {
-				@Override
-				public void keyTyped(KeyEvent e) {
-					lastKey = "";
-					String keyChar = String.valueOf(e.getKeyChar());
-					if (Character.isLetterOrDigit(e.getKeyChar())) {
-						lastKey = keyChar;
-					}
-					keyChar = jTextPatientSrc.getText() + lastKey;
-					keyChar = keyChar.trim();
-					filterPatient(keyChar);
-				}
-				@Override public void keyPressed(KeyEvent e) {}
-				@Override public void keyReleased(KeyEvent e) {}
-			});
-
-			patientComboBox = getPatientComboBox();
-			patientComboBox.setBounds(LABEL_WIDTH + 170, 100, 305, 20);
+			
+			jTextFieldPatient = getJTextFieldPatient();
+			jTextFieldPatient.setBounds(LABEL_WIDTH + 200, 100, 250, 20);
 
 			dataPanel.add(examDateLabel, null);
 			dataPanel.add(examDateFieldCal, null);
@@ -315,13 +293,42 @@ public class LabEditExtended extends ModalJFrame {
 			dataPanel.add(prescriberComboBox, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
-			dataPanel.add(jTextPatientSrc, null);
-			dataPanel.add(patientComboBox, null);
+			dataPanel.add(jTextFieldPatient, null);
 
 			dataPanel.setPreferredSize(new Dimension(150, 200));
 		}
 		return dataPanel;
 	}
+
+    private JTextField getJTextFieldPatient() {
+        if (jTextFieldPatient == null) {
+            jTextFieldPatient = new JTextField();
+            jTextFieldPatient.setText(labPat.getName());
+            jTextFieldPatient.setPreferredSize(new Dimension(250, 20));
+
+            jTextFieldPatient.addActionListener(actionEvent -> {
+                String text = jTextFieldPatient.getText().trim();
+
+                if (!text.isEmpty()) {
+                    SelectPatient dialog = new SelectPatient(
+                            this,
+                            text
+                    );
+
+                    dialog.setVisible(true);
+
+                    Patient selected = dialog.getPatient();
+
+                    if (selected != null) {
+                        labPat = selected;
+                        jTextFieldPatient.setText(labPat.getName());
+                        setPatient(labPat);
+                    }
+                }
+            });
+        }
+        return jTextFieldPatient;
+    }
 
 	private JPanel getDataPatient() {
 		if (dataPatient == null) {
@@ -400,66 +407,6 @@ public class LabEditExtended extends ModalJFrame {
 			lab.setInOutPatient(inPatientCheckBox.isSelected() ? "I" : "R");
 		}
 		return inPatientCheckBox;
-	}
-
-	private PatientComboBox getPatientComboBox() {
-
-		try {
-			if (insert) {
-				pat = patientBrowserManager.getPatient();
-			}
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
-		}
-		if (patientComboBox == null) {
-			patientComboBox = new PatientComboBox();
-			patientComboBox.addItem(MessageBundle.getMessage("angal.lab.selectapatient"));
-
-			if (!insert && lab.getPatient() != null) {
-				try {
-					labPat = patientBrowserManager.getPatientAll(lab.getPatient().getCode());
-					patientComboBox.addItem(labPat);
-					patientComboBox.setSelectedItem(labPat);
-					patientComboBox.setEnabled(false);
-					jTextPatientSrc.setText(String.valueOf(labPat.getCode()));
-					jTextPatientSrc.setEnabled(false);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				return patientComboBox;
-			}
-
-			Optional.ofNullable(pat)
-					.ifPresent(patients -> patients.stream().forEach(patientComboBox::addItem));
-
-			patientComboBox.addActionListener(actionEvent -> {
-				if (patientComboBox.getSelectedIndex() > 0) {
-					labPat = (Patient) patientComboBox.getSelectedItem();
-					setPatient(labPat);
-					Admission admission = admissionBrowserManager.getCurrentAdmission(labPat);
-					inPatientCheckBox.setSelected(admission != null);
-				}
-			});
-		}
-		return patientComboBox;
-	}
-
-	private void filterPatient(String key) {
-		patientComboBox.removeAllItems();
-
-		if (key == null || key.compareTo("") == 0) {
-			patientComboBox.addItem(MessageBundle.getMessage("angal.lab.selectapatient"));
-			resetLabPat();
-		}
-
-		patientComboBox.addPatientsFilteredByKey(pat, key);
-
-		if (patientComboBox.getItemCount() > 0) {
-			patientComboBox.getSelectedPatient().ifPresent(patient -> {
-				labPat = patient;
-				setPatient(labPat);
-			});
-		}
 	}
 
 	private void resetLabPat() {
@@ -622,12 +569,6 @@ public class LabEditExtended extends ModalJFrame {
 				}
 				String matSelected = (String) matComboBox.getSelectedItem();
 				examSelected = (Exam) examComboBox.getSelectedItem();
-				try {
-					labPat = (Patient) patientComboBox.getSelectedItem();
-				} catch (ClassCastException e2) {
-					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
-					return;
-				}
 				LocalDateTime examDate;
 				try {
 					examDate = examDateFieldCal.getLocalDateTime();
