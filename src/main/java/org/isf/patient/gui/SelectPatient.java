@@ -459,14 +459,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 
 		jLabelPageInfo.setText(
-				MessageBundle.getMessage("angal.common.page")
+				MessageBundle.getMessage("angal.common.pages.txt")
 						+ " "
 						+ (currentPage + 1)
 						+ " / "
 						+ Math.max(totalPages, 1));
 
 		jLabelTotalRecords.setText(
-				MessageBundle.getMessage("angal.common.total")
+				MessageBundle.getMessage("angal.common.total.txt")
 						+ ": "
 						+ totalRecords);
 	}
