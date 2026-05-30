@@ -47,7 +47,16 @@ public class BillDataLoader {
 	}
 
 	public List<Bill> loadBills(String status, String username) throws OHServiceException {
-		return new ArrayList<>();
+        switch (status) {
+            case "ALL":
+                return getAllBills(username);
+
+            case "O":
+                return getPendingBills(status, username);
+
+            default:
+                return getClosedBills(status, username);
+        }
 	}
 
 	private List<Bill> getAllBills(String username) {
