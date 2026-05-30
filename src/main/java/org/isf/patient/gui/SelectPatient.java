@@ -485,7 +485,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
             jTextFieldSearchPatient = new VoLimitedTextField(100, 20);
 
-            searchTimer = new Timer(300, e -> {
+            searchTimer = new Timer(200, e -> {
                 currentPage = 0;
                 loadPatientPage();
             });
