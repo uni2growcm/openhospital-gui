@@ -34,25 +34,7 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -614,7 +596,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				patientSelected = null;
 				// INTERFACE
 				jTextFieldPatient.setText("");
-				jTextFieldPatient.setEditable(false);
+				jTextFieldPatient.setEditable(true);
+                patientSelected = null;
 				jButtonPickPatient.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
 				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam")); //$NON-NLS-1$
 				jButtonTrashPatient.setEnabled(false);
@@ -629,12 +612,15 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jButtonPickPatient.setMnemonic(MessageBundle.getMnemonic("angal.labnew.findpatient.btn.key"));
 			jButtonPickPatient.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png")); //$NON-NLS-1$
 			jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam")); //$NON-NLS-1$
-			jButtonPickPatient.addActionListener(actionEvent -> {
-				SelectPatient sp = new SelectPatient(this, patientSelected);
-				sp.addSelectionListener(this);
-				sp.pack();
-				sp.setVisible(true);
-			});
+            jButtonPickPatient.addActionListener(actionEvent -> {
+
+                SelectPatient sp = new SelectPatient(this, patientSelected);
+                sp.addSelectionListener(this);
+                sp.pack();
+                sp.setVisible(true);
+
+                patientSelected = sp.getPatient();
+            });
 		}
 		return jButtonPickPatient;
 	}
@@ -644,7 +630,27 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jTextFieldPatient = new JTextField();
 			jTextFieldPatient.setText(""); //$NON-NLS-1$
 			jTextFieldPatient.setPreferredSize(PATIENT_DIMENSION);
-			jTextFieldPatient.setEditable(false);
+            jTextFieldPatient.addActionListener(actionEvent -> {
+                SelectPatient selectPatient = new SelectPatient(
+                        (JFrame) SwingUtilities.getWindowAncestor(jTextFieldPatient),
+                        jTextFieldPatient.getText()
+                );
+
+                selectPatient.setVisible(true);
+
+                patientSelected = selectPatient.getPatient();
+
+                if (patientSelected != null) {
+                    jTextFieldPatient.setText(patientSelected.getName());
+                    patientSelected(patientSelected);
+                    if (jButtonTrashPatient != null) {
+                        jButtonTrashPatient.setEnabled(true);
+                    }
+                }
+
+                jTextFieldPatient.requestFocus();
+            });
+
 		}
 		return jTextFieldPatient;
 	}

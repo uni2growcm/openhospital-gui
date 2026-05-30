@@ -308,5 +308,4 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 			jTable.setRowSelectionInterval(0, 0);
 		}
 	}
-
 }

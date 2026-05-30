@@ -3145,9 +3145,7 @@ public class PatientInsertExtended extends JDialog {
 						if (!searchText.isEmpty()) {
 							SelectPatient selectPatient = new SelectPatient(
 									PatientInsertExtended.this,
-									true,
-									searchText,
-									100
+									searchText
 							);
 							selectPatient.addSelectionListener(selectedPatient -> {
 								patient.setAffiliatedPatient(selectedPatient);
@@ -3207,9 +3205,7 @@ public class PatientInsertExtended extends JDialog {
 			jAffiliatedPatientSearchButton.addActionListener(e -> {
 				SelectPatient selectPatient = new SelectPatient(
 						this,
-						true,
-						searchText,
-						100
+                        jAffiliatedPatientTextField.getText().trim()
 				);
 				selectPatient.addSelectionListener(selectedPatient -> {
 					patient.setAffiliatedPatient(selectedPatient);
