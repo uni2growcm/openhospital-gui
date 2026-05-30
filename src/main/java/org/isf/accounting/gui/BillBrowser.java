@@ -27,18 +27,8 @@ import static org.isf.utils.Constants.DATE_FORMAT_DD_MM_YYYY_HH_MM;
 import static org.isf.utils.Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,31 +37,15 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
-import org.isf.accounting.gui.totals.BalanceTotal;
-import org.isf.accounting.gui.totals.PaymentsTotal;
-import org.isf.accounting.gui.totals.UserTotal;
+import org.isf.accounting.manager.ArchiveManager;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillPayments;
@@ -90,6 +64,7 @@ import org.isf.stat.gui.report.GenericReportPatient;
 import org.isf.stat.gui.report.GenericReportUserInDate;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.exception.model.OHExceptionMessage;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.JMonthChooser;
 import org.isf.utils.jobjects.JYearChooser;
@@ -131,6 +106,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private Patient patientParent;
 	private JTextField jAffiliatePersonJTextField;
 	private JButton jButtonReport;
+	private JButton jButtonArchive;
 	private JComboBox<String> jComboUsers;
 	private JMonthChooser jComboBoxMonths;
 	private JYearChooser jComboBoxYears;
@@ -608,6 +584,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			if (MainMenu.checkUserGrants("btnbillreceipt") && GeneralData.RECEIPTPRINTER) {
 				jPanelButtons.add(getJButtonPrintReceipt());
 			}
+//			if (MainMenu.checkUserGrants("btnbillarchive")) {
+//				jPanelButtons.add(getJButtonArchive());
+//			}
+			jPanelButtons.add(getJButtonArchive());
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
 			}
@@ -955,6 +935,117 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			});
 		}
 		return jButtonEdit;
+	}
+
+	private JButton getJButtonArchive() {
+		if (jButtonArchive == null) {
+			jButtonArchive = new JButton(MessageBundle.getMessage("angal.billbrowser.archive.btn"));
+			jButtonArchive.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.archive.btn.key"));
+			jButtonArchive.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("<html><body>");
+					sb.append("<h4>" + MessageBundle.getMessage("angal.billbrowser.realywanttoarchivebills.confirm") + "</h4><br>");
+					sb.append("<p>" + MessageBundle.getMessage("angal.billbrowser.operationmaytakefewminutes") + "</p>");
+					sb.append("</body></html>");
+
+					int ok = JOptionPane.showConfirmDialog(BillBrowser.this,
+							sb.toString(),
+							MessageBundle.getMessage("angal.billbrowser.archive.btn"),
+							JOptionPane.YES_NO_OPTION);
+
+					if (ok == JOptionPane.YES_OPTION) {
+						final JDialog spinnerDialog = new JDialog();
+						JPanel panel = new JPanel(new GridBagLayout());
+						panel.add(new JLabel(
+								MessageBundle.getMessage("angal.billbrowser.billsarchiveisprogressing"), JLabel.CENTER
+						));
+						spinnerDialog.getContentPane().add(panel);
+						spinnerDialog.setBounds(getBounds());
+						spinnerDialog.setLocation(getLocation());
+						spinnerDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+						spinnerDialog.setModal(true);
+						spinnerDialog.setUndecorated(true);
+						spinnerDialog.getRootPane().setOpaque(false);
+
+						SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+							@Override
+							protected Void doInBackground() throws Exception {
+								ArchiveManager archiveManager = Context.getApplicationContext().getBean(ArchiveManager.class);
+								archiveManager.archiveClosedBills();
+								return null;
+							}
+
+							@Override
+							protected void done() {
+
+								spinnerDialog.setVisible(false);
+								spinnerDialog.dispose();
+
+								try {
+									get();
+									JOptionPane.showMessageDialog(
+											BillBrowser.this,
+											MessageBundle.getMessage("angal.billbrowser.archive.process.completed"),
+											MessageBundle.getMessage("angal.billbrowser.archive.btn"),
+											JOptionPane.INFORMATION_MESSAGE);
+
+									billInserted(null);
+
+								} catch (InterruptedException e) {
+
+									Thread.currentThread().interrupt();
+
+								} catch (ExecutionException e) {
+
+									Throwable cause = e.getCause();
+
+									if (cause instanceof OHServiceException) {
+
+										OHServiceExceptionUtil.showMessages(
+												(OHServiceException) cause,
+												BillBrowser.this);
+
+									} else {
+
+										LOGGER.error("Unexpected error", cause);
+
+										OHServiceExceptionUtil.showMessages(
+												new OHServiceException(
+														cause,
+														new OHExceptionMessage(
+																"angal.accounting.archive.execution.error"
+														)
+												),
+												BillBrowser.this);
+									}
+								}
+							}
+
+						};
+						worker.execute();
+						spinnerDialog.setVisible(true);
+
+						try {
+							worker.get();
+							JOptionPane.showMessageDialog(BillBrowser.this,
+									MessageBundle.getMessage("angal.billbrowser.archive.process.completed"),
+									MessageBundle.getMessage("angal.billbrowser.archive.btn"),
+									JOptionPane.INFORMATION_MESSAGE);
+							billInserted(null);
+
+						} catch (InterruptedException | ExecutionException e1) {
+							LOGGER.error("Erreur lors de l'archivage via ArchiveManager", e1);
+							OHExceptionMessage exceptionMessage = new OHExceptionMessage(e1.getMessage());
+							OHServiceExceptionUtil.showMessages(new OHServiceException(exceptionMessage), BillBrowser.this);
+						}
+					}
+				}
+			});
+		}
+		return jButtonArchive;
 	}
 
 	private JButton getJButtonDelete() {
