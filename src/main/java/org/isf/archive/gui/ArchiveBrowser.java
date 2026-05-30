@@ -52,7 +52,6 @@ import javax.swing.table.DefaultTableModel;
 import org.isf.accounting.manager.ArchiveManager;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.ArchivedBill;
-import org.isf.accounting.model.ArchivedBillPayments;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.generaldata.SageConfig;
@@ -174,9 +173,6 @@ public class ArchiveBrowser extends ModalJFrame {
 
     private ArchiveManager archiveManager = Context.getApplicationContext().getBean(ArchiveManager.class);
     private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
-    private List<ArchivedBill> archivedBillPeriod;
-    private List<ArchivedBillPayments> archivedPaymentsPeriod;
-    private List<ArchivedBill> archivedBillFromPayments;
     private String currencyCod;
 
     private String user = UserBrowsingManager.getCurrentUser();
@@ -216,19 +212,11 @@ public class ArchiveBrowser extends ModalJFrame {
         initComponents();
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        SwingUtilities.invokeLater(() -> loadCurrentPage());
+        SwingUtilities.invokeLater(() -> {
+            loadCurrentPage();
+            updateTotals();
+        });
         setVisible(true);
-    }
-
-    private void updateDataSet() {}
-
-    private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {}
-
-    private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
-        Integer patientId = patient != null ? patient.getCode() : null;
-        archivedBillPeriod = archiveManager.getArchivedBills(dateFrom, dateTo, patientId);
-        archivedPaymentsPeriod = archiveManager.getArchivedPayments(dateFrom, dateTo, patientId);
-        archivedBillFromPayments = archiveManager.getArchivedBillsFromPayments(archivedPaymentsPeriod);
     }
 
     private void updateTotals() {
@@ -278,14 +266,6 @@ public class ArchiveBrowser extends ModalJFrame {
             jLabelGuarantor = new JLabel(MessageBundle.getMessage("angal.newbill.selectguarantor.label"));
         }
         return jLabelGuarantor;
-    }
-
-    private void updateDataSetByGuarantor(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient, User guarantor) throws OHServiceException {
-        Integer patientId = patient != null ? patient.getCode() : null;
-        String guarantorId = guarantor != null ? guarantor.getUserName() : null;
-        archivedBillPeriod = archiveManager.getArchivedBillsByDatePatientAndGuarantor(dateFrom, dateTo, patientId, guarantorId);
-        archivedPaymentsPeriod = archiveManager.getArchivedPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, patientId, guarantorId);
-        archivedBillFromPayments = archiveManager.getArchivedBillsFromPayments(archivedPaymentsPeriod);
     }
 
     private User getSelectedGuarantor() {
@@ -455,7 +435,6 @@ public class ArchiveBrowser extends ModalJFrame {
             jTableArchives.setModel(new ArchivedBillTableModel(bills));
             updatePaginationControls();
             jTableArchives.updateUI();
-            updateTotals();
         } catch (OHServiceException e) {
             MessageDialog.showExceptions(e);
         }
@@ -1140,6 +1119,7 @@ public class ArchiveBrowser extends ModalJFrame {
                     currentPage = 0;
                     jButtonToday.setEnabled(true);
                     loadCurrentPage();
+                    updateTotals();
                 }
             });
         }
@@ -1206,6 +1186,7 @@ public class ArchiveBrowser extends ModalJFrame {
                     currentPage = 0;
                     jButtonToday.setEnabled(true);
                     loadCurrentPage();
+                    updateTotals();
                 }
             });
         }
@@ -1221,6 +1202,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 dateTo = dateToday24;
                 jCalendarFrom.setDate(dateFrom.toLocalDate());
                 jCalendarTo.setDate(dateTo.toLocalDate());
+                updateTotals();
                 jButtonToday.setEnabled(false);
             });
             jButtonToday.setEnabled(false);
@@ -1271,20 +1253,8 @@ public class ArchiveBrowser extends ModalJFrame {
             jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
             jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
             jComboBoxGuarantor.addActionListener(actionEvent -> {
-                User selectedGuarantor = (User) jComboBoxGuarantor.getSelectedItem();
-                try {
-                    if (selectedGuarantor != null) {
-                        updateDataSetByGuarantor(dateFrom, dateTo, patientParent, selectedGuarantor);
-                    } else if (patientParent == null) {
-                        updateDataSet(dateFrom, dateTo);
-                    } else {
-                        updateDataSet(dateFrom, dateTo, patientParent);
-                    }
-                    updateTables();
-                    updateTotals();
-                } catch (OHServiceException e) {
-                    OHServiceExceptionUtil.showMessages(e);
-                }
+                updateTables();
+                updateTotals();
             });
         }
         return jComboBoxGuarantor;
@@ -1478,7 +1448,6 @@ public class ArchiveBrowser extends ModalJFrame {
         jAffiliatePersonJTextField.setText(patientParent != null ? patientParent.getName() : "");
 
         if (patientParent != null) {
-            updateDataSet(dateFrom, dateTo, patientParent);
             updateTables();
             updateTotals();
         }
