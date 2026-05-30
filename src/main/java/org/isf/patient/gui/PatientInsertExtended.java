@@ -3190,7 +3190,7 @@ public class PatientInsertExtended extends JDialog {
 						}
 					} catch (OHServiceException ohEx) {
 						OHServiceExceptionUtil.showMessages(ohEx);
-						LOGGER.error("Impossible de recharger le patient affilié: {}", ohEx.getMessage(), ohEx);
+						LOGGER.error("Unable to reload affiliated patient: {}", ohEx.getMessage(), ohEx);
 					}
 				}
 			}
