@@ -750,7 +750,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 quantity
         );
 
-        billItem.setPriceID(price.getId() != 0 ? String.valueOf(price.getId()) : String.valueOf(originalPrice.getId()));
         billItem.setItemId(price.getItem());
 
         if ("MED".equals(price.getGroup())) {
