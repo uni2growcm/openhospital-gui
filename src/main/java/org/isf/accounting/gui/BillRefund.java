@@ -70,6 +70,8 @@ import org.isf.utils.time.TimeTools;
  * Dialog allowing the user to refund selected items of a closed bill.
  * A new refund bill (with {@code parentId} pointing to the original) is created,
  * together with its items and a single negative payment.
+ *
+ * @author Duval Donfack
  */
 public class BillRefund extends JDialog {
 
@@ -173,11 +175,19 @@ public class BillRefund extends JDialog {
 		panel.add(dateField);
 
 		panel.add(Box.createHorizontalStrut(20));
-		panel.add(new JLabel(MessageBundle.getMessage("angal.newbill.patient") + ":"));
+		panel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ":"));
 		JTextField patientField = new JTextField(originalBill.getPatName());
 		patientField.setEditable(false);
-		patientField.setPreferredSize(new Dimension(260, 25));
+		patientField.setPreferredSize(new Dimension(220, 25));
 		panel.add(patientField);
+
+		panel.add(Box.createHorizontalStrut(20));
+		panel.add(new JLabel(MessageBundle.getMessage("angal.common.ward.txt") + ":"));
+		String wardName = originalBill.getWard() != null ? originalBill.getWard().getDescription() : "";
+		JTextField wardField = new JTextField(wardName);
+		wardField.setEditable(false);
+		wardField.setPreferredSize(new Dimension(130, 25));
+		panel.add(wardField);
 
 		return panel;
 	}

@@ -284,7 +284,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {}
 
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
-		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient);
+		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient)
+			.stream().filter(b -> b.getParentId() == null).collect(java.util.stream.Collectors.toList());
 		paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo, patient);
 		billFromPayments = billBrowserManager.getBills(paymentsPeriod);
 	}
@@ -345,6 +346,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
 			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
 		}
+		billPeriod = billPeriod.stream().filter(b -> b.getParentId() == null).collect(java.util.stream.Collectors.toList());
 		billFromPayments = billBrowserManager.getBillsByGuarantor(paymentsPeriod, guarantor);
 	}
 
