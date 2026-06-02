@@ -299,7 +299,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 				loadPatientPage();
 				return;
 			}
-
 			updatePaginationControls();
 
 			((DefaultTableModel) jTablePatient.getModel()).fireTableDataChanged();
@@ -414,7 +413,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 				if (updatingPaginationControls) {
 					return;
 				}
-
 				Integer selected = (Integer) jComboPage.getSelectedItem();
 
 				if (selected == null) {
@@ -460,9 +458,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jButtonNext.setEnabled(currentPage + 1 < totalPages);
 
 		updatingPaginationControls = true;
-
 		try {
-
 		jComboPage.removeAllItems();
 
 		for (int i = 1; i <= totalPages; i++) {
