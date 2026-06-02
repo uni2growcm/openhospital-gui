@@ -105,16 +105,16 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private static final int MAX_AGE = 60;
 
     private final String[] columnHeaders = {
-            MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
-            MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
-            MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
-            MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
-            ""
+        MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
+        MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
+        MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+        MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
+        MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
+        ""
     };
 
     private final int[] columnWidths = { 50, 70, 150, 50, 120, 100, 100, 80, 100 ,60};
@@ -372,14 +372,14 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
-            setText("D�tails");
+            setText("Détails");
             setOpaque(true);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-            setText("D�tails");
+            setText("Détails");
             return this;
         }
     }
@@ -554,7 +554,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         buttonPanel.add(getJReportButton());
         buttonPanel.add(getJVaccinButton());
         buttonPanel.add(getJReportButton());
-        buttonPanel.add(getJTherapyButton());   // ? doublon getJReportButton() supprim�
         buttonPanel.add(getJCloseButton());
 
         return buttonPanel;
@@ -1181,7 +1180,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             } else if (c == 8) {
                 return pregnancy.getStatus() != null ? pregnancy.getStatus().getDescription() : "";
             } else if (c == 9) {
-                return "D�tails";
+                return "Détails";
             }
             return null;
         }
