@@ -111,6 +111,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JPanel jPanelTotals;
 	private JButton jButtonNew;
 	private JButton jButtonEdit;
+	private JButton jButtonRefund;
 	private JButton jButtonPrintReceipt;
 	private JButton jButtonDelete;
 	private JButton jButtonClose;
@@ -603,6 +604,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jPanelButtons.add(getJButtonArchive());
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
+			}
+			if (MainMenu.checkUserGrants("btnbillrefund") && GeneralData.ENABLEMEDICALREFUND) {
+				jPanelButtons.add(getJButtonRefund());
 			}
 			if (SageConfig.ENABLE_SAGE_INTEGRATION) {
 				jPanelButtons.add(getExportSageButton());
@@ -1377,6 +1381,43 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			});
 		}
 		return jButtonReport;
+	}
+
+	private JButton getJButtonRefund() {
+		if (jButtonRefund == null) {
+			jButtonRefund = new JButton(MessageBundle.getMessage("angal.billbrowser.refund"));
+			jButtonRefund.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.refund.key"));
+			jButtonRefund.setIcon(new ImageIcon("rsc/icons/money_button.png"));
+			jButtonRefund.addActionListener(actionEvent -> {
+				Bill selectedBill = getSelectedBillFromActiveTab();
+				if (selectedBill == null) {
+					MessageDialog.error(this, "angal.billbrowser.pleaseselectabill.msg");
+					return;
+				}
+				if (!"C".equalsIgnoreCase(selectedBill.getStatus())) {
+					MessageDialog.error(this, "angal.billbrowser.onlyclosedbillcanberefunded.msg");
+					return;
+				}
+				if (selectedBill.getParentId() != null && selectedBill.getParentId() != 0) {
+					MessageDialog.error(this, "angal.billbrowser.cannotrefundarefundbill.msg");
+					return;
+				}
+				BillRefund dialog = new BillRefund(BillBrowser.this, selectedBill);
+				dialog.addPatientBillListener(BillBrowser.this);
+				dialog.setVisible(true);
+			});
+		}
+		return jButtonRefund;
+	}
+
+	private Bill getSelectedBillFromActiveTab() {
+		if (jScrollPaneBills.isShowing() && jTableBills.getSelectedRow() >= 0) {
+			return (Bill) jTableBills.getValueAt(jTableBills.getSelectedRow(), -1);
+		}
+		if (jScrollPaneClosed.isShowing() && jTableClosed.getSelectedRow() >= 0) {
+			return (Bill) jTableClosed.getValueAt(jTableClosed.getSelectedRow(), -1);
+		}
+		return null;
 	}
 
 	private JButton getJButtonClose() {
