@@ -619,7 +619,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         } else {
             try {
                 thisBill = (Bill) bill.clone();
-				jCalendarDate.setDate(LocalDate.from(thisBill.getDate() != null ? thisBill.getDate() : today));
                 if (thisBill.getBillPatient() != null && thisBill.getBillPatient().getCode() != 0) {
                     updatePrescriptionButtonVisibility();
                 }
@@ -751,7 +750,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 quantity
         );
 
-        billItem.setPriceID(price.getId() != 0 ? String.valueOf(price.getId()) : String.valueOf(originalPrice.getId()));
         billItem.setItemId(price.getItem());
 
         if ("MED".equals(price.getGroup())) {
@@ -1493,8 +1491,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			if (insert) {
                 jCalendarDate = new GoodDateTimeToggleChooser(today, false);
             } else {
-                jCalendarDate = new GoodDateTimeToggleChooser(thisBill.getDate(), false);
-                today = thisBill.getDate();
+                jCalendarDate = new GoodDateTimeToggleChooser(thisBill.getDate() != null ? thisBill.getDate() : today, false);
+                today = thisBill.getDate() != null ? thisBill.getDate() : today;
             }
 			jCalendarDate.addDateTimeChangeListener(event -> {
 				DateChangeEvent dateChangeEvent = event.getDateChangeEvent();
