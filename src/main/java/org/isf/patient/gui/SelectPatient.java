@@ -199,7 +199,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(enableAddPatient);
+		getButtonNew().setVisible(enableAddPatient);
 
 		if (searchText != null) {
 			jTextFieldSearchPatient.setText(searchText);
@@ -215,7 +215,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(abbleAddPatient);
+		getButtonNew().setVisible(abbleAddPatient);
 
 		loadPatientPage();
 	}
@@ -227,14 +227,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(abbleAddPatient);
+		getButtonNew().setVisible(abbleAddPatient);
 
 		loadPatientPage();
 	}
 
 	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
 		this(owner, keywords);
-		buttonNew.setVisible(enablePatientAdd);
+		getButtonNew().setVisible(enablePatientAdd);
 	}
 
 	private void initializeDialog() {
@@ -696,21 +696,23 @@ public class SelectPatient extends JDialog implements PatientListener {
 	}
 
 	private JButton getButtonNew() {
-		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
-		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
-		buttonNew.addActionListener(actionEvent -> {
+		if (buttonNew == null) {
+			buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
+			buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
+			buttonNew.addActionListener(actionEvent -> {
 
-			if (GeneralData.PATIENTEXTENDED) {
-				PatientInsertExtended newrecord = new PatientInsertExtended(this, new Patient(), true);
-				newrecord.addPatientListener(this);
-				newrecord.setVisible(true);
-			} else {
-				PatientInsert newrecord = new PatientInsert(this, new Patient(), true);
-				newrecord.addPatientListener((PatientInsert.PatientListener) this);
-				newrecord.setVisible(true);
-			}
+				if (GeneralData.PATIENTEXTENDED) {
+					PatientInsertExtended newrecord = new PatientInsertExtended(this, new Patient(), true);
+					newrecord.addPatientListener(this);
+					newrecord.setVisible(true);
+				} else {
+					PatientInsert newrecord = new PatientInsert(this, new Patient(), true);
+					newrecord.addPatientListener((PatientInsert.PatientListener) this);
+					newrecord.setVisible(true);
+				}
 
-		});
+			});
+		}
 		return buttonNew;
 	}
 
