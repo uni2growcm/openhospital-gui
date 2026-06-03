@@ -41,6 +41,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,6 @@ import org.isf.medicals.gui.MedicalEdit.MedicalListener;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
 import org.isf.medicalstock.manager.MovStockInsertingManager;
-import org.isf.medicalstock.model.Lot;
 import org.isf.medtype.manager.MedicalTypeBrowserManager;
 import org.isf.medtype.model.MedicalType;
 import org.isf.menu.gui.MainMenu;
@@ -138,6 +138,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private final MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
+	private final MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
+
+	private Map<Integer, LocalDate> expiryDateCache = new HashMap<>();
+	private Map<Integer, Double> actualQtyCache = new HashMap<>();
 
 	public MedicalBrowser() {
 		me = this;
@@ -776,7 +780,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		@Override
 		public Object getValueAt(int r, int c) {
 			Medical med = medicalList.get(r);
-			double actualQty = med.getInitialqty() + med.getInqty() - med.getOutqty();
+			double actualQty = actualQtyCache.getOrDefault(med.getCode(), med.getInitialqty() + med.getInqty() - med.getOutqty());
 			double minQuantity = med.getMinqty();
 			if (c == -1) return med;
 			else if (c == 0) return med.getType().getDescription();
@@ -817,12 +821,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				if (row < model.getRowCount()) {
 					Medical med = (Medical) model.getValueAt(row, -1);
 					if (med != null) {
-						double actualQty = med.getInitialqty() + med.getInqty() - med.getOutqty();
+						double actualQty = actualQtyCache.getOrDefault(med.getCode(), med.getInitialqty() + med.getInqty() - med.getOutqty());
 						Color bgColor = Color.WHITE;
 						Color fgColor = Color.BLACK;
 
 						if (highlightexpiringmedical()) {
-							LocalDate expiryDate = getNearestExpiryDate(med);
+							LocalDate expiryDate = expiryDateCache.get(med.getCode());
 							LocalDate today = LocalDate.now();
 
 							if (expiryDate != null) {
@@ -997,6 +1001,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				PAGES = 0;
 			}
 
+			precomputeCaches();
+
 			if (model instanceof MedicalBrowsingModel) {
 				((MedicalBrowsingModel) model).medicalList = medicalList;
 				((MedicalBrowsingModel) model).fireTableDataChanged();
@@ -1017,24 +1023,19 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 	}
 
-	private LocalDate getNearestExpiryDate(Medical medical) {
-		try {
-			MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
-			List<Lot> lots = movStockInsertingManager.getLotByMedical(medical, false);
+	private void precomputeCaches() throws OHServiceException {
+		actualQtyCache = new HashMap<>();
+		for (Medical med : medicalList) {
+			actualQtyCache.put(med.getCode(), med.getInitialqty() + med.getInqty() - med.getOutqty());
+		}
 
-			LocalDate nearest = null;
-			for (Lot lot : lots) {
-				if (lot.getDueDate() != null && lot.getMainStoreQuantity() > 0) {
-					LocalDate expiryDate = lot.getDueDate().toLocalDate();
-					if (nearest == null || expiryDate.isBefore(nearest)) {
-						nearest = expiryDate;
-					}
-				}
+		expiryDateCache = new HashMap<>();
+		if (highlightexpiringmedical() && !medicalList.isEmpty()) {
+			List<Integer> codes = new ArrayList<>();
+			for (Medical med : medicalList) {
+				codes.add(med.getCode());
 			}
-			return nearest;
-		} catch (Exception e) {
-			LOGGER.error("Error getting expiry date for medical: {}", medical.getDescription(), e);
-			return null;
+			expiryDateCache = movStockInsertingManager.getNearestExpiryDateByMedicals(codes);
 		}
 	}
 

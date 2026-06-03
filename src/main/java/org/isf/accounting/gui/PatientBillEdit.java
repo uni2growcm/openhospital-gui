@@ -750,7 +750,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 quantity
         );
 
-        billItem.setPriceID(price.getId() != 0 ? String.valueOf(price.getId()) : String.valueOf(originalPrice.getId()));
         billItem.setItemId(price.getItem());
 
         if ("MED".equals(price.getGroup())) {
@@ -2792,7 +2791,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
 
             for (Ward elem : wardList) {
-                wardComboBox.addItem(elem);
+                if (elem.isPharmacy())
+					wardComboBox.addItem(elem);
                 if(insert && elem.getDescription().equalsIgnoreCase("PHARMACIE"))
 
                 if(thisBill.getWard() != null && this.thisBill.getWard().getCode().equals(elem.getCode()))
