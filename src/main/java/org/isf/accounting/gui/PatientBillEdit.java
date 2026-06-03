@@ -1985,6 +1985,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jButtonSave.addActionListener(actionEvent -> {
 				loadDataset();
 				checkBill();
+				if (Objects.equals(wardComboBox.getSelectedItem(), "")) {
+					MessageDialog.error(this, "angal.newbill.selectward.msg");
+					return;
+				}
 				if (thisBill.getPriceList() == null) {
 					thisBill.setPriceList(lstArray.get(0));
 				}
