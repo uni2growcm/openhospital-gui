@@ -597,8 +597,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			if (MainMenu.checkUserGrants("btnbillreceipt") && GeneralData.RECEIPTPRINTER) {
 				jPanelButtons.add(getJButtonPrintReceipt());
 			}
-			if (MainMenu.checkUserGrants("btnbillarchive") && GeneralData.ENABLEARCHIVE) {
-			    jPanelButtons.add(getJButtonArchive());
+			if (MainMenu.checkUserGrants("btnbillarchive")) {
+				jPanelButtons.add(getJButtonArchive());
 			}
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
