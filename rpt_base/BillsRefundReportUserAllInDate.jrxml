@@ -153,28 +153,28 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-32" x="0" y="0" width="350" height="21" uuid="f07c0bd0-c116-4cf1-be50-4e778f5029c4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
 				<reportElement key="textField-32" x="350" y="0" width="70" height="21" uuid="d49791ce-820b-48a4-a93f-5db0a77710d5"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fromdateshort}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
 				<reportElement key="textField-32" x="440" y="0" width="70" height="21" uuid="22024566-8593-4b5c-91a5-96c9c7e5bb75"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{todateshort}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-32" x="420" y="0" width="20" height="21" uuid="8a013b63-3279-4e4d-99fd-2433839555db"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
 			</textField>
@@ -277,7 +277,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-44" x="406" y="2" width="94" height="19" uuid="7acb864e-81c9-4aa3-9af3-8dc13f83f15b"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{Page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of} ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="false">
 				<reportElement key="textField-45" x="501" y="2" width="34" height="19" uuid="c77a59b1-96d6-4f14-8f4a-fa854dabab2c"/>
