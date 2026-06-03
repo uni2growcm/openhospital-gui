@@ -127,6 +127,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private long totalRecords = 0;
 	private int totalPages = 0;
     private Timer searchTimer;
+	private boolean updatingPaginationControls;
 
 	private JButton jButtonPrevious;
 	private JButton jButtonNext;
@@ -293,6 +294,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 			totalPages = page.getTotalPages();
 
+			if (totalPages > 0 && currentPage >= totalPages) {
+				currentPage = totalPages - 1;
+				loadPatientPage();
+				return;
+			}
+
 			updatePaginationControls();
 
 			((DefaultTableModel) jTablePatient.getModel()).fireTableDataChanged();
@@ -404,6 +411,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 			jComboPage.addActionListener(e -> {
 
+				if (updatingPaginationControls) {
+					return;
+				}
+
 				Integer selected = (Integer) jComboPage.getSelectedItem();
 
 				if (selected == null) {
@@ -448,6 +459,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		jButtonNext.setEnabled(currentPage + 1 < totalPages);
 
+		updatingPaginationControls = true;
+
+		try {
+
 		jComboPage.removeAllItems();
 
 		for (int i = 1; i <= totalPages; i++) {
@@ -457,13 +472,16 @@ public class SelectPatient extends JDialog implements PatientListener {
 		if (totalPages > 0) {
 			jComboPage.setSelectedItem(currentPage + 1);
 		}
+		} finally {
+			updatingPaginationControls = false;
+		}
 
 		jLabelPageInfo.setText(
 				MessageBundle.getMessage("angal.common.pages.txt")
 						+ " "
-						+ (currentPage + 1)
+						+ (totalPages == 0 ? 0 : currentPage + 1)
 						+ " / "
-						+ Math.max(totalPages, 1));
+						+ totalPages);
 
 		jLabelTotalRecords.setText(
 				MessageBundle.getMessage("angal.common.total.txt")

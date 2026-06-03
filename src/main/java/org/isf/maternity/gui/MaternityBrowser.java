@@ -30,7 +30,8 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.io.Serial;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -105,16 +106,16 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private static final int MAX_AGE = 60;
 
     private final String[] columnHeaders = {
-        MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
-        MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
-        MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
-        MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
-        ""
+            MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
+            MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
+            MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
+            ""
     };
 
     private final int[] columnWidths = { 50, 70, 150, 50, 120, 100, 100, 80, 100 ,60};
@@ -534,26 +535,46 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         return visitScrollPane;
     }
 
-    private boolean isActionAllowed(String menuItemId) {
-        return MainMenu.checkUserGrants(menuItemId);
-    }
-
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new WrapLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
 
-        buttonPanel.add(getJNewPregnancyButton());
-        buttonPanel.add(getJUpdatePregnancyButton());
-        buttonPanel.add(getJDeletePregnancyButton());
-        buttonPanel.add(getJNewVisitButton());
-        buttonPanel.add(getJUpdateVisitButton());
-        buttonPanel.add(getJDeleteVisitButton());
-        buttonPanel.add(getJNewDeliveryButton());
-        buttonPanel.add(getJAdmissionButton());
-        buttonPanel.add(getJExamsButton());
-        buttonPanel.add(getJReportButton());
-        buttonPanel.add(getJVaccinButton());
-        buttonPanel.add(getJReportButton());
+        if (MainMenu.checkUserGrants("maternity.new")) {
+            buttonPanel.add(getJNewPregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.update")) {
+            buttonPanel.add(getJUpdatePregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.delete")) {
+            buttonPanel.add(getJDeletePregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.newvisit")) {
+            buttonPanel.add(getJNewVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.updatevisit")) {
+            buttonPanel.add(getJUpdateVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.deletevisit")) {
+            buttonPanel.add(getJDeleteVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.delivery")) {
+            buttonPanel.add(getJNewDeliveryButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.admission")) {
+            buttonPanel.add(getJAdmissionButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.exams")) {
+            buttonPanel.add(getJExamsButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.report")) {
+            buttonPanel.add(getJReportButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.vaccin")) {
+            buttonPanel.add(getJVaccinButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.therapy")) {
+            buttonPanel.add(getJTherapyButton());
+        }
         buttonPanel.add(getJCloseButton());
 
         return buttonPanel;
@@ -562,84 +583,72 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private JButton getJNewPregnancyButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.new.btn"));
         button.addActionListener(e -> newPregnancy());
-        button.setEnabled(isActionAllowed("maternity.new"));
         return button;
     }
 
     private JButton getJUpdatePregnancyButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.update.btn"));
         button.addActionListener(e -> updatePregnancy());
-        button.setEnabled(isActionAllowed("maternity.update"));
         return button;
     }
 
     private JButton getJDeletePregnancyButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.delete.btn"));
         button.addActionListener(e -> deletePregnancy());
-        button.setEnabled(isActionAllowed("maternity.delete"));
         return button;
     }
 
     private JButton getJNewVisitButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.newvisit.btn"));
         button.addActionListener(e -> newVisit());
-        button.setEnabled(isActionAllowed("maternity.newvisit"));
         return button;
     }
 
     private JButton getJUpdateVisitButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.updatevisit.btn"));
         button.addActionListener(e -> updateVisit());
-        button.setEnabled(isActionAllowed("maternity.updatevisit"));
         return button;
     }
 
     private JButton getJDeleteVisitButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.deletevisit.btn"));
         button.addActionListener(e -> deleteVisit());
-        button.setEnabled(isActionAllowed("maternity.deletevisit"));
         return button;
     }
 
     private JButton getJNewDeliveryButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.delivery.btn"));
         button.addActionListener(e -> newDelivery());
-        button.setEnabled(isActionAllowed("maternity.delivery"));
         return button;
     }
 
     private JButton getJAdmissionButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.admission.btn"));
         button.addActionListener(e -> admission());
-        button.setEnabled(isActionAllowed("maternity.admission"));
         return button;
     }
 
     private JButton getJExamsButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.opd.exams.btn"));
         button.addActionListener(e -> exams());
-        button.setEnabled(isActionAllowed("maternity.exams"));
         return button;
     }
 
     private JButton getJVaccinButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.cpn.vaccin.btn"));
         button.addActionListener(e -> vaccins());
-        button.setEnabled(isActionAllowed("maternity.vaccin"));
         return button;
     }
 
     private JButton getJReportButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
         button.addActionListener(e -> report());
-        button.setEnabled(isActionAllowed("maternity.report"));
         return button;
     }
 
     private JButton getJTherapyButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.maternity.therapy.btn"));
         button.addActionListener(e -> therapy());
-        button.setEnabled(isActionAllowed("maternity.therapy"));
         return button;
     }
 
