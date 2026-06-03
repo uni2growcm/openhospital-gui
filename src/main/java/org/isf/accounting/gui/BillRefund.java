@@ -77,8 +77,6 @@ public class BillRefund extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	// ---- Listener -------------------------------------------------------
-
 	private static final EventListenerList LISTENERS = new EventListenerList();
 
 	public void addPatientBillListener(PatientBillListener l) {
@@ -94,13 +92,9 @@ public class BillRefund extends JDialog {
 		}
 	}
 
-	// ---- Layout constants -----------------------------------------------
-
 	private static final int PANEL_WIDTH = 700;
 	private static final int TABLE_HEIGHT = 300;
 	private static final int FOOTER_HEIGHT = 30;
-
-	// ---- Table columns --------------------------------------------------
 
 	private static final int COL_DESCRIPTION = 0;
 	private static final int COL_TOTAL_QTY = 1;
@@ -117,21 +111,15 @@ public class BillRefund extends JDialog {
 		MessageBundle.getMessage("angal.billrefund.refundqty.col"),
 	};
 
-	// ---- UI components --------------------------------------------------
-
 	private JTable jTableItems;
 	private JTable jTableTotal;
 	private JTextField jTextFieldEditor;
-
-	// ---- State ----------------------------------------------------------
 
 	private final BillBrowserManager billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private final String user = UserBrowsingManager.getCurrentUser();
 	private final Bill originalBill;
 	private List<RefundBillItemDto> refundItems = new ArrayList<>();
 	private BigDecimal totalToRefund = BigDecimal.ZERO;
-
-	// ---- Constructor ----------------------------------------------------
 
 	public BillRefund(JFrame owner, Bill bill) {
 		super(owner, true);
@@ -142,8 +130,6 @@ public class BillRefund extends JDialog {
 		setLocationRelativeTo(null);
 		setResizable(false);
 	}
-
-	// ---- Initialisation -------------------------------------------------
 
 	private void loadRefundItems() {
 		try {
@@ -161,8 +147,6 @@ public class BillRefund extends JDialog {
 		add(buildButtonPanel(), BorderLayout.SOUTH);
 		pack();
 	}
-
-	// ---- Info panel (date + patient) ------------------------------------
 
 	private JPanel buildInfoPanel() {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -191,8 +175,6 @@ public class BillRefund extends JDialog {
 
 		return panel;
 	}
-
-	// ---- Data panel (help text + items table + total row) ---------------
 
 	private JPanel buildDataPanel() {
 		JPanel panel = new JPanel();
@@ -282,8 +264,6 @@ public class BillRefund extends JDialog {
 		return scroll;
 	}
 
-	// ---- Button panel ---------------------------------------------------
-
 	private JPanel buildButtonPanel() {
 		JPanel panel = new JPanel(new FlowLayout());
 
@@ -305,8 +285,6 @@ public class BillRefund extends JDialog {
 		panel.add(cancelButton);
 		return panel;
 	}
-
-	// ---- Save logic -----------------------------------------------------
 
 	private void onSave() {
 		if (jTableItems.isEditing()) {
@@ -360,8 +338,6 @@ public class BillRefund extends JDialog {
 		return items;
 	}
 
-	// ---- Total update ---------------------------------------------------
-
 	private void updateTotal() {
 		totalToRefund = BigDecimal.ZERO;
 		for (RefundBillItemDto rbi : refundItems) {
@@ -376,8 +352,6 @@ public class BillRefund extends JDialog {
 			jTableTotal.getModel().setValueAt(totalToRefund.doubleValue(), 0, 1);
 		}
 	}
-
-	// ---- Table model ----------------------------------------------------
 
 	private class RefundItemsTableModel extends DefaultTableModel {
 
