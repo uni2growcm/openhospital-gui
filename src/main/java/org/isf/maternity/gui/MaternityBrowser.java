@@ -30,7 +30,8 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.io.Serial;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,7 +39,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.JTable;
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.JSplitPane;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.Box;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ListSelectionModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -56,6 +74,7 @@ import org.isf.maternity.model.Pregnancy;
 import org.isf.maternity.model.PregnancyStatus;
 import org.isf.maternity.model.PregnancyVisit;
 import org.isf.maternity.model.RiskLevel;
+import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
@@ -87,24 +106,24 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private static final int MAX_AGE = 60;
 
     private final String[] columnHeaders = {
-        MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
-        MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
-        MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
-        MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
-        ""
+            MessageBundle.getMessage("angal.maternity.pregnancy.id.col").toUpperCase(),
+            MessageBundle.getMessage("angal.common.code.txt.col").toUpperCase(),
+            MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.date.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.edd.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.risklevel.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.status.col").toUpperCase(),
+            ""
     };
 
     private final int[] columnWidths = { 50, 70, 150, 50, 120, 100, 100, 80, 100 ,60};
 
     private final String[] vColumns = {
-        MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.typology.col").toUpperCase(),
-        MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
+            MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.typology.col").toUpperCase(),
+            MessageBundle.getMessage("angal.maternity.visitnote.col").toUpperCase()
     };
 
     private final int[] vColumnWidths = { 100, 150, 400 };
@@ -318,6 +337,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         panel.add(getPaginationPanel(), BorderLayout.SOUTH);
         return panel;
     }
+
     private JScrollPane getPregnancyTablePanel() {
         model = new PregnanciesTableModel();
         pregnancyTable = new JTable(model);
@@ -350,6 +370,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JScrollPane pregnancyScrollPane = new JScrollPane(pregnancyTable);
         return pregnancyScrollPane;
     }
+
     class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
             setText("Détails");
@@ -518,19 +539,42 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         JPanel buttonPanel = new JPanel(new WrapLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
 
-        buttonPanel.add(getJNewPregnancyButton());
-        buttonPanel.add(getJUpdatePregnancyButton());
-        buttonPanel.add(getJDeletePregnancyButton());
-        buttonPanel.add(getJNewVisitButton());
-        buttonPanel.add(getJUpdateVisitButton());
-        buttonPanel.add(getJDeleteVisitButton());
-        buttonPanel.add(getJNewDeliveryButton());
-        buttonPanel.add(getJAdmissionButton());
-        buttonPanel.add(getJExamsButton());
-        buttonPanel.add(getJReportButton());
-        buttonPanel.add(getJVaccinButton());
-        buttonPanel.add(getJReportButton());
-        buttonPanel.add(getJTherapyButton());
+        if (MainMenu.checkUserGrants("maternity.new")) {
+            buttonPanel.add(getJNewPregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.update")) {
+            buttonPanel.add(getJUpdatePregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.delete")) {
+            buttonPanel.add(getJDeletePregnancyButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.newvisit")) {
+            buttonPanel.add(getJNewVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.updatevisit")) {
+            buttonPanel.add(getJUpdateVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.deletevisit")) {
+            buttonPanel.add(getJDeleteVisitButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.delivery")) {
+            buttonPanel.add(getJNewDeliveryButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.admission")) {
+            buttonPanel.add(getJAdmissionButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.exams")) {
+            buttonPanel.add(getJExamsButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.report")) {
+            buttonPanel.add(getJReportButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.vaccin")) {
+            buttonPanel.add(getJVaccinButton());
+        }
+        if (MainMenu.checkUserGrants("maternity.therapy")) {
+            buttonPanel.add(getJTherapyButton());
+        }
         buttonPanel.add(getJCloseButton());
 
         return buttonPanel;
@@ -956,14 +1000,14 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
     }
 
-    private void newDelivery () {
-            if (selectedPregnancy == null) {
-                MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
-                return;
-            }
+    private void newDelivery() {
+        if (selectedPregnancy == null) {
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
+            return;
+        }
 
-            DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
-            edit.setVisible(true);
+        DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
+        edit.setVisible(true);
     }
 
     private void admission() {
