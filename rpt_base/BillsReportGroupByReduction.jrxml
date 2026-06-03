@@ -268,7 +268,7 @@ ORDER BY
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-35" x="0" y="0" width="782" height="22" uuid="2a21d9d5-9194-457b-9258-9f3f879ed056"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Arial" size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Title} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{To}+ " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
 			</textField>
