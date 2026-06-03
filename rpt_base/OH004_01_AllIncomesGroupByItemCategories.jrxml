@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OH004_01_AllIncomesGroupByItemCategories" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="OH004_01_AllIncomesGroupByItemCategories" uuid="b40b7ee9-d8e5-4a7a-aabb-2c471e55bd8d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="title" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="fromdate" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="todate" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="state" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="state2" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="IMAGE_PATH" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT	ITP_ITEM_DESC, SUM(ITP_AMOUNT) AS ITP_AMOUNT, ITP_ITEM_GROUP,
+(
+	SELECT SUM(ABS(ITP2.ITP_AMOUNT)) FROM OH_ITEMPAYMENTS ITP2
+	WHERE (ITP2.ITP_BLL_ID = ITP.ITP_BLL_ID AND ITP2.ITP_ITEM_DESC = ITP.ITP_ITEM_DESC)
+	AND DATE(ITP2.ITP_DATE) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') AND STR_TO_DATE($P{todate}, '%d/%m/%Y') AND ITP2.IS_REFUND = 1
+) AS ITP_REFUNDED_AMOUNT,
+CASE 
+	WHEN ITP.ITP_ITEM_GROUP = "MED" 
+	THEN (SELECT MEDT.MDSRT_DESC FROM OH_MEDICALDSR MED JOIN OH_MEDICALDSRTYPE MEDT ON MEDT.MDSRT_ID_A = MED.MDSR_MDSRT_ID_A WHERE MED.MDSR_ID = ITP.ITP_ITEM_ID)
+	WHEN ITP.ITP_ITEM_GROUP = "EXA" 
+	THEN (SELECT EXAT.EXC_DESC FROM OH_EXAM EXA JOIN OH_EXAMTYPE EXAT ON EXAT.EXC_ID_A = EXA.EXA_EXC_ID_A WHERE EXA.EXA_ID_A = ITP.ITP_ITEM_ID)
+	WHEN ITP.ITP_ITEM_GROUP = "OPE" 
+	THEN (SELECT OPET.OCL_DESC FROM OH_OPERATION OPE JOIN OH_OPERATIONTYPE OPET ON OPET.OCL_ID_A = OPE.OPE_OCL_ID_A WHERE OPE.OPE_ID_A = ITP.ITP_ITEM_ID)
+	ELSE "AUTRES"
+END AS BLI_ITEM_TYPE
+FROM OH_ITEMPAYMENTS ITP
+WHERE DATE(ITP.ITP_DATE) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') AND STR_TO_DATE($P{todate}, '%d/%m/%Y') AND IS_REFUND = 0
+GROUP BY ITP_ITEM_DESC
+ORDER BY ITP.ITP_ITEM_GROUP, BLI_ITEM_TYPE, ITP.ITP_ITEM_DESC asc]]>
+	</queryString>
+	<field name="ITP_ITEM_DESC" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ITP_ITEM_DESC"/>
+		<property name="com.jaspersoft.studio.field.label" value="ITP_ITEM_DESC"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_itempayments"/>
+	</field>
+	<field name="ITP_AMOUNT" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="ITP_AMOUNT"/>
+		<property name="com.jaspersoft.studio.field.label" value="ITP_AMOUNT"/>
+	</field>
+	<field name="ITP_ITEM_GROUP" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ITP_ITEM_GROUP"/>
+		<property name="com.jaspersoft.studio.field.label" value="ITP_ITEM_GROUP"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_itempayments"/>
+	</field>
+	<field name="ITP_REFUNDED_AMOUNT" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="ITP_REFUNDED_AMOUNT"/>
+		<property name="com.jaspersoft.studio.field.label" value="ITP_REFUNDED_AMOUNT"/>
+	</field>
+	<field name="BLI_ITEM_TYPE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="BLI_ITEM_TYPE"/>
+		<property name="com.jaspersoft.studio.field.label" value="BLI_ITEM_TYPE"/>
+	</field>
+	<variable name="GRP_TOTAL_AMOUNT" class="java.lang.Double" resetType="Group" resetGroup="ITEM_GROUP" calculation="Sum">
+		<variableExpression><![CDATA[$F{ITP_REFUNDED_AMOUNT} == null ? $F{ITP_AMOUNT} : new java.lang.Double(  ($F{ITP_AMOUNT}.doubleValue()) -($F{ITP_REFUNDED_AMOUNT}.doubleValue()) )]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_AMOUNT" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{ITP_REFUNDED_AMOUNT} == null ? $F{ITP_AMOUNT} : new java.lang.Double(  ($F{ITP_AMOUNT}.doubleValue()) -($F{ITP_REFUNDED_AMOUNT}.doubleValue()) )]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="ITEM_PAYMENT" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{ITP_REFUNDED_AMOUNT} == null ? $F{ITP_AMOUNT} : new java.lang.Double(  ($F{ITP_AMOUNT}.doubleValue()) -($F{ITP_REFUNDED_AMOUNT}.doubleValue()) )]]></variableExpression>
+	</variable>
+	<variable name="TYPE_TOTAL_AMOUNT" class="java.lang.Double" resetType="Group" resetGroup="ITEM_TYPE" calculation="Sum">
+		<variableExpression><![CDATA[$F{ITP_AMOUNT}]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<group name="ITEM_GROUP">
+		<groupExpression><![CDATA[$F{ITP_ITEM_GROUP}]]></groupExpression>
+		<groupHeader>
+			<band height="42" splitType="Stretch">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" mode="Opaque" x="0" y="20" width="535" height="22" forecolor="#FFFFFF" backcolor="#6699FF" uuid="4f1e51de-cc4f-40f1-82e0-aac2252af561"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" "+( ($F{ITP_ITEM_GROUP}==null || $F{ITP_ITEM_GROUP}.equals(""))? $R{notype}:
+$F{ITP_ITEM_GROUP}.equals("MED")?$R{medicals}:
+$F{ITP_ITEM_GROUP}.equals("EXA")?$R{exams}:
+$F{ITP_ITEM_GROUP}.equals("OPE")?$R{operation}:
+$F{ITP_ITEM_GROUP}.equals("OTH")?$R{other}:" ")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-11" x="3" y="2" width="342" height="17" uuid="f3e95607-cc54-47e0-aa5f-cdbba8969fbc"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="true" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{designation}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-17" x="345" y="2" width="188" height="16" uuid="955c7163-5be5-4a15-bf5b-ff6d7370ccf2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="true" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{amount}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="38" splitType="Stretch">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-1" x="3" y="9" width="342" height="20" forecolor="#0066FF" uuid="8f78659b-a217-4a4f-8dd3-0262d457b618"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total} +
+" "+( ($F{ITP_ITEM_GROUP}==null || $F{ITP_ITEM_GROUP}.equals(""))? $R{notype}:
+$F{ITP_ITEM_GROUP}.equals("MED")?$R{medicals}:
+$F{ITP_ITEM_GROUP}.equals("EXA")?$R{exams}:
+$F{ITP_ITEM_GROUP}.equals("OPE")?$R{operation}:
+$F{ITP_ITEM_GROUP}.equals("OTH")?$R{other}:" ")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="345" y="9" width="190" height="20" forecolor="#0066FF" uuid="bfabb929-9ba0-4b6b-b0d5-04935be9d02b"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{GRP_TOTAL_AMOUNT}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="ITEM_TYPE">
+		<groupExpression><![CDATA[$F{BLI_ITEM_TYPE}]]></groupExpression>
+		<groupHeader>
+			<band height="24" splitType="Stretch">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-24" mode="Opaque" x="0" y="4" width="535" height="20" backcolor="#999999" uuid="f9611731-9b14-4a6d-931e-f66d4fd6db97"/>
+					<textElement>
+						<font fontName="SansSerif" size="12" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{BLI_ITEM_TYPE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="36" splitType="Stretch">
+				<textField pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField-25" x="344" y="9" width="190" height="20" uuid="4763933b-4b85-47c4-a4e1-f40057a92d62"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_AMOUNT}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-26" x="2" y="9" width="342" height="20" uuid="3b4f1cd1-6faa-4f65-8491-57e52e8c6aba"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total} + " " + $F{BLI_ITEM_TYPE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="137" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="0" width="535" height="58" forecolor="#FFFFFF" backcolor="#0000FF" uuid="1a64f8e5-258e-4077-b08f-a78ddc9f7ef8"/>
+			</rectangle>
+			<image>
+				<reportElement key="image-1" x="458" y="-1" width="70" height="50" uuid="f469986f-ae71-4a0e-bc8e-cfaa968b5dd5"/>
+				<imageExpression><![CDATA[$P{IMAGE_PATH}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="3" y="0" width="456" height="32" forecolor="#FFFFFF" uuid="b32df8e6-240e-47cd-b550-227709e793ce"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-4" x="3" y="31" width="456" height="20" forecolor="#FFFFFF" uuid="ec3bbdcf-de6f-4fab-9e29-1a05430f97b5"/>
+				<textElement>
+					<font fontName="SansSerif" size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{from} + " " + $P{fromdate} + 
+"  " + $R{to} + " " + $P{todate}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-6" x="0" y="58" width="535" height="22" uuid="6a28b954-a2d6-452b-91fc-073361d3732a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-7" x="0" y="79" width="535" height="17" uuid="05ed8028-350f-43fb-a7c5-2194cc12f70c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-8" x="0" y="95" width="535" height="17" uuid="a8097374-95b2-418e-ac19-4f2fbce3109c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-9" x="0" y="111" width="535" height="17" uuid="e297ef61-3523-4252-bbe9-b64daab09925"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Telephone}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="23" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="3" y="2" width="342" height="20" isRemoveLineWhenBlank="true" uuid="134c8ac7-5e91-4b1b-9040-c6520d0d8820">
+					<printWhenExpression><![CDATA[new Boolean($V{ITEM_PAYMENT}.compareTo(new Double(0)) > 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ITP_ITEM_DESC}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="345" y="1" width="188" height="20" isRemoveLineWhenBlank="true" uuid="d2881059-0cec-4339-9364-f94ed0176dd3">
+					<printWhenExpression><![CDATA[new Boolean($V{ITEM_PAYMENT}.compareTo(new Double(0)) > 0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ITP_REFUNDED_AMOUNT} == null ? $F{ITP_AMOUNT} : new java.lang.Double(  ($F{ITP_AMOUNT}.doubleValue()) -($F{ITP_REFUNDED_AMOUNT}.doubleValue()) )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="35" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="3" y="14" width="300" height="20" uuid="8ed29ca6-5cdc-43d6-803a-2f1f3f767c31"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-14" x="390" y="14" width="120" height="20" uuid="b6fce1c8-b45c-4ac9-9bfb-08b156f4b1c1"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER}+ " " + $R{of}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-15" x="510" y="14" width="23" height="20" uuid="19f1fb51-69ce-4fa2-820b-1fac85496250"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-10" mode="Opaque" x="-1" y="3" width="345" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="8cb7431c-faac-421a-8252-cb4568d13371"/>
+				<box leftPadding="5"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-23" mode="Opaque" x="344" y="3" width="191" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="9492ed7c-fe17-4a53-8212-ec81b17d59e0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
