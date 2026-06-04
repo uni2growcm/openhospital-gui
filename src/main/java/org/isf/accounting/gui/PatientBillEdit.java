@@ -816,6 +816,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             billItem.setItemDisplayCode(displayDescription);
         }
 
+		billItem.setItemGroup(price.getGroup());
+
         return billItem;
     }
 
@@ -2959,6 +2961,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			double amount = prc.getPrice();
 			try {
                 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
+				item.setItemGroup(prc.getGroup());
+				item.setPriceID(prc.getItem());
 				billItems.add(item);
                 modified = true;
                 updateTotals();
@@ -3228,6 +3232,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         try {
             BillItems billItem = buildBillItem(oth, qty, oth.getDesc());
             if (billItem != null) {
+				billItem.setItemGroup(oth.getGroup());
                 billItems.add(billItem);
                 modified = true;
                 updateTotals();
