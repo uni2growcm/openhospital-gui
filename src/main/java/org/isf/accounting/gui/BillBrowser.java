@@ -1240,8 +1240,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 
-				String from = null;
-				String to = null;
+				LocalDate from = null;
+				LocalDate to = null;
 
 				int i = 0;
 
@@ -1250,41 +1250,33 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 				if (options.indexOf(option) == i) {
-					from = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
-					to = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+					String fromStr = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+					String toStr = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
 					String user;
 					if (isSingleUser) {
 						user = "admin";
 					} else {
 						user = UserBrowsingManager.getCurrentUser();
 					}
-					new GenericReportUserInDate(from, to, user, "BillsReportUserInDate");
+					new GenericReportUserInDate(fromStr, toStr, user, "BillsReportUserInDate");
 					return;
 				}
 				if (options.indexOf(option) == ++i) {
-					from = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_DD_MM_YYYY);
+					from = dateToday0.toLocalDate();
+					to = dateToday24.toLocalDate();
 				}
 				if (options.indexOf(option) == ++i) {
-					from = TimeTools.formatDateTime(dateFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(dateTo, DATE_FORMAT_DD_MM_YYYY);
+					from = dateFrom.toLocalDate();
+					to = dateTo.toLocalDate();
 				}
 				if (options.indexOf(option) == ++i) {
 					month = jComboBoxMonths.getMonth() + 1;
-					LocalDateTime thisMonthFrom = dateFrom.toLocalDate()
+					from = dateFrom.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(1)
-							.atStartOfDay()
-							.truncatedTo(ChronoUnit.SECONDS);
-					LocalDateTime thisMonthTo = dateTo.toLocalDate()
+							.withDayOfMonth(1);
+					to = dateTo.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth())
-							.atStartOfDay()
-							.toLocalDate()
-							.atTime(LocalTime.MAX)
-							.truncatedTo(ChronoUnit.SECONDS);
-					from = TimeTools.formatDateTime(thisMonthFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(thisMonthTo, DATE_FORMAT_DD_MM_YYYY);
+							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth());
 				}
 				if (options.indexOf(option) == ++i) {
 					icon = new ImageIcon("rsc/icons/calendar_dialog.png");
@@ -1304,20 +1296,12 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 						return;
 					}
 
-					LocalDateTime thisMonthFrom = dateFrom.toLocalDate()
+					from = dateFrom.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(1)
-							.atStartOfDay()
-							.truncatedTo(ChronoUnit.SECONDS);
-					LocalDateTime thisMonthTo = dateTo.toLocalDate()
+							.withDayOfMonth(1);
+					to = dateTo.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth())
-							.atStartOfDay()
-							.toLocalDate()
-							.atTime(LocalTime.MAX)
-							.truncatedTo(ChronoUnit.SECONDS);
-					from = TimeTools.formatDateTime(thisMonthFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(thisMonthTo, DATE_FORMAT_DD_MM_YYYY);
+							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth());
 				}
 				if (patientParent == null && options.indexOf(option) == ++i) {
 					Patient patient = null;
@@ -1357,10 +1341,13 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 
-				options = new ArrayList<>();
+			options = new ArrayList<>();
 				options.add(MessageBundle.getMessage("angal.billbrowser.shortreportonlybaddebt.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.fullreportallbills.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
 				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
@@ -1386,6 +1373,18 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 							MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"), false);
 				}
 				if (options.indexOf(option) == 3) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
+							MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"), false);
+				}
+				if (options.indexOf(option) == 4) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_01_AllIncomesGroupByItemCategories",
+							MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"), false);
+				}
+				if (options.indexOf(option) == 5) {
+					new GenericReportFromDateToDate(from, to, "rpt_base",GeneralData.BILLSREFUNDREPORT,
+							MessageBundle.getMessage("angal.billbrowser.fullreportallbillsrefund.txt"),false);
+				}
+				if (options.indexOf(option) == 6) {
 					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_03_AllDebtsGroupByItemCategories",
 							MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"), false);
 				}
