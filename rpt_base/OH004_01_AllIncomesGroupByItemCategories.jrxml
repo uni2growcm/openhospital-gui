@@ -9,8 +9,8 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="title" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="fromdate" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="todate" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="fromdate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="todate" class="java.util.Date" isForPrompting="false"/>
 	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
@@ -24,7 +24,7 @@
 (
 	SELECT SUM(ABS(ITP2.ITP_AMOUNT)) FROM OH_ITEMPAYMENTS ITP2
 	WHERE (ITP2.ITP_BLL_ID = ITP.ITP_BLL_ID AND ITP2.ITP_ITEM_DESC = ITP.ITP_ITEM_DESC)
-	AND DATE(ITP2.ITP_DATE) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') AND STR_TO_DATE($P{todate}, '%d/%m/%Y') AND ITP2.IS_REFUND = 1
+	AND DATE(ITP2.ITP_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}) AND ITP2.IS_REFUND = 1
 ) AS ITP_REFUNDED_AMOUNT,
 CASE 
 	WHEN ITP.ITP_ITEM_GROUP = "MED" 
@@ -36,7 +36,7 @@ CASE
 	ELSE "AUTRES"
 END AS BLI_ITEM_TYPE
 FROM OH_ITEMPAYMENTS ITP
-WHERE DATE(ITP.ITP_DATE) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') AND STR_TO_DATE($P{todate}, '%d/%m/%Y') AND IS_REFUND = 0
+WHERE DATE(ITP.ITP_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}) AND IS_REFUND = 0
 GROUP BY ITP_ITEM_DESC
 ORDER BY ITP.ITP_ITEM_GROUP, BLI_ITEM_TYPE, ITP.ITP_ITEM_DESC asc]]>
 	</queryString>
