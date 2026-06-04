@@ -2332,10 +2332,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						return;
 					}
 					if (amount.compareTo(balance) > 0) {
-						MessageDialog.error(this,
-								MessageBundle.formatMessage("angal.newbill.payment.exceeds.balance.msg",
-										amount, balance));
-						return;
+						MessageDialog.info(this,
+								MessageBundle.formatMessage("angal.newbill.amounttorefund.msg",
+										 (amount.intValue() - balance.intValue())));
+						amount = balance;
 					}
 				} catch (Exception e) {
 					MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
