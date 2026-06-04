@@ -191,8 +191,8 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         } else {
             setTitle(MessageBundle.getMessage("angal.maternity.editpregnancy.title"));
         }
-        setMinimumSize(new Dimension(550, 550));
-        setPreferredSize(new Dimension(600, 570));
+        setMinimumSize(new Dimension(700, 550));
+        setPreferredSize(new Dimension(750, 570));
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
@@ -301,7 +301,9 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
             gbc.gridx = 1;
             gbc.gridwidth = 2;
-            patientSearchField = new JTextField(25);
+            patientSearchField = new JTextField(40);
+            patientSearchField.setPreferredSize(new Dimension(250, 20));
+            patientSearchField.setMinimumSize(new Dimension(250, 20));
             patientSearchField.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
             patientSearchField.addKeyListener(new KeyAdapter() {
                 @Override
@@ -423,6 +425,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             }
 
             lmpDateField = new GoodDateChooser(date);
+            lmpDateField.setMaxDate(LocalDate.now());
             lmpDateField.addDateChangeListener(e -> calculateEddFromLmp());
         }
         return lmpDateField;

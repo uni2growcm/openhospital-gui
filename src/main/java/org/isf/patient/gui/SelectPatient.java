@@ -127,6 +127,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private long totalRecords = 0;
 	private int totalPages = 0;
     private Timer searchTimer;
+	private boolean updatingPaginationControls;
 
 	private JButton jButtonPrevious;
 	private JButton jButtonNext;
@@ -198,7 +199,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(enableAddPatient);
+		getButtonNew().setVisible(enableAddPatient);
 
 		if (searchText != null) {
 			jTextFieldSearchPatient.setText(searchText);
@@ -214,7 +215,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(abbleAddPatient);
+		getButtonNew().setVisible(abbleAddPatient);
 
 		loadPatientPage();
 	}
@@ -226,14 +227,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		initializeDialog();
 
-		buttonNew.setVisible(abbleAddPatient);
+		getButtonNew().setVisible(abbleAddPatient);
 
 		loadPatientPage();
 	}
 
 	public SelectPatient(JDialog owner, String keywords, boolean enablePatientAdd) {
 		this(owner, keywords);
-		buttonNew.setVisible(enablePatientAdd);
+		getButtonNew().setVisible(enablePatientAdd);
 	}
 
 	private void initializeDialog() {
@@ -292,6 +293,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 			totalRecords = page.getTotalElements();
 
 			totalPages = page.getTotalPages();
+
+			if (totalPages > 0 && currentPage >= totalPages) {
+				currentPage = totalPages - 1;
+				loadPatientPage();
+				return;
+			}
 
 			updatePaginationControls();
 
@@ -404,6 +411,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 			jComboPage.addActionListener(e -> {
 
+				if (updatingPaginationControls) {
+					return;
+				}
+
 				Integer selected = (Integer) jComboPage.getSelectedItem();
 
 				if (selected == null) {
@@ -448,6 +459,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 		jButtonNext.setEnabled(currentPage + 1 < totalPages);
 
+		updatingPaginationControls = true;
+
+		try {
+
 		jComboPage.removeAllItems();
 
 		for (int i = 1; i <= totalPages; i++) {
@@ -457,13 +472,16 @@ public class SelectPatient extends JDialog implements PatientListener {
 		if (totalPages > 0) {
 			jComboPage.setSelectedItem(currentPage + 1);
 		}
+		} finally {
+			updatingPaginationControls = false;
+		}
 
 		jLabelPageInfo.setText(
 				MessageBundle.getMessage("angal.common.pages.txt")
 						+ " "
-						+ (currentPage + 1)
+						+ (totalPages == 0 ? 0 : currentPage + 1)
 						+ " / "
-						+ Math.max(totalPages, 1));
+						+ totalPages);
 
 		jLabelTotalRecords.setText(
 				MessageBundle.getMessage("angal.common.total.txt")
@@ -678,21 +696,23 @@ public class SelectPatient extends JDialog implements PatientListener {
 	}
 
 	private JButton getButtonNew() {
-		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
-		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
-		buttonNew.addActionListener(actionEvent -> {
+		if (buttonNew == null) {
+			buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));
+			buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.newpatient.btn.key"));
+			buttonNew.addActionListener(actionEvent -> {
 
-			if (GeneralData.PATIENTEXTENDED) {
-				PatientInsertExtended newrecord = new PatientInsertExtended(this, new Patient(), true);
-				newrecord.addPatientListener(this);
-				newrecord.setVisible(true);
-			} else {
-				PatientInsert newrecord = new PatientInsert(this, new Patient(), true);
-				newrecord.addPatientListener((PatientInsert.PatientListener) this);
-				newrecord.setVisible(true);
-			}
+				if (GeneralData.PATIENTEXTENDED) {
+					PatientInsertExtended newrecord = new PatientInsertExtended(this, new Patient(), true);
+					newrecord.addPatientListener(this);
+					newrecord.setVisible(true);
+				} else {
+					PatientInsert newrecord = new PatientInsert(this, new Patient(), true);
+					newrecord.addPatientListener((PatientInsert.PatientListener) this);
+					newrecord.setVisible(true);
+				}
 
-		});
+			});
+		}
 		return buttonNew;
 	}
 
