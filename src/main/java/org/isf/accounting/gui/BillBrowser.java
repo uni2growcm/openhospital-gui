@@ -1347,6 +1347,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1377,6 +1378,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				if (options.indexOf(option) == 4) {
 					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_01_AllIncomesGroupByItemCategories",
 							MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"), false);
+				}
+				if (options.indexOf(option) == 5) {
+					new GenericReportFromDateToDate(from, to, "rpt_base",GeneralData.BILLSREFUNDREPORT,
+							MessageBundle.getMessage("angal.billbrowser.fullreportallbillsrefund.txt"),false);
 				}
 			});
 		}
