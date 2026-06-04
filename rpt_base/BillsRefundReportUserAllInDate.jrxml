@@ -151,32 +151,11 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 	<pageHeader>
 		<band height="44" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-32" x="0" y="0" width="350" height="21" uuid="f07c0bd0-c116-4cf1-be50-4e778f5029c4"/>
+				<reportElement key="textField-32" x="0" y="0" width="533" height="21" uuid="f07c0bd0-c116-4cf1-be50-4e778f5029c4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-32" x="350" y="0" width="70" height="21" uuid="d49791ce-820b-48a4-a93f-5db0a77710d5"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdateshort}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-32" x="440" y="0" width="70" height="21" uuid="22024566-8593-4b5c-91a5-96c9c7e5bb75"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todateshort}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-32" x="420" y="0" width="20" height="21" uuid="8a013b63-3279-4e4d-99fd-2433839555db"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Title} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{To}+ " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
