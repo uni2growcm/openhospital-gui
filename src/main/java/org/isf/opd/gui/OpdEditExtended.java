@@ -1490,7 +1490,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					|| !insert && MainMenu.checkUserGrants("btnopdeditoperation")) {
 				jTabbedPaneOpd.addTab(MessageBundle.getMessage("angal.admission.operation"), getMultiOperationTab());
 			}
-			jTabbedPaneOpd.setPreferredSize(new Dimension(200, 400));
+			jTabbedPaneOpd.setPreferredSize(new Dimension(200, 250));
 		}
 		return jTabbedPaneOpd;
 	}
@@ -1670,7 +1670,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private JTextArea getJPatientNoteArea() {
 		if (jPatientNote == null) {
-			jPatientNote = new JTextArea(15, 15);
+			jPatientNote = new JTextArea(7, 15);
 			if (!insert) {
 				jPatientNote.setText(opdPatient.getNote());
 			}
