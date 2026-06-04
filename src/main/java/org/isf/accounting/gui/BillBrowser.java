@@ -111,6 +111,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JPanel jPanelTotals;
 	private JButton jButtonNew;
 	private JButton jButtonEdit;
+	private JButton jButtonRefund;
 	private JButton jButtonPrintReceipt;
 	private JButton jButtonDelete;
 	private JButton jButtonClose;
@@ -283,7 +284,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {}
 
 	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
-		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient);
+		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient)
+			.stream().filter(b -> b.getParentId() == null).collect(java.util.stream.Collectors.toList());
 		paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo, patient);
 		billFromPayments = billBrowserManager.getBills(paymentsPeriod);
 	}
@@ -344,6 +346,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			billPeriod = billBrowserManager.getBillsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
 			paymentsPeriod = billBrowserManager.getPaymentsByDatePatientAndGuarantor(dateFrom, dateTo, null, guarantor);
 		}
+		billPeriod = billPeriod.stream().filter(b -> b.getParentId() == null).collect(java.util.stream.Collectors.toList());
 		billFromPayments = billBrowserManager.getBillsByGuarantor(paymentsPeriod, guarantor);
 	}
 
@@ -597,12 +600,14 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			if (MainMenu.checkUserGrants("btnbillreceipt") && GeneralData.RECEIPTPRINTER) {
 				jPanelButtons.add(getJButtonPrintReceipt());
 			}
-//			if (MainMenu.checkUserGrants("btnbillarchive")) {
-//				jPanelButtons.add(getJButtonArchive());
-//			}
-			jPanelButtons.add(getJButtonArchive());
+			if (MainMenu.checkUserGrants("btnbillarchive")) {
+				jPanelButtons.add(getJButtonArchive());
+			}
 			if (MainMenu.checkUserGrants("btnbillreport")) {
 				jPanelButtons.add(getJButtonReport());
+			}
+			if (MainMenu.checkUserGrants("btnbillrefund") && GeneralData.ENABLEMEDICALREFUND) {
+				jPanelButtons.add(getJButtonRefund());
 			}
 			if (SageConfig.ENABLE_SAGE_INTEGRATION) {
 				jPanelButtons.add(getExportSageButton());
@@ -1235,8 +1240,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 
-				String from = null;
-				String to = null;
+				LocalDate from = null;
+				LocalDate to = null;
 
 				int i = 0;
 
@@ -1245,41 +1250,33 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 				if (options.indexOf(option) == i) {
-					from = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
-					to = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+					String fromStr = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+					String toStr = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
 					String user;
 					if (isSingleUser) {
 						user = "admin";
 					} else {
 						user = UserBrowsingManager.getCurrentUser();
 					}
-					new GenericReportUserInDate(from, to, user, "BillsReportUserInDate");
+					new GenericReportUserInDate(fromStr, toStr, user, "BillsReportUserInDate");
 					return;
 				}
 				if (options.indexOf(option) == ++i) {
-					from = TimeTools.formatDateTime(dateToday0, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(dateToday24, DATE_FORMAT_DD_MM_YYYY);
+					from = dateToday0.toLocalDate();
+					to = dateToday24.toLocalDate();
 				}
 				if (options.indexOf(option) == ++i) {
-					from = TimeTools.formatDateTime(dateFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(dateTo, DATE_FORMAT_DD_MM_YYYY);
+					from = dateFrom.toLocalDate();
+					to = dateTo.toLocalDate();
 				}
 				if (options.indexOf(option) == ++i) {
 					month = jComboBoxMonths.getMonth() + 1;
-					LocalDateTime thisMonthFrom = dateFrom.toLocalDate()
+					from = dateFrom.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(1)
-							.atStartOfDay()
-							.truncatedTo(ChronoUnit.SECONDS);
-					LocalDateTime thisMonthTo = dateTo.toLocalDate()
+							.withDayOfMonth(1);
+					to = dateTo.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth())
-							.atStartOfDay()
-							.toLocalDate()
-							.atTime(LocalTime.MAX)
-							.truncatedTo(ChronoUnit.SECONDS);
-					from = TimeTools.formatDateTime(thisMonthFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(thisMonthTo, DATE_FORMAT_DD_MM_YYYY);
+							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth());
 				}
 				if (options.indexOf(option) == ++i) {
 					icon = new ImageIcon("rsc/icons/calendar_dialog.png");
@@ -1299,20 +1296,12 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 						return;
 					}
 
-					LocalDateTime thisMonthFrom = dateFrom.toLocalDate()
+					from = dateFrom.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(1)
-							.atStartOfDay()
-							.truncatedTo(ChronoUnit.SECONDS);
-					LocalDateTime thisMonthTo = dateTo.toLocalDate()
+							.withDayOfMonth(1);
+					to = dateTo.toLocalDate()
 							.withMonth(month)
-							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth())
-							.atStartOfDay()
-							.toLocalDate()
-							.atTime(LocalTime.MAX)
-							.truncatedTo(ChronoUnit.SECONDS);
-					from = TimeTools.formatDateTime(thisMonthFrom, DATE_FORMAT_DD_MM_YYYY);
-					to = TimeTools.formatDateTime(thisMonthTo, DATE_FORMAT_DD_MM_YYYY);
+							.withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth());
 				}
 				if (patientParent == null && options.indexOf(option) == ++i) {
 					Patient patient = null;
@@ -1352,9 +1341,12 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					return;
 				}
 
-				options = new ArrayList<>();
+			options = new ArrayList<>();
 				options.add(MessageBundle.getMessage("angal.billbrowser.shortreportonlybaddebt.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.fullreportallbills.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1374,9 +1366,58 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					new GenericReportFromDateToDate(from, to, "rpt_stat", GeneralData.BILLSREPORT,
 							MessageBundle.getMessage("angal.billbrowser.fullreportallbills.txt"), false);
 				}
+				if (options.indexOf(option) == 2) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentReportUserAllInDate",
+							MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"), false);
+				}
+				if (options.indexOf(option) == 3) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
+							MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"), false);
+				}
+				if (options.indexOf(option) == 4) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_01_AllIncomesGroupByItemCategories",
+							MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"), false);
+				}
 			});
 		}
 		return jButtonReport;
+	}
+
+	private JButton getJButtonRefund() {
+		if (jButtonRefund == null) {
+			jButtonRefund = new JButton(MessageBundle.getMessage("angal.billbrowser.refund"));
+			jButtonRefund.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.refund.key"));
+			jButtonRefund.setIcon(new ImageIcon("rsc/icons/money_button.png"));
+			jButtonRefund.addActionListener(actionEvent -> {
+				Bill selectedBill = getSelectedBillFromActiveTab();
+				if (selectedBill == null) {
+					MessageDialog.error(this, "angal.billbrowser.pleaseselectabill.msg");
+					return;
+				}
+				if (!"C".equalsIgnoreCase(selectedBill.getStatus())) {
+					MessageDialog.error(this, "angal.billbrowser.onlyclosedbillcanberefunded.msg");
+					return;
+				}
+				if (selectedBill.getParentId() != null && selectedBill.getParentId() != 0) {
+					MessageDialog.error(this, "angal.billbrowser.cannotrefundarefundbill.msg");
+					return;
+				}
+				BillRefund dialog = new BillRefund(BillBrowser.this, selectedBill);
+				dialog.addPatientBillListener(BillBrowser.this);
+				dialog.setVisible(true);
+			});
+		}
+		return jButtonRefund;
+	}
+
+	private Bill getSelectedBillFromActiveTab() {
+		if (jScrollPaneBills.isShowing() && jTableBills.getSelectedRow() >= 0) {
+			return (Bill) jTableBills.getValueAt(jTableBills.getSelectedRow(), -1);
+		}
+		if (jScrollPaneClosed.isShowing() && jTableClosed.getSelectedRow() >= 0) {
+			return (Bill) jTableClosed.getValueAt(jTableClosed.getSelectedRow(), -1);
+		}
+		return null;
 	}
 
 	private JButton getJButtonClose() {
