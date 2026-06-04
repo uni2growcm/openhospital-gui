@@ -37,7 +37,6 @@ import java.awt.Font;
 import java.awt.event.*;
 import java.io.File;
 import java.awt.*;
-import java.awt.event.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,6 +68,8 @@ import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.menu.model.User;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
@@ -183,6 +184,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int year;
 
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	private List<Bill> billPeriod;
 	private List<BillPayments> paymentsPeriod;
 	private List<Bill> billFromPayments;
@@ -1333,6 +1335,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
 				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.reportgroupbyreduction.txt"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1371,6 +1374,32 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				if (options.indexOf(option) == 6) {
 					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_03_AllDebtsGroupByItemCategories",
 							MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"), false);
+				}
+				if (options.indexOf(option) == 7) {
+					ArrayList<String> optionsreduc = new ArrayList<String>();
+					/**** get all reduction rate ***/
+					List<ReductionPlan> rplanList = new ArrayList<ReductionPlan>();
+					optionsreduc.add("A - " + MessageBundle.getMessage("angal.report.allreductionplans"));
+					optionsreduc.add("S - " + MessageBundle.getMessage("angal.report.withnotreduction"));
+					try {
+						rplanList = reductionPlanManager.getAll();
+						for (int j = 0; j < rplanList.size(); j++) {
+							optionsreduc.add(rplanList.get(j).getId() + " - " + rplanList.get(j).getDescription());
+						}
+					} catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+
+					icon = new ImageIcon("rsc/icons/list_dialog.png");
+					option = (String) JOptionPane.showInputDialog(BillBrowser.this,
+							MessageBundle.getMessage("angal.billbrowser.pleaseselectareductionplan"),
+							MessageBundle.getMessage("angal.billbrowser.report"), JOptionPane.INFORMATION_MESSAGE,
+							icon, optionsreduc.toArray(), optionsreduc.get(0));
+					if (option == null)
+						return;
+					String reduc_code = option.trim().split("-")[0];
+					new GenericReportFromDateToDate(from, to, reduc_code, "rpt_base", "BillsReportGroupByReduction", MessageBundle.getMessage("angal.billbrowser.fullreportbillsreductionplanperuser.txt"),
+							false);
 				}
 			});
 		}
