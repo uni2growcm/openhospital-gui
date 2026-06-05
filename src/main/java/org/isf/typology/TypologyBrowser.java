@@ -21,6 +21,7 @@
  */
 package org.isf.typology;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.typology.manager.TypologyBrowserManager;
@@ -57,7 +58,6 @@ public class TypologyBrowser extends ModalJFrame implements TypologyEdit.Typolog
     private JLabel totalLabel;
 
     private int currentPage = 0;
-    private final int PAGE_SIZE = 100;
     private int totalPages = 0;
 
     private List<Typology> typologies;
@@ -192,11 +192,11 @@ public class TypologyBrowser extends ModalJFrame implements TypologyEdit.Typolog
             Family family = (Family) familyFilter.getSelectedItem();
             String search = searchField.getText() != null ? searchField.getText().trim() : "";
 
-            Page<Typology> page = manager.searchTypologies(search, family, currentPage, PAGE_SIZE);
+            Page<Typology> page = manager.searchTypologies(search, family, currentPage, GeneralData.PAGINATIONPAGESIZE);
 
             if (currentPage >= page.getTotalPages() && page.getTotalPages() > 0) {
                 currentPage = page.getTotalPages() - 1;
-                page = manager.searchTypologies(search, family, currentPage, PAGE_SIZE);
+                page = manager.searchTypologies(search, family, currentPage, GeneralData.PAGINATIONPAGESIZE);
             }
 
             typologies = page.getContent();

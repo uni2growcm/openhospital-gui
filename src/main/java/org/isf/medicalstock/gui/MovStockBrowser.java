@@ -128,7 +128,6 @@ public class MovStockBrowser extends ModalJFrame {
 
 	private int currentPage = 0;
 	private long totalElements = 0;
-	private static final int PAGE_SIZE = 100;
 	private int totalPages = 0;
 	private JButton jPrevButton;
 	private JButton jNextButton;
@@ -363,7 +362,7 @@ public class MovStockBrowser extends ModalJFrame {
 					lastMovFrom, lastMovTo,
 					lastLotPrepFrom, lastLotPrepTo,
 					lastLotDueFrom, lastLotDueTo,
-					page, PAGE_SIZE);
+					page, GeneralData.PAGINATIONPAGESIZE);
 
 			moves = new ArrayList<>(result.getContent());
 			currentPage = result.getNumber();

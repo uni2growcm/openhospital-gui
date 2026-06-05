@@ -201,7 +201,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int pendingCurrentPage = 0;
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
-	private static final int PAGE_SIZE = 100;
 
 	private JButton exportSageButton;
 
@@ -492,7 +491,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					null, dateFrom, dateTo, patientParent, guarantor, currentPage, PAGE_SIZE);
+					null, dateFrom, dateTo, patientParent, guarantor, currentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			totalRows = billPage.getTotalElements();
@@ -517,7 +516,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, PAGE_SIZE);
+					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			closedTotalRows = billPage.getTotalElements();
@@ -541,7 +540,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, PAGE_SIZE);
+					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			pendingTotalRows = billPage.getTotalElements();
