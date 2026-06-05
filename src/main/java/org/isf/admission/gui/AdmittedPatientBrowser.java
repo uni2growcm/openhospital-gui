@@ -160,9 +160,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.country.txt").toUpperCase()};
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false, false };
+			MessageBundle.getMessage("angal.common.country.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.blama.txt").toUpperCase()};
+	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120, 130 };
+	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, true };
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
@@ -1406,6 +1407,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				}catch(Exception e){
 					return "";
 				}
+			} else if (c == 7) {
+				return patient.getBlama();
 			}
 
 			return null;

@@ -251,6 +251,9 @@ public class PatientInsertExtended extends JDialog {
 	private JPanel jTransportMeansPanel;
 	private JTextField jTransportMeansTextField;
 
+	private JPanel jBlamaPanel;
+	private JTextField jBlamaTextField;
+
 	private JPanel jCountryPanel;
 	private JComboBox<Country> jCountryComboBox;
 
@@ -393,9 +396,8 @@ public class PatientInsertExtended extends JDialog {
 		} else {
 			this.setTitle(MessageBundle.getMessage("angal.patient.editpatient.title"));
 		}
-		this.setSize(new Dimension(604, 445));
 		pack();
-		setResizable(false);
+		setResizable(true);
 		setLocationRelativeTo(null);
 
 		if (!insert) {
@@ -717,7 +719,7 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-
+						patient.setBlama(jBlamaTextField.getText().trim());
 						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 						if (selectedCountry != null) {
@@ -850,6 +852,7 @@ public class PatientInsertExtended extends JDialog {
 					}
 
 					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
+					patient.setBlama(jBlamaTextField.getText().trim());
 					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 
 					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
@@ -1427,13 +1430,12 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJParentsResidencePanel(), null);
+			jAnagraphPanel.add(getJBlamaPanel(), null);
 			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
 			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
 			jAnagraphPanel.add(getJGeographicPositionPanel(), null);
 			jAnagraphPanel.add(getJTransportMeansPanel(), null);
-			jAnagraphPanel.add(getJAffiliatedPatientPanel(), null);
-			jAnagraphPanel.add(getBillingPanel(), null);
 			jAnagraphPanel.add(getJLabelRequiredFields(), null);
 		}
 		return jAnagraphPanel;
@@ -2341,6 +2343,8 @@ public class PatientInsertExtended extends JDialog {
 			jExtensionContent.add(getJMotherPanel(), null);
 			jExtensionContent.add(getJParentPanel(), null);
 			jExtensionContent.add(getJInsurancePanel(), null);
+			jExtensionContent.add(getJAffiliatedPatientPanel(), null);  // ← AJOUTER
+			jExtensionContent.add(getBillingPanel(), null);
 		}
 		return jExtensionContent;
 	}
@@ -2821,6 +2825,29 @@ public class PatientInsertExtended extends JDialog {
 			jParentsResidencePanel.add(getJParentsResidenceFieldPanel(), BorderLayout.EAST);
 		}
 		return jParentsResidencePanel;
+	}
+
+	private JPanel getJBlamaPanel() {
+		if (jBlamaPanel == null) {
+			JLabel jBlamaLabel = new JLabel(MessageBundle.getMessage("angal.patient.blama"));
+			jBlamaPanel = new JPanel();
+			jBlamaPanel.setLayout(new BorderLayout());
+			jBlamaPanel.add(jBlamaLabel, BorderLayout.WEST);
+			jBlamaPanel.add(getJBlamaFieldPanel(), BorderLayout.EAST);
+		}
+		return jBlamaPanel;
+	}
+
+	private JPanel getJBlamaFieldPanel() {
+		if (jBlamaTextField == null) {
+			jBlamaTextField = new JTextField(15);
+			if (!insert && patient.getBlama() != null) {
+				jBlamaTextField.setText(patient.getBlama());
+			}
+		}
+		JPanel panel = new JPanel();
+		panel.add(jBlamaTextField);
+		return panel;
 	}
 
 	private JPanel getJParentsResidenceFieldPanel() {
