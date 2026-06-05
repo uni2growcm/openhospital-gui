@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OH004_01_AllIncomesGroupByItemCategories" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="OH004_01_AllIncomesGroupByItemCategories" uuid="b40b7ee9-d8e5-4a7a-aabb-2c471e55bd8d">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OH004_01_AllIncomesGroupByItemCategories" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="OH004_01_AllIncomesGroupByItemCategories" uuid="b40b7ee9-d8e5-4a7a-aabb-2c471e55bd8d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
@@ -8,16 +8,16 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="title" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="fromdate" class="java.util.Date" isForPrompting="false"/>
-	<parameter name="todate" class="java.util.Date" isForPrompting="false"/>
-	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="state" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="state2" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="title" class="java.lang.String"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="state" class="java.lang.String"/>
+	<parameter name="state2" class="java.lang.String"/>
 	<parameter name="IMAGE_PATH" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT	ITP_ITEM_DESC, SUM(ITP_AMOUNT) AS ITP_AMOUNT, ITP_ITEM_GROUP,
@@ -188,8 +188,7 @@ $F{ITP_ITEM_GROUP}.equals("OTH")?$R{other}:" ")]]></textFieldExpression>
 				<textElement>
 					<font fontName="SansSerif" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{from} + " " + $P{fromdate} + 
-"  " + $R{to} + " " + $P{todate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{from} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{fromdate}) + "  " + $R{to} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{todate})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
 				<reportElement key="textField-6" x="0" y="58" width="535" height="22" uuid="6a28b954-a2d6-452b-91fc-073361d3732a"/>

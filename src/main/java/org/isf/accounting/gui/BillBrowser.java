@@ -1360,7 +1360,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 							MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"), false);
 				}
 				if (options.indexOf(option) == 3) {
-					new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
+						new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
 							MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"), false);
 				}
 				if (options.indexOf(option) == 4) {
