@@ -1465,3 +1465,6 @@ Starting Open Hospital
 [05/Jun/2026 14:44:06] [admin:admin] ERROR - >> key not found: angal.menu.btnbillrefund (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
 [05/Jun/2026 14:44:21] [admin:admin] ERROR - >> key not found: angal.menu.btn.typologies (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
 [05/Jun/2026 14:50:41] [admin:admin] DEBUG - No default_credentials.properties file found (org.isf.utils.file.FileTools.getFile(FileTools.java:253))
+[05/Jun/2026 15:34:07] [:] INFO - Closing JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:660))
+[05/Jun/2026 15:34:07] [:] INFO - HikariPool-1 - Shutdown initiated... (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:349))
+[05/Jun/2026 15:34:07] [:] INFO - HikariPool-1 - Shutdown completed. (com.zaxxer.hikari.HikariDataSource.close(HikariDataSource.java:351))
