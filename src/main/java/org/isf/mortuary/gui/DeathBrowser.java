@@ -54,6 +54,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.DeathManager;
@@ -78,7 +79,6 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int PAGE_SIZE = 100;
 	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
@@ -689,7 +689,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 				deathReasonCode,
 				isEnter,
 				CURRENT_PAGE,
-				PAGE_SIZE
+				GeneralData.PAGINATIONPAGESIZE
 			);
 			deaths = new ArrayList<>(deathsPages.getContent());
 			totalDeaths = deathsPages.getTotalElements();

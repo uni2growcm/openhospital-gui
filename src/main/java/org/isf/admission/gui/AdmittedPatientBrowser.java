@@ -168,7 +168,6 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private AdmittedPatientBrowser myFrame;
 
 	private int currentPage = 0;
-	private static final int PAGE_SIZE = 100;
 	private int totalPages = 0;
 	private JButton jPrevButton;
 	private JButton jNextButton;
@@ -1203,7 +1202,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 					dischargeDateFrom,
 					dischargeDateTo,
 					ageFrom, ageTo, sex,countryId,
-					page, PAGE_SIZE
+					page, GeneralData.PAGINATIONPAGESIZE
 			);
 
 			pPatient = new ArrayList<>(result.getContent());
