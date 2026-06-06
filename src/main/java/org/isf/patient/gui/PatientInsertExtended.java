@@ -22,15 +22,16 @@
 package org.isf.patient.gui;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Color;
-import java.awt.AWTEvent;
+import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.Dimension;
+import java.awt.AWTEvent;
 import java.awt.Insets;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -45,30 +46,33 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
-import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JButton;
-import javax.swing.BoxLayout;
-import javax.swing.WindowConstants;
-import javax.swing.UIManager;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
-import javax.swing.JComboBox;
+import javax.swing.BorderFactory;
+import javax.swing.ListSelectionModel;
+import javax.swing.JOptionPane;
+import javax.swing.BoxLayout;
+import javax.swing.WindowConstants;
+import javax.swing.ButtonGroup;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.JComponent;
+import javax.swing.ImageIcon;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.DefaultTableModel;
 
 import org.hibernate.LazyInitializationException;
 import org.isf.agetype.manager.AgeTypeBrowserManager;
@@ -82,6 +86,10 @@ import org.isf.country.service.CountryIoOperations;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.manager.PatientPartnerBrowserManager;
+import org.isf.partner.model.Partner;
+import org.isf.partner.model.PatientPartner;
 import org.isf.patconsensus.manager.PatientConsensusBrowserManager;
 import org.isf.patconsensus.model.PatientConsensus;
 import org.isf.patient.manager.PatientBrowserManager;
@@ -168,9 +176,17 @@ public class PatientInsertExtended extends JDialog {
 
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AgeTypeBrowserManager ageTypeBrowserManager = Context.getApplicationContext().getBean(AgeTypeBrowserManager.class);
+	private PatientPartnerBrowserManager patientPartnerManager = Context.getApplicationContext().getBean(PatientPartnerBrowserManager.class);
 
 	// COMPONENTS: Data
 	private JPanel jDataPanel;
+
+	private JPanel partnerPanel;
+	private JTable partnerTable;
+	private DefaultTableModel partnerTableModel;
+	private JButton addPartnerButton;
+	private JButton removePartnerButton;
+	private JScrollPane partnerScrollPane;
 
 	// COMPONENTS: Anagraph
 	private JPanel jDataContainPanel;
@@ -400,6 +416,7 @@ public class PatientInsertExtended extends JDialog {
 
 		if (!insert) {
 			initializePhoneFields();
+			loadPatientPartners();
 		}
 	}
 
@@ -476,6 +493,400 @@ public class PatientInsertExtended extends JDialog {
 					return true;
 				}
 			}
+		}
+		return false;
+	}
+
+	/**
+	 * This method initializes the Partner panel
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJPartnerPanel() {
+		if (partnerPanel == null) {
+			partnerPanel = new JPanel(new BorderLayout());
+			partnerPanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.patient.partner.border")),
+					BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+			String[] columns = {
+					MessageBundle.getMessage("angal.patient.partner.name"),
+					MessageBundle.getMessage("angal.patient.partner.type"),
+					MessageBundle.getMessage("angal.patient.partner.startdate"),
+					"ID"
+			};
+
+			partnerTableModel = new DefaultTableModel(columns, 0) {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+
+			partnerTable = new JTable(partnerTableModel);
+			partnerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+			partnerTable.getColumnModel().getColumn(3).setMinWidth(0);
+			partnerTable.getColumnModel().getColumn(3).setMaxWidth(0);
+			partnerTable.getColumnModel().getColumn(3).setWidth(0);
+
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			addPartnerButton = new JButton(MessageBundle.getMessage("angal.patient.partner.add.btn"));
+			removePartnerButton = new JButton(MessageBundle.getMessage("angal.patient.partner.remove.btn"));
+
+			addPartnerButton.addActionListener(e -> showAddMultiplePartnersDialog());
+			removePartnerButton.addActionListener(e -> removeSelectedPartner());
+
+			buttonPanel.add(addPartnerButton);
+			buttonPanel.add(removePartnerButton);
+
+			partnerScrollPane = new JScrollPane(partnerTable);
+			partnerScrollPane.setPreferredSize(new Dimension(180, 120));
+
+			partnerPanel.add(partnerScrollPane, BorderLayout.CENTER);
+			partnerPanel.add(buttonPanel, BorderLayout.SOUTH);
+		}
+		return partnerPanel;
+	}
+
+	private void loadPatientPartners() {
+		partnerTableModel.setRowCount(0);
+		if (patient != null && patient.getCode() != 0 && !insert) {
+			try {
+				List<PatientPartner> partners = patientPartnerManager.getPatientPartners(patient);
+				for (PatientPartner pp : partners) {
+					if (pp.getEndDate() != null && !pp.getEndDate().isAfter(LocalDate.now())) {
+						continue;
+					}
+					Partner p = pp.getPartner();
+					String typeDesc = p.getType() != null ? p.getType().getDescription() : "";
+					String startDate = pp.getStartDate() != null ? pp.getStartDate().toString() : "";
+					partnerTableModel.addRow(new Object[]{
+							p.getName(),
+							typeDesc,
+							startDate,
+							pp.getId()
+					});
+				}
+			} catch (OHServiceException e) {
+				LOGGER.error(e.getMessage(), e);
+			}
+		}
+	}
+	/**
+	 * Show dialog to add a partner to current patient
+	 */
+	private void showAddPartnerDialog() {
+		if (insert) {
+			MessageDialog.info(this, MessageBundle.getMessage("angal.patient.partner.savefirst.msg"));
+			return;
+		}
+
+		JDialog dialog = new JDialog(this, MessageBundle.getMessage("angal.patient.partner.add.title"), true);
+		dialog.setLayout(new BorderLayout(10, 10));
+		dialog.setSize(400, 300);
+		dialog.setLocationRelativeTo(this);
+
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(5, 5, 5, 5);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		panel.add(new JLabel(MessageBundle.getMessage("angal.patient.partner.select")), gbc);
+
+		gbc.gridx = 1;
+		JComboBox<Partner> partnerCombo = new JComboBox<>();
+		try {
+			List<Partner> partners = Context.getApplicationContext().getBean(PartnerBrowserManager.class).getPartners();
+			for (Partner p : partners) {
+				partnerCombo.addItem(p);
+			}
+		} catch (OHServiceException e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+		panel.add(partnerCombo, gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		panel.add(new JLabel(MessageBundle.getMessage("angal.patient.partner.startdate")), gbc);
+
+		gbc.gridx = 1;
+		GoodDateChooser startDateChooser = new GoodDateChooser(LocalDate.now(), false);
+		panel.add(startDateChooser, gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		panel.add(new JLabel(MessageBundle.getMessage("angal.patient.partner.enddate")), gbc);
+
+		gbc.gridx = 1;
+		GoodDateChooser endDateChooser = new GoodDateChooser(null, true);
+		startDateChooser.addDateChangeListener(event -> {
+			LocalDate newStartDate = event.getNewDate();
+			if (newStartDate != null) {
+				endDateChooser.setMinDate(newStartDate.plusDays(1));
+				LocalDate currentEndDate = endDateChooser.getDate();
+				if (currentEndDate != null && currentEndDate.isBefore(newStartDate.plusDays(1))) {
+					endDateChooser.setDate(null);
+				}
+			} else {
+				endDateChooser.setMinDate(null);
+			}
+		});
+		panel.add(endDateChooser, gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		panel.add(new JLabel(MessageBundle.getMessage("angal.patient.partner.notes")), gbc);
+
+		gbc.gridx = 1;
+		JTextField notesField = new JTextField(20);
+		panel.add(notesField, gbc);
+
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		JButton okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+		JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+
+		okButton.addActionListener(e -> {
+			Partner selectedPartner = (Partner) partnerCombo.getSelectedItem();
+			if (selectedPartner != null) {
+				try {
+					patientPartnerManager.associatePatientToPartner(
+							patient,
+							selectedPartner,
+							startDateChooser.getDate(),
+							endDateChooser.getDate()
+					);
+					loadPatientPartners();
+					dialog.dispose();
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex);
+				}
+			}
+		});
+
+		cancelButton.addActionListener(e -> dialog.dispose());
+
+		buttonPanel.add(okButton);
+		buttonPanel.add(cancelButton);
+
+		dialog.add(panel, BorderLayout.CENTER);
+		dialog.add(buttonPanel, BorderLayout.SOUTH);
+		dialog.setVisible(true);
+	}
+
+	/**
+	 * Remove selected partner association
+	 */
+	private void removeSelectedPartner() {
+		int row = partnerTable.getSelectedRow();
+		if (row < 0) {
+			MessageDialog.info(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+			return;
+		}
+
+		String partnerName = (String) partnerTableModel.getValueAt(row, 0);
+		int patientPartnerId = (int) partnerTableModel.getValueAt(row, 3);
+
+		int confirm = MessageDialog.yesNo(this,
+				MessageBundle.formatMessage("angal.patient.partner.remove.confirm", partnerName),
+				MessageBundle.getMessage("angal.common.delete"));
+
+		if (confirm == JOptionPane.YES_OPTION) {
+			try {
+				patientPartnerManager.endAssociation(patientPartnerId, LocalDate.now());
+				loadPatientPartners();
+				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.partner.removed.success", partnerName));
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+				MessageDialog.error(this, MessageBundle.getMessage("angal.patient.partner.remove.error"));
+			}
+		}
+	}
+
+	/**
+	 * Show dialog to add multiple partners to current patient
+	 */
+	private void showAddMultiplePartnersDialog() {
+		if (insert) {
+			MessageDialog.info(this, MessageBundle.getMessage("angal.patient.partner.savefirst.msg"));
+			return;
+		}
+
+		JDialog dialog = new JDialog(this, MessageBundle.getMessage("angal.patient.partner.add.multiple.title"), true);
+		dialog.setLayout(new BorderLayout(10, 10));
+		dialog.setSize(550, 450);
+		dialog.setLocationRelativeTo(this);
+
+		JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+		JPanel listPanel = new JPanel(new BorderLayout());
+		listPanel.setBorder(BorderFactory.createTitledBorder(
+				MessageBundle.getMessage("angal.patient.partner.select.multiple")));
+
+		List<Partner> allPartners;
+		try {
+			allPartners = Context.getApplicationContext().getBean(PartnerBrowserManager.class).getPartners();
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+			return;
+		}
+
+		String[] columns = {
+				MessageBundle.getMessage("angal.common.select"),
+				MessageBundle.getMessage("angal.partner.name.col"),
+				MessageBundle.getMessage("angal.partner.type.col")
+		};
+
+		DefaultTableModel tableModel = new DefaultTableModel(columns, 0) {
+			@Override
+			public Class<?> getColumnClass(int columnIndex) {
+				return columnIndex == 0 ? Boolean.class : String.class;
+			}
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return column == 0;
+			}
+		};
+
+		for (Partner partner : allPartners) {
+			String typeDesc = partner.getType() != null ? partner.getType().getDescription() : "";
+			boolean alreadyAssociated = isPartnerAlreadyAssociated(partner);
+			tableModel.addRow(new Object[]{!alreadyAssociated, partner.getName(), typeDesc});
+		}
+
+		JTable partnerTable = new JTable(tableModel);
+		partnerTable.getColumnModel().getColumn(0).setMaxWidth(90);
+		partnerTable.getColumnModel().getColumn(0).setPreferredWidth(90);
+		partnerTable.getColumnModel().getColumn(0).setResizable(false);
+		partnerTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+		partnerTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+
+		JScrollPane scrollPane = new JScrollPane(partnerTable);
+		scrollPane.setPreferredSize(new Dimension(500, 200));
+		listPanel.add(scrollPane, BorderLayout.CENTER);
+
+		JPanel datePanel = new JPanel();
+		datePanel.setLayout(new BoxLayout(datePanel, BoxLayout.Y_AXIS));
+		datePanel.setBorder(BorderFactory.createTitledBorder(
+				MessageBundle.getMessage("angal.patient.partner.information")));
+
+		JPanel datesRowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+		datesRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		JPanel startPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		JLabel startDateLabel = new JLabel(MessageBundle.getMessage("angal.patient.partner.startdate"));
+		startDateLabel.setForeground(Color.BLACK);
+		startPanel.add(startDateLabel);
+		GoodDateChooser startDateChooser = new GoodDateChooser(LocalDate.now(), false);
+		startPanel.add(startDateChooser);
+		datesRowPanel.add(startPanel);
+
+		JPanel endPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		JLabel endDateLabel = new JLabel(MessageBundle.getMessage("angal.patient.partner.enddate"));
+		endPanel.add(endDateLabel);
+		GoodDateChooser endDateChooser = new GoodDateChooser(null, true);
+		startDateChooser.addDateChangeListener(event -> {
+			LocalDate newStartDate = event.getNewDate();
+			if (newStartDate != null) {
+				endDateChooser.setMinDate(newStartDate.plusDays(1));
+				LocalDate currentEndDate = endDateChooser.getDate();
+				if (currentEndDate != null && currentEndDate.isBefore(newStartDate.plusDays(1))) {
+					endDateChooser.setDate(null);
+				}
+			} else {
+				endDateChooser.setMinDate(null);
+			}
+		});
+		endPanel.add(endDateChooser);
+		datesRowPanel.add(endPanel);
+
+		JPanel requiredPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		requiredPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JLabel requiredLabel = new JLabel("* " + MessageBundle.getMessage("angal.common.requiredfields"));
+		requiredLabel.setFont(requiredLabel.getFont().deriveFont(Font.PLAIN));
+		requiredLabel.setForeground(Color.BLACK);
+		requiredPanel.add(requiredLabel);
+
+		datePanel.add(datesRowPanel);
+		datePanel.add(requiredPanel);
+
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+		JButton okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+		JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+
+		okButton.addActionListener(e -> {
+			List<Partner> selectedPartners = new ArrayList<>();
+			for (int i = 0; i < tableModel.getRowCount(); i++) {
+				Boolean selected = (Boolean) tableModel.getValueAt(i, 0);
+				if (selected != null && selected) {
+					String partnerName = (String) tableModel.getValueAt(i, 1);
+					for (Partner p : allPartners) {
+						if (p.getName().equals(partnerName)) {
+							selectedPartners.add(p);
+							break;
+						}
+					}
+				}
+			}
+
+			if (selectedPartners.isEmpty()) {
+				MessageDialog.info(dialog, MessageBundle.getMessage("angal.patient.partner.select.atleastone"));
+				return;
+			}
+
+			LocalDate startDate = startDateChooser.getDate();
+			if (startDate == null) {
+				MessageDialog.info(dialog, MessageBundle.getMessage("angal.patient.partner.startdate.required"));
+				return;
+			}
+
+			LocalDate endDate = endDateChooser.getDate();
+
+			try {
+				for (Partner partner : selectedPartners) {
+					if (!isPartnerAlreadyAssociated(partner)) {
+						patientPartnerManager.associatePatientToPartner(
+								patient, partner, startDate, endDate);
+					}
+				}
+				loadPatientPartners();
+				dialog.dispose();
+				MessageDialog.info(this, MessageBundle.formatMessage(
+						"angal.patient.partner.added.success", selectedPartners.size()));
+			} catch (OHServiceException ex) {
+				OHServiceExceptionUtil.showMessages(ex);
+			}
+		});
+
+		cancelButton.addActionListener(e -> dialog.dispose());
+
+		buttonPanel.add(okButton);
+		buttonPanel.add(cancelButton);
+
+		mainPanel.add(listPanel, BorderLayout.NORTH);
+		mainPanel.add(datePanel, BorderLayout.CENTER);
+
+		dialog.add(mainPanel, BorderLayout.CENTER);
+		dialog.add(buttonPanel, BorderLayout.SOUTH);
+		dialog.setVisible(true);
+	}
+
+	/**
+	 * Check if a partner is already associated to current patient
+	 */
+	private boolean isPartnerAlreadyAssociated(Partner partner) {
+		try {
+			List<PatientPartner> existing = patientPartnerManager.getPatientPartners(patient);
+			for (PatientPartner pp : existing) {
+				if (pp.getPartner().getId() == partner.getId() && pp.getEndDate() == null) {
+					return true;
+				}
+			}
+		} catch (OHServiceException e) {
+			LOGGER.error(e.getMessage(), e);
 		}
 		return false;
 	}
@@ -2437,16 +2848,42 @@ public class PatientInsertExtended extends JDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
+//	private JPanel getJRightPanel() {
+//		if (jRightPanel == null) {
+//			jRightPanel = new JPanel(new BorderLayout());
+//
+//			try {
+//				PatientProfilePhoto photo = this.patientBrowserManager.retrievePatientProfilePhoto(patient);
+//				Image image = photo != null ? photo.getPhotoAsImage() : null;
+//				Image scaledImage = image != null ? ImageUtil.scaleImage(image, GeneralData.IMAGE_THUMBNAIL_MAX_WIDTH) : null;
+//				photoPanel = new PatientPhotoPanel(this, patient.getCode(), scaledImage);
+//
+//			} catch (IOException ioException) {
+//				LOGGER.error(ioException.getMessage(), ioException);
+//			} catch (OHServiceException e) {
+//				OHServiceExceptionUtil.showMessages(e);
+//			}
+//			if (photoPanel != null) {
+//				jRightPanel.add(photoPanel, BorderLayout.NORTH);
+//			}
+//			jRightPanel.add(getJPartnerPanel(), BorderLayout.CENTER);
+//			jRightPanel.add(getJNoteScrollPane(), BorderLayout.CENTER);
+//			jRightPanel.add(getJPanelConsensus(), BorderLayout.SOUTH);
+//
+//		}
+//		return jRightPanel;
+//	}
+
 	private JPanel getJRightPanel() {
 		if (jRightPanel == null) {
 			jRightPanel = new JPanel(new BorderLayout());
 
+			// Photo en haut
 			try {
 				PatientProfilePhoto photo = this.patientBrowserManager.retrievePatientProfilePhoto(patient);
 				Image image = photo != null ? photo.getPhotoAsImage() : null;
 				Image scaledImage = image != null ? ImageUtil.scaleImage(image, GeneralData.IMAGE_THUMBNAIL_MAX_WIDTH) : null;
 				photoPanel = new PatientPhotoPanel(this, patient.getCode(), scaledImage);
-
 			} catch (IOException ioException) {
 				LOGGER.error(ioException.getMessage(), ioException);
 			} catch (OHServiceException e) {
@@ -2455,9 +2892,17 @@ public class PatientInsertExtended extends JDialog {
 			if (photoPanel != null) {
 				jRightPanel.add(photoPanel, BorderLayout.NORTH);
 			}
-			jRightPanel.add(getJNoteScrollPane(), BorderLayout.CENTER);
-			jRightPanel.add(getJPanelConsensus(), BorderLayout.SOUTH);
 
+			JPanel verticalPanel = new JPanel();
+			verticalPanel.setLayout(new BoxLayout(verticalPanel, BoxLayout.Y_AXIS));
+
+			verticalPanel.add(getJPartnerPanel());
+
+			verticalPanel.add(getJNoteScrollPane());
+
+			jRightPanel.add(verticalPanel, BorderLayout.CENTER);
+
+			jRightPanel.add(getJPanelConsensus(), BorderLayout.SOUTH);
 		}
 		return jRightPanel;
 	}
