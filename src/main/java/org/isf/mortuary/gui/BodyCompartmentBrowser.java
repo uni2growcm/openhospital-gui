@@ -45,6 +45,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.BodyCompartmentManager;
@@ -61,7 +62,6 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 	private static final long serialVersionUID = 1L;
 
 	private final JDialog MY_JDIALOG;
-	private final int PAGE_SIZE = 100;
 	private int CURRENT_PAGE = 0;
 	private int TOTAL_PAGES;
 	private JPanel jContentPane;
@@ -385,7 +385,7 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 
 		public BodyCompartmentTableModel(String key) {
 			try {
-				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelOrDescriptionPageable(key, key, CURRENT_PAGE, PAGE_SIZE);
+				Page<BodyCompartment> bodyCompartmentPage = bodyCompartmentManager.getByLabelOrDescriptionPageable(key, key, CURRENT_PAGE, GeneralData.PAGINATIONPAGESIZE);
 				bodyCompartmentList = new ArrayList<>(bodyCompartmentPage.getContent());
 				totalBodyCompartments = bodyCompartmentPage.getTotalElements();
 				TOTAL_PAGES = bodyCompartmentPage.getTotalPages();

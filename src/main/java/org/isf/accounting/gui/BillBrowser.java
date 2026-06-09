@@ -37,7 +37,6 @@ import java.awt.Font;
 import java.awt.event.*;
 import java.io.File;
 import java.awt.*;
-import java.awt.event.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,6 +68,8 @@ import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.menu.model.User;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
@@ -183,6 +184,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int year;
 
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	private List<Bill> billPeriod;
 	private List<BillPayments> paymentsPeriod;
 	private List<Bill> billFromPayments;
@@ -201,7 +203,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private int pendingCurrentPage = 0;
 	private long pendingTotalRows = 0;
 	private int pendingTotalPages = 0;
-	private static final int PAGE_SIZE = 100;
 
 	private JButton exportSageButton;
 
@@ -492,7 +493,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					null, dateFrom, dateTo, patientParent, guarantor, currentPage, PAGE_SIZE);
+					null, dateFrom, dateTo, patientParent, guarantor, currentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			totalRows = billPage.getTotalElements();
@@ -517,7 +518,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, PAGE_SIZE);
+					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			closedTotalRows = billPage.getTotalElements();
@@ -541,7 +542,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		try {
 			User guarantor = getSelectedGuarantor();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, PAGE_SIZE);
+					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			pendingTotalRows = billPage.getTotalElements();
@@ -965,10 +966,25 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jButtonArchive.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
+					try {
+						long closedBillsCount = billBrowserManager.countBillsWithFilters("C", null, null, null, null);
+
+						if (closedBillsCount == 0) {
+							JOptionPane.showMessageDialog(
+									BillBrowser.this,
+									MessageBundle.getMessage("angal.billbrowser.archive.no.bills.message"),
+									MessageBundle.getMessage("angal.billbrowser.archive.no.bills.title"),
+									JOptionPane.INFORMATION_MESSAGE);
+							return;
+						}
+					} catch (OHServiceException ex) {
+						LOGGER.error("Error checking bills to archive", ex);
+					}
+
 					StringBuilder sb = new StringBuilder();
-					sb.append("<html><body>");
-					sb.append("<h4>" + MessageBundle.getMessage("angal.billbrowser.realywanttoarchivebills.confirm") + "</h4><br>");
-					sb.append("<p>" + MessageBundle.getMessage("angal.billbrowser.operationmaytakefewminutes") + "</p>");
+					sb.append("<html><body style='text-align: center;'>");
+					sb.append("<p>" + MessageBundle.getMessage("angal.billbrowser.archive.confirm.message") + "</p><br>");
+					sb.append("<p><b>" + MessageBundle.getMessage("angal.billbrowser.archive.operation.duration") + "</b></p>");
 					sb.append("</body></html>");
 
 					int ok = JOptionPane.showConfirmDialog(BillBrowser.this,
@@ -990,78 +1006,47 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 						spinnerDialog.setUndecorated(true);
 						spinnerDialog.getRootPane().setOpaque(false);
 
-						SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-
+						SwingWorker<Integer, Void> worker = new SwingWorker<Integer, Void>() {
 							@Override
-							protected Void doInBackground() throws Exception {
+							protected Integer doInBackground() throws Exception {
 								ArchiveManager archiveManager = Context.getApplicationContext().getBean(ArchiveManager.class);
-								archiveManager.archiveClosedBills();
-								return null;
+								return archiveManager.archiveClosedBills();
 							}
 
 							@Override
 							protected void done() {
-
 								spinnerDialog.setVisible(false);
 								spinnerDialog.dispose();
 
 								try {
-									get();
-									JOptionPane.showMessageDialog(
-											BillBrowser.this,
-											MessageBundle.getMessage("angal.billbrowser.archive.process.completed"),
-											MessageBundle.getMessage("angal.billbrowser.archive.btn"),
-											JOptionPane.INFORMATION_MESSAGE);
-
-									billInserted(null);
-
-								} catch (InterruptedException e) {
-
-									Thread.currentThread().interrupt();
-
-								} catch (ExecutionException e) {
-
-									Throwable cause = e.getCause();
-
-									if (cause instanceof OHServiceException) {
-
-										OHServiceExceptionUtil.showMessages(
-												(OHServiceException) cause,
-												BillBrowser.this);
-
+									int archivedCount = get();
+									if (archivedCount <= 0) {
+										JOptionPane.showMessageDialog(
+												BillBrowser.this,
+												MessageBundle.getMessage("angal.billbrowser.archive.no.bills.message")
+                                        );
 									} else {
-
+										JOptionPane.showMessageDialog(
+												BillBrowser.this,
+												MessageBundle.getMessage("angal.billbrowser.archive.process.completed"),
+												MessageBundle.getMessage("angal.billbrowser.archive.btn"),
+												JOptionPane.INFORMATION_MESSAGE);
+										billInserted(null);
+									}
+								} catch (InterruptedException ex) {
+									Thread.currentThread().interrupt();
+								} catch (ExecutionException ex) {
+									Throwable cause = ex.getCause();
+									if (cause instanceof OHServiceException) {
+										OHServiceExceptionUtil.showMessages((OHServiceException) cause, BillBrowser.this);
+									} else {
 										LOGGER.error("Unexpected error", cause);
-
-										OHServiceExceptionUtil.showMessages(
-												new OHServiceException(
-														cause,
-														new OHExceptionMessage(
-																"angal.accounting.archive.execution.error"
-														)
-												),
-												BillBrowser.this);
 									}
 								}
 							}
-
 						};
 						worker.execute();
 						spinnerDialog.setVisible(true);
-
-						try {
-							worker.get();
-							JOptionPane.showMessageDialog(BillBrowser.this,
-									MessageBundle.getMessage("angal.billbrowser.archive.process.completed"),
-									MessageBundle.getMessage("angal.billbrowser.archive.btn"),
-									JOptionPane.INFORMATION_MESSAGE);
-							billInserted(null);
-
-						} catch (InterruptedException | ExecutionException e1) {
-							LOGGER.error("Erreur lors de l'archivage via ArchiveManager", e1);
-							OHExceptionMessage exceptionMessage = new OHExceptionMessage(e1.getMessage());
-							OHServiceExceptionUtil.showMessages(new OHServiceException(exceptionMessage), BillBrowser.this);
-						}
 					}
 				}
 			});
@@ -1348,6 +1333,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.allincomesgroupbyitemcategories.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
+				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.reportgroupbyreduction.txt"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1372,7 +1359,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 							MessageBundle.getMessage("angal.billbrowser.paymentsbyuser.txt"), false);
 				}
 				if (options.indexOf(option) == 3) {
-					new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
+						new GenericReportFromDateToDate(from, to, "rpt_base", "BillsPaymentsAndRefundsPerUser",
 							MessageBundle.getMessage("angal.billbrowser.paymentsandrefundsperuser.txt"), false);
 				}
 				if (options.indexOf(option) == 4) {
@@ -1382,6 +1369,36 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				if (options.indexOf(option) == 5) {
 					new GenericReportFromDateToDate(from, to, "rpt_base",GeneralData.BILLSREFUNDREPORT,
 							MessageBundle.getMessage("angal.billbrowser.fullreportallbillsrefund.txt"),false);
+				}
+				if (options.indexOf(option) == 6) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "OH004_03_AllDebtsGroupByItemCategories",
+							MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"), false);
+				}
+				if (options.indexOf(option) == 7) {
+					ArrayList<String> optionsreduc = new ArrayList<String>();
+					/**** get all reduction rate ***/
+					List<ReductionPlan> rplanList = new ArrayList<ReductionPlan>();
+					optionsreduc.add("A - " + MessageBundle.getMessage("angal.report.allreductionplans"));
+					optionsreduc.add("S - " + MessageBundle.getMessage("angal.report.withnotreduction"));
+					try {
+						rplanList = reductionPlanManager.getAll();
+						for (int j = 0; j < rplanList.size(); j++) {
+							optionsreduc.add(rplanList.get(j).getId() + " - " + rplanList.get(j).getDescription());
+						}
+					} catch (OHServiceException e) {
+                        throw new RuntimeException(e);
+                    }
+
+					icon = new ImageIcon("rsc/icons/list_dialog.png");
+					option = (String) JOptionPane.showInputDialog(BillBrowser.this,
+							MessageBundle.getMessage("angal.billbrowser.pleaseselectareductionplan"),
+							MessageBundle.getMessage("angal.billbrowser.report"), JOptionPane.INFORMATION_MESSAGE,
+							icon, optionsreduc.toArray(), optionsreduc.get(0));
+					if (option == null)
+						return;
+					String reduc_code = option.trim().split("-")[0];
+					new GenericReportFromDateToDate(from, to, reduc_code, "rpt_base", "BillsReportGroupByReduction", MessageBundle.getMessage("angal.billbrowser.fullreportbillsreductionplanperuser.txt"),
+							false);
 				}
 			});
 		}
@@ -1479,20 +1496,14 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 						@Override
 						protected Void doInBackground() throws Exception {
-							billBrowserManager.exportSagePaymentsStreaming(cashFile, dateFrom, dateTo);
-							billBrowserManager.exportSagePaymentsStreaming(salesFile, dateFrom, dateTo);
-							return null;
-						}
+							ArchiveManager archiveManager = Context.getApplicationContext().getBean(ArchiveManager.class);
 
-						@Override
-						protected void done() {
-							try {
-								get();
-								MessageDialog.info(BillBrowser.this, "angal.medicalstock.exportsage.succes");
-							} catch (Exception ex) {
-								MessageDialog.error(BillBrowser.this, "angal.medicalstock.exportsage.error");
-								LOGGER.error("Export to sage error: ", ex);
-							}
+							LocalDateTime currentTime = LocalDateTime.now();
+							int nbDays = 365;
+							String status = "C";
+
+							archiveManager.archiveClosedBills();
+							return null;
 						}
 					};
 					worker.execute();

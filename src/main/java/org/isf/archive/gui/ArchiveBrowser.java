@@ -170,7 +170,6 @@ public class ArchiveBrowser extends ModalJFrame {
     private int closedCurrentPage = 0;
     private long closedTotalRows = 0;
     private int closedTotalPages = 0;
-    private static final int PAGE_SIZE = 100;
 
     private JButton exportSageButton;
 
@@ -285,7 +284,7 @@ public class ArchiveBrowser extends ModalJFrame {
             String guarantorId = getSelectedGuarantorId();
             Integer patientId = getSelectedPatientId();
             Page<ArchivedBill> billPage = archiveManager.getArchivedBillsWithFilters(
-                    "C", dateFrom, dateTo, patientId, guarantorId, closedCurrentPage, PAGE_SIZE);
+                    "C", dateFrom, dateTo, patientId, guarantorId, closedCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
             List<ArchivedBill> bills = billPage.getContent();
             closedTotalRows = billPage.getTotalElements();
