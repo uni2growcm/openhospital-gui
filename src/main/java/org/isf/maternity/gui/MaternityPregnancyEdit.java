@@ -126,8 +126,6 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     private Pregnancy pregnancy;
     private Patient selectedPatient;
     private boolean insert;
-
-    // Obstetric history fields
     private JTextField termDeliveriesField;
     private JTextField pretermDeliveriesField;
     private JTextField livingChildrenField;
@@ -422,7 +420,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
             int row = 0;
 
-            // Row 1: LMP (Last Menstrual Period) - Mandatory
+            //LMP (Last Menstrual Period) - Mandatory
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.weightx = 0.0;
@@ -433,7 +431,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getLmpDateField(), gbc);
             row++;
 
-            // Row 2: EDD LMP
+            //EDD LMP
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.weightx = 0.0;
@@ -444,7 +442,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getEddLmpDateField(), gbc);
             row++;
 
-            // Row 3: EDD Scan
+            //EDD Scan
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.weightx = 0.0;
@@ -463,7 +461,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             row++;
             gbc.gridwidth = 1;
 
-            // Row 4: Gravidity
+            //Gravidity
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.weightx = 0.0;
@@ -474,7 +472,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getGravidityField(), gbc);
             row++;
 
-            // Row 5: Parity
+            //Parity
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.parity.col") + ":"), gbc);
@@ -483,7 +481,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getParityField(), gbc);
             row++;
 
-            // Row 6: Miscarriages
+            //Miscarriages
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.miscarriages.col") + ":"), gbc);
@@ -492,7 +490,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getMiscarriagesField(), gbc);
             row++;
 
-            // Row 7: Term Deliveries
+            //Term Deliveries
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.term.deliveries") + ":"), gbc);
@@ -501,7 +499,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getTermDeliveriesField(), gbc);
             row++;
 
-            // Row 8: Preterm Deliveries
+            //Preterm Deliveries
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.preterm.deliveries") + ":"), gbc);
@@ -510,7 +508,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getPretermDeliveriesField(), gbc);
             row++;
 
-            // Row 9: Living Children
+            //Living Children
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.living.children") + ":"), gbc);
@@ -519,7 +517,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getLivingChildrenField(), gbc);
             row++;
 
-            // Row 10: Stillbirths
+            //Stillbirths
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.stillbirths") + ":"), gbc);
@@ -528,7 +526,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getStillbirthsField(), gbc);
             row++;
 
-            // Row 11: Deceased Children
+            //Deceased Children
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.deceased.children") + ":"), gbc);
@@ -537,7 +535,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getDeceasedChildrenField(), gbc);
             row++;
 
-            // Row 12: Desired Children
+            //Desired Children
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.desired.children") + ":"), gbc);
@@ -546,7 +544,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getDesiredChildrenField(), gbc);
             row++;
 
-            // Row 13: Breastfeeding
+            //Breastfeeding
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.breastfeeding") + ":"), gbc);
@@ -555,7 +553,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getBreastfeedingCheckBox(), gbc);
             row++;
 
-            // Row 14: Last Child Age
+            //Last Child Age
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.last.child.age") + ":"), gbc);
@@ -564,7 +562,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getLastChildAgePanel(), gbc);
             row++;
 
-            // Row 15: Risk Level
+            //Risk Level
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.risklevel.col") + ":"), gbc);
@@ -573,7 +571,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             dataPanel.add(getRiskLevelCombo(), gbc);
             row++;
 
-            // Row 16: Status
+            //Status
             gbc.gridx = 0;
             gbc.gridy = row;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.status.col") + ":"), gbc);
@@ -751,7 +749,6 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 pregnancy.setEddScan(eddScanDate.atStartOfDay());
             }
 
-            // === OBSTETRIC HISTORY FIELDS (must be set BEFORE saving) ===
             if (!gravidityField.getText().trim().isEmpty()) {
                 pregnancy.setGravidity(Integer.parseInt(gravidityField.getText()));
             }
@@ -803,11 +800,9 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 pregnancy.setLastChildDays(Integer.parseInt(lastChildDaysField.getText()));
             }
 
-            // === RISK AND STATUS ===
             pregnancy.setRiskLevel((RiskLevel) riskLevelCombo.getSelectedItem());
             pregnancy.setStatus((PregnancyStatus) statusCombo.getSelectedItem());
 
-            // === SAVE ===
             if (insert) {
                 Pregnancy saved = pregnancyManager.newPregnancy(pregnancy);
                 if (saved != null) {
