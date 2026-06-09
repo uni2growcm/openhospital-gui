@@ -442,6 +442,29 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					columnModel.getColumn(i).setPreferredWidth(0);
 				}
 			}
+
+			jTable.addMouseListener(new java.awt.event.MouseAdapter() {
+				@Override
+				public void mouseClicked(java.awt.event.MouseEvent e) {
+					if (e.getClickCount() == 2) {
+						int row = jTable.getSelectedRow();
+						if (row >= 0) {
+							Laboratory selectedLab = (Laboratory) model.getValueAt(row, -1);
+							if (selectedLab != null) {
+								if (GeneralData.LABEXTENDED) {
+									LabEditExtended editrecord = new LabEditExtended(myFrame, selectedLab, false);
+									editrecord.addLabEditExtendedListener(LabBrowser.this);
+									editrecord.showAsModal(LabBrowser.this);
+								} else {
+									LabEdit editrecord = new LabEdit(myFrame, selectedLab, false);
+									editrecord.addLabEditListener(LabBrowser.this);
+									editrecord.showAsModal(LabBrowser.this);
+								}
+							}
+						}
+					}
+				}
+			});
 		}
 		return jTable;
 	}
