@@ -2343,7 +2343,7 @@ public class PatientInsertExtended extends JDialog {
 			jExtensionContent.add(getJMotherPanel(), null);
 			jExtensionContent.add(getJParentPanel(), null);
 			jExtensionContent.add(getJInsurancePanel(), null);
-			jExtensionContent.add(getJAffiliatedPatientPanel(), null);  // ← AJOUTER
+			jExtensionContent.add(getJAffiliatedPatientPanel(), null);
 			jExtensionContent.add(getBillingPanel(), null);
 		}
 		return jExtensionContent;
