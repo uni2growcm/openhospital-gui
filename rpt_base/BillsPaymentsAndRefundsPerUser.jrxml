@@ -126,7 +126,7 @@ WHERE (USR_PAYMENTS > 0 OR USR_REFUNDS > 0)]]>
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{inDate}+"   "+$P{fromdate}+"   "+$R{to2}+"   "+$P{todate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{inDate} + "   " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{fromdate}) + "   " + $R{to2} + "   " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{todate})]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
