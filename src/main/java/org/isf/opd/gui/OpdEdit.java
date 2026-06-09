@@ -158,6 +158,8 @@ public class OpdEdit extends JDialog {
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private List<DiseaseType> types;
 	private List<Disease> diseasesAll;
+	private JCheckBox malnutritionCheckBox;
+	private JTextField reasonField;
 	
     /*
      * Adds: Textfields and buttons to enable search in diagnosis
@@ -507,6 +509,9 @@ public class OpdEdit extends JDialog {
 				opd.setDate(visitDate);
 				opd.setNote("");
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
+				opd.setMalnutrition(malnutritionCheckBox.isSelected() ? "Y" : "N");
+				String reasonText = reasonField.getText().trim();
+				opd.setReason(reasonText.isEmpty() ? null : reasonText);
 
 				if (insert) {
 					try {
@@ -942,6 +947,21 @@ public class OpdEdit extends JDialog {
 					receivingHospitalField.requestFocus();
 				}
 			});
+
+			malnutritionCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.malnutrition.txt"));
+			jNewPatientPanel.add(malnutritionCheckBox);
+
+			reasonField = new VoLimitedTextField(30, 255);
+			reasonField.setColumns(15);
+			reasonField.setToolTipText(MessageBundle.getMessage("angal.opd.reason.tooltip"));
+			jNewPatientPanel.add(reasonField);
+
+			if (!insert && opd.getReason() != null) {
+				reasonField.setText(opd.getReason());
+			}
+			if (!insert && opd.getMalnutrition() != null && opd.getMalnutrition().equals("Y")) {
+				malnutritionCheckBox.setSelected(true);
+			}
 		}
 		return jNewPatientPanel;
 	}
