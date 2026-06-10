@@ -511,7 +511,7 @@ public class OpdEdit extends JDialog {
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setMalnutrition(malnutritionCheckBox.isSelected() ? "Y" : "N");
 				String reasonText = reasonField.getText().trim();
-				opd.setReason(reasonText.isEmpty() ? null : reasonText);
+				opd.setReferingMotif(reasonText.isEmpty() ? null : reasonText);
 
 				if (insert) {
 					try {
@@ -956,8 +956,8 @@ public class OpdEdit extends JDialog {
 			reasonField.setToolTipText(MessageBundle.getMessage("angal.opd.reason.tooltip"));
 			jNewPatientPanel.add(reasonField);
 
-			if (!insert && opd.getReason() != null) {
-				reasonField.setText(opd.getReason());
+			if (!insert && opd.getReferingMotif() != null) {
+				reasonField.setText(opd.getReferingMotif());
 			}
 			if (!insert && opd.getMalnutrition() != null && opd.getMalnutrition().equals("Y")) {
 				malnutritionCheckBox.setSelected(true);

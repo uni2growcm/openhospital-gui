@@ -553,8 +553,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			reasonField.setToolTipText(MessageBundle.getMessage("angal.opd.reason.tooltip"));
 			jPanelNorth.add(reasonField);
 
-			if (!insert && opd.getReason() != null) {
-				reasonField.setText(opd.getReason());
+			if (!insert && opd.getReferingMotif() != null) {
+				reasonField.setText(opd.getReferingMotif());
 			}
 		}
 		return jPanelNorth;
@@ -1930,7 +1930,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setWard(opdWard);
 				opd.setMalnutrition(malnutritionCheckBox.isSelected() ? "Y" : "N");
 				String reasonText = reasonField.getText().trim();
-				opd.setReason(reasonText.isEmpty() ? null : reasonText);
+				opd.setReferingMotif(reasonText.isEmpty() ? null : reasonText);
 
 				try {
 					if (insert) { // Insert
