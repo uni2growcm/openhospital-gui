@@ -1750,6 +1750,7 @@ public class InventoryEdit extends ModalJFrame {
 					referenceTextField.setText("");
 				}
 				referenceTextField.setEditable(true);
+				referenceTextField.setEnabled(false);
 			}
 			referenceTextField.setBackground(Color.WHITE);
 		}
