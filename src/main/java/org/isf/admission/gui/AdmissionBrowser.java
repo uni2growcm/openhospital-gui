@@ -1087,10 +1087,10 @@ public class AdmissionBrowser extends ModalJFrame {
 		diseaseInPanel.add(buttonPanel);
 
 			diagnosisInListPanel = new JPanel();
-			diagnosisInListPanel.setLayout(new GridLayout(4, 3, 5, 5));
+			diagnosisInListPanel.setLayout(new GridLayout(3, 3, 5, 5));
 			diagnosisInListPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.diagnosisselected.border")));
 
-			JScrollPane scrollPane = new JScrollPane(diagnosisInListPanel);
+			JScrollPane scrollPane = new JSccrollPane(diagnosisInListPanel);
 			scrollPane.setPreferredSize(new Dimension(550, 100));
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
