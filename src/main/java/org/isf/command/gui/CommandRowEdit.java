@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -101,8 +101,6 @@ public class CommandRowEdit extends JDialog {
 	private JTextField qtyInStoreTextField;
 	private JTextField criticalLevelTextField;
 	private JTextField orderQtyTextField;
-	private JTextField stillQtyTextField;
-	private JTextField userAddedQtyTextField;
 	private CommandRow commandRow;
 	private final boolean insert;
 
@@ -201,36 +199,6 @@ public class CommandRowEdit extends JDialog {
 			gbcOrderQtyField.gridx = 1;
 			gbcOrderQtyField.gridy = 3;
 			dataPanel.add(getOrderQtyTextField(), gbcOrderQtyField);
-
-			JLabel stillQtyLabel = new JLabel(MessageBundle.getMessage("angal.command.row.stillqty.col"));
-			GridBagConstraints gbcStillQtyLabel = new GridBagConstraints();
-			gbcStillQtyLabel.anchor = GridBagConstraints.WEST;
-			gbcStillQtyLabel.insets = new Insets(0, 0, 5, 5);
-			gbcStillQtyLabel.gridx = 0;
-			gbcStillQtyLabel.gridy = 4;
-			dataPanel.add(stillQtyLabel, gbcStillQtyLabel);
-
-			GridBagConstraints gbcStillQtyField = new GridBagConstraints();
-			gbcStillQtyField.fill = GridBagConstraints.HORIZONTAL;
-			gbcStillQtyField.insets = new Insets(0, 0, 5, 0);
-			gbcStillQtyField.gridx = 1;
-			gbcStillQtyField.gridy = 4;
-			dataPanel.add(getStillQtyTextField(), gbcStillQtyField);
-
-			JLabel userAddedQtyLabel = new JLabel(MessageBundle.getMessage("angal.command.row.useraddedqty.col"));
-			GridBagConstraints gbcUserAddedQtyLabel = new GridBagConstraints();
-			gbcUserAddedQtyLabel.anchor = GridBagConstraints.WEST;
-			gbcUserAddedQtyLabel.insets = new Insets(0, 0, 5, 5);
-			gbcUserAddedQtyLabel.gridx = 0;
-			gbcUserAddedQtyLabel.gridy = 5;
-			dataPanel.add(userAddedQtyLabel, gbcUserAddedQtyLabel);
-
-			GridBagConstraints gbcUserAddedQtyField = new GridBagConstraints();
-			gbcUserAddedQtyField.fill = GridBagConstraints.HORIZONTAL;
-			gbcUserAddedQtyField.insets = new Insets(0, 0, 5, 0);
-			gbcUserAddedQtyField.gridx = 1;
-			gbcUserAddedQtyField.gridy = 5;
-			dataPanel.add(getUserAddedQtyTextField(), gbcUserAddedQtyField);
 		}
 		return dataPanel;
 	}
@@ -264,22 +232,6 @@ public class CommandRowEdit extends JDialog {
 					return;
 				}
 
-				double qtyInStore;
-				try {
-					qtyInStore = Double.parseDouble(qtyInStoreTextField.getText().trim());
-				} catch (NumberFormatException e) {
-					MessageDialog.error(this, "angal.command.row.pleaseinsertavalidqty.msg");
-					return;
-				}
-
-				double criticalLevel;
-				try {
-					criticalLevel = Double.parseDouble(criticalLevelTextField.getText().trim());
-				} catch (NumberFormatException e) {
-					MessageDialog.error(this, "angal.command.row.pleaseinsertavalidqty.msg");
-					return;
-				}
-
 				Double orderQty = null;
 				if (!orderQtyTextField.getText().trim().isEmpty()) {
 					try {
@@ -290,32 +242,10 @@ public class CommandRowEdit extends JDialog {
 					}
 				}
 
-				Double stillQty = null;
-				if (!stillQtyTextField.getText().trim().isEmpty()) {
-					try {
-						stillQty = Double.parseDouble(stillQtyTextField.getText().trim());
-					} catch (NumberFormatException e) {
-						MessageDialog.error(this, "angal.command.row.pleaseinsertavalidqty.msg");
-						return;
-					}
-				}
-
-				double userAddedQty;
-				try {
-					userAddedQty = Double.parseDouble(userAddedQtyTextField.getText().trim());
-				} catch (NumberFormatException e) {
-					MessageDialog.error(this, "angal.command.row.pleaseinsertavalidqty.msg");
-					return;
-				}
-
 				commandRow.setMedical(selectedMedical);
 				commandRow.setMedicalCode(selectedMedical.getProdCode());
 				commandRow.setMedicalDescription(selectedMedical.getDescription());
-				commandRow.setQtyInStore(qtyInStore);
-				commandRow.setCriticalLevel(criticalLevel);
 				commandRow.setOrderQty(orderQty);
-				commandRow.setStillQty(stillQty);
-				commandRow.setUserAddedQty(userAddedQty);
 
 				boolean result = false;
 				try {
@@ -365,6 +295,7 @@ public class CommandRowEdit extends JDialog {
 			qtyInStoreTextField = new VoLimitedTextField(10);
 			if (!insert) {
 				qtyInStoreTextField.setText(String.valueOf(commandRow.getQtyInStore()));
+				qtyInStoreTextField.setEnabled(false);
 			} else {
 				qtyInStoreTextField.setText("0");
 			}
@@ -377,6 +308,7 @@ public class CommandRowEdit extends JDialog {
 			criticalLevelTextField = new VoLimitedTextField(10);
 			if (!insert) {
 				criticalLevelTextField.setText(String.valueOf(commandRow.getCriticalLevel()));
+				criticalLevelTextField.setEnabled(false);
 			} else {
 				criticalLevelTextField.setText("0");
 			}
@@ -392,27 +324,5 @@ public class CommandRowEdit extends JDialog {
 			}
 		}
 		return orderQtyTextField;
-	}
-
-	private JTextField getStillQtyTextField() {
-		if (stillQtyTextField == null) {
-			stillQtyTextField = new VoLimitedTextField(10);
-			if (!insert && commandRow.getStillQty() != null) {
-				stillQtyTextField.setText(String.valueOf(commandRow.getStillQty()));
-			}
-		}
-		return stillQtyTextField;
-	}
-
-	private JTextField getUserAddedQtyTextField() {
-		if (userAddedQtyTextField == null) {
-			userAddedQtyTextField = new VoLimitedTextField(10);
-			if (!insert) {
-				userAddedQtyTextField.setText(String.valueOf(commandRow.getUserAddedQty()));
-			} else {
-				userAddedQtyTextField.setText("0");
-			}
-		}
-		return userAddedQtyTextField;
 	}
 }

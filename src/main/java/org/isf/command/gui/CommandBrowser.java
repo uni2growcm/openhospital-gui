@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -23,8 +23,11 @@ package org.isf.command.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -40,12 +45,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
 import org.isf.command.gui.CommandEdit.CommandListener;
 import org.isf.command.manager.CommandBrowserManager;
 import org.isf.command.model.Command;
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
@@ -74,18 +81,24 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 	private JTable table;
 	private DefaultTableModel model;
 	private final String[] pColumns = {
-			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.command.refno.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.date.col").toUpperCase()
 	};
-	private final int[] pColumnWidth = { 60, 200, 200 };
-	private final Class[] pColumnClass = { Integer.class, String.class, String.class };
+	private final int[] pColumnWidth = { 200, 200 };
+	private final Class[] pColumnClass = { String.class, String.class };
 	private int selectedrow;
-	private List<Command> pCommand;
+	private List<Command> allFilteredCommands;
 	private List<Command> allCommands;
 	private Command command;
 	private final JFrame myFrame;
 	private JTextField searchField;
+	private JPanel paginationPanel;
+	private JLabel pageInfoLabel;
+	private JComboBox<Integer> pagesCombo;
+	private boolean updatingPageCombo;
+	private int currentPage;
+	private int totalPages;
+	private List<Command> pageCommand;
 
 	public CommandBrowser() {
 		myFrame = this;
@@ -122,7 +135,10 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 			jContentPane = new JPanel(new BorderLayout());
 			jContentPane.add(getJTopPanel(), BorderLayout.NORTH);
 			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
-			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+			JPanel southPanel = new JPanel(new BorderLayout());
+			southPanel.add(getPaginationPanel(), BorderLayout.NORTH);
+			southPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
+			jContentPane.add(southPanel, BorderLayout.SOUTH);
 		}
 		return jContentPane;
 	}
@@ -153,14 +169,104 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 	private void filterCommands() {
 		String text = searchField.getText().trim().toLowerCase();
 		if (text.isEmpty()) {
-			pCommand = new ArrayList<>(allCommands);
+			allFilteredCommands = new ArrayList<>(allCommands);
 		} else {
-			pCommand = allCommands.stream()
+			allFilteredCommands = allCommands.stream()
 					.filter(c -> c.getRefNo().toLowerCase().contains(text))
 					.collect(Collectors.toList());
 		}
-		model.fireTableDataChanged();
-		table.updateUI();
+		currentPage = 0;
+		updatePage();
+	}
+
+	private void updatePage() {
+		totalPages = (int) Math.ceil((double) allFilteredCommands.size() / GeneralData.PAGINATIONPAGESIZE);
+		if (totalPages == 0) {
+			totalPages = 1;
+		}
+		if (currentPage >= totalPages) {
+			currentPage = totalPages - 1;
+		}
+		int from = currentPage * GeneralData.PAGINATIONPAGESIZE;
+		int to = Math.min(from + GeneralData.PAGINATIONPAGESIZE, allFilteredCommands.size());
+		pageCommand = new ArrayList<>(allFilteredCommands.subList(from, to));
+		if (model != null) {
+			model.fireTableDataChanged();
+		}
+		if (table != null) {
+			table.updateUI();
+		}
+		updatePaginationControls();
+	}
+
+	private void updatePaginationControls() {
+		if (pagesCombo == null) {
+			return;
+		}
+		updatingPageCombo = true;
+		pagesCombo.removeAllItems();
+		for (int i = 1; i <= totalPages; i++) {
+			pagesCombo.addItem(i);
+		}
+		if (totalPages > 0) {
+			pagesCombo.setSelectedIndex(currentPage);
+		}
+		updatingPageCombo = false;
+		if (pageInfoLabel != null) {
+			pageInfoLabel.setText(MessageBundle.formatMessage("angal.command.pagination.info.fmt",
+					allFilteredCommands.size(), GeneralData.PAGINATIONPAGESIZE, totalPages));
+		}
+	}
+
+	private JPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			JButton prevButton = new JButton(new AbstractAction("<") {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (currentPage > 0) {
+						currentPage--;
+						updatePage();
+					}
+				}
+			});
+			paginationPanel.add(prevButton);
+			paginationPanel.add(getPagesCombo());
+			JButton nextButton = new JButton(new AbstractAction(">") {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (currentPage < totalPages - 1) {
+						currentPage++;
+						updatePage();
+					}
+				}
+			});
+			paginationPanel.add(nextButton);
+			pageInfoLabel = new JLabel();
+			paginationPanel.add(pageInfoLabel);
+		}
+		return paginationPanel;
+	}
+
+	private JComboBox<Integer> getPagesCombo() {
+		if (pagesCombo == null) {
+			pagesCombo = new JComboBox<>();
+			pagesCombo.setPreferredSize(new Dimension(70, 25));
+			pagesCombo.addActionListener(actionEvent -> {
+				if (pagesCombo.getItemCount() != 0 && pagesCombo.getSelectedItem() != null && !updatingPageCombo) {
+					int selected = (Integer) pagesCombo.getSelectedItem();
+					if (selected - 1 != currentPage) {
+						currentPage = selected - 1;
+						updatePage();
+					}
+				}
+			});
+		}
+		return pagesCombo;
 	}
 
 	private JPanel getJButtonPanel() {
@@ -273,6 +379,22 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 			for (int i = 0; i < pColumnWidth.length; i++) {
 				columnModel.getColumn(i).setPreferredWidth(pColumnWidth[i]);
 			}
+			table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected,
+						boolean hasFocus, int row, int column) {
+					super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, column);
+					Command cmd = (Command) t.getModel().getValueAt(t.convertRowIndexToModel(row), -1);
+					if (cmd != null && cmd.getActive() == 0) {
+						setForeground(Color.GRAY);
+					} else {
+						setForeground(isSelected ? table.getSelectionForeground() : Color.BLACK);
+					}
+					return this;
+				}
+			});
 		}
 		return table;
 	}
@@ -286,20 +408,23 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 		public CommandBrowserModel() {
 			try {
 				allCommands = commandBrowserManager.getAllOrderByDateDesc();
-				pCommand = new ArrayList<>(allCommands);
+				allFilteredCommands = new ArrayList<>(allCommands);
+				currentPage = 0;
+				updatePage();
 			} catch (OHServiceException e) {
 				allCommands = new ArrayList<>();
-				pCommand = new ArrayList<>();
+				allFilteredCommands = new ArrayList<>();
+				pageCommand = new ArrayList<>();
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		@Override
 		public int getRowCount() {
-			if (pCommand == null) {
+			if (pageCommand == null) {
 				return 0;
 			}
-			return pCommand.size();
+			return pageCommand.size();
 		}
 
 		@Override
@@ -314,14 +439,12 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 
 		@Override
 		public Object getValueAt(int r, int c) {
-			Command cmd = pCommand.get(r);
+			Command cmd = pageCommand.get(r);
 			if (c == -1) {
 				return cmd;
 			} else if (c == 0) {
-				return cmd.getId();
-			} else if (c == 1) {
 				return cmd.getRefNo();
-			} else if (c == 2) {
+			} else if (c == 1) {
 				return cmd.getDate() != null ? cmd.getDate().format(formatter) : "";
 			}
 			return null;

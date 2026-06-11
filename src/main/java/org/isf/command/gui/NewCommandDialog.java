@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -33,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
@@ -120,6 +119,7 @@ public class NewCommandDialog extends JDialog {
 	private final JFrame parentFrame;
 	private final Command command;
 	private final boolean insert;
+	private final boolean addRowsMode;
 	private List<ProductRow> allProductRows = new ArrayList<>();
 	private List<ProductRow> productRows = new ArrayList<>();
 	private JTextField productSearchField;
@@ -129,12 +129,15 @@ public class NewCommandDialog extends JDialog {
 		parentFrame = parent;
 		this.command = cmd;
 		this.insert = inserting;
+		this.addRowsMode = cmd.getId() != null && cmd.getId() > 0;
 		initialize();
 	}
 
 	private void initialize() {
 		setContentPane(getJContentPane());
-		if (insert) {
+		if (addRowsMode) {
+			setTitle(MessageBundle.getMessage("angal.command.addrowstocommand.title"));
+		} else if (insert) {
 			setTitle(MessageBundle.getMessage("angal.command.newcommand.title"));
 		} else {
 			setTitle(MessageBundle.getMessage("angal.command.editcommand.title"));
@@ -260,17 +263,6 @@ public class NewCommandDialog extends JDialog {
 	}
 
 	private void validateAndSave(ActionEvent actionEvent) {
-		String refNo = refNoTextField.getText().trim();
-		if (refNo.isEmpty()) {
-			MessageDialog.error(this, "angal.command.pleaseinsertarefno.msg");
-			return;
-		}
-		LocalDate selectedDate = dateChooser.getDate();
-		if (selectedDate == null) {
-			MessageDialog.error(this, "angal.command.pleaseinsertadate.msg");
-			return;
-		}
-
 		List<ProductRow> selectedRows = new ArrayList<>();
 		for (ProductRow row : allProductRows) {
 			if (row.orderQty > 0) {
@@ -280,6 +272,39 @@ public class NewCommandDialog extends JDialog {
 
 		if (selectedRows.isEmpty()) {
 			MessageDialog.error(this, "angal.command.new.pleaseselectatleastoneproduct.msg");
+			return;
+		}
+
+		if (addRowsMode) {
+			try {
+				for (ProductRow pr : selectedRows) {
+					CommandRow row = new CommandRow();
+					row.setCommand(command);
+					row.setMedical(pr.medical);
+					row.setMedicalCode(pr.medical.getProdCode());
+					row.setMedicalDescription(pr.medical.getDescription());
+					row.setQtyInStore(pr.currentStock);
+					row.setCriticalLevel(pr.criticalLevel);
+					row.setOrderQty(pr.orderQty);
+					row.setUserAddedQty(0);
+					commandBrowserManager.saveOrUpdateRow(row);
+				}
+				fireCommandUpdated();
+				dispose();
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			return;
+		}
+
+		String refNo = refNoTextField.getText().trim();
+		if (refNo.isEmpty()) {
+			MessageDialog.error(this, "angal.command.pleaseinsertarefno.msg");
+			return;
+		}
+		LocalDate selectedDate = dateChooser.getDate();
+		if (selectedDate == null) {
+			MessageDialog.error(this, "angal.command.pleaseinsertadate.msg");
 			return;
 		}
 
@@ -319,7 +344,10 @@ public class NewCommandDialog extends JDialog {
 	private JTextField getRefNoTextField() {
 		if (refNoTextField == null) {
 			refNoTextField = new VoLimitedTextField(50);
-			if (!insert && command.getRefNo() != null) {
+			if (addRowsMode && command.getRefNo() != null) {
+				refNoTextField.setText(command.getRefNo());
+				refNoTextField.setEnabled(false);
+			} else if (!insert && command.getRefNo() != null) {
 				refNoTextField.setText(command.getRefNo());
 			}
 		}
@@ -329,10 +357,15 @@ public class NewCommandDialog extends JDialog {
 	private GoodDateChooser getDateChooser() {
 		if (dateChooser == null) {
 			LocalDate date = null;
-			if (!insert && command.getDate() != null) {
+			if (addRowsMode && command.getDate() != null) {
+				date = command.getDate().toLocalDate();
+			} else if (!insert && command.getDate() != null) {
 				date = command.getDate().toLocalDate();
 			}
 			dateChooser = new GoodDateChooser(date, true, false);
+			if (addRowsMode) {
+				dateChooser.setEnabled(false);
+			}
 		}
 		return dateChooser;
 	}
