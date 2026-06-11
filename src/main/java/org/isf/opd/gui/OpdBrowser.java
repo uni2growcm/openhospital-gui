@@ -75,6 +75,7 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
+import org.isf.homevisit.gui.HomeVisitBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -109,6 +110,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jExamButton;
 	private JButton jTherapyButton;
 	private JButton jCloseButton;
+	private JButton jHomeVisitButton;
 	private JButton jDeleteButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
@@ -288,8 +290,23 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				jButtonPanel.add(getJDeleteButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
+			if (MainMenu.checkUserGrants("homevisit")) {
+				jButtonPanel.add(getJHomeVisitButton(), null);
+			}
 		}
 		return jButtonPanel;
+	}
+
+	private JButton getJHomeVisitButton() {
+		if (jHomeVisitButton == null) {
+			jHomeVisitButton = new JButton(MessageBundle.getMessage("angal.menu.btn.homevisit"));
+			jHomeVisitButton.setMnemonic(MessageBundle.getMnemonic("angal.menu.btn.homevisit.key"));
+			jHomeVisitButton.addActionListener(e -> {
+				HomeVisitBrowser homeVisitBrowser = new HomeVisitBrowser();
+				homeVisitBrowser.setVisible(true);
+			});
+		}
+		return jHomeVisitButton;
 	}
 
 	private JPanel getPaginationPanel() {

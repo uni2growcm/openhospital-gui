@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import javax.swing.BoxLayout;
 
 import com.github.lgooddatepicker.components.DateTimePicker;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 
 public class GoodDateTimeSpinnerChooser extends GoodDateTimeChooserBase {
 
@@ -62,5 +63,17 @@ public class GoodDateTimeSpinnerChooser extends GoodDateTimeChooserBase {
 
 	public void setMaxDate(LocalDate maxDate) {
 		dateSettings.setDateRangeLimits(LocalDate.of(999, 12, 31), maxDate);
+	}
+
+	public void setMinDate(LocalDate minDate) {
+		dateSettings.setDateRangeLimits(minDate, null);
+	}
+
+	public void setMinDateTime(LocalDateTime minDateTime) {
+		dateSettings.setDateRangeLimits(minDateTime.toLocalDate(), null);
+	}
+
+	public void addDateChangeListener(DateChangeListener listener) {
+		dateTimePicker.datePicker.addDateChangeListener(listener);
 	}
 }
