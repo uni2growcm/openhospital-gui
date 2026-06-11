@@ -122,6 +122,7 @@ public class AdmissionBrowser extends ModalJFrame {
 	private static final int PREFERRED_WIDTH_TYPES = 220;
 	private static final int PREFERRED_HEIGHT_LINE = 24;
 
+
 	private EventListenerList admissionListeners = new EventListenerList();
 
 	public interface AdmissionListener extends EventListener {
@@ -1086,12 +1087,14 @@ public class AdmissionBrowser extends ModalJFrame {
 		diseaseInPanel.add(buttonPanel);
 
 			diagnosisInListPanel = new JPanel();
-			diagnosisInListPanel.setLayout(new BoxLayout(diagnosisInListPanel, BoxLayout.Y_AXIS));
+			diagnosisInListPanel.setLayout(new GridLayout(4, 3, 5, 5));
 			diagnosisInListPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.diagnosisselected.border")));
 
 			JScrollPane scrollPane = new JScrollPane(diagnosisInListPanel);
 			scrollPane.setPreferredSize(new Dimension(550, 100));
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
 
 			diseaseInPanel.add(scrollPane);
 
@@ -1152,34 +1155,22 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JPanel createDiagnosisItemPanel(Disease disease) {
 		JPanel itemPanel = new JPanel();
-		itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.X_AXIS));
+		itemPanel.setLayout(new BorderLayout(5, 0));
 		itemPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		itemPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
 		JLabel descriptionLabel = new JLabel(disease.getDescription());
+		descriptionLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		itemPanel.add(descriptionLabel, BorderLayout.CENTER);
 
-		FontMetrics fm = descriptionLabel.getFontMetrics(descriptionLabel.getFont());
-		int textWidth = fm.stringWidth(disease.getDescription());
-		int padding = 10;
-		int preferredWidth = textWidth + padding;
-		int minWidth = 80;
-		int maxWidth = 600;
-		preferredWidth = Math.max(minWidth, Math.min(maxWidth, preferredWidth));
-		
-		int preferredHeight = fm.getHeight();
-		descriptionLabel.setPreferredSize(new Dimension(preferredWidth, preferredHeight));
-
-		JButton removeButton = new JButton("X");
-		removeButton.setPreferredSize(new Dimension(60, 30));
-		removeButton.setMaximumSize(new Dimension(60, 30));
+		ImageIcon removeIcon = new ImageIcon("rsc/icons/regular_close_tab.JPG");
+		JButton removeButton = new JButton(removeIcon);
+		removeButton.setBorderPainted(false);
+		removeButton.setContentAreaFilled(false);
+		removeButton.setFocusPainted(false);
+		removeButton.setPreferredSize(new Dimension(30, 24));
 		removeButton.setToolTipText(MessageBundle.getMessage("angal.admission.removediagnosis.tooltip"));
 		removeButton.addActionListener(e -> removeDiagnosisFromList(disease));
-
-		itemPanel.add(Box.createHorizontalStrut(10));
-		itemPanel.add(descriptionLabel);
-		itemPanel.add(Box.createHorizontalGlue());
-		itemPanel.add(removeButton);
-		itemPanel.add(Box.createHorizontalStrut(5));
+		itemPanel.add(removeButton, BorderLayout.EAST);
 
 		return itemPanel;
 	}
