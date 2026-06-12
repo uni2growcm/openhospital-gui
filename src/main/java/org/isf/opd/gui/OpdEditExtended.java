@@ -914,7 +914,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcMalnutritionCheck.gridwidth = 2;
 			jPanelData.add(malnutritionCheckBox, gbcMalnutritionCheck);
 
-			if (!insert && opd.getMalnutrition() != null && opd.getMalnutrition().equals("Y")) {
+			if (!insert && opd.isMalnutrition()) {
 				malnutritionCheckBox.setSelected(true);
 			}
 
@@ -1928,7 +1928,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setDisease3(disease3);
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setWard(opdWard);
-				opd.setMalnutrition(malnutritionCheckBox.isSelected() ? "Y" : "N");
+				opd.setMalnutrition(malnutritionCheckBox.isSelected());
 				String reasonText = reasonField.getText().trim();
 				opd.setReferingMotif(reasonText.isEmpty() ? null : reasonText);
 
