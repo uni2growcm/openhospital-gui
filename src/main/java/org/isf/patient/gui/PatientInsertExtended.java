@@ -553,7 +553,7 @@ public class PatientInsertExtended extends JDialog {
 				partnerTableModel.addRow(new Object[]{
 						p.getName(),
 						typeDesc,
-						p.getId()
+						p.getCode()
 				});
 			}
 		}
@@ -574,7 +574,7 @@ public class PatientInsertExtended extends JDialog {
 
 		Partner partnerToRemove = null;
 		for (Partner p : patient.getPartners()) {
-			if (p.getId() == partnerId) {
+			if (p.getCode() == partnerId) {
 				partnerToRemove = p;
 				break;
 			}

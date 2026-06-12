@@ -171,7 +171,7 @@ public class PartnerBrowser extends ModalJFrame {
             for (Partner p : partners) {
                 String typeDesc = p.getType() != null ? p.getType().getDescription() : "";
                 tableModel.addRow(new Object[]{
-                        p.getId(),
+                        p.getCode(),
                         p.getCode(),
                         p.getName(),
                         typeDesc,
@@ -218,7 +218,7 @@ public class PartnerBrowser extends ModalJFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                partnerBrowserManager.deletePartner(selected.getId());
+                partnerBrowserManager.deletePartner(selected.getCode());
                 loadPartners(searchField.getText().trim());
             } catch (OHServiceException e) {
                 MessageDialog.error(this, MessageBundle.getMessage("angal.partner.delete.error.msg"));

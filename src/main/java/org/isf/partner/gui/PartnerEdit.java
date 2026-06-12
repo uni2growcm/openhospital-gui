@@ -63,7 +63,6 @@ public class PartnerEdit extends ModalJFrame {
     private Partner partner;
     private PartnerBrowser parent;
 
-    private JTextField codeField;
     private JTextField nameField;
     private JComboBox<Typology> typeCombo;
     private JTextField contactPersonField;
@@ -81,7 +80,7 @@ public class PartnerEdit extends ModalJFrame {
         this.partner = partner;
         this.onSaveCallback = onSaveCallback;
         initComponents();
-        setTitle(partner == null || partner.getId() == 0
+        setTitle(partner == null || partner.getCode() == null || partner.getCode() == 0
                 ? MessageBundle.getMessage("angal.partner.new.title")
                 : MessageBundle.getMessage("angal.partner.edit.title"));
         pack();
@@ -100,9 +99,7 @@ public class PartnerEdit extends ModalJFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        codeField = new JTextField(20);
         nameField = new JTextField(30);
-
         typeCombo = new JComboBox<>();
         loadPartnerTypes();
 
@@ -115,8 +112,7 @@ public class PartnerEdit extends ModalJFrame {
         notesArea.setWrapStyleWord(true);
         JScrollPane notesScroll = new JScrollPane(notesArea);
 
-        if (partner != null && partner.getId() != 0) {
-            codeField.setText(partner.getCode());
+        if (partner != null && partner.getCode() != null && partner.getCode() != 0) {
             nameField.setText(partner.getName());
             if (partner.getType() != null) {
                 typeCombo.setSelectedItem(partner.getType());
@@ -131,95 +127,83 @@ public class PartnerEdit extends ModalJFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.NONE;
-        JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.partner.code.label") + "*");
-        codeLabel.setPreferredSize(new Dimension(120, 25));
-        fields.add(codeLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        fields.add(codeField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        JLabel nameLabel = new JLabel(MessageBundle.getMessage("angal.partner.name.label") + "*");
+        JLabel nameLabel = new JLabel(MessageBundle.getMessage("angal.partner.name.label") + " *");
         nameLabel.setPreferredSize(new Dimension(120, 25));
         fields.add(nameLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(nameField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
         JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.partner.type.label"));
         fields.add(typeLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(typeCombo, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         JLabel contactLabel = new JLabel(MessageBundle.getMessage("angal.partner.contactperson.label"));
         fields.add(contactLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(contactPersonField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 3;
         gbc.fill = GridBagConstraints.NONE;
         JLabel phoneLabel = new JLabel(MessageBundle.getMessage("angal.partner.phone.label"));
         fields.add(phoneLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(phoneField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 4;
         gbc.fill = GridBagConstraints.NONE;
         JLabel emailLabel = new JLabel(MessageBundle.getMessage("angal.partner.email.label"));
         fields.add(emailLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 4;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(emailField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         gbc.fill = GridBagConstraints.NONE;
         JLabel addressLabel = new JLabel(MessageBundle.getMessage("angal.partner.address.label"));
         fields.add(addressLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(addressField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         gbc.fill = GridBagConstraints.NONE;
         JLabel notesLabel = new JLabel(MessageBundle.getMessage("angal.partner.notes.label"));
         fields.add(notesLabel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(notesScroll, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 8;
+        gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.CENTER;
         gbc.insets = new Insets(10, 5, 5, 5);
@@ -250,7 +234,7 @@ public class PartnerEdit extends ModalJFrame {
 
     private void loadPartnerTypes() {
         try {
-            List<Typology> types = typologyManager.getTypologies((Family.PARTNERTYPE));
+            List<Typology> types = typologyManager.getTypologies(Family.PARTNERTYPE);
             typeCombo.removeAllItems();
             typeCombo.addItem(null);
             for (Typology type : types) {
@@ -262,7 +246,6 @@ public class PartnerEdit extends ModalJFrame {
     }
 
     private void save() {
-        String code = codeField.getText().trim().toUpperCase();
         String name = nameField.getText().trim();
         Typology type = (Typology) typeCombo.getSelectedItem();
         String contactPerson = contactPersonField.getText().trim();
@@ -271,33 +254,25 @@ public class PartnerEdit extends ModalJFrame {
         String address = addressField.getText().trim();
         String notes = notesArea.getText().trim();
 
-        if (code.isEmpty()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.partner.code.required.msg"));
-            codeField.requestFocus();
-            return;
-        }
-
         if (name.isEmpty()) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.partner.name.required.msg"));
             nameField.requestFocus();
             return;
         }
 
-        try {
-            boolean isNew = (partner == null || partner.getId() == 0);
-            boolean codeUnique = partnerManager.isCodeUnique(code, isNew ? null : partner.getId());
+        if (type == null) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.partner.type.required.msg"));
+            typeCombo.requestFocus();
+            return;
+        }
 
-            if (!codeUnique) {
-                MessageDialog.error(this, MessageBundle.formatMessage("angal.partner.code.exists.msg", code));
-                codeField.requestFocus();
-                return;
-            }
+        try {
+            boolean isNew = (partner == null || partner.getCode() == null || partner.getCode() == 0);
 
             if (isNew) {
                 partner = new Partner();
             }
 
-            partner.setCode(code);
             partner.setName(name);
             partner.setType(type);
             partner.setContactPerson(contactPerson);
@@ -306,10 +281,10 @@ public class PartnerEdit extends ModalJFrame {
             partner.setAddress(address);
             partner.setNotes(notes);
 
-            partnerManager.savePartner(partner);
+            Partner savedPartner = partnerManager.savePartner(partner);
 
             if (onSaveCallback != null) {
-                onSaveCallback.accept(partner);
+                onSaveCallback.accept(savedPartner);
             }
             dispose();
         } catch (OHServiceException e) {
