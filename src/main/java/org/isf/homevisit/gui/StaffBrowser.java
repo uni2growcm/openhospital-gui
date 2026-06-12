@@ -58,11 +58,12 @@ public class StaffBrowser extends ModalJFrame {
     private JTextField searchField;
 
     private static final String[] COLUMNS = {
-            "ID",
+            "CODE",
             MessageBundle.getMessage("angal.staff.code.col"),
             MessageBundle.getMessage("angal.staff.firstname.col"),
             MessageBundle.getMessage("angal.staff.lastname.col"),
             MessageBundle.getMessage("angal.staff.profession.col"),
+            MessageBundle.getMessage("angal.staff.position.col"),
             MessageBundle.getMessage("angal.staff.phone.col")
     };
 
@@ -71,7 +72,7 @@ public class StaffBrowser extends ModalJFrame {
         initComponents();
         loadStaff(null);
         setTitle(MessageBundle.getMessage("angal.staff.browser.title"));
-        setSize(800, 500);
+        setSize(850, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
@@ -82,7 +83,7 @@ public class StaffBrowser extends ModalJFrame {
         initComponents();
         loadStaff(null);
         setTitle(MessageBundle.getMessage("angal.staff.browser.title"));
-        setSize(800, 500);
+        setSize(850, 500);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
@@ -91,7 +92,6 @@ public class StaffBrowser extends ModalJFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        // Search Panel
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchField = new JTextField(20);
         searchField.addKeyListener(new KeyAdapter() {
@@ -112,7 +112,6 @@ public class StaffBrowser extends ModalJFrame {
         searchPanel.add(searchField);
         add(searchPanel, BorderLayout.NORTH);
 
-        // Table
         tableModel = new DefaultTableModel(COLUMNS, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -127,7 +126,6 @@ public class StaffBrowser extends ModalJFrame {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Buttons Panel
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton newBtn = new JButton(MessageBundle.getMessage("angal.staff.new.btn"));
         JButton editBtn = new JButton(MessageBundle.getMessage("angal.staff.edit.btn"));
@@ -168,11 +166,12 @@ public class StaffBrowser extends ModalJFrame {
 
             for (Staff s : staffList) {
                 tableModel.addRow(new Object[]{
-                        s.getId(),
+                        s.getCode(),
                         s.getCode(),
                         s.getFirstName(),
                         s.getLastName(),
                         s.getProfession(),
+                        s.getPosition(),
                         s.getPhone()
                 });
             }
@@ -189,8 +188,8 @@ public class StaffBrowser extends ModalJFrame {
             return null;
         }
         try {
-            int id = (int) tableModel.getValueAt(row, 0);
-            return staffBrowserManager.getStaff(id);
+            Integer code = (Integer) tableModel.getValueAt(row, 0);
+            return staffBrowserManager.getStaff(code);
         } catch (OHServiceException e) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.staff.load.error.msg"));
             LOGGER.error(e.getMessage(), e);
@@ -216,7 +215,7 @@ public class StaffBrowser extends ModalJFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                staffBrowserManager.deleteStaff(selected.getId());
+                staffBrowserManager.deleteStaff(selected.getCode());
                 loadStaff(searchField.getText().trim());
             } catch (OHServiceException e) {
                 MessageDialog.error(this, MessageBundle.getMessage("angal.staff.delete.error.msg"));

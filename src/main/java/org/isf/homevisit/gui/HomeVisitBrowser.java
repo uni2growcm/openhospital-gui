@@ -27,20 +27,38 @@ import org.isf.homevisit.model.HomeVisitStatus;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JList;
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.JScrollPane;
+import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -55,9 +73,10 @@ public class HomeVisitBrowser extends ModalJFrame {
     private JButton completeBtn;
     private JButton cancelBtn;
     private JButton postponeBtn;
+    private JButton reactivateBtn;
 
     private int currentPage = 0;
-    private static final int PAGE_SIZE = 2;
+    private static final int PAGE_SIZE = 100;
     private int totalPages = 0;
     private JButton jPrevButton;
     private JButton jNextButton;
@@ -104,7 +123,6 @@ public class HomeVisitBrowser extends ModalJFrame {
         searchPanel.add(searchField);
         topPanel.add(searchPanel, BorderLayout.WEST);
 
-        // Status Filter
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.filter.status") + ":"));
         statusFilter = new JComboBox<>();
@@ -128,7 +146,6 @@ public class HomeVisitBrowser extends ModalJFrame {
 
         add(topPanel, BorderLayout.NORTH);
 
-        // Table
         tableModel = new DefaultTableModel(COLUMNS, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -147,14 +164,22 @@ public class HomeVisitBrowser extends ModalJFrame {
             }
         });
 
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                int selectedRow = table.getSelectedRow();
+                if (row == selectedRow) {
+                    table.clearSelection();
+                }
+            }
+        });
+
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Create combined bottom panel with two distinct rows
-        JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5)); // 2 rows, 5px gap between rows
+        JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5));
 
-        // Pagination Panel (first row)
         JPanel paginationPanel = getPaginationPanel();
-        // Add a line border to separate pagination from buttons
         paginationPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
         bottomPanel.add(paginationPanel);
 
@@ -165,6 +190,8 @@ public class HomeVisitBrowser extends ModalJFrame {
         completeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
         cancelBtn = new JButton(MessageBundle.getMessage("angal.homevisit.cancel.btn"));
         postponeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
+        reactivateBtn = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
+        reactivateBtn.setEnabled(false);
         JButton deleteBtn = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
         JButton closeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
 
@@ -182,6 +209,7 @@ public class HomeVisitBrowser extends ModalJFrame {
         completeBtn.addActionListener(e -> completeSelectedVisit());
         cancelBtn.addActionListener(e -> cancelSelectedVisit());
         postponeBtn.addActionListener(e -> postponeSelectedVisit());
+        reactivateBtn.addActionListener(e -> reactivateSelectedVisit());
         deleteBtn.addActionListener(e -> deleteSelectedVisit());
         closeBtn.addActionListener(e -> dispose());
 
@@ -190,12 +218,12 @@ public class HomeVisitBrowser extends ModalJFrame {
         btnPanel.add(completeBtn);
         btnPanel.add(cancelBtn);
         btnPanel.add(postponeBtn);
+        btnPanel.add(reactivateBtn);
         btnPanel.add(deleteBtn);
         btnPanel.add(closeBtn);
         btnPanel.add(printBtn);
         bottomPanel.add(btnPanel);
 
-        // Add the combined bottom panel to the frame
         add(bottomPanel, BorderLayout.SOUTH);
 
         addWindowListener(new WindowAdapter() {
@@ -204,6 +232,32 @@ public class HomeVisitBrowser extends ModalJFrame {
                 dispose();
             }
         });
+    }
+
+    private void reactivateSelectedVisit() {
+        HomeVisit visit = getSelectedHomeVisit();
+        if (visit == null) return;
+
+        if (visit.getStatus() != HomeVisitStatus.CANCELLED) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.reactivate.error"));
+            return;
+        }
+
+        int confirm = MessageDialog.yesNo(this,
+                MessageBundle.formatMessage("angal.homevisit.reactivate.confirm",
+                        visit.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))),
+                MessageBundle.getMessage("angal.homevisit.reactivate.dialog.title"));
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                manager.reactivateHomeVisit(visit.getId());
+                loadHomeVisits();
+                MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.reactivate.success"));
+            } catch (OHServiceException e) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.reactivate.error"));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
     }
 
     private void loadHomeVisits() {
@@ -229,7 +283,6 @@ public class HomeVisitBrowser extends ModalJFrame {
                 String staffName = hv.getStaff() != null ? hv.getStaff().getFullName() : "";
                 String status = hv.getStatus() != null ? hv.getStatus().toString() : "";
 
-                // Filter by search text if provided
                 if (!searchText.isEmpty() && !patientName.toLowerCase().contains(searchText.toLowerCase())) {
                     continue;
                 }
@@ -331,23 +384,43 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.PLANNED) {
+        if (visit.getStatus() != HomeVisitStatus.PLANNED &&
+                visit.getStatus() != HomeVisitStatus.POSTPONED) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.error"));
             return;
         }
 
-        String newDateStr = JOptionPane.showInputDialog(this,
-                MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt"),
-                visit.getVisitStartDate().plusDays(7).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        LocalDateTime defaultDate = visit.getVisitStartDate().plusDays(1);
+        GoodDateTimeSpinnerChooser dateChooser = new GoodDateTimeSpinnerChooser(defaultDate);
+        dateChooser.setMinDate(LocalDate.now().plusDays(1));
 
-        if (newDateStr != null && !newDateStr.trim().isEmpty()) {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt")), BorderLayout.NORTH);
+        panel.add(dateChooser, BorderLayout.CENTER);
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                MessageBundle.getMessage("angal.homevisit.postpone.dialog.title"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            LocalDateTime newDate = dateChooser.getLocalDateTime();
+            if (newDate == null) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.newdate.required"));
+                return;
+            }
+            if (!newDate.toLocalDate().isAfter(LocalDate.now())) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.newdate.future.error"));
+                return;
+            }
             try {
-                LocalDateTime newDate = LocalDateTime.parse(newDateStr,
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
                 manager.postponeHomeVisit(visit.getId(), newDate);
                 loadHomeVisits();
                 MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.postpone.success"));
-            } catch (Exception e) {
+            } catch (OHServiceException e) {
                 MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.error"));
                 LOGGER.error(e.getMessage(), e);
             }
@@ -380,24 +453,54 @@ public class HomeVisitBrowser extends ModalJFrame {
             completeBtn.setEnabled(false);
             cancelBtn.setEnabled(false);
             postponeBtn.setEnabled(false);
+            reactivateBtn.setEnabled(false);
             return;
         }
-        try {
-            int id = (int) tableModel.getValueAt(row, 0);
-            HomeVisit visit = manager.getHomeVisit(id);
-            if (visit == null) {
-                completeBtn.setEnabled(false);
-                cancelBtn.setEnabled(false);
-                postponeBtn.setEnabled(false);
-                return;
+
+        String statusStr = (String) tableModel.getValueAt(row, 3);
+        HomeVisitStatus status = null;
+        for (HomeVisitStatus s : HomeVisitStatus.values()) {
+            if (s.name().equals(statusStr) || s.toString().equals(statusStr)) {
+                status = s;
+                break;
             }
-            completeBtn.setEnabled(visit.getStatus() == HomeVisitStatus.PLANNED);
-            cancelBtn.setEnabled(visit.getStatus() == HomeVisitStatus.PLANNED ||
-                    visit.getStatus() == HomeVisitStatus.POSTPONED);
-            postponeBtn.setEnabled(visit.getStatus() == HomeVisitStatus.PLANNED);
-        } catch (OHServiceException e) {
-            LOGGER.error(e.getMessage(), e);
         }
+        if (status == null) {
+            completeBtn.setEnabled(false);
+            cancelBtn.setEnabled(false);
+            postponeBtn.setEnabled(false);
+            reactivateBtn.setEnabled(false);
+            return;
+        }
+
+        String visitDateStr = (String) tableModel.getValueAt(row, 2);
+        boolean visitDateReached = false;
+        try {
+            LocalDateTime visitDate = LocalDateTime.parse(visitDateStr,
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            visitDateReached = !visitDate.toLocalDate().isAfter(LocalDate.now());
+        } catch (Exception e) {
+            LOGGER.warn("Impossible de parser la date: {}", visitDateStr);
+        }
+
+        completeBtn.setEnabled(
+                visitDateReached && (
+                        status == HomeVisitStatus.PLANNED ||
+                                status == HomeVisitStatus.POSTPONED
+                )
+        );
+        cancelBtn.setEnabled(
+                status == HomeVisitStatus.PLANNED ||
+                        status == HomeVisitStatus.POSTPONED ||
+                        status == HomeVisitStatus.COMPLETED
+        );
+        postponeBtn.setEnabled(
+                status == HomeVisitStatus.PLANNED ||
+                        status == HomeVisitStatus.POSTPONED
+        );
+        reactivateBtn.setEnabled(
+                status == HomeVisitStatus.CANCELLED
+        );
     }
 
     private JPanel getPaginationPanel() {

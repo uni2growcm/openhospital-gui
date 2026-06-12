@@ -55,10 +55,10 @@ public class StaffEdit extends ModalJFrame {
     private StaffBrowser parent;
     private Consumer<Staff> onSaveCallback;
 
-    private JTextField codeField;
     private JTextField firstNameField;
     private JTextField lastNameField;
     private JTextField professionField;
+    private JTextField positionField;
     private JTextField phoneField;
 
     public StaffEdit(StaffBrowser parent, StaffBrowserManager manager, Staff staff, Consumer<Staff> onSaveCallback) {
@@ -67,7 +67,7 @@ public class StaffEdit extends ModalJFrame {
         this.staff = staff;
         this.onSaveCallback = onSaveCallback;
         initComponents();
-        setTitle(staff == null || staff.getId() == 0
+        setTitle(staff == null || staff.getCode() == null || staff.getCode() == 0
                 ? MessageBundle.getMessage("angal.staff.new.title")
                 : MessageBundle.getMessage("angal.staff.edit.title"));
         pack();
@@ -86,36 +86,24 @@ public class StaffEdit extends ModalJFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Code field
-        codeField = new JTextField(20);
         firstNameField = new JTextField(20);
         lastNameField = new JTextField(20);
         professionField = new JTextField(20);
+        positionField = new JTextField(20);
         phoneField = new JTextField(15);
 
-        if (staff != null && staff.getId() != 0) {
-            codeField.setText(staff.getCode());
+        if (staff != null && staff.getCode() != null && staff.getCode() != 0) {
             firstNameField.setText(staff.getFirstName());
             lastNameField.setText(staff.getLastName());
             professionField.setText(staff.getProfession());
+            positionField.setText(staff.getPosition());
             phoneField.setText(staff.getPhone());
         }
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.NONE;
-        JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.staff.code.label") + "*");
-        codeLabel.setPreferredSize(new Dimension(120, 25));
-        fields.add(codeLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        fields.add(codeField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        JLabel firstNameLabel = new JLabel(MessageBundle.getMessage("angal.staff.firstname.label") + "*");
+        JLabel firstNameLabel = new JLabel(MessageBundle.getMessage("angal.staff.firstname.label") + " *");
         firstNameLabel.setPreferredSize(new Dimension(120, 25));
         fields.add(firstNameLabel, gbc);
 
@@ -124,9 +112,9 @@ public class StaffEdit extends ModalJFrame {
         fields.add(firstNameField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
-        JLabel lastNameLabel = new JLabel(MessageBundle.getMessage("angal.staff.lastname.label") + "*");
+        JLabel lastNameLabel = new JLabel(MessageBundle.getMessage("angal.staff.lastname.label") + " *");
         fields.add(lastNameLabel, gbc);
 
         gbc.gridx = 1;
@@ -134,7 +122,7 @@ public class StaffEdit extends ModalJFrame {
         fields.add(lastNameField, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         JLabel professionLabel = new JLabel(MessageBundle.getMessage("angal.staff.profession.label"));
         fields.add(professionLabel, gbc);
@@ -142,6 +130,16 @@ public class StaffEdit extends ModalJFrame {
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         fields.add(professionField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.NONE;
+        JLabel positionLabel = new JLabel(MessageBundle.getMessage("angal.staff.position.label") + " *");
+        fields.add(positionLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        fields.add(positionField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -181,17 +179,11 @@ public class StaffEdit extends ModalJFrame {
     }
 
     private void save() {
-        String code = codeField.getText().trim().toUpperCase();
         String firstName = firstNameField.getText().trim();
         String lastName = lastNameField.getText().trim();
         String profession = professionField.getText().trim();
+        String position = positionField.getText().trim();
         String phone = phoneField.getText().trim();
-
-        if (code.isEmpty()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.staff.validation.code.required.msg"));
-            codeField.requestFocus();
-            return;
-        }
 
         if (firstName.isEmpty()) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.staff.validation.firstname.required.msg"));
@@ -205,30 +197,29 @@ public class StaffEdit extends ModalJFrame {
             return;
         }
 
-        try {
-            boolean isNew = (staff == null || staff.getId() == 0);
-            boolean codeUnique = manager.isCodeUnique(code, isNew ? null : staff.getId());
+        if (position.isEmpty()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.staff.validation.position.required.msg"));
+            positionField.requestFocus();
+            return;
+        }
 
-            if (!codeUnique) {
-                MessageDialog.error(this, MessageBundle.formatMessage("angal.staff.validation.code.exists.msg", code));
-                codeField.requestFocus();
-                return;
-            }
+        try {
+            boolean isNew = (staff == null || staff.getCode() == null || staff.getCode() == 0);
 
             if (isNew) {
                 staff = new Staff();
             }
 
-            staff.setCode(code);
             staff.setFirstName(firstName);
             staff.setLastName(lastName);
             staff.setProfession(profession);
+            staff.setPosition(position);
             staff.setPhone(phone);
 
-            manager.saveStaff(staff);
+            Staff savedStaff = manager.saveStaff(staff);
 
             if (onSaveCallback != null) {
-                onSaveCallback.accept(staff);
+                onSaveCallback.accept(savedStaff);
             }
             dispose();
         } catch (OHServiceException e) {

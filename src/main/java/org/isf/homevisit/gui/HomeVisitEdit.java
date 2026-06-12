@@ -37,8 +37,23 @@ import org.isf.utils.jobjects.ModalJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JComboBox;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FlowLayout;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -98,7 +113,6 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Patient
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -130,7 +144,6 @@ public class HomeVisitEdit extends ModalJFrame {
             ImageIcon clearIcon = new ImageIcon("rsc/icons/remove_patient_button.png");
             clearPatientBtn = new JButton(clearIcon);
             clearPatientBtn.setToolTipText(MessageBundle.getMessage("angal.common.clear.btn"));
-            clearPatientBtn.setPreferredSize(new Dimension(25, 25));
         } catch (Exception e) {
             clearPatientBtn = new JButton("X");
             clearPatientBtn.setToolTipText(MessageBundle.getMessage("angal.common.clear.btn"));
@@ -141,7 +154,7 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.staff.col")), gbc);
+        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.staff.col") + " *"), gbc);
 
         gbc.gridx = 1;
         gbc.gridwidth = 4;
@@ -158,10 +171,7 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 1;
         gbc.gridwidth = 4;
         visitStartDateChooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
-        if (homeVisit == null || homeVisit.getId() == 0) {
-            visitStartDateChooser.setMinDate(LocalDate.now());
-        }
-
+        visitStartDateChooser.setMinDate(LocalDate.now());
         visitStartDateChooser.addDateChangeListener(e -> {
             LocalDate newVisitDate = e.getNewDate();
             if (newVisitDate != null) {
@@ -175,7 +185,6 @@ public class HomeVisitEdit extends ModalJFrame {
         });
         mainPanel.add(visitStartDateChooser, gbc);
 
-        // Purpose
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
@@ -187,6 +196,9 @@ public class HomeVisitEdit extends ModalJFrame {
         purposeArea.setLineWrap(true);
         purposeArea.setWrapStyleWord(true);
         JScrollPane purposeScroll = new JScrollPane(purposeArea);
+        purposeScroll.setPreferredSize(new Dimension(400, 60));
+        purposeScroll.setMinimumSize(new Dimension(200, 60));
+        purposeScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         mainPanel.add(purposeScroll, gbc);
 
         gbc.gridx = 0;
@@ -221,6 +233,9 @@ public class HomeVisitEdit extends ModalJFrame {
         clinicalNotesArea.setLineWrap(true);
         clinicalNotesArea.setWrapStyleWord(true);
         JScrollPane notesScroll = new JScrollPane(clinicalNotesArea);
+        notesScroll.setPreferredSize(new Dimension(400, 80));
+        notesScroll.setMinimumSize(new Dimension(200, 80));
+        notesScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
         mainPanel.add(notesScroll, gbc);
 
         gbc.gridx = 0;
@@ -234,6 +249,9 @@ public class HomeVisitEdit extends ModalJFrame {
         observationsArea.setLineWrap(true);
         observationsArea.setWrapStyleWord(true);
         JScrollPane obsScroll = new JScrollPane(observationsArea);
+        obsScroll.setPreferredSize(new Dimension(400, 80));
+        obsScroll.setMinimumSize(new Dimension(200, 80));
+        obsScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
         mainPanel.add(obsScroll, gbc);
 
         gbc.gridx = 0;
@@ -259,7 +277,6 @@ public class HomeVisitEdit extends ModalJFrame {
             mainPanel.add(statusCombo, gbc);
         }
 
-        // Required fields note
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 5;
