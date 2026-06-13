@@ -102,7 +102,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private int PAGES = 0;
 	private int CURRENT_PAGE = 0;
 	private long TOTAL_PAGES = 0;
-	private final int PAGE_SIZE = 100;
 	protected AbstractButton searchBoxButton;
 
 	private String[] pColumns = {
@@ -232,7 +231,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private JTable getJTable() {
 		if (table == null) {
-			model = new MedicalBrowsingModel("", "", true, CURRENT_PAGE, PAGE_SIZE);
+			model = new MedicalBrowsingModel("", "", true, CURRENT_PAGE, GeneralData.PAGINATIONPAGESIZE);
 			table = new JTable(model);
 			table.setAutoCreateRowSorter(true);
 			table.setAutoCreateColumnsFromModel(false);
@@ -988,7 +987,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 					active,
 					nameSorted,
 					CURRENT_PAGE,
-					PAGE_SIZE
+					GeneralData.PAGINATIONPAGESIZE
 			);
 
 			if (medicalPage != null) {
@@ -1007,7 +1006,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				((MedicalBrowsingModel) model).medicalList = medicalList;
 				((MedicalBrowsingModel) model).fireTableDataChanged();
 			} else {
-				model = new MedicalBrowsingModel("", "", true, CURRENT_PAGE, PAGE_SIZE);
+				model = new MedicalBrowsingModel("", "", true, CURRENT_PAGE, GeneralData.PAGINATIONPAGESIZE);
 				table.setModel(model);
 			}
 

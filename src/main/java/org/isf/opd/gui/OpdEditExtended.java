@@ -274,6 +274,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private JTabbedPane jTabbedPaneOpd;
 	private JPanel jPanelOperation;
+	private JCheckBox malnutritionCheckBox;
+	private JTextField reasonField;
 
 	/**
 	 * Opd next visit fields
@@ -543,6 +545,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					receivingHospitalField.setText("");
 				}
 			});
+			JLabel reasonLabel = new JLabel(MessageBundle.getMessage("angal.opd.reason.label"));
+			jPanelNorth.add(reasonLabel);
+
+			reasonField = new JTextField(20);
+			reasonField.setColumns(12);
+			reasonField.setToolTipText(MessageBundle.getMessage("angal.opd.reason.tooltip"));
+			jPanelNorth.add(reasonField);
+
+			if (!insert && opd.getReferingMotif() != null) {
+				reasonField.setText(opd.getReferingMotif());
+			}
 		}
 		return jPanelNorth;
 	}
@@ -884,6 +897,26 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcDiseaseBox3.gridx = 3;
 			gbcDiseaseBox3.gridy = 5;
 			jPanelData.add(getDiseaseBox3(), gbcDiseaseBox3);
+			JLabel malnutritionLabel = new JLabel(MessageBundle.getMessage("angal.opd.malnutrition.txt"));
+			GridBagConstraints gbcMalnutritionLabel = new GridBagConstraints();
+			gbcMalnutritionLabel.insets = new Insets(5, 5, 5, 5);
+			gbcMalnutritionLabel.anchor = GridBagConstraints.WEST;
+			gbcMalnutritionLabel.gridx = 0;
+			gbcMalnutritionLabel.gridy = 6;
+			jPanelData.add(malnutritionLabel, gbcMalnutritionLabel);
+
+			malnutritionCheckBox = new JCheckBox();
+			GridBagConstraints gbcMalnutritionCheck = new GridBagConstraints();
+			gbcMalnutritionCheck.insets = new Insets(5, 5, 5, 5);
+			gbcMalnutritionCheck.anchor = GridBagConstraints.WEST;
+			gbcMalnutritionCheck.gridx = 1;
+			gbcMalnutritionCheck.gridy = 6;
+			gbcMalnutritionCheck.gridwidth = 2;
+			jPanelData.add(malnutritionCheckBox, gbcMalnutritionCheck);
+
+			if (!insert && opd.isMalnutrition()) {
+				malnutritionCheckBox.setSelected(true);
+			}
 
 			jLabelLastOpdVisit = new JLabel(" ");
 			jLabelLastOpdVisit.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -893,7 +926,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdVisit.insets = new Insets(5, 5, 5, 5);
 			gbcLabelLastOpdVisit.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdVisit.gridx = 0;
-			gbcLabelLastOpdVisit.gridy = 6;
+			gbcLabelLastOpdVisit.gridy = 7;
 			jPanelData.add(jLabelLastOpdVisit, gbcLabelLastOpdVisit);
 			jFieldLastOpdVisit = new JLabel(" ");
 			jFieldLastOpdVisit.setFocusable(false);
@@ -902,7 +935,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdVisit.fill = GridBagConstraints.HORIZONTAL;
 			gbcFieldLastOpdVisit.gridwidth = 4;
 			gbcFieldLastOpdVisit.gridx = 1;
-			gbcFieldLastOpdVisit.gridy = 6;
+			gbcFieldLastOpdVisit.gridy = 7;
 			jPanelData.add(jFieldLastOpdVisit, gbcFieldLastOpdVisit);
 
 			jLabelLastOpdNote = new JLabel(" ");
@@ -913,7 +946,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdNote.insets = new Insets(5, 5, 0, 5);
 			gbcLabelLastOpdNote.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdNote.gridx = 0;
-			gbcLabelLastOpdNote.gridy = 7;
+			gbcLabelLastOpdNote.gridy = 8;
 			jPanelData.add(jLabelLastOpdNote, gbcLabelLastOpdNote);
 			jFieldLastOpdNote = new JLabel(" ");
 			jFieldLastOpdNote.setPreferredSize(new Dimension(500, 30));
@@ -923,26 +956,26 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcFieldLastOpdNote.insets = new Insets(5, 5, 0, 0);
 			gbcFieldLastOpdNote.gridwidth = 4;
 			gbcFieldLastOpdNote.gridx = 1;
-			gbcFieldLastOpdNote.gridy = 7;
+			gbcFieldLastOpdNote.gridy = 8;
 			jPanelData.add(jFieldLastOpdNote, gbcFieldLastOpdNote);
 
 			GridBagConstraints gbcNextVisitLabel = new GridBagConstraints();
 			gbcNextVisitLabel.insets = new Insets(0, 0, 0, 5);
 			gbcNextVisitLabel.gridx = 0;
-			gbcNextVisitLabel.gridy = 8;
+			gbcNextVisitLabel.gridy = 9;
 			jPanelData.add(getNextVisitLabel(), gbcNextVisitLabel);
 			gbcOpdNextVisitDate = new GridBagConstraints();
 			gbcOpdNextVisitDate.insets = new Insets(0, 0, 0, 5);
 			gbcOpdNextVisitDate.fill = GridBagConstraints.HORIZONTAL;
 			gbcOpdNextVisitDate.gridx = 1;
-			gbcOpdNextVisitDate.gridy = 8;
+			gbcOpdNextVisitDate.gridy = 9;
 			jPanelData.add(getOpdNextVisitDate(), gbcOpdNextVisitDate);
 			GridBagConstraints gbcLabelNextVisitWard = new GridBagConstraints();
 			gbcLabelNextVisitWard.insets = new Insets(0, 0, 5, 0);
 			gbcLabelNextVisitWard.gridwidth = 2;
 			gbcLabelNextVisitWard.anchor = GridBagConstraints.WEST;
 			gbcLabelNextVisitWard.gridx = 2;
-			gbcLabelNextVisitWard.gridy = 8;
+			gbcLabelNextVisitWard.gridy = 9;
 			jPanelData.add(getJNextVisitWardPanel(), gbcLabelNextVisitWard);
 		}
 		return jPanelData;
@@ -1288,14 +1321,16 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jSearchButton.setBorderPainted(false);
 			jSearchButton.setPreferredSize(new Dimension(20, 20));
 			jSearchButton.addActionListener(actionEvent -> {
+				String searchText = jTextPatientSrc.getText();
 				jComboPatResult.removeAllItems();
 				try {
-					pat = patientBrowserManager.getPatientsByOneOfFieldsLike(jTextPatientSrc.getText());
+					pat = patientBrowserManager.getPatientsByOneOfFieldsLike(searchText);
+					for (Patient p : pat) {
+					}
 				} catch (OHServiceException ex) {
-					OHServiceExceptionUtil.showMessages(ex);
-					pat = new ArrayList<>();
+					ex.printStackTrace();
 				}
-				getSearchBox(jTextPatientSrc.getText());
+				getSearchBox(searchText);
 			});
 		}
 		return jSearchButton;
@@ -1490,7 +1525,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					|| !insert && MainMenu.checkUserGrants("btnopdeditoperation")) {
 				jTabbedPaneOpd.addTab(MessageBundle.getMessage("angal.admission.operation"), getMultiOperationTab());
 			}
-			jTabbedPaneOpd.setPreferredSize(new Dimension(200, 400));
+			jTabbedPaneOpd.setPreferredSize(new Dimension(200, 250));
 		}
 		return jTabbedPaneOpd;
 	}
@@ -1670,7 +1705,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private JTextArea getJPatientNoteArea() {
 		if (jPatientNote == null) {
-			jPatientNote = new JTextArea(15, 15);
+			jPatientNote = new JTextArea(7, 15);
 			if (!insert) {
 				jPatientNote.setText(opdPatient.getNote());
 			}
@@ -1893,6 +1928,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setDisease3(disease3);
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setWard(opdWard);
+				opd.setMalnutrition(malnutritionCheckBox.isSelected());
+				String reasonText = reasonField.getText().trim();
+				opd.setReferingMotif(reasonText.isEmpty() ? null : reasonText);
 
 				try {
 					if (insert) { // Insert

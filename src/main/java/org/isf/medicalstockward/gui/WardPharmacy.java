@@ -76,6 +76,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
@@ -218,8 +219,6 @@ public class WardPharmacy extends ModalJFrame implements
 	private JButton jButtonStockCard;
 	private JButton jButtonStockLedger;
 	private JButton jButtonDelete;
-
-	private static final int PAGE_SIZE = 100;
 
 	// Outcomes
 	private int currentPageOutcomes = 0;
@@ -1308,7 +1307,7 @@ public class WardPharmacy extends ModalJFrame implements
 						sex,
 						ageFromVal, ageToVal,
 						weightFromVal, weightToVal,
-						page, PAGE_SIZE);
+						page, GeneralData.PAGINATIONPAGESIZE);
 			}
 
 			@Override
@@ -1346,7 +1345,7 @@ public class WardPharmacy extends ModalJFrame implements
 			@Override
 			protected Page<Movement> doInBackground() throws Exception {
 				return movWardBrowserManager.getIncomingMovements(
-						wardSelected.getCode(), dateFrom, dateTo, page, PAGE_SIZE);
+						wardSelected.getCode(), dateFrom, dateTo, page, GeneralData.PAGINATIONPAGESIZE);
 			}
 
 			@Override
@@ -1383,7 +1382,7 @@ public class WardPharmacy extends ModalJFrame implements
 			@Override
 			protected Page<MedicalWard> doInBackground() throws Exception {
 				Page<MedicalWard> result = movWardBrowserManager
-						.getMedicalsWardTotalQuantity(wardSelected.getCode(), page, PAGE_SIZE);
+						.getMedicalsWardTotalQuantity(wardSelected.getCode(), page, GeneralData.PAGINATIONPAGESIZE);
 				return result;
 			}
 
