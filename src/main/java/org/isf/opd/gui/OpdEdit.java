@@ -509,7 +509,7 @@ public class OpdEdit extends JDialog {
 				opd.setDate(visitDate);
 				opd.setNote("");
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
-				opd.setMalnutrition(malnutritionCheckBox.isSelected() ? "Y" : "N");
+				opd.setMalnutrition(malnutritionCheckBox.isSelected());
 				String reasonText = reasonField.getText().trim();
 				opd.setReferingMotif(reasonText.isEmpty() ? null : reasonText);
 
@@ -959,7 +959,7 @@ public class OpdEdit extends JDialog {
 			if (!insert && opd.getReferingMotif() != null) {
 				reasonField.setText(opd.getReferingMotif());
 			}
-			if (!insert && opd.getMalnutrition() != null && opd.getMalnutrition().equals("Y")) {
+			if (!insert && opd.isMalnutrition() == true) {
 				malnutritionCheckBox.setSelected(true);
 			}
 		}
