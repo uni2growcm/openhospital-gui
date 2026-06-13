@@ -171,6 +171,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
 
+	private int PAGE_SIZE = 100;
 	private int currentPage = 0;
 	private int totalPages = 0;
 	private JButton jPrevButton;
@@ -1196,7 +1197,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			Integer partnerId = null;
 			Partner selectedPartner = (Partner) partnerComboBox.getSelectedItem();
 			if (selectedPartner != null) {
-				partnerId = selectedPartner.getId();
+				partnerId = selectedPartner.getCode();
 			}
 
 			LocalDateTime admissionDateFrom = null;
