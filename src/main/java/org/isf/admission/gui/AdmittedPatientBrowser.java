@@ -99,6 +99,8 @@ import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended;
 import org.isf.opd.model.Opd;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.model.Partner;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
@@ -147,6 +149,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			MessageBundle.getMessage("angal.common.female.txt") };
 	private JComboBox patientSexBox = new JComboBox(patientSexItems);
 	private JComboBox<Country> patientCountryBox;
+	private JComboBox<Partner> partnerComboBox;
 	private JCheckBox[] wardCheck;
 	private JTextField searchString;
 	private JButton jSearchButton;
@@ -160,13 +163,15 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.country.txt").toUpperCase()};
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false, false };
+			MessageBundle.getMessage("angal.common.country.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.blama.txt").toUpperCase()};
+	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120, 130 };
+	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, true };
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
 
+	private int PAGE_SIZE = 100;
 	private int currentPage = 0;
 	private int totalPages = 0;
 	private JButton jPrevButton;
@@ -181,6 +186,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private ExaminationBrowserManager examinationBrowserManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
 	private CountryBrowserManager countryBrowserManager = Context.getApplicationContext().getBean(CountryBrowserManager.class);
+	private PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
 
 	protected boolean altKeyReleased = true;
 	protected Timer ageTimer = new Timer(1000, e -> filterPatient(null));
@@ -516,6 +522,19 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		countryPanel.add(patientCountryBox, BorderLayout.CENTER);
 		countryPanel = setMyBorder(countryPanel, MessageBundle.getMessage("angal.common.country.txt"));
 
+		partnerComboBox = new JComboBox<>();
+		partnerComboBox.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
+		loadPartnerList();
+		if (!GeneralData.ENHANCEDSEARCH) {
+			partnerComboBox.addActionListener(listener);
+		}
+
+		JPanel partnerPanel = new JPanel();
+		partnerPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
+		partnerPanel.setLayout(new BorderLayout());
+		partnerPanel.add(partnerComboBox, BorderLayout.CENTER);
+		partnerPanel = setMyBorder(partnerPanel, MessageBundle.getMessage("angal.patient.partner.border"));
+
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
 
@@ -566,6 +585,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 						.addComponent(agePanel, width, width, width) //
 						.addComponent(sexPanel, width, width, width) //
 						.addComponent(countryPanel, width, width, width)//
+						.addComponent(partnerPanel, width, width, width)//
 						.addComponent(searchPanel, width, width, width)));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -583,6 +603,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(countryPanel, GroupLayout.DEFAULT_SIZE,
 						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))//
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(partnerPanel, GroupLayout.DEFAULT_SIZE,
+						GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
 				.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
 						.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
@@ -1171,6 +1194,12 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				countryId = selectedCountry.getId();
 			}
 
+			Integer partnerId = null;
+			Partner selectedPartner = (Partner) partnerComboBox.getSelectedItem();
+			if (selectedPartner != null) {
+				partnerId = selectedPartner.getCode();
+			}
+
 			LocalDateTime admissionDateFrom = null;
 			LocalDateTime admissionDateTo = null;
 			LocalDateTime dischargeDateFrom = null;
@@ -1201,8 +1230,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 					admissionDateTo,
 					dischargeDateFrom,
 					dischargeDateTo,
-					ageFrom, ageTo, sex,countryId,
-					page, GeneralData.PAGINATIONPAGESIZE
+					ageFrom, ageTo, sex,countryId, partnerId,
+					page, PAGE_SIZE
 			);
 
 			pPatient = new ArrayList<>(result.getContent());
@@ -1405,6 +1434,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				}catch(Exception e){
 					return "";
 				}
+			} else if (c == 7) {
+				return patient.getBlama();
 			}
 
 			return null;
@@ -1447,6 +1478,31 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 					setText(MessageBundle.getMessage("angal.common.all.txt"));
 				} else {
 					setText(((Country) value).getName());
+				}
+				return this;
+			}
+		});
+	}
+
+	private void loadPartnerList() {
+		partnerComboBox.removeAllItems();
+		partnerComboBox.addItem(null);
+		try {
+			List<Partner> partners = partnerBrowserManager.getPartners();
+			for (Partner partner : partners) {
+				partnerComboBox.addItem(partner);
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		partnerComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value == null) {
+					setText(MessageBundle.getMessage("angal.common.all.txt"));
+				} else {
+					setText(((Partner) value).getName());
 				}
 				return this;
 			}

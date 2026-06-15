@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -240,13 +241,28 @@ public class MovStockMultipleCharging extends JDialog {
 		headerPanel.add(jLabelReferenceNo, gbcLabelReferenceNo);
 
 		jTextFieldReference = new JTextField();
+		jTextFieldReference.setColumns(10);
+
+		if (GeneralData.REFERENCE_AUTOMATIC) {
+			LocalDateTime now = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GeneralData.REFERENCE_TIMESTAMP_FORMAT);
+			String timestamp = now.format(formatter);
+			String autoRef = GeneralData.REFERENCE_PREFIX_CHARGE + timestamp;
+			jTextFieldReference.setText(autoRef);
+			jTextFieldReference.setEditable(false);
+			jTextFieldReference.setEnabled(false);
+		} else {
+			jTextFieldReference.setText("");
+			jTextFieldReference.setEditable(true);
+		}
+		jTextFieldReference.setBackground(Color.WHITE);
+
 		GridBagConstraints gbcTextFieldReference = new GridBagConstraints();
 		gbcTextFieldReference.insets = new Insets(5, 0, 5, 0);
 		gbcTextFieldReference.fill = GridBagConstraints.HORIZONTAL;
 		gbcTextFieldReference.gridx = 3;
 		gbcTextFieldReference.gridy = 0;
 		headerPanel.add(jTextFieldReference, gbcTextFieldReference);
-		jTextFieldReference.setColumns(10);
 
 		JLabel jLabelChargeType = new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chargetype") + ':'); //$NON-NLS-1$
 		GridBagConstraints gbcLabelChargeType = new GridBagConstraints();
