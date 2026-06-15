@@ -816,6 +816,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             billItem.setItemDisplayCode(displayDescription);
         }
 
+		billItem.setItemGroup(price.getGroup());
+
         return billItem;
     }
 
@@ -1985,6 +1987,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jButtonSave.addActionListener(actionEvent -> {
 				loadDataset();
 				checkBill();
+				if (Objects.equals(wardComboBox.getSelectedItem(), "")) {
+					MessageDialog.error(this, "angal.newbill.selectward.msg");
+					return;
+				}
 				if (thisBill.getPriceList() == null) {
 					thisBill.setPriceList(lstArray.get(0));
 				}
@@ -2328,10 +2334,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						return;
 					}
 					if (amount.compareTo(balance) > 0) {
-						MessageDialog.error(this,
-								MessageBundle.formatMessage("angal.newbill.payment.exceeds.balance.msg",
-										amount, balance));
-						return;
+						MessageDialog.info(this,
+								MessageBundle.formatMessage("angal.newbill.amounttorefund.msg",
+										 (amount.intValue() - balance.intValue())));
+						amount = balance;
 					}
 				} catch (Exception e) {
 					MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
@@ -2959,6 +2965,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			double amount = prc.getPrice();
 			try {
                 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
+				item.setItemGroup(prc.getGroup());
+				item.setPriceID(prc.getItem());
 				billItems.add(item);
                 modified = true;
                 updateTotals();
@@ -3228,6 +3236,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         try {
             BillItems billItem = buildBillItem(oth, qty, oth.getDesc());
             if (billItem != null) {
+				billItem.setItemGroup(oth.getGroup());
                 billItems.add(billItem);
                 modified = true;
                 updateTotals();

@@ -24,6 +24,7 @@ package org.isf.maternity.gui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -142,14 +143,55 @@ public class PregnancyDetailsView extends JDialog {
 
         // Obstetric History Section
         JPanel obstetricPanel = createSectionPanel(MessageBundle.getMessage("angal.maternity.obstetric.history.header"));
-        obstetricPanel.setLayout(new GridLayout(3, 2, 5, 3));
+        obstetricPanel.setLayout(new GridLayout(0, 2, 5, 3));
+
+        // Gravidity
         obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.gravidity.label") + ":"));
         obstetricPanel.add(createValueLabel(pregnancy.getGravidity() != null ? String.valueOf(pregnancy.getGravidity()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Parity
         obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.parity.label") + ":"));
         obstetricPanel.add(createValueLabel(pregnancy.getParity() != null ? String.valueOf(pregnancy.getParity()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Term Deliveries
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.term.deliveries") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getTermDeliveries() != null ? String.valueOf(pregnancy.getTermDeliveries()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Preterm Deliveries
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.preterm.deliveries") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getPretermDeliveries() != null ? String.valueOf(pregnancy.getPretermDeliveries()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Row 5: Miscarriages
         obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.miscarriages.label") + ":"));
         obstetricPanel.add(createValueLabel(pregnancy.getMiscarriages() != null ? String.valueOf(pregnancy.getMiscarriages()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Living Children
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.living.children") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getLivingChildren() != null ? String.valueOf(pregnancy.getLivingChildren()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Stillbirths
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.stillbirths") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getStillbirths() != null ? String.valueOf(pregnancy.getStillbirths()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Deceased Children
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.deceased.children") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getDeceasedChildren() != null ? String.valueOf(pregnancy.getDeceasedChildren()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Desired Children
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.desired.children") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getDesiredChildren() != null ? String.valueOf(pregnancy.getDesiredChildren()) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Breastfeeding
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.breastfeeding") + ":"));
+        obstetricPanel.add(createValueLabel(pregnancy.getBreastfeeding() != null ? ("Y".equals(pregnancy.getBreastfeeding()) ? MessageBundle.getMessage("angal.common.yes.txt") : MessageBundle.getMessage("angal.common.no.txt")) : MessageBundle.getMessage("angal.common.na.label")));
+
+        // Last Child Age
+        obstetricPanel.add(createLabel(MessageBundle.getMessage("angal.maternity.last.child.age") + ":"));
+        String lastChildAge = formatLastChildAge(pregnancy);
+        obstetricPanel.add(createValueLabel(lastChildAge));
+
         formPanel.add(obstetricPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 8)));
 
         JScrollPane scrollPane = new JScrollPane(formPanel);
         scrollPane.setBorder(null);
@@ -461,5 +503,34 @@ public class PregnancyDetailsView extends JDialog {
         }
         new GenericReportPregnancyCertificateOfDeclaration(pregnancy.getId().longValue());
         dispose();
+    }
+
+    /**
+     * Formats the last child age from years, months, weeks, days fields.
+     *
+     * @param pregnancy the pregnancy entity
+     * @return formatted age string (e.g., "2 years, 3 months, 1 week, 4 days")
+     */
+    private String formatLastChildAge(Pregnancy pregnancy) {
+        List<String> parts = new ArrayList<>();
+
+        if (pregnancy.getLastChildYears() != null && pregnancy.getLastChildYears() > 0) {
+            parts.add(pregnancy.getLastChildYears() + " " + MessageBundle.getMessage("angal.common.years.txt"));
+        }
+        if (pregnancy.getLastChildMonths() != null && pregnancy.getLastChildMonths() > 0) {
+            parts.add(pregnancy.getLastChildMonths() + " " + MessageBundle.getMessage("angal.common.months.txt"));
+        }
+        if (pregnancy.getLastChildWeeks() != null && pregnancy.getLastChildWeeks() > 0) {
+            parts.add(pregnancy.getLastChildWeeks() + " " + MessageBundle.getMessage("angal.common.weeks.txt"));
+        }
+        if (pregnancy.getLastChildDays() != null && pregnancy.getLastChildDays() > 0) {
+            parts.add(pregnancy.getLastChildDays() + " " + MessageBundle.getMessage("angal.common.days.txt"));
+        }
+
+        if (parts.isEmpty()) {
+            return MessageBundle.getMessage("angal.common.na.label");
+        }
+
+        return String.join(", ", parts);
     }
 }

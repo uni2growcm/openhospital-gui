@@ -36,18 +36,7 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
+import javax.swing.*;
 import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.GeneralData;
@@ -137,6 +126,17 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
     private Pregnancy pregnancy;
     private Patient selectedPatient;
     private boolean insert;
+    private JTextField termDeliveriesField;
+    private JTextField pretermDeliveriesField;
+    private JTextField livingChildrenField;
+    private JTextField stillbirthsField;
+    private JTextField deceasedChildrenField;
+    private JTextField desiredChildrenField;
+    private JCheckBox breastfeedingCheckBox;
+    private JTextField lastChildYearsField;
+    private JTextField lastChildMonthsField;
+    private JTextField lastChildWeeksField;
+    private JTextField lastChildDaysField;
 
     private PregnancyBrowserManager pregnancyManager;
     private PatientBrowserManager patientManager;
@@ -223,6 +223,40 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
             if (pregnancy.getStatus() != null) {
                 statusCombo.setSelectedItem(pregnancy.getStatus());
             }
+            if (pregnancy.getTermDeliveries() != null) {
+                termDeliveriesField.setText(String.valueOf(pregnancy.getTermDeliveries()));
+            }
+            if (pregnancy.getPretermDeliveries() != null) {
+                pretermDeliveriesField.setText(String.valueOf(pregnancy.getPretermDeliveries()));
+            }
+            if (pregnancy.getLivingChildren() != null) {
+                livingChildrenField.setText(String.valueOf(pregnancy.getLivingChildren()));
+            }
+            if (pregnancy.getStillbirths() != null) {
+                stillbirthsField.setText(String.valueOf(pregnancy.getStillbirths()));
+            }
+            if (pregnancy.getDeceasedChildren() != null) {
+                deceasedChildrenField.setText(String.valueOf(pregnancy.getDeceasedChildren()));
+            }
+            if (pregnancy.getDesiredChildren() != null) {
+                desiredChildrenField.setText(String.valueOf(pregnancy.getDesiredChildren()));
+            }
+            if (pregnancy.getBreastfeeding() != null) {
+                breastfeedingCheckBox.setSelected("Y".equals(pregnancy.getBreastfeeding()));
+            }
+            if (pregnancy.getLastChildYears() != null) {
+                lastChildYearsField.setText(String.valueOf(pregnancy.getLastChildYears()));
+            }
+            if (pregnancy.getLastChildMonths() != null) {
+                lastChildMonthsField.setText(String.valueOf(pregnancy.getLastChildMonths()));
+            }
+            if (pregnancy.getLastChildWeeks() != null) {
+                lastChildWeeksField.setText(String.valueOf(pregnancy.getLastChildWeeks()));
+            }
+            if (pregnancy.getLastChildDays() != null) {
+                lastChildDaysField.setText(String.valueOf(pregnancy.getLastChildDays()));
+            }
+
         }
     }
 
@@ -260,11 +294,19 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     private JPanel getMainPanel() {
         if (mainPanel == null) {
-            mainPanel = new JPanel();
-            mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-            mainPanel.add(getDatePanel());
-            mainPanel.add(getPatientPanel());
-            mainPanel.add(getDataPanel());
+            mainPanel = new JPanel(new BorderLayout());
+
+            JPanel topPanel = new JPanel();
+            topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+            topPanel.add(getDatePanel());
+            topPanel.add(getPatientPanel());
+
+            JScrollPane scrollPane = new JScrollPane(getDataPanel());
+            scrollPane.setBorder(null);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+            mainPanel.add(topPanel, BorderLayout.NORTH);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
         }
         return mainPanel;
     }
@@ -367,42 +409,183 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
     private JPanel getDataPanel() {
         if (dataPanel == null) {
-            dataPanel = new JPanel(new SpringLayout());
-            dataPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.pregnancy.data.border")));
+            dataPanel = new JPanel(new GridBagLayout());
+            dataPanel.setBorder(BorderFactory.createTitledBorder(
+                    MessageBundle.getMessage("angal.maternity.pregnancy.data.border")));
 
-            // LMP (Last Menstrual Period) - Obligatoire
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.lmp.col") + " * :"));
-            dataPanel.add(getLmpDateField());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(5, 10, 5, 10);
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
-            // EDD LMP (Estimated Delivery Date from LMP)
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.edd.col") + " (LMP):"));
-            dataPanel.add(getEddLmpDateField());
+            int row = 0;
 
-            // EDD Scan (Estimated Delivery Date from Ultrasound)
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.edd.col") + " (Scan):"));
-            dataPanel.add(getEddScanDateField());
+            //LMP (Last Menstrual Period) - Mandatory
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.lmp.col") + " * :"), gbc);
 
-            // Gravidity
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.gravidity.col") + ":"));
-            dataPanel.add(getGravidityField());
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
+            dataPanel.add(getLmpDateField(), gbc);
+            row++;
 
-            // Parity
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.parity.col") + ":"));
-            dataPanel.add(getParityField());
+            //EDD LMP
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.edd.col") + " (LMP):"), gbc);
 
-            // Miscarriages
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.miscarriages.col") + ":"));
-            dataPanel.add(getMiscarriagesField());
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
+            dataPanel.add(getEddLmpDateField(), gbc);
+            row++;
 
-            // Risk Level
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.risklevel.col") + ":"));
-            dataPanel.add(getRiskLevelCombo());
+            //EDD Scan
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.edd.col") + " (Scan):"), gbc);
 
-            // Status
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.status.col") + ":"));
-            dataPanel.add(getStatusCombo());
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
+            dataPanel.add(getEddScanDateField(), gbc);
+            row++;
 
-            SpringUtilities.makeCompactGrid(dataPanel, 8, 2, 8, 12, 8, 12);
+            // Separator
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.gridwidth = 2;
+            dataPanel.add(new JSeparator(), gbc);
+            row++;
+            gbc.gridwidth = 1;
+
+            //Gravidity
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.gravidity.col") + ":"), gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
+            dataPanel.add(getGravidityField(), gbc);
+            row++;
+
+            //Parity
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.parity.col") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getParityField(), gbc);
+            row++;
+
+            //Miscarriages
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.miscarriages.col") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getMiscarriagesField(), gbc);
+            row++;
+
+            //Term Deliveries
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.term.deliveries") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getTermDeliveriesField(), gbc);
+            row++;
+
+            //Preterm Deliveries
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.preterm.deliveries") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getPretermDeliveriesField(), gbc);
+            row++;
+
+            //Living Children
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.living.children") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getLivingChildrenField(), gbc);
+            row++;
+
+            //Stillbirths
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.stillbirths") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getStillbirthsField(), gbc);
+            row++;
+
+            //Deceased Children
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.deceased.children") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getDeceasedChildrenField(), gbc);
+            row++;
+
+            //Desired Children
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.desired.children") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getDesiredChildrenField(), gbc);
+            row++;
+
+            //Breastfeeding
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.breastfeeding") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getBreastfeedingCheckBox(), gbc);
+            row++;
+
+            //Last Child Age
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.last.child.age") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getLastChildAgePanel(), gbc);
+            row++;
+
+            //Risk Level
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.risklevel.col") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getRiskLevelCombo(), gbc);
+            row++;
+
+            //Status
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.status.col") + ":"), gbc);
+
+            gbc.gridx = 1;
+            dataPanel.add(getStatusCombo(), gbc);
+            row++;
+
+            // Add vertical filler
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weighty = 1.0;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            dataPanel.add(new JPanel(), gbc);
         }
         return dataPanel;
     }
@@ -551,6 +734,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 pregnancy.setDate(LocalDateTime.now());
             }
 
+            // === DATE FIELDS ===
             if (lmpDate != null) {
                 pregnancy.setLmp(lmpDate.atStartOfDay());
             }
@@ -575,6 +759,45 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
 
             if (!miscarriagesField.getText().trim().isEmpty()) {
                 pregnancy.setMiscarriages(Integer.parseInt(miscarriagesField.getText()));
+            }
+
+            if (!termDeliveriesField.getText().trim().isEmpty()) {
+                pregnancy.setTermDeliveries(Integer.parseInt(termDeliveriesField.getText()));
+            }
+
+            if (!pretermDeliveriesField.getText().trim().isEmpty()) {
+                pregnancy.setPretermDeliveries(Integer.parseInt(pretermDeliveriesField.getText()));
+            }
+
+            if (!livingChildrenField.getText().trim().isEmpty()) {
+                pregnancy.setLivingChildren(Integer.parseInt(livingChildrenField.getText()));
+            }
+
+            if (!stillbirthsField.getText().trim().isEmpty()) {
+                pregnancy.setStillbirths(Integer.parseInt(stillbirthsField.getText()));
+            }
+
+            if (!deceasedChildrenField.getText().trim().isEmpty()) {
+                pregnancy.setDeceasedChildren(Integer.parseInt(deceasedChildrenField.getText()));
+            }
+
+            if (!desiredChildrenField.getText().trim().isEmpty()) {
+                pregnancy.setDesiredChildren(Integer.parseInt(desiredChildrenField.getText()));
+            }
+
+            pregnancy.setBreastfeeding(breastfeedingCheckBox.isSelected() ? "Y" : "N");
+
+            if (!lastChildYearsField.getText().trim().isEmpty()) {
+                pregnancy.setLastChildYears(Integer.parseInt(lastChildYearsField.getText()));
+            }
+            if (!lastChildMonthsField.getText().trim().isEmpty()) {
+                pregnancy.setLastChildMonths(Integer.parseInt(lastChildMonthsField.getText()));
+            }
+            if (!lastChildWeeksField.getText().trim().isEmpty()) {
+                pregnancy.setLastChildWeeks(Integer.parseInt(lastChildWeeksField.getText()));
+            }
+            if (!lastChildDaysField.getText().trim().isEmpty()) {
+                pregnancy.setLastChildDays(Integer.parseInt(lastChildDaysField.getText()));
             }
 
             pregnancy.setRiskLevel((RiskLevel) riskLevelCombo.getSelectedItem());
@@ -603,5 +826,116 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
         }
+    }
+
+    private JTextField getTermDeliveriesField() {
+        if (termDeliveriesField == null) {
+            termDeliveriesField = new VoLimitedTextField(3, 2);
+            termDeliveriesField.setColumns(5);
+            if (insert) termDeliveriesField.setText("0");
+        }
+        return termDeliveriesField;
+    }
+
+    private JTextField getPretermDeliveriesField() {
+        if (pretermDeliveriesField == null) {
+            pretermDeliveriesField = new VoLimitedTextField(3, 2);
+            pretermDeliveriesField.setColumns(5);
+            if (insert) pretermDeliveriesField.setText("0");
+        }
+        return pretermDeliveriesField;
+    }
+
+    private JTextField getLivingChildrenField() {
+        if (livingChildrenField == null) {
+            livingChildrenField = new VoLimitedTextField(3, 2);
+            livingChildrenField.setColumns(5);
+            if (insert) livingChildrenField.setText("0");
+        }
+        return livingChildrenField;
+    }
+
+    private JTextField getStillbirthsField() {
+        if (stillbirthsField == null) {
+            stillbirthsField = new VoLimitedTextField(3, 2);
+            stillbirthsField.setColumns(5);
+            if (insert) stillbirthsField.setText("0");
+        }
+        return stillbirthsField;
+    }
+
+    private JTextField getDeceasedChildrenField() {
+        if (deceasedChildrenField == null) {
+            deceasedChildrenField = new VoLimitedTextField(3, 2);
+            deceasedChildrenField.setColumns(5);
+            if (insert) deceasedChildrenField.setText("0");
+        }
+        return deceasedChildrenField;
+    }
+
+    private JTextField getDesiredChildrenField() {
+        if (desiredChildrenField == null) {
+            desiredChildrenField = new VoLimitedTextField(3, 2);
+            desiredChildrenField.setColumns(5);
+            if (insert) desiredChildrenField.setText("");
+        }
+        return desiredChildrenField;
+    }
+
+    private JCheckBox getBreastfeedingCheckBox() {
+        if (breastfeedingCheckBox == null) {
+            breastfeedingCheckBox = new JCheckBox();
+            breastfeedingCheckBox.setText(MessageBundle.getMessage("angal.common.yes.txt"));
+        }
+        return breastfeedingCheckBox;
+    }
+
+    private JPanel getLastChildAgePanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        panel.add(getLastChildYearsField());
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.years.txt")));
+        panel.add(getLastChildMonthsField());
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.months.txt")));
+        panel.add(getLastChildWeeksField());
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.weeks.txt")));
+        panel.add(getLastChildDaysField());
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.days.txt")));
+        return panel;
+    }
+
+    private JTextField getLastChildYearsField() {
+        if (lastChildYearsField == null) {
+            lastChildYearsField = new VoLimitedTextField(3, 2);
+            lastChildYearsField.setColumns(3);
+            if (insert) lastChildYearsField.setText("");
+        }
+        return lastChildYearsField;
+    }
+
+    private JTextField getLastChildMonthsField() {
+        if (lastChildMonthsField == null) {
+            lastChildMonthsField = new VoLimitedTextField(2, 2);
+            lastChildMonthsField.setColumns(3);
+            if (insert) lastChildMonthsField.setText("");
+        }
+        return lastChildMonthsField;
+    }
+
+    private JTextField getLastChildWeeksField() {
+        if (lastChildWeeksField == null) {
+            lastChildWeeksField = new VoLimitedTextField(2, 2);
+            lastChildWeeksField.setColumns(3);
+            if (insert) lastChildWeeksField.setText("");
+        }
+        return lastChildWeeksField;
+    }
+
+    private JTextField getLastChildDaysField() {
+        if (lastChildDaysField == null) {
+            lastChildDaysField = new VoLimitedTextField(2, 2);
+            lastChildDaysField.setColumns(3);
+            if (insert) lastChildDaysField.setText("");
+        }
+        return lastChildDaysField;
     }
 }

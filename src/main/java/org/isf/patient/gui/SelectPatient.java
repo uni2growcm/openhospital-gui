@@ -123,7 +123,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 	List<Patient> patSearch = new ArrayList<>();
 
 	private int currentPage = 0;
-    private static final int PAGE_SIZE = 100;
 	private long totalRecords = 0;
 	private int totalPages = 0;
     private Timer searchTimer;
@@ -286,7 +285,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 					keyword,
 					femalesOnly,
 					currentPage,
-                    PAGE_SIZE);
+                    GeneralData.PAGINATIONPAGESIZE);
 
 			patSearch = new ArrayList<>(page.getContent());
 
