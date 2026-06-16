@@ -289,10 +289,10 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (MainMenu.checkUserGrants("btnopddel")) {
 				jButtonPanel.add(getJDeleteButton(), null);
 			}
-			jButtonPanel.add(getJCloseButton(), null);
 			if (MainMenu.checkUserGrants("homevisit")) {
 				jButtonPanel.add(getJHomeVisitButton(), null);
 			}
+			jButtonPanel.add(getJCloseButton(), null);
 		}
 		return jButtonPanel;
 	}

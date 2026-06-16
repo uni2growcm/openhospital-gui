@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JList;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.DefaultListCellRenderer;
@@ -358,7 +359,9 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.PLANNED && visit.getStatus() != HomeVisitStatus.POSTPONED) {
+        if (visit.getStatus() != HomeVisitStatus.PLANNED &&
+                visit.getStatus() != HomeVisitStatus.POSTPONED &&
+                visit.getStatus() != HomeVisitStatus.COMPLETED) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.cancel.error"));
             return;
         }
@@ -368,15 +371,43 @@ public class HomeVisitBrowser extends ModalJFrame {
                         visit.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))),
                 MessageBundle.getMessage("angal.homevisit.cancel.dialog.title"));
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                manager.cancelHomeVisit(visit.getId());
-                loadHomeVisits();
-                MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.cancel.success"));
-            } catch (OHServiceException e) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.cancel.error"));
-                LOGGER.error(e.getMessage(), e);
-            }
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.cancel.reason.prompt")),
+                BorderLayout.NORTH);
+        JTextArea reasonArea = new JTextArea(3, 30);
+        reasonArea.setLineWrap(true);
+        reasonArea.setWrapStyleWord(true);
+        panel.add(new JScrollPane(reasonArea), BorderLayout.CENTER);
+
+        int reasonConfirm = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                MessageBundle.getMessage("angal.homevisit.cancel.reason.dialog.title"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (reasonConfirm != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String reason = reasonArea.getText().trim();
+        if (reason.isEmpty()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.cancel.reason.required"));
+            return;
+        }
+
+        try {
+            manager.cancelHomeVisit(visit.getId(), reason);
+            loadHomeVisits();
+            MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.cancel.success"));
+        } catch (OHServiceException e) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.cancel.error"));
+            LOGGER.error(e.getMessage(), e);
         }
     }
 

@@ -69,10 +69,6 @@ public class GoodDateTimeSpinnerChooser extends GoodDateTimeChooserBase {
 		dateSettings.setDateRangeLimits(minDate, null);
 	}
 
-	public void setMinDateTime(LocalDateTime minDateTime) {
-		dateSettings.setDateRangeLimits(minDateTime.toLocalDate(), null);
-	}
-
 	public void addDateChangeListener(DateChangeListener listener) {
 		dateTimePicker.datePicker.addDateChangeListener(listener);
 	}
