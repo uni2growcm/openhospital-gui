@@ -23,33 +23,46 @@ package org.isf.maternity.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
-import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hiv.manager.HIVInfantManager;
 import org.isf.hiv.manager.HIVVisitManager;
 import org.isf.hiv.model.HIVInfant;
-import org.isf.hiv.model.HIVInfant.HIVInfantStatus;
 import org.isf.hiv.model.HIVInfant.FeedingType;
+import org.isf.hiv.model.HIVInfant.HIVInfantStatus;
 import org.isf.hiv.model.HIVVisit;
 import org.isf.menu.manager.Context;
-import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
@@ -59,26 +72,30 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final int HIV_PAGINATION_PAGESIZE = 100;
     private static final int MIN_AGE_MONTHS = 0;
-    private static final int MAX_AGE_MONTHS = 60;
+    private static final int MAX_AGE_MONTHS = 24;
 
     private final String[] columnHeaders = {
-            "ID",
+            MessageBundle.getMessage("angal.common.idnourisson.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
             MessageBundle.getMessage("angal.hiv.table.status").toUpperCase(),
             MessageBundle.getMessage("angal.hiv.table.last.visit").toUpperCase(),
+            MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.hiv.filter.feeding").toUpperCase(),
             ""
     };
-
-    private final int[] columnWidths = { 50, 80, 180, 60, 120, 120, 60 };
+    private final int[] columnWidths = { 50, 80, 180, 60, 120, 120, 120, 120, 80 };
 
     private final String[] visitColumnHeaders = {
             MessageBundle.getMessage("angal.maternity.visitdate.col").toUpperCase(),
@@ -96,12 +113,13 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     private JTable infantTable;
     private JTable visitTable;
+    private InfantsTableModel model;
+
     private JButton nextButton;
     private JButton prevButton;
-    private javax.swing.JComboBox<Integer> pagesCombo;
+    private JComboBox<Integer> pagesCombo;
     private JLabel underLabel;
     private JLabel totalInfantsLabel;
-    private InfantsTableModel model;
     private int TOTAL_PAGES = 0;
     private int CURRENT_PAGE = 1;
     private long TOTAL_INFANTS = 0;
@@ -113,20 +131,15 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private GoodDateChooser followupDateTo;
     private VoLimitedTextField ageFromField;
     private VoLimitedTextField ageToField;
-    private javax.swing.JComboBox<HIVInfantStatus> statusCombo;
-    private javax.swing.JComboBox<FeedingType> feedingCombo;
+    private JComboBox<HIVInfantStatus> statusCombo;
+    private JComboBox<FeedingType> feedingCombo;
     private JButton searchButton;
     private JButton resetButton;
-
-    private javax.swing.JComboBox<String> arvCombo;
-    private javax.swing.JComboBox<String> prophylaxisCombo;
 
     private JRadioButton allVisitsRadio;
     private JRadioButton pcrVisitsRadio;
     private JRadioButton clinicalVisitsRadio;
-    private javax.swing.JComboBox<HIVVisit.PCRResult> pcrResultCombo;
-
-
+    private JComboBox<HIVVisit.PCRResult> pcrResultCombo;
     private HIVInfant selectedInfant;
     private int selectedVisitRow = -1;
 
@@ -140,6 +153,20 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         setVisible(true);
         addCloseListener();
         performSearch();
+    }
+
+    class ButtonRenderer extends JButton implements TableCellRenderer {
+        public ButtonRenderer() {
+            setText(MessageBundle.getMessage("angal.common.details.btn"));
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            setText(MessageBundle.getMessage("angal.common.details.btn"));
+            return this;
+        }
     }
 
     private void addCloseListener() {
@@ -171,7 +198,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void initializeStatusCombo() {
-        statusCombo = new javax.swing.JComboBox<>();
+        statusCombo = new JComboBox<>();
         statusCombo.addItem(null);
         for (HIVInfantStatus status : HIVInfantStatus.values()) {
             statusCombo.addItem(status);
@@ -179,7 +206,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void initializeFeedingCombo() {
-        feedingCombo = new javax.swing.JComboBox<>();
+        feedingCombo = new JComboBox<>();
         feedingCombo.addItem(null);
         for (FeedingType type : FeedingType.values()) {
             feedingCombo.addItem(type);
@@ -193,13 +220,20 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         return topPanel;
     }
 
+    private JPanel getMiddlePanel() {
+        JPanel middlePanel = new JPanel(new BorderLayout());
+        middlePanel.add(getVisitFilterPanel(), BorderLayout.WEST);
+        middlePanel.add(getVisitListPanel(), BorderLayout.CENTER);
+        return middlePanel;
+    }
+
     private JPanel getFilterPanel() {
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
-        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filters.infants")));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.hiv.filters.infants")));
         filterPanel.setMinimumSize(new Dimension(320, 500));
 
-        // Code patient
         JPanel codePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         codePanel.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
         patientCodeFilter = new JTextField(10);
@@ -208,9 +242,9 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Intervalle date enregistrement
         JPanel regDatePanel = new JPanel(new java.awt.GridLayout(2, 2, 5, 5));
-        regDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.registration.date")));
+        regDatePanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.hiv.filter.registration.date")));
         regDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
         regDateTo = new GoodDateChooser(LocalDate.now());
         regDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
@@ -221,9 +255,9 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Intervalle date suivi
         JPanel followupDatePanel = new JPanel(new java.awt.GridLayout(2, 2, 5, 5));
-        followupDatePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.followup.date")));
+        followupDatePanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.hiv.filter.followup.date")));
         followupDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
         followupDateTo = new GoodDateChooser(LocalDate.now());
         followupDatePanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
@@ -234,9 +268,9 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Tranche âge (mois)
         JPanel agePanel = new JPanel(new java.awt.GridLayout(2, 2, 5, 5));
-        agePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.ageinterval.label")));
+        agePanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.common.ageinterval.label")));
         ageFromField = new VoLimitedTextField(3, 3);
         ageFromField.setText(String.valueOf(MIN_AGE_MONTHS));
         ageToField = new VoLimitedTextField(3, 3);
@@ -249,45 +283,22 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Statut
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        statusPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.status")));
+        statusPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.hiv.filter.status")));
         statusPanel.add(statusCombo);
         filterPanel.add(statusPanel);
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Alimentation
         JPanel feedingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        feedingPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.feeding")));
+        feedingPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.hiv.filter.feeding")));
         feedingPanel.add(feedingCombo);
         filterPanel.add(feedingPanel);
 
         filterPanel.add(Box.createVerticalStrut(5));
 
-        // Traitement ARV (à remplir avec les typologies)
-        JPanel arvPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        arvPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.arv")));
-        arvCombo = new javax.swing.JComboBox<>();
-        arvCombo.addItem(MessageBundle.getMessage("angal.hiv.filter.arv.all"));
-        // TODO: Charger les typologies ARV depuis OH_TYPOLOGIES
-        arvPanel.add(arvCombo);
-        filterPanel.add(arvPanel);
-
-        filterPanel.add(Box.createVerticalStrut(5));
-
-        // Prophylaxie (à remplir avec les typologies)
-        JPanel prophylaxisPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        prophylaxisPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.prophylaxis")));
-        prophylaxisCombo = new javax.swing.JComboBox<>();
-        prophylaxisCombo.addItem(MessageBundle.getMessage("angal.hiv.filter.prophylaxis.all"));
-        // TODO: Charger les typologies Prophylaxie depuis OH_TYPOLOGIES
-        prophylaxisPanel.add(prophylaxisCombo);
-        filterPanel.add(prophylaxisPanel);
-
-        filterPanel.add(Box.createVerticalStrut(10));
-
-        // Boutons Rechercher / Réinitialiser
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
         searchButton.addActionListener(e -> performSearch());
@@ -300,16 +311,14 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         return filterPanel;
     }
 
-
-
     private JPanel getInfantListPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(getInfantTablePanel(), BorderLayout.CENTER);
+        panel.add(getInfantTableScrollPane(), BorderLayout.CENTER);
         panel.add(getPaginationPanel(), BorderLayout.SOUTH);
         return panel;
     }
 
-    private JScrollPane getInfantTablePanel() {
+    private JScrollPane getInfantTableScrollPane() {
         model = new InfantsTableModel();
         infantTable = new JTable(model);
         infantTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -321,6 +330,21 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         for (int i = 0; i < columnHeaders.length; i++) {
             infantTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
         }
+
+        infantTable.getColumnModel().getColumn(columnHeaders.length - 1)
+                .setCellRenderer(new ButtonRenderer());
+
+        infantTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int column = infantTable.columnAtPoint(e.getPoint());
+                int row = infantTable.rowAtPoint(e.getPoint());
+                if (column == columnHeaders.length - 1 && row >= 0 && row < infantList.size()) {
+                    HIVInfant infant = infantList.get(row);
+                    viewInfantDetails(infant);
+                }
+            }
+        });
 
         infantTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -336,100 +360,24 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(infantTable);
-        return scrollPane;
-    }
-
-    private JPanel getPaginationPanel() {
-        JPanel paginatePanel = new JPanel();
-        paginatePanel.add(getPrevButton());
-        paginatePanel.add(getPagesCombo());
-        paginatePanel.add(getUnderLabel());
-        paginatePanel.add(getNextButton());
-        paginatePanel.add(getTotalInfantsLabel());
-        return paginatePanel;
-    }
-
-    private JButton getNextButton() {
-        if (nextButton == null) {
-            nextButton = new JButton(">");
-            nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES && TOTAL_PAGES != 1);
-            nextButton.addActionListener(e -> {
-                if (CURRENT_PAGE < TOTAL_PAGES) {
-                    CURRENT_PAGE++;
-                    performSearch();
-                }
-            });
-        }
-        return nextButton;
-    }
-
-    private JButton getPrevButton() {
-        if (prevButton == null) {
-            prevButton = new JButton("<");
-            prevButton.setEnabled(CURRENT_PAGE > 1);
-            prevButton.addActionListener(e -> {
-                if (CURRENT_PAGE > 1) {
-                    CURRENT_PAGE--;
-                    performSearch();
-                }
-            });
-        }
-        return prevButton;
-    }
-
-    private javax.swing.JComboBox<Integer> getPagesCombo() {
-        if (pagesCombo == null) {
-            pagesCombo = new javax.swing.JComboBox<>();
-            pagesCombo.setPreferredSize(new Dimension(100, 25));
-            pagesCombo.addActionListener(e -> {
-                if (pagesCombo.getSelectedItem() != null) {
-                    CURRENT_PAGE = (Integer) pagesCombo.getSelectedItem();
-                    performSearch();
-                }
-            });
-        }
-        return pagesCombo;
-    }
-
-    private JLabel getUnderLabel() {
-        if (underLabel == null) {
-            underLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.page.label"));
-            underLabel.setPreferredSize(new Dimension(80, 30));
-        }
-        return underLabel;
-    }
-
-    private JLabel getTotalInfantsLabel() {
-        if (totalInfantsLabel == null) {
-            totalInfantsLabel = new JLabel(MessageBundle.getMessage("angal.maternity.total.label") + ": 0");
-        }
-        return totalInfantsLabel;
-    }
-
-    private JPanel getMiddlePanel() {
-        JPanel middlePanel = new JPanel(new BorderLayout());
-        middlePanel.add(getVisitFilterPanel(), BorderLayout.WEST);
-        middlePanel.add(getVisitListPanel(), BorderLayout.CENTER);
-        return middlePanel;
+        return new JScrollPane(infantTable);
     }
 
     private JPanel getVisitFilterPanel() {
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
-        filterPanel.setBorder(BorderFactory.createTitledBorder("Filtres visites"));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filters.visits")));
         filterPanel.setPreferredSize(new Dimension(350, 180));
         filterPanel.setMinimumSize(new Dimension(350, 180));
 
-        // Type de visite (RadioButtons)
         JPanel typePanel = new JPanel();
-        typePanel.setBorder(BorderFactory.createTitledBorder("Type de visite"));
+        typePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.visit.type")));
         typePanel.setLayout(new BoxLayout(typePanel, BoxLayout.Y_AXIS));
         typePanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        allVisitsRadio = new JRadioButton("Toutes");
-        pcrVisitsRadio = new JRadioButton("PCR");
-        clinicalVisitsRadio = new JRadioButton("Clinique");
+        allVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.common.all.label"));
+        pcrVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.hiv.visit.pcr"));
+        clinicalVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.hiv.visit.clinical"));
 
         ButtonGroup visitTypeGroup = new ButtonGroup();
         visitTypeGroup.add(allVisitsRadio);
@@ -444,22 +392,25 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         filterPanel.add(Box.createVerticalStrut(10));
 
-        // Résultat PCR
         JPanel pcrResultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pcrResultPanel.setBorder(BorderFactory.createTitledBorder("Résultat PCR"));
+        pcrResultPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.pcr")));
         pcrResultPanel.setAlignmentX(LEFT_ALIGNMENT);
-        pcrResultCombo = new javax.swing.JComboBox<>();
+        pcrResultCombo = new JComboBox<>();
         pcrResultCombo.setPreferredSize(new Dimension(180, 25));
-        pcrResultCombo.addItem(null);  // null = Tous
+        pcrResultCombo.addItem(null);
         for (HIVVisit.PCRResult result : HIVVisit.PCRResult.values()) {
             pcrResultCombo.addItem(result);
         }
         pcrResultPanel.add(pcrResultCombo);
         filterPanel.add(pcrResultPanel);
 
+        allVisitsRadio.addActionListener(e -> filterVisits());
+        pcrVisitsRadio.addActionListener(e -> filterVisits());
+        clinicalVisitsRadio.addActionListener(e -> filterVisits());
+        pcrResultCombo.addActionListener(e -> filterVisits());
+
         return filterPanel;
     }
-
 
     private JScrollPane getVisitListPanel() {
         visitTable = new JTable(new VisitsTableModel());
@@ -480,9 +431,106 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         return visitScrollPane;
     }
 
+    private JPanel getPaginationPanel() {
+        JPanel paginatePanel = new JPanel();
+        paginatePanel.add(getPrevButton());
+        paginatePanel.add(getPagesCombo());
+        paginatePanel.add(getUnderLabel());
+        paginatePanel.add(getNextButton());
+        paginatePanel.add(getTotalInfantsLabel());
+        return paginatePanel;
+    }
+
+    private JButton getNextButton() {
+        if (nextButton == null) {
+            nextButton = new JButton(">");
+            nextButton.setEnabled(false);
+            nextButton.addActionListener(e -> {
+                if (CURRENT_PAGE < TOTAL_PAGES) {
+                    CURRENT_PAGE++;
+                    performSearch();
+                }
+            });
+        }
+        return nextButton;
+    }
+
+    private JButton getPrevButton() {
+        if (prevButton == null) {
+            prevButton = new JButton("<");
+            prevButton.setEnabled(false);
+            prevButton.addActionListener(e -> {
+                if (CURRENT_PAGE > 1) {
+                    CURRENT_PAGE--;
+                    performSearch();
+                }
+            });
+        }
+        return prevButton;
+    }
+
+    private JComboBox<Integer> getPagesCombo() {
+        if (pagesCombo == null) {
+            pagesCombo = new JComboBox<>();
+            pagesCombo.setPreferredSize(new Dimension(100, 25));
+            pagesCombo.addActionListener(e -> {
+                if (pagesCombo.getSelectedItem() != null) {
+                    int selected = (Integer) pagesCombo.getSelectedItem();
+                    if (selected != CURRENT_PAGE) {
+                        CURRENT_PAGE = selected;
+                        performSearch();
+                    }
+                }
+            });
+        }
+        return pagesCombo;
+    }
+
+    private JLabel getUnderLabel() {
+        if (underLabel == null) {
+            underLabel = new JLabel("/ 0 " + MessageBundle.getMessage("angal.common.page.label"));
+            underLabel.setPreferredSize(new Dimension(80, 30));
+        }
+        return underLabel;
+    }
+
+    private JLabel getTotalInfantsLabel() {
+        if (totalInfantsLabel == null) {
+            totalInfantsLabel = new JLabel(
+                    MessageBundle.getMessage("angal.maternity.total.label") + ": 0");
+        }
+        return totalInfantsLabel;
+    }
+
+    private void updatePaginationControls() {
+        prevButton.setEnabled(CURRENT_PAGE > 1);
+        nextButton.setEnabled(CURRENT_PAGE < TOTAL_PAGES);
+
+        java.awt.event.ActionListener[] listeners = pagesCombo.getActionListeners();
+        for (java.awt.event.ActionListener l : listeners) {
+            pagesCombo.removeActionListener(l);
+        }
+        pagesCombo.removeAllItems();
+        for (int i = 1; i <= TOTAL_PAGES; i++) {
+            pagesCombo.addItem(i);
+        }
+        if (TOTAL_PAGES > 0) {
+            pagesCombo.setSelectedItem(CURRENT_PAGE);
+        }
+        for (java.awt.event.ActionListener l : listeners) {
+            pagesCombo.addActionListener(l);
+        }
+
+        underLabel.setText("/ " + TOTAL_PAGES + " "
+                + MessageBundle.getMessage("angal.common.page.label"));
+        totalInfantsLabel.setText(
+                MessageBundle.getMessage("angal.maternity.total.label") + ": " + TOTAL_INFANTS);
+    }
+
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
+        buttonPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.common.actions.label")));
 
         buttonPanel.add(getJNewInfantButton());
         buttonPanel.add(getJUpdateInfantButton());
@@ -514,6 +562,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         button.addActionListener(e -> deleteInfant());
         return button;
     }
+
 
     private JButton getJNewVisitButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.hiv.button.newvisit"));
@@ -552,7 +601,52 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void performSearch() {
-        // À implémenter
+        try {
+            Integer patientCode = null;
+            String codeText = patientCodeFilter.getText().trim();
+            if (!codeText.isEmpty()) {
+                try {
+                    patientCode = Integer.parseInt(codeText);
+                } catch (NumberFormatException ignored) {}
+            }
+
+            HIVInfantStatus status = (HIVInfantStatus) statusCombo.getSelectedItem();
+            FeedingType feeding = (FeedingType) feedingCombo.getSelectedItem();
+            LocalDate regFrom = regDateFrom.getDate();
+            LocalDate regTo = regDateTo.getDate();
+            LocalDate followFrom = followupDateFrom.getDate();
+            LocalDate followTo = followupDateTo.getDate();
+
+            org.springframework.data.domain.Pageable pageable = PageRequest.of(
+                    CURRENT_PAGE - 1,
+                    HIV_PAGINATION_PAGESIZE,
+                    Sort.by("id").descending());
+
+            Page<HIVInfant> page = infantManager.getInfantsByFilters(
+                    patientCode, status, feeding,
+                    regFrom, regTo, followFrom, followTo,
+                    pageable);
+
+            infantList = new ArrayList<>(page.getContent());
+            TOTAL_INFANTS = page.getTotalElements();
+            TOTAL_PAGES = page.getTotalPages();
+
+            if (TOTAL_PAGES > 0 && CURRENT_PAGE > TOTAL_PAGES) {
+                CURRENT_PAGE = TOTAL_PAGES;
+                performSearch();
+                return;
+            }
+
+            model.fireTableDataChanged();
+            updatePaginationControls();
+
+            visitList.clear();
+            ((DefaultTableModel) visitTable.getModel()).fireTableDataChanged();
+            selectedInfant = null;
+
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+        }
     }
 
     private void resetFilters() {
@@ -570,19 +664,119 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void filterVisits() {
-        // À implémenter
+        if (selectedInfant == null) {
+            visitList.clear();
+            ((DefaultTableModel) visitTable.getModel()).fireTableDataChanged();
+            return;
+        }
+        try {
+            List<HIVVisit> allVisits = visitManager.getVisitsByInfantId(selectedInfant.getId());
+
+            HIVVisit.PCRResult pcrFilter = (HIVVisit.PCRResult) pcrResultCombo.getSelectedItem();
+
+            visitList = new ArrayList<>();
+            for (HIVVisit visit : allVisits) {
+                if (pcrVisitsRadio.isSelected()) {
+
+                    if (visit.getPcrResult() == null) continue;
+
+                } else if (clinicalVisitsRadio.isSelected()) {
+
+                    if (visit.getPcrResult() != null) continue;
+                }
+
+                if (pcrFilter != null && !pcrFilter.equals(visit.getPcrResult())) continue;
+
+                visitList.add(visit);
+            }
+
+            ((DefaultTableModel) visitTable.getModel()).fireTableDataChanged();
+
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            visitList.clear();
+            ((DefaultTableModel) visitTable.getModel()).fireTableDataChanged();
+        }
+    }
+
+    private void viewInfantDetails(HIVInfant infant) {
+        if (infant == null) return;
     }
 
     private void newInfant() {
-        // À implémenter
+        HIVInfantEdit edit = new HIVInfantEdit(this, (Patient) null, true);
+        edit.addHIVInfantListener(new HIVInfantEdit.HIVInfantListener() {
+            @Override
+            public void infantInserted(AWTEvent e, HIVInfant infant) {
+                performSearch();
+            }
+
+            @Override
+            public void infantUpdated(AWTEvent e, HIVInfant infant) {
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void updateInfant() {
-        // À implémenter
+        int viewRow = infantTable.getSelectedRow();
+        if (viewRow < 0) {
+            MessageDialog.error(this,
+                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+        int modelRow = infantTable.convertRowIndexToModel(viewRow);
+        if (modelRow < 0 || modelRow >= infantList.size()) {
+            MessageDialog.error(this,
+                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+
+        HIVInfant infant = infantList.get(modelRow);
+        HIVInfantEdit edit = new HIVInfantEdit(this, infant, false);
+        edit.addHIVInfantListener(new HIVInfantEdit.HIVInfantListener() {
+            @Override
+            public void infantInserted(AWTEvent e, HIVInfant i) {
+                performSearch();
+            }
+
+            @Override
+            public void infantUpdated(AWTEvent e, HIVInfant i) {
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void deleteInfant() {
-        // À implémenter
+        int viewRow = infantTable.getSelectedRow();
+        if (viewRow < 0) {
+            MessageDialog.error(this,
+                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+        int modelRow = infantTable.convertRowIndexToModel(viewRow);
+        if (modelRow < 0 || modelRow >= infantList.size()) {
+            MessageDialog.error(this,
+                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+
+        HIVInfant infant = infantList.get(modelRow);
+        int answer = MessageDialog.yesNo(this,
+                MessageBundle.getMessage("angal.hiv.message.delete.confirm"));
+        if (answer == JOptionPane.YES_OPTION) {
+            try {
+                infantManager.deleteInfant(infant);
+                performSearch();
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.hiv.message.delete.success"));
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+        }
     }
 
     private void newVisit() {
@@ -590,30 +784,32 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void updateVisit() {
-        // À implémenter
+        // To be implemented
     }
 
     private void deleteVisit() {
-        // À implémenter
+        // To be implemented
     }
 
     private void therapy() {
-        // À implémenter
+        // To be implemented
     }
 
     private void report() {
-        // À implémenter
+        // To be implemented
     }
 
     @Override
     public void patientSelected(Patient patient) {
-        // À implémenter
+        // To be implemented
     }
 
     class InfantsTableModel extends DefaultTableModel {
+
         @Serial
         private static final long serialVersionUID = 1L;
-        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        private final DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         @Override
         public int getRowCount() {
@@ -632,28 +828,30 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         @Override
         public Object getValueAt(int r, int c) {
-            if (infantList == null || r >= infantList.size()) {
-                return null;
-            }
+            if (infantList == null || r >= infantList.size()) return null;
 
             HIVInfant infant = infantList.get(r);
             Patient patient = infant.getPatient();
 
-            if (c == 0) {
-                return infant.getId();
-            } else if (c == 1) {
-                return patient != null ? patient.getCode() : "";
-            } else if (c == 2) {
-                return patient != null ? patient.getFirstName() + " " + patient.getSecondName() : "";
-            } else if (c == 3) {
+            if (c == 0) return infant.getId();
+            else if (c == 1) return patient != null ? patient.getCode() : "";
+            else if (c == 2)
+                return patient != null
+                        ? patient.getFirstName() + " " + patient.getSecondName() : "";
+            else if (c == 3)
                 return patient != null ? patient.getAge() + " mois" : "";
-            } else if (c == 4) {
-                return infant.getStatus() != null ? infant.getStatus().getDescription() : "";
-            } else if (c == 5) {
+            else if (c == 4)
+                return infant.getStatus() != null
+                        ? infant.getStatus().getDescription() : "";
+            else if (c == 5)
                 return "";
-            } else if (c == 6) {
-                return "...";
-            }
+            else if (c == 6)
+                return infant.getRegistrationDate() != null
+                        ? infant.getRegistrationDate().format(formatter) : "";
+            else if (c == 7)
+                return infant.getFeedingType() != null
+                        ? infant.getFeedingType().getDescription() : "";
+
             return null;
         }
 
@@ -664,9 +862,11 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     class VisitsTableModel extends DefaultTableModel {
+
         @Serial
         private static final long serialVersionUID = 1L;
-        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        private final DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         @Override
         public String getColumnName(int c) {
@@ -685,17 +885,17 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
         @Override
         public Object getValueAt(int r, int c) {
-            if (visitList == null || r >= visitList.size()) {
-                return null;
-            }
+            if (visitList == null || r >= visitList.size()) return null;
 
             HIVVisit visit = visitList.get(r);
 
-            if (c == 0) {
-                return visit.getVisitDate() != null ? visit.getVisitDate().format(formatter) : "";
-            } else if (c == 1) {
-                return visit.getPcrResult() != null ? visit.getPcrResult().getDescription() : "";
-            } else if (c == 2) {
+            if (c == 0)
+                return visit.getVisitDate() != null
+                        ? visit.getVisitDate().format(formatter) : "";
+            else if (c == 1)
+                return visit.getPcrResult() != null
+                        ? visit.getPcrResult().getDescription() : "";
+            else if (c == 2) {
                 String notes = visit.getNotes();
                 if (notes != null && notes.length() > 50) {
                     notes = notes.substring(0, 50) + "...";
