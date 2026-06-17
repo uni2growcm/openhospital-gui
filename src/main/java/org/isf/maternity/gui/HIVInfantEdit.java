@@ -39,6 +39,7 @@ import java.util.Optional;
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hiv.manager.HIVInfantManager;
 import org.isf.hiv.manager.HIVVisitManager;
@@ -294,13 +295,14 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
         motherSearchField.setText("");
         motherSearchField.setEditable(true);
         motherSearchField.setBackground(UIManager.getColor("TextField.background"));
-        motherSearchField.setEnabled(true);  // ← Réactiver
+        motherSearchField.setEnabled(true);
         pickMotherButton.setText(MessageBundle.getMessage("angal.hiv.button.select.mother"));
         trashMotherButton.setEnabled(false);
     }
 
     private void searchPatient(String searchText) {
-        SelectPatient sp = new SelectPatient(this, searchText, true, 0, 2);
+        int maxAgeYears = (int) Math.ceil(GeneralData.HIV_INFANT_MAX_AGE_MONTHS / 12.0);
+        SelectPatient sp = new SelectPatient(this, searchText, true, 0, maxAgeYears);
         sp.addSelectionListener(this);
         sp.setVisible(true);
     }
@@ -911,8 +913,10 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
     public void patientSelected(Patient patient) {
         if (patient != null) {
             int ageInMonths = patient.getAge();
-            if (ageInMonths > 24) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.age.constraint"));
+            if (ageInMonths > GeneralData.HIV_INFANT_MAX_AGE_MONTHS) {
+                MessageDialog.error(this, MessageBundle.formatMessage(
+                        "angal.hiv.message.age.constraint",
+                        GeneralData.HIV_INFANT_MAX_AGE_MONTHS));
                 return;
             }
             this.selectedPatient = patient;

@@ -55,6 +55,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.isf.admission.manager.AdmissionBrowserManager;
+import org.isf.admission.model.Admission;
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hiv.manager.HIVInfantManager;
 import org.isf.hiv.manager.HIVVisitManager;
@@ -62,9 +65,11 @@ import org.isf.hiv.model.HIVInfant;
 import org.isf.hiv.model.HIVInfant.FeedingType;
 import org.isf.hiv.model.HIVInfant.HIVInfantStatus;
 import org.isf.hiv.model.HIVVisit;
+import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
+import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -82,7 +87,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     private static final int HIV_PAGINATION_PAGESIZE = 100;
     private static final int MIN_AGE_MONTHS = 0;
-    private static final int MAX_AGE_MONTHS = 24;
+    private static final int MAX_AGE_MONTHS = GeneralData.HIV_INFANT_MAX_AGE_MONTHS;
 
     private final String[] columnHeaders = {
             MessageBundle.getMessage("angal.common.idnourisson.txt").toUpperCase(),
@@ -143,6 +148,8 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private HIVInfant selectedInfant;
     private int selectedVisitRow = -1;
 
+    private AdmissionBrowserManager admissionManager;
+
     public HIVFollowUpBrowser() {
         setTitle(MessageBundle.getMessage("angal.menu.hivfollowup"));
         initManagers();
@@ -181,6 +188,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private void initManagers() {
         infantManager = Context.getApplicationContext().getBean(HIVInfantManager.class);
         visitManager = Context.getApplicationContext().getBean(HIVVisitManager.class);
+        admissionManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
     }
 
     private void initComponents() {
@@ -532,16 +540,32 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         buttonPanel.setBorder(BorderFactory.createTitledBorder(
                 MessageBundle.getMessage("angal.common.actions.label")));
 
-        buttonPanel.add(getJNewInfantButton());
-        buttonPanel.add(getJUpdateInfantButton());
-        buttonPanel.add(getJDeleteInfantButton());
-        buttonPanel.add(getJNewVisitButton());
-        buttonPanel.add(getJUpdateVisitButton());
-        buttonPanel.add(getJDeleteVisitButton());
-        buttonPanel.add(getJTherapyButton());
-        buttonPanel.add(getJReportButton());
-        buttonPanel.add(getJCloseButton());
+        if (MainMenu.checkUserGrants("hiv.new")) {
+            buttonPanel.add(getJNewInfantButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.update")) {
+            buttonPanel.add(getJUpdateInfantButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.delete")) {
+            buttonPanel.add(getJDeleteInfantButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.newvisit")) {
+            buttonPanel.add(getJNewVisitButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.updatevisit")) {
+            buttonPanel.add(getJUpdateVisitButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.deletevisit")) {
+            buttonPanel.add(getJDeleteVisitButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.therapy")) {
+            buttonPanel.add(getJTherapyButton());
+        }
+        if (MainMenu.checkUserGrants("hiv.report")) {
+            buttonPanel.add(getJReportButton());
+        }
 
+        buttonPanel.add(getJCloseButton());
         return buttonPanel;
     }
 
@@ -780,19 +804,102 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void newVisit() {
-        // À implémenter
+        if (selectedInfant == null) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            return;
+        }
+
+        HIVVisitEdit edit = new HIVVisitEdit(this, selectedInfant, true);
+        edit.addHIVVisitListener(new HIVVisitEdit.HIVVisitListener() {
+            @Override
+            public void visitInserted(AWTEvent e, HIVVisit visit) {
+                filterVisits(); // Rafraîchir la liste des visites
+                performSearch(); // Rafraîchir la liste des nourrissons (pour mettre à jour la dernière visite)
+            }
+
+            @Override
+            public void visitUpdated(AWTEvent e, HIVVisit visit) {
+                filterVisits();
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
     }
 
     private void updateVisit() {
-        // To be implemented
-    }
+        if (selectedInfant == null) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            return;
+        }
 
+        if (selectedVisitRow < 0 || selectedVisitRow >= visitList.size()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+
+        HIVVisit selectedVisit = visitList.get(selectedVisitRow);
+
+        HIVVisitEdit edit = new HIVVisitEdit(this, selectedVisit, false);
+        edit.addHIVVisitListener(new HIVVisitEdit.HIVVisitListener() {
+            @Override
+            public void visitInserted(AWTEvent e, HIVVisit visit) {
+                filterVisits();
+                performSearch();
+            }
+
+            @Override
+            public void visitUpdated(AWTEvent e, HIVVisit visit) {
+                filterVisits();
+                performSearch();
+            }
+        });
+        edit.setVisible(true);
+    }
     private void deleteVisit() {
-        // To be implemented
+        if (selectedInfant == null) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            return;
+        }
+
+        if (selectedVisitRow < 0 || selectedVisitRow >= visitList.size()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            return;
+        }
+
+        HIVVisit selectedVisit = visitList.get(selectedVisitRow);
+
+        int answer = MessageDialog.yesNo(this, MessageBundle.getMessage("angal.hiv.message.visit.delete.confirm"));
+        if (answer == JOptionPane.YES_OPTION) {
+            try {
+                visitManager.deleteVisit(selectedVisit);
+                filterVisits();
+                performSearch();
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.hiv.message.visit.delete.success"));
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+        }
     }
 
     private void therapy() {
-        // To be implemented
+        if (selectedInfant == null) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            return;
+        }
+
+        Patient patient = selectedInfant.getPatient();
+        if (patient == null) {
+            MessageDialog.error(this, "angal.hiv.message.no.patient.associated");
+            return;
+        }
+
+        Admission currentAdmission = admissionManager.getCurrentAdmission(patient);
+        boolean isAdmitted = (currentAdmission != null);
+
+        TherapyEdit therapyEdit = new TherapyEdit(this, patient, isAdmitted);
+        therapyEdit.setVisible(true);
     }
 
     private void report() {
