@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -23,21 +23,27 @@ package org.isf.pricesothers.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Component;
 import java.util.EventListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.event.EventListenerList;
-
+import javax.swing.JComboBox;
+import javax.swing.DefaultListCellRenderer;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
 import org.isf.utils.exception.OHServiceException;
@@ -45,6 +51,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
+import java.util.List;
 
 public class PricesOthersEdit extends JDialog {
 	
@@ -88,6 +95,7 @@ public class PricesOthersEdit extends JDialog {
 	}
 
 	private PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelData;
@@ -105,6 +113,7 @@ public class PricesOthersEdit extends JDialog {
 	private JButton jButtonCancel;
 	private boolean insert;
 	private PricesOthers pOther;
+	private JComboBox<ArticleFamily> jComboBoxArticleFamily;
 	
 	public PricesOthersEdit(JFrame parent, PricesOthers other, boolean inserting) {
 		super(parent, true);
@@ -117,7 +126,7 @@ public class PricesOthersEdit extends JDialog {
 	private void initComponents() {
 		add(getJPanelData(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
-		setSize(400, 180);
+		setSize(450, 280);
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.pricesothers.newprice.title"));
 		} else {
@@ -147,6 +156,7 @@ public class PricesOthersEdit extends JDialog {
 				pOther.setDaily(jCheckBoxDaily.isSelected());
 				pOther.setDischarge(jCheckBoxDischarge.isSelected());
 				pOther.setUndefined(jCheckBoxUndefined.isSelected());
+				pOther.setArticleFamily((ArticleFamily) jComboBoxArticleFamily.getSelectedItem());
 
 				try {
 					if (insert) {	// inserting
@@ -221,14 +231,49 @@ public class PricesOthersEdit extends JDialog {
 
 	private JPanel getJPanelParameters() {
 		if (jPanelParameters == null) {
-			jPanelParameters = new JPanel();
+			jPanelParameters = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			jPanelParameters.add(getJCheckBoxOPD());
 			jPanelParameters.add(getJCheckBoxIPD());
 			jPanelParameters.add(getJCheckBoxDaily());
 			jPanelParameters.add(getJCheckBoxDischarge());
 			jPanelParameters.add(getJCheckBoxUndefined());
+			jPanelParameters.add(new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':'));
+			jPanelParameters.add(getJComboBoxArticleFamily());
 		}
 		return jPanelParameters;
+	}
+
+	private JComboBox<ArticleFamily> getJComboBoxArticleFamily() {
+		if (jComboBoxArticleFamily == null) {
+			jComboBoxArticleFamily = new JComboBox<>();
+
+			jComboBoxArticleFamily.addItem(null);
+			jComboBoxArticleFamily.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value,
+				                                              int index, boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if (value == null) {
+						setText(MessageBundle.getMessage("angal.common.all.txt"));
+					}
+					return this;
+				}
+			});
+
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				for (ArticleFamily af : families) {
+					jComboBoxArticleFamily.addItem(af);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+
+			if (!insert && pOther.getArticleFamily() != null) {
+				jComboBoxArticleFamily.setSelectedItem(pOther.getArticleFamily());
+			}
+		}
+		return jComboBoxArticleFamily;
 	}
 
 	private JTextField getJTextFieldDescription() {

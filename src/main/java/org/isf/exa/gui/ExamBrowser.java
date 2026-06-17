@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -25,6 +25,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Component;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -33,14 +34,18 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.DefaultListCellRenderer;
 
 import org.isf.exa.gui.ExamEdit.ExamListener;
 import org.isf.exa.manager.ExamBrowsingManager;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.exa.model.Exam;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
@@ -59,16 +64,18 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private static final String STR_ALL = MessageBundle.getMessage("angal.common.all.txt").toUpperCase();
 
 	private int selectedrow;
+	private JComboBox<ArticleFamily> articleFamilyFilter;
 	private JComboBox<ExamType> examTypeFilter;
 	private List<Exam> examList;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.exam.articlefamily.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.default.col").toUpperCase()
 	};
-	private int[] pColumnWidth = { 60, 330, 160, 60, 200 };
+	private int[] pColumnWidth = { 60, 200, 250, 150, 60, 200 };
 	private Exam exam;
 
 	private DefaultTableModel model ;
@@ -81,12 +88,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JPanel jContentPanel;
 	private JPanel buttonPanel;
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	public ExamBrowser() {
 		myFrame = this;
 		setTitle(MessageBundle.getMessage("angal.exa.exambrowser.title"));
 		this.setContentPane(getJContentPanel());
-		setMinimumSize(new Dimension(800, 400));
+		setMinimumSize(new Dimension(900, 400));
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -109,6 +117,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
 			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exa.selecttype")));
 			buttonPanel.add(getJComboBoxExamType());
+			buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exam.filter.family")));
+			buttonPanel.add(getJComboBoxArticleFamily());
 			buttonPanel.add(getJButtonNew());
 			buttonPanel.add(getJButtonEdit());
 			buttonPanel.add(getJButtonDelete());
@@ -137,6 +147,36 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			examTypeFilter.addActionListener(actionEvent -> reloadTable());
 		}
 		return examTypeFilter;
+	}
+
+	private JComboBox<ArticleFamily> getJComboBoxArticleFamily() {
+		if (articleFamilyFilter == null) {
+			articleFamilyFilter = new JComboBox<>();
+
+			articleFamilyFilter.addItem(null);
+			articleFamilyFilter.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if (value == null) {
+						setText(STR_ALL);
+					}
+					return this;
+				}
+			});
+
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				for (ArticleFamily af : families) {
+					articleFamilyFilter.addItem(af);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+
+			articleFamilyFilter.addActionListener(e -> reloadTable());
+		}
+		return articleFamilyFilter;
 	}
 
 	private JTable getJTable() {
@@ -252,6 +292,15 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		private static final long serialVersionUID = 1L;
 
+		public ExamBrowsingModel(String examTypeDesc, ArticleFamily family) {
+			try {
+				examList = examBrowsingManager.getExamsByFilters(examTypeDesc, family);
+			} catch (OHServiceException e) {
+				examList = null;
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+
 		public ExamBrowsingModel(String s) {
 			try {
 				examList = examBrowsingManager.getExamsByTypeDescription(s);
@@ -299,8 +348,10 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 2) {
 				return exam.getDescription();
 			} else if (c == 3) {
-				return exam.getProcedure();
+				return exam.getArticleFamily() != null ? exam.getArticleFamily().toString() : "";
 			} else if (c == 4) {
+				return exam.getProcedure();
+			} else if (c == 5) {
 				return exam.getDefaultResult();
 			}
 			return null;
@@ -329,14 +380,11 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	}
 
 	private void reloadTable() {
-		String pSelection = examTypeFilter.getSelectedItem().toString();
-		if (pSelection.compareTo(STR_ALL) == 0) {
-			model = new ExamBrowsingModel();
-		} else {
-			model = new ExamBrowsingModel(pSelection);
-		}
+		String selectedType = examTypeFilter.getSelectedItem().toString();
+		String examTypeDesc = selectedType.equals(STR_ALL) ? null : selectedType;
+		ArticleFamily selectedFamily = (ArticleFamily) articleFamilyFilter.getSelectedItem();
+		model = new ExamBrowsingModel(examTypeDesc, selectedFamily);
 		model.fireTableDataChanged();
 		table.updateUI();
 	}
-
 }
