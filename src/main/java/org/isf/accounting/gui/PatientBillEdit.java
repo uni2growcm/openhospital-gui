@@ -905,7 +905,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 					item.setPriceID("");
 					item.setPrice(false);
 					modified = true;
-				} else if (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount())) {
+				} else if (!p.isVariable() && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
 					changedPriceList.add(item.getItemDescription());
 				}
 			}
@@ -985,7 +985,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private void updatePrices() {
 		for (BillItems item : billItems.parallelStream().filter(BillItems::isPrice).collect(Collectors.toList())) {
 			Price p = getPrice(item.getPriceID());
-			if (p != null && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
+			if (p != null && !p.isVariable() && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
 				item.setItemDescription(p.getDesc());
 				item.setItemAmount(p.getPrice());
 				modified = true;
