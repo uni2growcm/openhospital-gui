@@ -84,8 +84,8 @@ public class PricesBrowser extends ModalJFrame {
 	protected static String[] cCategoriesNames = { MessageBundle.getMessage("angal.priceslist.exams"), MessageBundle.getMessage("angal.priceslist.operations"),
 			MessageBundle.getMessage("angal.priceslist.medicals"),
 			MessageBundle.getMessage("angal.priceslist.others") }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-	private boolean[] columnsResizable = { true, false };
-	private int[] columnWidth = { 400, 150 };
+	private boolean[] columnsResizable = { true, false, true };
+	private int[] columnWidth = { 400, 150, 80 };
 
 	private PriceListManager priceListManager = Context.getApplicationContext().getBean(PriceListManager.class);
 	private PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
@@ -127,7 +127,7 @@ public class PricesBrowser extends ModalJFrame {
 		add(getJScrollPaneList(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
 		setTitle(MessageBundle.getMessage("angal.priceslist.pricebrowser.title"));
-		setSize(647, 440);
+		setSize(750, 440);
 	}
 
 	private void checkLists() {
@@ -334,29 +334,33 @@ public class PricesBrowser extends ModalJFrame {
 		for (Exam exa : examArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[0] + exa.getCode());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			examNodes.addItem(new PriceNode(new Price(null, cCategories[0], exa.getCode(), exa.getDescription(), priceValue)));
+			boolean isVariable = p != null && p.isVariable();
+			examNodes.addItem(new PriceNode(new Price(null, cCategories[0], exa.getCode(), exa.getDescription(), priceValue, true, isVariable)));
 		}
 
 		opeNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[1], null)); //$NON-NLS-1$ //$NON-NLS-2$
 		for (Operation ope : operArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[1] + ope.getCode());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			opeNodes.addItem(new PriceNode(new Price(null, cCategories[1], ope.getCode(), ope.getDescription(), priceValue)));
+			boolean isVariable = p != null && p.isVariable();
+			opeNodes.addItem(new PriceNode(new Price(null, cCategories[1], ope.getCode(), ope.getDescription(), priceValue, true, isVariable)));
 		}
 
 		medNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[2], null)); //$NON-NLS-1$ //$NON-NLS-2$
 		for (Medical med : mediArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[2] + med.getCode().toString());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			medNodes.addItem(new PriceNode(new Price(null, cCategories[2], med.getCode().toString(), med.getDescription(), priceValue)));
+			boolean isVariable = p != null && p.isVariable();
+			medNodes.addItem(new PriceNode(new Price(null, cCategories[2], med.getCode().toString(), med.getDescription(), priceValue, true, isVariable)));
 		}
 
 		othNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[3], null)); //$NON-NLS-1$ //$NON-NLS-2$
 		for (PricesOthers oth : othArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[3] + oth.getId());
 			double priceValue = p != null ? p.getPrice() : 0.;
+			boolean isVariable = p != null && p.isVariable();
 			othNodes.addItem(
-					new PriceNode(new Price(null, cCategories[3], Integer.toString(oth.getId()), oth.getDescription(), priceValue, !oth.isUndefined())));
+					new PriceNode(new Price(null, cCategories[3], Integer.toString(oth.getId()), oth.getDescription(), priceValue, !oth.isUndefined(), isVariable)));
 		}
 
 		PriceNode root = new PriceNode(new Price(null, "", "", listSelected.getName(), null)); //$NON-NLS-1$ //$NON-NLS-2$

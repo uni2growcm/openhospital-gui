@@ -37,7 +37,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -906,7 +905,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 					item.setPriceID("");
 					item.setPrice(false);
 					modified = true;
-				} else if (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount())) {
+				} else if (!p.isVariable() && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
 					changedPriceList.add(item.getItemDescription());
 				}
 			}
@@ -986,7 +985,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private void updatePrices() {
 		for (BillItems item : billItems.parallelStream().filter(BillItems::isPrice).collect(Collectors.toList())) {
 			Price p = getPrice(item.getPriceID());
-			if (p != null && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
+			if (p != null && !p.isVariable() && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
 				item.setItemDescription(p.getDesc());
 				item.setItemAmount(p.getPrice());
 				modified = true;
@@ -1311,6 +1310,17 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         this.selectedBillItem.setItemAmount(price);
         this.selectedBillItem.setItemQuantity(qty);
 
+        boolean isNewItem = true;
+        for (BillItems bi : billItems) {
+            if (bi == selectedBillItem) {
+                isNewItem = false;
+                break;
+            }
+        }
+        if (isNewItem) {
+            billItems.add(selectedBillItem);
+        }
+
         jTableBill.updateUI();
         updateTotals();
 
@@ -1353,6 +1363,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     if(updateBillItem()){
                         PatientBillEdit.this.selectedBillItem = null;
                         loadFields();
+                        updateGUI();
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -3462,15 +3473,23 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             );
         }
 
+        if (selectedItem == null) {
+            return;
+        }
+
         Price price = null;
         MedicalWard med = null;
-        PricesOthers oth = null;
 
         int qty = 1;
         BillItems billItem = null;
 
         if (selectedItem instanceof MedicalWard) {
             med = (MedicalWard) selectedItem;
+            price = getPrice(med);
+
+            if (price == null) {
+                return;
+            }
 
             String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
                     MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, new ImageIcon("rsc/icons/plus_button.png"), null, qty);
@@ -3480,7 +3499,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     return;
                 }
                 qty = Integer.parseInt(quantity);
-                billItem = addMedical(med, qty);
+                billItem = buildBillItem(price, qty, price.getDesc());
+                if (billItem != null) {
+                    billItem.setItemDisplayCode(med.getMedical().getProdCode());
+                }
             } catch (Exception eee) {
                 MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
             }
@@ -3502,8 +3524,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                             return;
                         }
                         qty = Integer.parseInt(quantity);
-                        billItem = addMedical(med, qty);
-                        billItem.setItemDisplayCode(med.getMedical().getProdCode());
+                        billItem = buildBillItem(price, qty, price.getDesc());
+                        if (billItem != null) {
+                            billItem.setItemDisplayCode(med.getMedical().getProdCode());
+                        }
                     } catch (Exception eee) {
                         MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
                     }
@@ -3512,7 +3536,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 }
 
             } else if (price.getGroup().equals("EXA") || price.getGroup().equals("OPE")) {
-                billItem = addExamAndOperation(price);
+                try {
+                    billItem = buildBillItem(price, 1, price.getDesc());
+                } catch (OHServiceException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (price.getGroup().equals("OTH")) {
                 try {
                     othPrices = pricesOthersManager.getOthers();
@@ -3529,8 +3557,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                             .orElse(null);
                 }
 
-                billItem = addOtherPrice(price, qty);
-                billItem.setItemDisplayCode(pricesOther.getCode());
+                try {
+                    billItem = buildBillItem(price, qty, price.getDesc());
+                } catch (OHServiceException e) {
+                    throw new RuntimeException(e);
+                }
+                if (billItem != null && pricesOther != null) {
+                    billItem.setItemDisplayCode(pricesOther.getCode());
+                }
 
             }
 
@@ -3574,13 +3608,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
 
             price = getPrice(othr);
-            billItem = addOtherPrice(price, qty);
-            billItem.setItemDisplayCode(pricesOther.getCode());
+            try {
+                billItem = buildBillItem(price, qty, price.getDesc());
+            } catch (OHServiceException e) {
+                throw new RuntimeException(e);
+            }
+            if (billItem != null && pricesOther != null) {
+                billItem.setItemDisplayCode(pricesOther.getCode());
+            }
         }
 
-        loadFields();
         selectedBillItem = billItem;
-        quantityTextField.setText(String.valueOf(qty));
+        loadFields();
     }
 
 	private void removePayment(int row) {
