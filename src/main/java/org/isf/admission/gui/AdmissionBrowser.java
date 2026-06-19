@@ -989,7 +989,6 @@ public class AdmissionBrowser extends ModalJFrame {
 
 			diseaseInPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.diagnosisinstar.border")));
 
-		// Panel pour la sélection - ligne 1 avec recherche
 		JPanel selectionPanel = new JPanel();
 		selectionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
