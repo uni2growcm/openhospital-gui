@@ -26,32 +26,15 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.Serial;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -76,9 +59,17 @@ import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import java.io.File;
+import java.io.IOException;
+import java.awt.Desktop;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.isf.utils.ExcelExporter;
 
 public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
@@ -88,6 +79,8 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private static final int HIV_PAGINATION_PAGESIZE = 100;
     private static final int MIN_AGE_MONTHS = 0;
     private static final int MAX_AGE_MONTHS = GeneralData.HIV_INFANT_MAX_AGE_MONTHS;
+    private static final Logger logger = LoggerFactory.getLogger(HIVFollowUpBrowser.class);
+
 
     private final String[] columnHeaders = {
             MessageBundle.getMessage("angal.common.idnourisson.txt").toUpperCase(),
@@ -564,9 +557,68 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         if (MainMenu.checkUserGrants("hiv.report")) {
             buttonPanel.add(getJReportButton());
         }
-
+        buttonPanel.add(getJExportButton());
         buttonPanel.add(getJCloseButton());
         return buttonPanel;
+    }
+
+    /**
+     * Creates the export button for exporting HIV follow-up data to Excel.
+     *
+     * @return the export button
+     */
+    private JButton getJExportButton() {
+        JButton exportButton = new JButton(MessageBundle.getMessage("angal.hiv.export.btn"));
+        exportButton.setMnemonic(KeyEvent.VK_E);
+        exportButton.setIcon(new ImageIcon("rsc/icons/excel_button.png"));
+        exportButton.addActionListener(e -> exportToExcel());
+        exportButton.setPreferredSize(new Dimension(120, 25));
+        return exportButton;
+    }
+
+    /**
+     * Exports the current HIV follow-up data to an Excel file.
+     * Uses the same logic as the BillBrowser export.
+     */
+    private void exportToExcel() {
+        if (infantList == null || infantList.isEmpty()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.export.nodata.msg"));
+            return;
+        }
+
+        JFileChooser fcExcel = new JFileChooser();
+        FileNameExtensionFilter excelFilter = new FileNameExtensionFilter(
+                MessageBundle.getMessage("angal.hiv.export.excelfilter"), "xls");
+        fcExcel.addChoosableFileFilter(excelFilter);
+        fcExcel.setFileFilter(excelFilter);
+        fcExcel.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        String defaultFileName = GeneralData.HIV_EXPORT_FILE_PREFIX +
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xls";
+        fcExcel.setSelectedFile(new File(defaultFileName));
+
+        int iRetVal = fcExcel.showSaveDialog(HIVFollowUpBrowser.this);
+        if (iRetVal == JFileChooser.APPROVE_OPTION) {
+            File exportFile = fcExcel.getSelectedFile();
+            if (!exportFile.getName().endsWith("xls")) {
+                exportFile = new File(exportFile.getAbsolutePath() + ".xls");
+            }
+
+            try {
+                ExcelExporter xlsExport = new ExcelExporter();
+                xlsExport.exportHIVInfantsToExcel(infantList, exportFile);
+
+                MessageDialog.info(this,
+                        MessageBundle.getMessage("angal.common.info.title"),
+                        MessageBundle.getMessage("angal.hiv.export.success.msg") + " " + exportFile.getAbsolutePath());
+
+                Desktop.getDesktop().open(exportFile);
+            } catch (IOException exc) {
+                logger.error("Export to excel error : " + exc.getMessage());
+                MessageDialog.error(this,
+                        MessageBundle.getMessage("angal.hiv.export.error.msg") + ": " + exc.getMessage());
+            }
+        }
     }
 
     private JButton getJNewInfantButton() {
