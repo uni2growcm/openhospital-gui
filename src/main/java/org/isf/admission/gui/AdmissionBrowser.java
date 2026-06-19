@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -36,7 +36,6 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -2027,26 +2026,18 @@ public class AdmissionBrowser extends ModalJFrame {
 		return saveButton;
 	}
 
-	/**
-	 * Ouvre un dialogue pour créer un nouveau disease
-	 * Si la création est validée, le disease est automatiquement ajouté à la liste des diagnostics
-	 */
 	private void openCreateDiseaseDialog() {
 		Disease newDisease = new Disease();
 		DiseaseEdit diseaseEditDialog = new DiseaseEdit(this, newDisease, true);
-		
-		// Ajouter un listener pour capturer le disease créé
+
 		diseaseEditDialog.addDiseaseListener(new DiseaseEdit.DiseaseListener() {
 			@Override
 			public void diseaseInserted(AWTEvent e) {
-				// Le disease a été créé avec succès, l'ajouter à la liste
 				addDiagnosisToList(newDisease);
-				
-				// Raffraîchir la liste de recherche pour que le nouveau disease soit disponible
+
 				try {
 					if (diseaseInList != null) {
 						diseaseInList = diseaseBrowserManager.getDiseaseIpdIn();
-						// Réinitialiser la combobox de recherche
 						diseaseInBox.removeAllItems();
 						diseaseInBox.addItem(null);
 						for (Disease disease : diseaseInList) {
@@ -2060,7 +2051,6 @@ public class AdmissionBrowser extends ModalJFrame {
 
 			@Override
 			public void diseaseUpdated(AWTEvent e) {
-				// Non utilisé pour la création
 			}
 		});
 		
