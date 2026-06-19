@@ -75,6 +75,7 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
+import org.isf.malnutrition.gui.MalnutritionBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -191,6 +192,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JComboBox<Integer> pagesCombo;
 	private JLabel underLabel;
 	private JLabel totalPatientsLabel;
+	private JButton jMalnutritionButton;
 
 	private enum SearchMode {
 		FILTERS,
@@ -286,6 +288,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 			if (MainMenu.checkUserGrants("btnopddel")) {
 				jButtonPanel.add(getJDeleteButton(), null);
+			}
+			if (MainMenu.checkUserGrants("btnopdmalnutrition")) {
+				jButtonPanel.add(getJMalnutritionButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
@@ -1555,5 +1560,39 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return jExamButton;
+	}
+
+	/**
+	 * This method initializes jMalnutritionButton
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getJMalnutritionButton() {
+		if (jMalnutritionButton == null) {
+			jMalnutritionButton = new JButton(MessageBundle.getMessage("angal.admission.malnutritioncontrol.btn"));
+			jMalnutritionButton.setMnemonic(KeyEvent.VK_M);
+			jMalnutritionButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(OpdBrowser.this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+
+				selectedrow = jTable.getSelectedRow();
+				Opd opd = (Opd) model.getValueAt(selectedrow, -1);
+
+				if (opd.isMalnutrition()) {
+					try {
+						MalnutritionBrowser browser = new MalnutritionBrowser(OpdBrowser.this, opd);
+						browser.setVisible(true);
+					} catch (Exception e) {
+						MessageDialog.error(OpdBrowser.this, "angal.malnutrition.browser.error.msg");
+						e.printStackTrace();
+					}
+				} else {
+					MessageDialog.info(OpdBrowser.this, "angal.opd.pleaseselectapatientmalnutri.msg");
+				}
+			});
+		}
+		return jMalnutritionButton;
 	}
 }
