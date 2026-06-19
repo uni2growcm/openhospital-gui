@@ -112,10 +112,11 @@ public class PatVacBrowser extends ModalJFrame {
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.patvac.vaccine.col").toUpperCase(),
-			MessageBundle.getMessage("angal.patvac.vaccinetype.col").toUpperCase()
+			MessageBundle.getMessage("angal.patvac.vaccinetype.col").toUpperCase(),
+			MessageBundle.getMessage("angal.patvac.village").toUpperCase()
 	};
-	private int[] pColumnWidth = {100, 150, 50, 50, 150, 150};
-	private boolean[] columnsVisible = {true, GeneralData.PATIENTVACCINEEXTENDED, true, true, true, true};
+	private int[] pColumnWidth = {100, 150, 50, 50, 150, 150,100};
+	private boolean[] columnsVisible = {true, GeneralData.PATIENTVACCINEEXTENDED, true, true, true, true,true};
 	private PatVacBrowsingModel model;
 	private PatientVaccine patientVaccine;
 	private int selectedrow;
@@ -672,7 +673,7 @@ public class PatVacBrowser extends ModalJFrame {
 	/**
 	 * This method initializes jTable, that contains the information about the
 	 * patient's vaccines
-	 * 
+	 *
 	 * @return jTable (JTable)
 	 */
 	private JTable getJTable() {
@@ -687,12 +688,16 @@ public class PatVacBrowser extends ModalJFrame {
 				columnModel.getColumn(3).setMinWidth(pColumnWidth[3]);
 				columnModel.getColumn(4).setMinWidth(pColumnWidth[4]);
 				columnModel.getColumn(5).setMinWidth(pColumnWidth[5]);
+				columnModel.getColumn(6).setMinWidth(pColumnWidth[6]);
 			} else {
 				columnModel.getColumn(0).setMinWidth(pColumnWidth[0]);
 				columnModel.getColumn(1).setMaxWidth(pColumnWidth[2]);
 				columnModel.getColumn(2).setMinWidth(pColumnWidth[3]);
 				columnModel.getColumn(3).setMinWidth(pColumnWidth[4]);
 				columnModel.getColumn(4).setMinWidth(pColumnWidth[5]);
+				if (columnsVisible.length > 6 && columnsVisible[6] && columnModel.getColumnCount() > 5) {
+					columnModel.getColumn(5).setMinWidth(pColumnWidth[6]);
+				}
 			}
 		}
 		return jTable;
@@ -786,6 +791,8 @@ public class PatVacBrowser extends ModalJFrame {
 				return patVac.getVaccine().getDescription();
 			} else if (getNumber(c) == 5) {
 				return patVac.getVaccine().getVaccineType().getDescription();
+			}else if (getNumber(c)==6){
+				return patVac.getVillage();
 			}
 			return null;
 		}
