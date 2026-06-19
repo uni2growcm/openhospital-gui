@@ -262,7 +262,6 @@ public class PatVacEdit extends JDialog {
 			gbcVaccineComboBox.gridy = 3;
 			dataPanel.add(getVaccineComboBox(), gbcVaccineComboBox);
 
-			// ========== NOUVEAU : Champ VILLAGE ==========
 			JLabel villageLabel = new JLabel(MessageBundle.getMessage("angal.patvac.village") + ':');
 			GridBagConstraints gbcVillageLabel = new GridBagConstraints();
 			gbcVillageLabel.anchor = GridBagConstraints.WEST;
@@ -615,6 +614,7 @@ public class PatVacEdit extends JDialog {
 				patVac.setProgr(Integer.parseInt(progrTextField.getText()));
 				patVac.setVaccineDate(vaccineDate.atStartOfDay());
 				patVac.setVaccine((Vaccine) vaccineComboBox.getSelectedItem());
+				patVac.setVillage(villageTextField.getText());
 				patVac.setPatient(selectedPatient);
 				patVac.setLock(0);
 
