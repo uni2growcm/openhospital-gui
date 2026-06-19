@@ -32,7 +32,7 @@ import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.Serial;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.EventListener;
 import java.util.List;
 
@@ -46,7 +46,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -55,7 +54,6 @@ import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.FamilyPlanningBrowserManager;
-import org.isf.maternity.model.FPMethod;
 import org.isf.maternity.model.FPStatus;
 import org.isf.maternity.model.FamilyPlanning;
 import org.isf.menu.manager.Context;
@@ -65,11 +63,13 @@ import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
-import org.isf.utils.jobjects.VoLimitedTextField;
 
 public class FamilyPlanningEdit extends JDialog
         implements SelectionListener, PatientInsert.PatientListener, PatientInsertExtended.PatientListener {
@@ -123,12 +123,9 @@ public class FamilyPlanningEdit extends JDialog
     private JButton pickPatientButton;
     private JButton trashPatientButton;
 
-    private JComboBox<FPMethod> methodCombo;
-    private GoodDateChooser startDateField;
-    private GoodDateChooser endDateField;
+    private JComboBox<Typology> methodCombo;
+    private GoodDateChooser registrationDateField;
     private JComboBox<FPStatus> statusCombo;
-    private JTextArea stopReasonArea;
-    private GoodDateChooser nextAppointmentDateField;
     private JTextArea notesArea;
 
     private FamilyPlanning fp;
@@ -137,6 +134,8 @@ public class FamilyPlanningEdit extends JDialog
 
     private FamilyPlanningBrowserManager fpManager;
     private PatientBrowserManager patientManager;
+
+    private List<Typology> methodTypologies;
 
     public FamilyPlanningEdit(JFrame owner, FamilyPlanning fp, boolean inserting) {
         super(owner, true);
@@ -177,6 +176,18 @@ public class FamilyPlanningEdit extends JDialog
     private void initManagers() {
         fpManager = Context.getApplicationContext().getBean(FamilyPlanningBrowserManager.class);
         patientManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+        loadMethodTypologies();
+    }
+
+    private void loadMethodTypologies() {
+        try {
+            methodTypologies = Context.getApplicationContext()
+                    .getBean(TypologyBrowserManager.class)
+                    .getTypologies(Family.FAMILYPLANNINGMETHODTYPE);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            methodTypologies = List.of();
+        }
     }
 
     private void initialize() {
@@ -186,31 +197,22 @@ public class FamilyPlanningEdit extends JDialog
         } else {
             setTitle(MessageBundle.getMessage("angal.familyplanning.edit.title"));
         }
-        setMinimumSize(new Dimension(600, 500));
-        setPreferredSize(new Dimension(650, 550));
+        setMinimumSize(new Dimension(550, 480));
+        setPreferredSize(new Dimension(600, 520));
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
 
     private void loadExistingData() {
         if (fp != null && !insert) {
-            if (fp.getMethod() != null) {
-                methodCombo.setSelectedItem(fp.getMethod());
+            if (fp.getCurrentMethod() != null) {
+                methodCombo.setSelectedItem(fp.getCurrentMethod());
             }
-            if (fp.getStartDate() != null) {
-                startDateField.setDate(fp.getStartDate());
-            }
-            if (fp.getEndDate() != null) {
-                endDateField.setDate(fp.getEndDate());
+            if (fp.getRegistrationDate() != null) {
+                registrationDateField.setDate(fp.getRegistrationDate().toLocalDate());
             }
             if (fp.getStatus() != null) {
                 statusCombo.setSelectedItem(fp.getStatus());
-            }
-            if (fp.getStopReason() != null) {
-                stopReasonArea.setText(fp.getStopReason());
-            }
-            if (fp.getNextAppointmentDate() != null) {
-                nextAppointmentDateField.setDate(fp.getNextAppointmentDate());
             }
             if (fp.getNotes() != null) {
                 notesArea.setText(fp.getNotes());
@@ -223,12 +225,14 @@ public class FamilyPlanningEdit extends JDialog
             patientSearchField.setText(selectedPatient.getSecondName() + " " + selectedPatient.getFirstName());
             patientSearchField.setEditable(false);
             pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.changepatient"));
+            pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
             pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.changethepatientassociatedwiththisexams"));
             trashPatientButton.setEnabled(true);
         } else {
             patientSearchField.setText("");
             patientSearchField.setEditable(true);
             pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
+            pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
             pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
             trashPatientButton.setEnabled(false);
         }
@@ -240,6 +244,7 @@ public class FamilyPlanningEdit extends JDialog
         patientSearchField.setText("");
         patientSearchField.setEditable(true);
         pickPatientButton.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
+        pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
         pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
         trashPatientButton.setEnabled(false);
     }
@@ -326,12 +331,14 @@ public class FamilyPlanningEdit extends JDialog
 
             gbc.gridx = 3;
             gbc.gridwidth = 1;
-            pickPatientButton = new JButton();
+            pickPatientButton = new JButton(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
             pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
+            pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
             pickPatientButton.addActionListener(e -> openPatientSearch());
             patientPanel.add(pickPatientButton, gbc);
 
             gbc.gridx = 4;
+            gbc.gridwidth = 1;
             trashPatientButton = new JButton();
             trashPatientButton.setIcon(new ImageIcon("rsc/icons/remove_patient_button.png"));
             trashPatientButton.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.removepatientassociationwiththisexam"));
@@ -342,10 +349,14 @@ public class FamilyPlanningEdit extends JDialog
         return patientPanel;
     }
 
+    /**
+     * Data panel - Fields aligned properly
+     */
     private JPanel getDataPanel() {
         if (dataPanel == null) {
             dataPanel = new JPanel(new GridBagLayout());
-            // no titled border, follows VisitEdit pattern
+            dataPanel.setBorder(BorderFactory.createTitledBorder(
+                    MessageBundle.getMessage("angal.familyplanning.information.label")));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(5, 5, 5, 5);
@@ -356,17 +367,27 @@ public class FamilyPlanningEdit extends JDialog
 
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.method.label") + ":"), gbc);
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.method.label") + " *:"), gbc);
 
             gbc.gridx = 1;
-            methodCombo = new JComboBox<>(FPMethod.values());
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
+            methodCombo = new JComboBox<>();
+            methodCombo.setPreferredSize(new Dimension(200, 25));
+            if (methodTypologies != null) {
+                for (Typology typology : methodTypologies) {
+                    methodCombo.addItem(typology);
+                }
+            }
             methodCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                               boolean isSelected, boolean cellHasFocus) {
-                    if (value instanceof FPMethod method) {
+                                                              boolean isSelected, boolean cellHasFocus) {
+                    if (value instanceof Typology typology) {
                         return super.getListCellRendererComponent(list,
-                                MessageBundle.getMessage(method.getKey()), index, isSelected, cellHasFocus);
+                                typology.getDescription(), index, isSelected, cellHasFocus);
                     }
                     return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 }
@@ -374,26 +395,38 @@ public class FamilyPlanningEdit extends JDialog
             dataPanel.add(methodCombo, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.startdate.label") + ":"), gbc);
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.startdate.label") + " *:"), gbc);
 
             gbc.gridx = 1;
-            startDateField = new GoodDateChooser(LocalDate.now(), false);
-            dataPanel.add(startDateField, gbc);
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
+            registrationDateField = new GoodDateChooser(LocalDateTime.now().toLocalDate());
+            registrationDateField.setPreferredSize(new Dimension(180, 25));
+            dataPanel.add(registrationDateField, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.status.label") + ":"), gbc);
 
             gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
             statusCombo = new JComboBox<>(FPStatus.values());
+            statusCombo.setPreferredSize(new Dimension(180, 25));
             statusCombo.setSelectedItem(FPStatus.ACTIVE);
             statusCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                               boolean isSelected, boolean cellHasFocus) {
+                                                              boolean isSelected, boolean cellHasFocus) {
                     if (value instanceof FPStatus status) {
                         return super.getListCellRendererComponent(list,
                                 MessageBundle.getMessage(status.getKey()), index, isSelected, cellHasFocus);
@@ -401,59 +434,28 @@ public class FamilyPlanningEdit extends JDialog
                     return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 }
             });
-            statusCombo.addActionListener(e -> {
-                FPStatus selectedStatus = (FPStatus) statusCombo.getSelectedItem();
-                boolean stopped = selectedStatus == FPStatus.STOPPED;
-                stopReasonArea.setEnabled(stopped);
-            });
             dataPanel.add(statusCombo, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.enddate.label") + ":"), gbc);
-
-            gbc.gridx = 1;
-            endDateField = new GoodDateChooser(LocalDate.now(), true, true);
-            dataPanel.add(endDateField, gbc);
-
-            row++;
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.stopreason.label") + ":"), gbc);
-
-            gbc.gridx = 1;
-            stopReasonArea = new JTextArea(3, 30);
-            stopReasonArea.setLineWrap(true);
-            stopReasonArea.setWrapStyleWord(true);
-            stopReasonArea.setEnabled(false);
-            JScrollPane stopReasonScroll = new JScrollPane(stopReasonArea);
-            stopReasonScroll.setPreferredSize(new Dimension(250, 60));
-            dataPanel.add(stopReasonScroll, gbc);
-
-            row++;
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.anchor = GridBagConstraints.WEST;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.nextappointment.label") + ":"), gbc);
-
-            gbc.gridx = 1;
-            nextAppointmentDateField = new GoodDateChooser(LocalDate.now(), true, true);
-            dataPanel.add(nextAppointmentDateField, gbc);
-
-            row++;
-            gbc.gridx = 0;
-            gbc.gridy = row;
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
             gbc.anchor = GridBagConstraints.NORTHWEST;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.notes.label") + ":"), gbc);
 
             gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gbc.anchor = GridBagConstraints.NORTHWEST;
             notesArea = new JTextArea(4, 30);
             notesArea.setLineWrap(true);
             notesArea.setWrapStyleWord(true);
+            notesArea.setPreferredSize(new Dimension(300, 80));
             JScrollPane notesScroll = new JScrollPane(notesArea);
-            notesScroll.setPreferredSize(new Dimension(250, 80));
+            notesScroll.setPreferredSize(new Dimension(320, 80));
             dataPanel.add(notesScroll, gbc);
         }
         return dataPanel;
@@ -461,12 +463,14 @@ public class FamilyPlanningEdit extends JDialog
 
     private JPanel getButtonPanel() {
         if (buttonPanel == null) {
-            buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+            buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
 
             okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+            okButton.setPreferredSize(new Dimension(80, 30));
             okButton.addActionListener(e -> save());
 
             cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+            cancelButton.setPreferredSize(new Dimension(80, 30));
             cancelButton.addActionListener(e -> dispose());
 
             buttonPanel.add(okButton);
@@ -477,51 +481,36 @@ public class FamilyPlanningEdit extends JDialog
 
     private void save() {
         if (selectedPatient == null) {
-            MessageDialog.error(this, "angal.maternity.fpmusthavepatient.msg");
+            MessageDialog.error(this, "angal.familyplanning.patient.required.msg");
             return;
         }
 
-        FPMethod method = (FPMethod) methodCombo.getSelectedItem();
+        Typology method = (Typology) methodCombo.getSelectedItem();
         if (method == null) {
-            MessageDialog.error(this, "angal.maternity.fpmethodrequired.msg");
+            MessageDialog.error(this, "angal.familyplanning.method.required.msg");
             return;
         }
 
-        LocalDate startDate = startDateField.getDate();
-        if (startDate == null) {
-            MessageDialog.error(this, "angal.maternity.fpstartdaterequired.msg");
+        LocalDateTime registrationDate = registrationDateField.getDate() != null
+                ? registrationDateField.getDate().atStartOfDay()
+                : null;
+        if (registrationDate == null) {
+            MessageDialog.error(this, "angal.familyplanning.startdate.required.msg");
             return;
         }
 
-        if (startDate.isAfter(LocalDate.now())) {
-            MessageDialog.error(this, "angal.maternity.fpstartdatecannotbeinfuture.msg");
-            return;
-        }
-
-        LocalDate endDate = endDateField.getDate();
-        if (endDate != null && startDate.isAfter(endDate)) {
-            MessageDialog.error(this, "angal.familyplanning.startdate.beforeenddate");
+        if (registrationDate.isAfter(LocalDateTime.now())) {
+            MessageDialog.error(this, "angal.familyplanning.startdate.cannotbefuture.msg");
             return;
         }
 
         FPStatus status = (FPStatus) statusCombo.getSelectedItem();
-        String stopReason = stopReasonArea.getText().trim();
-
-        if (status == FPStatus.STOPPED && (stopReason == null || stopReason.isBlank())) {
-            MessageDialog.error(this, "angal.maternity.fpstopreasonrequired.msg");
-            return;
-        }
-
-        LocalDate nextAppointment = nextAppointmentDateField.getDate();
         String notes = notesArea.getText().trim();
 
         fp.setPatient(selectedPatient);
-        fp.setMethod(method);
-        fp.setStartDate(startDate);
-        fp.setEndDate(endDate);
+        fp.setCurrentMethod(method);
+        fp.setRegistrationDate(registrationDate);
         fp.setStatus(status);
-        fp.setStopReason(stopReason);
-        fp.setNextAppointmentDate(nextAppointment);
         fp.setNotes(notes);
 
         try {

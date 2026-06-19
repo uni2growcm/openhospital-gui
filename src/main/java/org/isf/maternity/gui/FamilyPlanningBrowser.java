@@ -64,14 +64,15 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.FamilyPlanningBrowserManager;
 import org.isf.maternity.manager.FamilyPlanningVisitBrowserManager;
-import org.isf.maternity.model.FPMethod;
 import org.isf.maternity.model.FPStatus;
-import org.isf.maternity.model.FPVisitType;
 import org.isf.maternity.model.FamilyPlanning;
 import org.isf.maternity.model.FamilyPlanningVisit;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -94,13 +95,10 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.familyplanning.method.col").toUpperCase(),
             MessageBundle.getMessage("angal.familyplanning.status.col").toUpperCase(),
-            MessageBundle.getMessage("angal.familyplanning.startdate.col").toUpperCase(),
-            MessageBundle.getMessage("angal.familyplanning.enddate.col").toUpperCase(),
-            MessageBundle.getMessage("angal.familyplanning.nextappointment.col").toUpperCase()
+            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase()
     };
 
-    private final int[] columnWidths = { 50, 70, 150, 100, 90, 90, 90, 100 };
-
+    private final int[] columnWidths = { 50, 70, 150, 100, 90, 120 };
 
     private final String[] visitColumns = {
             MessageBundle.getMessage("angal.familyplanning.visitdate.col").toUpperCase(),
@@ -140,6 +138,8 @@ public class FamilyPlanningBrowser extends ModalJFrame {
     private FamilyPlanning selectedFP;
     private int selectedVisitRow = -1;
 
+    private List<Typology> methodTypologies = new ArrayList<>();
+
     public FamilyPlanningBrowser() {
         setTitle(MessageBundle.getMessage("angal.familyplanning.browser.title"));
         myFrame = this;
@@ -169,7 +169,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        initializeMethodCombo();
+        loadMethodTypologies();
         initializeStatusCombo();
 
         JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -183,13 +183,15 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         performSearch();
     }
 
-    private void initializeMethodCombo() {
-        methodFilterCombo = new JComboBox<>();
-        methodFilterCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
-        for (FPMethod method : FPMethod.values()) {
-            methodFilterCombo.addItem(method);
+    private void loadMethodTypologies() {
+        try {
+            methodTypologies = Context.getApplicationContext()
+                    .getBean(TypologyBrowserManager.class)
+                    .getTypologies(Family.FAMILYPLANNINGMETHODTYPE);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            methodTypologies = new ArrayList<>();
         }
-        methodFilterCombo.setRenderer(new EnumRenderer());
     }
 
     private void initializeStatusCombo() {
@@ -205,16 +207,12 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                        boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof FPMethod method) {
-                return super.getListCellRendererComponent(list, MessageBundle.getMessage(method.getKey()),
+            if (value instanceof Typology typology) {
+                return super.getListCellRendererComponent(list, typology.getDescription(),
                         index, isSelected, cellHasFocus);
             }
             if (value instanceof FPStatus status) {
                 return super.getListCellRendererComponent(list, MessageBundle.getMessage(status.getKey()),
-                        index, isSelected, cellHasFocus);
-            }
-            if (value instanceof FPVisitType visitType) {
-                return super.getListCellRendererComponent(list, MessageBundle.getMessage(visitType.getKey()),
                         index, isSelected, cellHasFocus);
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -254,6 +252,14 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         JPanel methodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         methodPanel.setBorder(BorderFactory.createTitledBorder(
                 MessageBundle.getMessage("angal.familyplanning.method.filter")));
+        methodFilterCombo = new JComboBox<>();
+        methodFilterCombo.addItem(null);
+        if (methodTypologies != null) {
+            for (Typology typology : methodTypologies) {
+                methodFilterCombo.addItem(typology);
+            }
+        }
+        methodFilterCombo.setRenderer(new EnumRenderer());
         methodPanel.add(methodFilterCombo);
         filterPanel.add(methodPanel);
 
@@ -484,9 +490,9 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             Object selectedMethod = methodFilterCombo.getSelectedItem();
             Object selectedStatus = statusFilterCombo.getSelectedItem();
 
-            FPMethod method = null;
-            if (selectedMethod != null && !selectedMethod.equals(MessageBundle.getMessage("angal.common.all.label"))) {
-                method = (FPMethod) selectedMethod;
+            String methodCode = null;
+            if (selectedMethod instanceof Typology typology) {
+                methodCode = typology.getCode();
             }
 
             FPStatus status = null;
@@ -505,7 +511,9 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             }
 
             Page<FamilyPlanning> pagedResult = fpManager.searchFamilyPlannings(
-                    patientCodeInt, method, status, dateBegin, dateEnd,
+                    patientCodeInt, methodCode, status,
+                    dateBegin != null ? dateBegin.atStartOfDay() : null,
+                    dateEnd != null ? dateEnd.atTime(23, 59, 59) : null,
                     CURRENT_PAGE - 1, GeneralData.PAGINATIONPAGESIZE);
 
             fpList = pagedResult.getContent();
@@ -637,7 +645,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                 String reason = JOptionPane.showInputDialog(this,
                         MessageBundle.getMessage("angal.familyplanning.stopreason.label"));
                 if (reason != null) {
-                    fpManager.stopFamilyPlanning(selectedFP.getId(), LocalDate.now(), reason);
+                    fpManager.stopFamilyPlanning(selectedFP.getId(), LocalDateTime.now(), reason);
                     performSearch();
                 }
             } catch (OHServiceException ex) {
@@ -742,14 +750,11 @@ public class FamilyPlanningBrowser extends ModalJFrame {
     }
 
     private String getEnumDisplayName(Object enumValue) {
-        if (enumValue instanceof FPMethod method) {
-            return MessageBundle.getMessage(method.getKey());
-        }
         if (enumValue instanceof FPStatus status) {
             return MessageBundle.getMessage(status.getKey());
         }
-        if (enumValue instanceof FPVisitType visitType) {
-            return MessageBundle.getMessage(visitType.getKey());
+        if (enumValue instanceof Typology typology) {
+            return typology.getDescription();
         }
         return "";
     }
@@ -792,15 +797,11 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             } else if (c == 2) {
                 return patient != null ? patient.getSecondName() + " " + patient.getFirstName() : "";
             } else if (c == 3) {
-                return fp.getMethod() != null ? getEnumDisplayName(fp.getMethod()) : "";
+                return fp.getCurrentMethod() != null ? fp.getCurrentMethod().getDescription() : "";
             } else if (c == 4) {
                 return fp.getStatus() != null ? getEnumDisplayName(fp.getStatus()) : "";
             } else if (c == 5) {
-                return fp.getStartDate() != null ? fp.getStartDate().format(formatter) : "";
-            } else if (c == 6) {
-                return fp.getEndDate() != null ? fp.getEndDate().format(formatter) : "";
-            } else if (c == 7) {
-                return fp.getNextAppointmentDate() != null ? fp.getNextAppointmentDate().format(formatter) : "";
+                return fp.getRegistrationDate() != null ? fp.getRegistrationDate().format(formatter) : "";
             }
             return null;
         }

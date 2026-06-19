@@ -33,6 +33,7 @@ import java.io.Serial;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.EventListener;
+import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -48,10 +49,12 @@ import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.FamilyPlanningVisitBrowserManager;
-import org.isf.maternity.model.FPVisitType;
 import org.isf.maternity.model.FamilyPlanning;
 import org.isf.maternity.model.FamilyPlanningVisit;
 import org.isf.menu.manager.Context;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -112,10 +115,11 @@ public class FamilyPlanningVisitEdit extends JDialog {
     private JButton cancelButton;
 
     private GoodDateTimeSpinnerChooser visitDateField;
-    private JComboBox<FPVisitType> visitTypeCombo;
-    private JTextArea complaintsArea;
+    private JComboBox<Typology> visitTypeCombo;
     private JTextArea notesArea;
     private GoodDateChooser nextAppointmentDateField;
+
+    private List<Typology> visitTypeTypologies;
 
     public FamilyPlanningVisitEdit(JFrame owner, FamilyPlanning fp, boolean inserting) {
         super(owner, true);
@@ -145,6 +149,18 @@ public class FamilyPlanningVisitEdit extends JDialog {
 
     private void initManagers() {
         visitManager = Context.getApplicationContext().getBean(FamilyPlanningVisitBrowserManager.class);
+        loadVisitTypeTypologies();
+    }
+
+    private void loadVisitTypeTypologies() {
+        try {
+            visitTypeTypologies = Context.getApplicationContext()
+                    .getBean(TypologyBrowserManager.class)
+                    .getTypologies(Family.FAMILYPLANNINGVISITTYPE);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            visitTypeTypologies = List.of();
+        }
     }
 
     private void initialize() {
@@ -168,9 +184,6 @@ public class FamilyPlanningVisitEdit extends JDialog {
             if (visit.getVisitType() != null) {
                 visitTypeCombo.setSelectedItem(visit.getVisitType());
             }
-            if (visit.getComplaints() != null) {
-                complaintsArea.setText(visit.getComplaints());
-            }
             if (visit.getNotes() != null) {
                 notesArea.setText(visit.getNotes());
             }
@@ -191,10 +204,9 @@ public class FamilyPlanningVisitEdit extends JDialog {
     private JPanel getDataPanel() {
         if (dataPanel == null) {
             dataPanel = new JPanel(new GridBagLayout());
-            // no titled border, follows VisitEdit pattern
 
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = new Insets(8, 10, 8, 10);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.anchor = GridBagConstraints.WEST;
 
@@ -202,26 +214,42 @@ public class FamilyPlanningVisitEdit extends JDialog {
 
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.visitdate.label") + ":"), gbc);
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.visitdate.label") + " *:"), gbc);
 
             gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
             visitDateField = new GoodDateTimeSpinnerChooser(TimeTools.getNow());
+            visitDateField.setPreferredSize(new Dimension(200, 28));
             dataPanel.add(visitDateField, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.visittype.label") + ":"), gbc);
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.visittype.label") + " *:"), gbc);
 
             gbc.gridx = 1;
-            visitTypeCombo = new JComboBox<>(FPVisitType.values());
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
+            visitTypeCombo = new JComboBox<>();
+            visitTypeCombo.setPreferredSize(new Dimension(200, 28));
+            if (visitTypeTypologies != null) {
+                for (Typology typology : visitTypeTypologies) {
+                    visitTypeCombo.addItem(typology);
+                }
+            }
             visitTypeCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                               boolean isSelected, boolean cellHasFocus) {
-                    if (value instanceof FPVisitType visitType) {
+                                                              boolean isSelected, boolean cellHasFocus) {
+                    if (value instanceof Typology typology) {
                         return super.getListCellRendererComponent(list,
-                                MessageBundle.getMessage(visitType.getKey()), index, isSelected, cellHasFocus);
+                                typology.getDescription(), index, isSelected, cellHasFocus);
                     }
                     return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 }
@@ -229,41 +257,41 @@ public class FamilyPlanningVisitEdit extends JDialog {
             dataPanel.add(visitTypeCombo, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.complaints.label") + ":"), gbc);
-
-            gbc.gridx = 1;
-            complaintsArea = new JTextArea(3, 30);
-            complaintsArea.setLineWrap(true);
-            complaintsArea.setWrapStyleWord(true);
-            JScrollPane complaintsScroll = new JScrollPane(complaintsArea);
-            complaintsScroll.setPreferredSize(new Dimension(250, 60));
-            dataPanel.add(complaintsScroll, gbc);
-
-            row++;
-            gbc.gridx = 0;
-            gbc.gridy = row;
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
             gbc.anchor = GridBagConstraints.NORTHWEST;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.visitnotes.label") + ":"), gbc);
 
             gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gbc.anchor = GridBagConstraints.NORTHWEST;
             notesArea = new JTextArea(4, 30);
             notesArea.setLineWrap(true);
             notesArea.setWrapStyleWord(true);
+            notesArea.setPreferredSize(new Dimension(300, 80));
             JScrollPane notesScroll = new JScrollPane(notesArea);
-            notesScroll.setPreferredSize(new Dimension(250, 80));
+            notesScroll.setPreferredSize(new Dimension(320, 80));
             dataPanel.add(notesScroll, gbc);
 
             row++;
+
             gbc.gridx = 0;
             gbc.gridy = row;
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
             gbc.anchor = GridBagConstraints.WEST;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.familyplanning.nextappointment.label") + ":"), gbc);
 
             gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            gbc.weightx = 1.0;
             nextAppointmentDateField = new GoodDateChooser(LocalDate.now(), true, true);
+            nextAppointmentDateField.setPreferredSize(new Dimension(180, 28));
             dataPanel.add(nextAppointmentDateField, gbc);
         }
         return dataPanel;
@@ -271,12 +299,14 @@ public class FamilyPlanningVisitEdit extends JDialog {
 
     private JPanel getButtonPanel() {
         if (buttonPanel == null) {
-            buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+            buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
 
             okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+            okButton.setPreferredSize(new Dimension(80, 30));
             okButton.addActionListener(e -> save());
 
             cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+            cancelButton.setPreferredSize(new Dimension(80, 30));
             cancelButton.addActionListener(e -> dispose());
 
             buttonPanel.add(okButton);
@@ -297,20 +327,18 @@ public class FamilyPlanningVisitEdit extends JDialog {
             return;
         }
 
-        FPVisitType visitType = (FPVisitType) visitTypeCombo.getSelectedItem();
+        Typology visitType = (Typology) visitTypeCombo.getSelectedItem();
         if (visitType == null) {
             MessageDialog.error(this, "angal.maternity.fpvisittyperequired.msg");
             return;
         }
 
-        String complaints = complaintsArea.getText().trim();
         String notes = notesArea.getText().trim();
         LocalDate nextAppointment = nextAppointmentDateField.getDate();
 
         visit.setFamilyPlanning(fp);
         visit.setVisitDate(visitDate);
         visit.setVisitType(visitType);
-        visit.setComplaints(complaints);
         visit.setNotes(notes);
         visit.setNextAppointmentDate(nextAppointment);
 
