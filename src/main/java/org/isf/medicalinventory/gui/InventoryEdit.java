@@ -41,6 +41,7 @@ import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -325,7 +326,7 @@ public class InventoryEdit extends ModalJFrame {
 			validateButton.setVisible(true);
 			deleteButton.setVisible(true);
 			resetButton.setVisible(true);
-			referenceTextField.setEditable(true);
+			referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
 			jCalendarInventoryDate.setEnabled(true);
 			dischargeCombo.setEnabled(true);
 			lotButton.setVisible(true);
@@ -1731,11 +1732,27 @@ public class InventoryEdit extends ModalJFrame {
 
 	private JTextField getReferenceTextField() {
 		if (referenceTextField == null) {
-			referenceTextField = new VoLimitedTextField(40, 10); // limit to 40 because of potential suffixes
-			if (inventory != null && !mode.equals("new")) {
-				referenceTextField.setText(inventory.getInventoryReference());
-				newReference = inventory.getInventoryReference();
+			referenceTextField = new VoLimitedTextField(40, 10);
+			referenceTextField.setColumns(10);
+
+			if (GeneralData.REFERENCE_AUTOMATIC) {
+				LocalDateTime now = LocalDateTime.now();
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GeneralData.REFERENCE_TIMESTAMP_FORMAT);
+				String timestamp = now.format(formatter);
+				String autoRef = GeneralData.REFERENCE_PREFIX_INVENTORY + timestamp;
+				referenceTextField.setText(autoRef);
+				referenceTextField.setEditable(false);
+				referenceTextField.setEnabled(false);
+			} else {
+				if (inventory != null && !mode.equals("new")) {
+					referenceTextField.setText(inventory.getInventoryReference());
+				} else {
+					referenceTextField.setText("");
+				}
+				referenceTextField.setEditable(true);
+				referenceTextField.setEnabled(false);
 			}
+			referenceTextField.setBackground(Color.WHITE);
 		}
 		return referenceTextField;
 	}
