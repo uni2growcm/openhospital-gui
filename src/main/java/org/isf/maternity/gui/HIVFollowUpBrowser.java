@@ -286,8 +286,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         filterPanel.add(Box.createVerticalStrut(5));
 
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        statusPanel.setBorder(BorderFactory.createTitledBorder(
-                MessageBundle.getMessage("angal.hiv.filter.status")));
+        statusPanel.setBorder(BorderFactory.createTitledBorder( MessageBundle.getMessage("angal.hiv.filter.status")));
         statusPanel.add(statusCombo);
         filterPanel.add(statusPanel);
 
