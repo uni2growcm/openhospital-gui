@@ -80,6 +80,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private static final int MIN_AGE_MONTHS = 0;
     private static final int MAX_AGE_MONTHS = GeneralData.HIV_INFANT_MAX_AGE_MONTHS;
     private static final Logger logger = LoggerFactory.getLogger(HIVFollowUpBrowser.class);
+    private static final boolean HIV_EXPORT_FILE_PREFIX = true;
 
 
     private final String[] columnHeaders = {
@@ -593,7 +594,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         fcExcel.setFileFilter(excelFilter);
         fcExcel.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        String defaultFileName = GeneralData.HIV_EXPORT_FILE_PREFIX +
+        String defaultFileName = HIV_EXPORT_FILE_PREFIX +
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xls";
         fcExcel.setSelectedFile(new File(defaultFileName));
 
