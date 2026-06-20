@@ -423,7 +423,7 @@ public class HomeVisitBrowser extends ModalJFrame {
 
         LocalDateTime defaultDate = visit.getVisitStartDate().plusDays(1);
         GoodDateTimeSpinnerChooser dateChooser = new GoodDateTimeSpinnerChooser(defaultDate);
-        dateChooser.setMinDate(LocalDate.now().plusDays(1));
+//        dateChooser.setMinDate(LocalDate.now().plusDays(1));
 
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt")), BorderLayout.NORTH);

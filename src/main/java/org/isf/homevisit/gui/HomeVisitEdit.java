@@ -107,202 +107,6 @@ public class HomeVisitEdit extends ModalJFrame {
         setResizable(false);
     }
 
-//    private void initComponents() {
-//        setLayout(new BorderLayout(10, 10));
-//
-//        JPanel mainPanel = new JPanel(new GridBagLayout());
-//        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-//        GridBagConstraints gbc = new GridBagConstraints();
-//        gbc.insets = new Insets(5, 5, 5, 5);
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.anchor = GridBagConstraints.WEST;
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 0;
-//        gbc.gridwidth = 1;
-//        JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + " *");
-//        mainPanel.add(patientLabel, gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 2;
-//        patientField = new JTextField(25);
-//        patientField.setEditable(false);
-//        mainPanel.add(patientField, gbc);
-//
-//        gbc.gridx = 3;
-//        gbc.gridwidth = 1;
-//        try {
-//            ImageIcon searchIcon = new ImageIcon("rsc/icons/pick_patient_button.png");
-//            selectPatientBtn = new JButton(MessageBundle.getMessage("angal.common.select.btn"), searchIcon);
-//            selectPatientBtn.setToolTipText(MessageBundle.getMessage("angal.patient.affiliation.select.patient"));
-//        } catch (Exception e) {
-//            selectPatientBtn = new JButton(MessageBundle.getMessage("angal.common.select.btn"));
-//            selectPatientBtn.setToolTipText("Rechercher un patient");
-//        }
-//        selectPatientBtn.addActionListener(e -> selectPatient());
-//        mainPanel.add(selectPatientBtn, gbc);
-//
-//        gbc.gridx = 4;
-//        gbc.gridwidth = 1;
-//        try {
-//            ImageIcon clearIcon = new ImageIcon("rsc/icons/remove_patient_button.png");
-//            clearPatientBtn = new JButton(clearIcon);
-//            clearPatientBtn.setToolTipText(MessageBundle.getMessage("angal.common.clear.btn"));
-//        } catch (Exception e) {
-//            clearPatientBtn = new JButton("X");
-//            clearPatientBtn.setToolTipText(MessageBundle.getMessage("angal.common.clear.btn"));
-//        }
-//        clearPatientBtn.addActionListener(e -> clearPatient());
-//        mainPanel.add(clearPatientBtn, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 1;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.staff.col") + " *"), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        staffCombo = new JComboBox<>();
-//        loadStaffList();
-//        mainPanel.add(staffCombo, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 2;
-//        gbc.gridwidth = 1;
-//        JLabel startDateLabel = new JLabel(MessageBundle.getMessage("angal.homevisit.date.col") + " *");
-//        mainPanel.add(startDateLabel, gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        visitStartDateChooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
-//        visitStartDateChooser.addDateChangeListener(e -> {
-//            LocalDate newVisitDate = e.getNewDate();
-//            if (newVisitDate != null) {
-//                LocalDate minNext = newVisitDate.plusDays(1);
-//                nextVisitDateChooser.setMinDate(minNext);
-//                LocalDateTime currentNext = nextVisitDateChooser.getLocalDateTime();
-//                if (currentNext != null && currentNext.toLocalDate().isBefore(minNext)) {
-//                    nextVisitDateChooser.setDateTime(minNext.atStartOfDay());
-//                }
-//            }
-//        });
-//        mainPanel.add(visitStartDateChooser, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 3;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.purpose.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        purposeArea = new JTextArea(2, 30);
-//        purposeArea.setLineWrap(true);
-//        purposeArea.setWrapStyleWord(true);
-//        JScrollPane purposeScroll = new JScrollPane(purposeArea);
-//        purposeScroll.setPreferredSize(new Dimension(400, 60));
-//        purposeScroll.setMinimumSize(new Dimension(200, 60));
-//        purposeScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
-//        mainPanel.add(purposeScroll, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 4;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.address.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        addressField = new JTextField(50);
-//        mainPanel.add(addressField, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 5;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.contactphone.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        contactPhoneField = new JTextField(30);
-//        mainPanel.add(contactPhoneField, gbc);
-//
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 6;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.notes.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        clinicalNotesArea = new JTextArea(3, 30);
-//        clinicalNotesArea.setLineWrap(true);
-//        clinicalNotesArea.setWrapStyleWord(true);
-//        JScrollPane notesScroll = new JScrollPane(clinicalNotesArea);
-//        notesScroll.setPreferredSize(new Dimension(400, 80));
-//        notesScroll.setMinimumSize(new Dimension(200, 80));
-//        notesScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-//        mainPanel.add(notesScroll, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 7;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.observations.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        observationsArea = new JTextArea(3, 30);
-//        observationsArea.setLineWrap(true);
-//        observationsArea.setWrapStyleWord(true);
-//        JScrollPane obsScroll = new JScrollPane(observationsArea);
-//        obsScroll.setPreferredSize(new Dimension(400, 80));
-//        obsScroll.setMinimumSize(new Dimension(200, 80));
-//        obsScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-//        mainPanel.add(obsScroll, gbc);
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 8;
-//        gbc.gridwidth = 1;
-//        mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.nextvisit.col")), gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridwidth = 4;
-//        nextVisitDateChooser = new GoodDateTimeSpinnerChooser(null);
-//        nextVisitDateChooser.setMinDate(LocalDate.now().plusDays(1));
-//        mainPanel.add(nextVisitDateChooser, gbc);
-//
-//        if (homeVisit != null && homeVisit.getId() != 0) {
-//            gbc.gridx = 0;
-//            gbc.gridy = 9;
-//            gbc.gridwidth = 1;
-//            mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.status.col")), gbc);
-//
-//            gbc.gridx = 1;
-//            gbc.gridwidth = 4;
-//            statusCombo = new JComboBox<>(HomeVisitStatus.values());
-//            mainPanel.add(statusCombo, gbc);
-//        }
-//
-//        gbc.gridx = 0;
-//        gbc.gridy = 10;
-//        gbc.gridwidth = 5;
-//        JLabel requiredLabel = new JLabel(MessageBundle.getMessage("angal.common.requiredfields"));
-//        requiredLabel.setFont(requiredLabel.getFont().deriveFont(Font.BOLD));
-//        mainPanel.add(requiredLabel, gbc);
-//
-//        add(mainPanel, BorderLayout.CENTER);
-//
-//        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-//        btnPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
-//
-//        JButton saveBtn = new JButton(MessageBundle.getMessage("angal.common.save.btn"));
-//        JButton cancelBtn = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-//
-//        saveBtn.addActionListener(e -> save());
-//        cancelBtn.addActionListener(e -> dispose());
-//
-//        btnPanel.add(saveBtn);
-//        btnPanel.add(cancelBtn);
-//        add(btnPanel, BorderLayout.SOUTH);
-//    }
-
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
 
@@ -313,7 +117,6 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // ── Patient ───────────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -350,7 +153,6 @@ public class HomeVisitEdit extends ModalJFrame {
         clearPatientBtn.addActionListener(e -> clearPatient());
         mainPanel.add(clearPatientBtn, gbc);
 
-        // ── Staff ─────────────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
@@ -362,7 +164,6 @@ public class HomeVisitEdit extends ModalJFrame {
         loadStaffList();
         mainPanel.add(staffCombo, gbc);
 
-        // ── Date de visite ────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
@@ -375,7 +176,6 @@ public class HomeVisitEdit extends ModalJFrame {
             LocalDate newVisitDate = e.getNewDate();
             if (newVisitDate != null) {
                 LocalDate minNext = newVisitDate.plusDays(1);
-                nextVisitDateChooser.setMinDate(minNext);
                 LocalDateTime currentNext = nextVisitDateChooser.getLocalDateTime();
                 if (currentNext != null && currentNext.toLocalDate().isBefore(minNext)) {
                     nextVisitDateChooser.setDateTime(minNext.atStartOfDay());
@@ -384,7 +184,6 @@ public class HomeVisitEdit extends ModalJFrame {
         });
         mainPanel.add(visitStartDateChooser, gbc);
 
-        // ── Motif ─────────────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
@@ -399,7 +198,6 @@ public class HomeVisitEdit extends ModalJFrame {
         purposeScroll.setPreferredSize(new Dimension(400, 60));
         mainPanel.add(purposeScroll, gbc);
 
-        // ── Adresse ───────────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
@@ -410,7 +208,6 @@ public class HomeVisitEdit extends ModalJFrame {
         addressField = new JTextField(50);
         mainPanel.add(addressField, gbc);
 
-        // ── Téléphone de contact ──────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 1;
@@ -421,7 +218,6 @@ public class HomeVisitEdit extends ModalJFrame {
         contactPhoneField = new JTextField(30);
         mainPanel.add(contactPhoneField, gbc);
 
-        // ── Notes cliniques ───────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 1;
@@ -436,7 +232,6 @@ public class HomeVisitEdit extends ModalJFrame {
         notesScroll.setPreferredSize(new Dimension(400, 80));
         mainPanel.add(notesScroll, gbc);
 
-        // ── Observations ──────────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 7;
         gbc.gridwidth = 1;
@@ -451,7 +246,6 @@ public class HomeVisitEdit extends ModalJFrame {
         obsScroll.setPreferredSize(new Dimension(400, 80));
         mainPanel.add(obsScroll, gbc);
 
-        // ── Prochaine visite ──────────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.gridwidth = 1;
@@ -460,13 +254,10 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 1;
         gbc.gridwidth = 4;
         nextVisitDateChooser = new GoodDateTimeSpinnerChooser(null);
-        nextVisitDateChooser.setMinDate(LocalDate.now().plusDays(1));
         mainPanel.add(nextVisitDateChooser, gbc);
 
-        // ── Statut + Raison d'annulation (mode édition uniquement) ───────────
         if (homeVisit != null && homeVisit.getId() != 0) {
 
-            // Statut
             gbc.gridx = 0;
             gbc.gridy = 9;
             gbc.gridwidth = 1;
@@ -477,7 +268,6 @@ public class HomeVisitEdit extends ModalJFrame {
             statusCombo = new JComboBox<>(HomeVisitStatus.values());
             mainPanel.add(statusCombo, gbc);
 
-            // Label raison d'annulation
             gbc.gridx = 0;
             gbc.gridy = 10;
             gbc.gridwidth = 1;
@@ -485,7 +275,6 @@ public class HomeVisitEdit extends ModalJFrame {
             cancellationLabel.setVisible(false);
             mainPanel.add(cancellationLabel, gbc);
 
-            // Champ raison d'annulation
             gbc.gridx = 1;
             gbc.gridwidth = 4;
             cancellationReasonArea = new JTextArea(3, 30);
@@ -500,7 +289,6 @@ public class HomeVisitEdit extends ModalJFrame {
             mainPanel.add(cancellationScroll, gbc);
         }
 
-        // ── Champs obligatoires ───────────────────────────────────────────────
         gbc.gridx = 0;
         gbc.gridy = 11;
         gbc.gridwidth = 5;
@@ -510,7 +298,6 @@ public class HomeVisitEdit extends ModalJFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        // ── Boutons ───────────────────────────────────────────────────────────
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         btnPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
 
@@ -613,6 +400,12 @@ public class HomeVisitEdit extends ModalJFrame {
         LocalDateTime visitStartDate = visitStartDateChooser.getLocalDateTime();
         if (visitStartDate == null) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.validation.startdate.required.msg"));
+            return;
+        }
+
+        LocalDateTime nextVisitDate = nextVisitDateChooser.getLocalDateTime();
+        if (nextVisitDate != null && !nextVisitDate.isAfter(visitStartDate)) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.validation.nextvisitdate.afterstart.msg"));
             return;
         }
 
