@@ -43,6 +43,7 @@ import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillItems;
 import org.isf.accounting.model.BillPayments;
+import org.isf.accounting.model.ItemPayments;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
@@ -58,6 +59,7 @@ public class BillHistory extends JDialog {
     private JPanel panelContent;
     private JTable jTableBillItems;
     private JTable jTablePaymentRow;
+    private JTable jTableItemPayments;
 
     private final String[] billItemColumnNames = {
             MessageBundle.getMessage("angal.common.date"),
@@ -73,12 +75,22 @@ public class BillHistory extends JDialog {
             MessageBundle.getMessage("angal.billbrowser.action")
     };
 
+    private final String[] itemPaymentsColumnNames = {
+            MessageBundle.getMessage("angal.common.date"),
+            MessageBundle.getMessage("angal.billbrowser.description"),
+            MessageBundle.getMessage("angal.billbrowser.montant"),
+            MessageBundle.getMessage("angal.billbrowser.auteur"),
+            MessageBundle.getMessage("angal.billbrowser.action")
+    };
+
     private final int[] billItemsColumnWidths = { 120, 250, 80, 100 };
     private final int[] paymentsColumnWidths = { 120, 150, 100, 100 };
+    private final int[] itemPaymentsColumnWidths = { 120, 250, 100, 150, 100 };
 
     private final BillBrowserManager billManager;
     private final List<BillItems> billItems;
     private final List<BillPayments> billPayments;
+    private final List<ItemPayments> itemPayments;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
@@ -87,6 +99,7 @@ public class BillHistory extends JDialog {
         this.billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
         this.billItems = billManager.getAllBillItems(bill);
         this.billPayments = billManager.getAllBillPayments(bill);
+        this.itemPayments = billManager.getItemPayments(bill.getId());
         initComponents();
     }
 
@@ -95,6 +108,7 @@ public class BillHistory extends JDialog {
         this.billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
         this.billItems = billManager.getAllBillItems(bill);
         this.billPayments = billManager.getAllBillPayments(bill);
+        this.itemPayments = billManager.getItemPayments(bill.getId());
         initComponents();
     }
 
@@ -142,6 +156,16 @@ public class BillHistory extends JDialog {
             paymentPanel.add(paymentScrollPane, BorderLayout.CENTER);
             tablePanel.add(paymentPanel);
 
+            /*---- Item payment in bill history ----*/
+//            tablePanel.add(Box.createVerticalStrut(20));
+            String itemPaymentTitle = MessageBundle.getMessage("angal.billbrowser.itempayment.title");
+            JPanel itemPaymentPanel = new JPanel(new BorderLayout());
+            itemPaymentPanel.setBorder(BorderFactory.createTitledBorder(itemPaymentTitle));
+            JScrollPane itemPaymentScrollPane = new JScrollPane(getJTableItemPayments());
+            itemPaymentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            itemPaymentPanel.add(itemPaymentScrollPane, BorderLayout.CENTER);
+//            tablePanel.add(itemPaymentPanel);
+
             panelContent.add(tablePanel, BorderLayout.CENTER);
         }
         return panelContent;
@@ -180,12 +204,83 @@ public class BillHistory extends JDialog {
         return jTablePaymentRow;
     }
 
+    private JTable getJTableItemPayments() {
+        if (jTableItemPayments == null) {
+            jTableItemPayments = new JTable();
+            jTableItemPayments.setFillsViewportHeight(true);
+            jTableItemPayments.setModel(new ItemPaymentsRowModel());
+        }
+        return jTableItemPayments;
+    }
+
     private void adjustWidth() {
         for (int i = 0; i < billItemsColumnWidths.length && i < jTableBillItems.getColumnCount(); i++) {
             jTableBillItems.getColumnModel().getColumn(i).setMinWidth(billItemsColumnWidths[i]);
         }
         for (int i = 0; i < paymentsColumnWidths.length && i < jTablePaymentRow.getColumnCount(); i++) {
             jTablePaymentRow.getColumnModel().getColumn(i).setMinWidth(paymentsColumnWidths[i]);
+        }
+        for (int i = 0; i < itemPaymentsColumnWidths.length && i < jTableItemPayments.getColumnCount(); i++) {
+            jTableItemPayments.getColumnModel().getColumn(i).setMinWidth(itemPaymentsColumnWidths[i]);
+        }
+    }
+
+    class ItemPaymentsRowModel extends DefaultTableModel {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int getRowCount() {
+            return itemPayments == null ? 0 : itemPayments.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return itemPaymentsColumnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return itemPaymentsColumnNames[column];
+        }
+
+        @Override
+        public Object getValueAt(int row, int column) {
+            if (row >= itemPayments.size()) {
+                return null;
+            }
+            ItemPayments ip = itemPayments.get(row);
+            double amount = ip.getAmount();
+
+            switch (column) {
+                case 0:
+                    return formatDateTime(ip.getDate());
+                case 1:
+                    return ip.getItemDescription();
+                case 2:
+                    return amount < 0 ? -amount : amount;
+                case 3:
+                    return ip.getUser() != null ? ip.getUser() : "";
+                case 4:
+                    return ip.isRefund()
+                            ? MessageBundle.getMessage("angal.billbrowser.refund")
+                            : MessageBundle.getMessage("angal.billbrowser.buy");
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 2) {
+                return Double.class;
+            }
+            return String.class;
         }
     }
 

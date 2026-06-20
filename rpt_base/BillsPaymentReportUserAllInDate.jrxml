@@ -171,7 +171,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{title}+" "+$P{fromdateshort}+" "+$R{to2}+" "+$P{todateshort}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{title} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{fromdate}) + " " + $R{to2} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{todate})]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

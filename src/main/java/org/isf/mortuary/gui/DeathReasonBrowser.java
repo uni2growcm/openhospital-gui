@@ -45,6 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.mortuary.manager.DeathReasonManager;
@@ -60,7 +61,6 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private final int PAGE_SIZE = 100;
 	private int CURRENT_PAGE = 0;
 	private int TOTAL_PAGES;
 	private JPanel jContentPane;
@@ -415,7 +415,7 @@ public class DeathReasonBrowser extends ModalJFrame implements DeathReasonEdit.D
 
 		public DeathReasonTableModel(String key) {
 			try {
-				Page<DeathReason> deathReasonPage = deathReasonManager.getByTitleOrDescriptionPageable(key, CURRENT_PAGE, PAGE_SIZE);
+				Page<DeathReason> deathReasonPage = deathReasonManager.getByTitleOrDescriptionPageable(key, CURRENT_PAGE, GeneralData.PAGINATIONPAGESIZE);
 				deathReasonList = new ArrayList<>(deathReasonPage.getContent());
 				totalDeathReasons = deathReasonPage.getTotalElements();
 				TOTAL_PAGES = deathReasonPage.getTotalPages();
