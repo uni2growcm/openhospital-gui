@@ -336,6 +336,11 @@ public class FamilyPlanningVisitEdit extends JDialog {
         String notes = notesArea.getText().trim();
         LocalDate nextAppointment = nextAppointmentDateField.getDate();
 
+        if (nextAppointment != null && !nextAppointment.isAfter(visitDate.toLocalDate())) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.aftervisit.msg"));
+            return;
+        }
+
         visit.setFamilyPlanning(fp);
         visit.setVisitDate(visitDate);
         visit.setVisitType(visitType);
