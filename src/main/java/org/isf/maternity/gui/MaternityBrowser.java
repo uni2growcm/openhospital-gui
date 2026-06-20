@@ -66,6 +66,7 @@ import org.isf.admission.gui.AdmissionBrowser;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.admission.model.AdmittedPatient;
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabNew;
 import org.isf.maternity.manager.PregnancyBrowserManager;
@@ -147,7 +148,6 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     private int TOTAL_PAGES = 0;
     private int CURRENT_PAGE = 1;
     private long TOTAL_PREGNANCIES = 0;
-    private final int PAGE_SIZE = 3;
 
     private JTextField patientCodeFilter;
     private GoodDateChooser dateFrom;
@@ -715,7 +715,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
             Page<Pregnancy> pagedResult = pregnancyManager.searchPregnancies(
                     patientCodeInt, status, risk, dateFromDateTime, dateToDateTime,
-                    lmpFromDateTime, lmpToDateTime, CURRENT_PAGE - 1, PAGE_SIZE);
+                    lmpFromDateTime, lmpToDateTime, CURRENT_PAGE - 1, GeneralData.PAGINATIONPAGESIZE);
 
             pregnancyList = pagedResult.getContent();
             TOTAL_PREGNANCIES = pagedResult.getTotalElements();
@@ -735,7 +735,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             if (ageFrom > MIN_AGE || ageTo < MAX_AGE) {
                 pregnancyList = filteredByAge;
                 TOTAL_PREGNANCIES = filteredByAge.size();
-                TOTAL_PAGES = (int) Math.ceil((double) TOTAL_PREGNANCIES / PAGE_SIZE);
+                TOTAL_PAGES = (int) Math.ceil((double) TOTAL_PREGNANCIES / GeneralData.PAGINATIONPAGESIZE);
                 if (TOTAL_PAGES == 0) {
                     TOTAL_PAGES = 1;
                 }
