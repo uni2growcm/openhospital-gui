@@ -252,40 +252,38 @@ WHERE T.NBN_ID = $P{Nbn_id};]]>
 					<font size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{autor} + " " + 
-($P{author} == null || $P{author}.toString().trim().toLowerCase().equals("unknown") ? "................." : $P{author}) + " " + 
+($P{author} == null || $P{author}.toString().trim().isEmpty() || $P{author}.toString().trim().toLowerCase().equals("unknown") ? "............................................." : $P{author}) + " " + 
 $R{in_service} + " " + 
 $R{hospital} + " " + 
 $R{attest} + " " + 
-($F{CHILD_NAME} == null || $F{CHILD_NAME}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{CHILD_NAME}) + " " + 
+($F{CHILD_NAME} == null || $F{CHILD_NAME}.toString().trim().isEmpty() || $F{CHILD_NAME}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{CHILD_NAME}) + " " + 
 $R{sexchild} + " " + 
-($F{PAT_SEX} == null || $F{PAT_SEX}.toString().trim().toLowerCase().equals("unknown") ? "................." : ($F{PAT_SEX}.equals("M") ? $R{male} : $R{female})) + " " + 
+($F{PAT_SEX} == null || $F{PAT_SEX}.toString().trim().isEmpty() || $F{PAT_SEX}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : ($F{PAT_SEX}.equals("M") ? $R{male} : $R{female})) + " " + 
 $R{isborn} + " " + 
-($F{PRGDLV_DATE} == null || $F{PRGDLV_DATE}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_DATE}) + " " + 
-$R{at} + " " + 
-($P{Hospital} == null || $P{Hospital}.toString().trim().toLowerCase().equals("unknown") ? "................." : $P{Hospital}) + " " + 
+($F{PRGDLV_DATE} == null || $F{PRGDLV_DATE}.toString().trim().isEmpty() || $F{PRGDLV_DATE}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_DATE}) + " " + 
 $R{atmada} + " " + 
-($F{PRGDLV_FATHER_NAME} == null || $F{PRGDLV_FATHER_NAME}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_FATHER_NAME}) + " " + 
+($F{PRGDLV_FATHER_NAME} == null || $F{PRGDLV_FATHER_NAME}.toString().trim().isEmpty() || $F{PRGDLV_FATHER_NAME}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_FATHER_NAME}) + " " + 
 $R{bornfather} + " " + 
-($F{PRGDLV_FATHER_BIRTHPLACE} == null || $F{PRGDLV_FATHER_BIRTHPLACE}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_FATHER_BIRTHPLACE}) + " " + 
+($F{PRGDLV_FATHER_BIRTHPLACE} == null || $F{PRGDLV_FATHER_BIRTHPLACE}.toString().trim().isEmpty() || $F{PRGDLV_FATHER_BIRTHPLACE}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_FATHER_BIRTHPLACE}) + " " + 
 $R{agefther} + " " + 
-($F{PRGDLV_FATHER_AGE} == null || $F{PRGDLV_FATHER_AGE}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_FATHER_AGE}) + " " + 
+($F{PRGDLV_FATHER_AGE} == null || $F{PRGDLV_FATHER_AGE}.toString().trim().isEmpty() || $F{PRGDLV_FATHER_AGE}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_FATHER_AGE}) + " " + 
 $R{years} + " " + 
 $R{proffather} + " " + 
-($F{PRGDLV_FATHER_PROFESSION} == null || $F{PRGDLV_FATHER_PROFESSION}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_FATHER_PROFESSION}) + " " + 
+($F{PRGDLV_FATHER_PROFESSION} == null || $F{PRGDLV_FATHER_PROFESSION}.toString().trim().isEmpty() || $F{PRGDLV_FATHER_PROFESSION}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_FATHER_PROFESSION}) + " " + 
 $R{domicile} + " " + 
-($F{PRGDLV_FATHER_ADDRESS} == null || $F{PRGDLV_FATHER_ADDRESS}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PRGDLV_FATHER_ADDRESS}) + " " + 
+($F{PRGDLV_FATHER_ADDRESS} == null || $F{PRGDLV_FATHER_ADDRESS}.toString().trim().isEmpty() || $F{PRGDLV_FATHER_ADDRESS}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PRGDLV_FATHER_ADDRESS}) + " " + 
 $R{andwife} + " " + 
-($F{MOTH_NAME} == null || $F{MOTH_NAME}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{MOTH_NAME}) + " " + 
+($F{MOTH_NAME} == null || $F{MOTH_NAME}.toString().trim().isEmpty() || $F{MOTH_NAME}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{MOTH_NAME}) + " " + 
 $R{bornmother} + " " + 
-($F{PAT_BIRTH_PLACE} == null || $F{PAT_BIRTH_PLACE}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PAT_BIRTH_PLACE}) + " " + 
+($F{PAT_BIRTH_PLACE} == null || $F{PAT_BIRTH_PLACE}.toString().trim().isEmpty() || $F{PAT_BIRTH_PLACE}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PAT_BIRTH_PLACE}) + " " + 
 $R{agemother} + " " + 
-($F{age} == null || $F{age}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{age}) + " " + 
+($F{age} == null || $F{age}.toString().trim().isEmpty() || $F{age}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{age}) + " " + 
 $R{years} + " " + 
 $R{profmother} + " " + 
-($F{PAT_PROFESSION} == null || $F{PAT_PROFESSION}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PAT_PROFESSION}) + " " + 
+($F{PAT_PROFESSION} == null || $F{PAT_PROFESSION}.toString().trim().isEmpty() || $F{PAT_PROFESSION}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PAT_PROFESSION}) + " " + 
 $R{domicilmother} + " " + 
-($F{PAT_CITY} == null || $F{PAT_CITY}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PAT_CITY}) + " / " + 
-($F{PAT_ADDR} == null || $F{PAT_ADDR}.toString().trim().toLowerCase().equals("unknown") ? "................." : $F{PAT_ADDR})]]></textFieldExpression>
+($F{PAT_CITY} == null || $F{PAT_CITY}.toString().trim().isEmpty() || $F{PAT_CITY}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PAT_CITY}) + " / " + 
+($F{PAT_ADDR} == null || $F{PAT_ADDR}.toString().trim().isEmpty() || $F{PAT_ADDR}.toString().trim().toLowerCase().equals("unknown") ? "..............................." : $F{PAT_ADDR})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-38" x="5" y="212" width="113" height="17" uuid="8b54a5dd-7f0d-4d05-8ea0-58ea42870221"/>
