@@ -7,7 +7,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+
 import org.isf.hiv.model.HIVInfant;
 import org.isf.patient.model.Patient;
 
@@ -75,98 +84,84 @@ public class ExcelExporter {
                     row.createCell(0).setCellValue("");
                 }
 
-                // Patient Code
                 if (patient != null && patient.getCode() != null) {
                     row.createCell(1).setCellValue(patient.getCode().intValue());
                 } else {
                     row.createCell(1).setCellValue("");
                 }
 
-                // Patient Name
                 if (patient != null && patient.getName() != null) {
                     row.createCell(2).setCellValue(patient.getName());
                 } else {
                     row.createCell(2).setCellValue("");
                 }
 
-                // Age
                 if (patient != null) {
                     row.createCell(3).setCellValue(patient.getAge());
                 } else {
                     row.createCell(3).setCellValue(0);
                 }
 
-                // Sex
                 if (patient != null) {
                     row.createCell(4).setCellValue(String.valueOf(patient.getSex()));
                 } else {
                     row.createCell(4).setCellValue("");
                 }
 
-                // Status
                 if (infant.getStatus() != null) {
                     row.createCell(5).setCellValue(infant.getStatus().getDescription());
                 } else {
                     row.createCell(5).setCellValue("");
                 }
 
-                // Feeding Type
                 if (infant.getFeedingType() != null) {
                     row.createCell(6).setCellValue(infant.getFeedingType().getDescription());
                 } else {
                     row.createCell(6).setCellValue("");
                 }
 
-                // Registration Date
                 if (infant.getRegistrationDate() != null) {
                     row.createCell(7).setCellValue(infant.getRegistrationDate().format(DATE_FORMATTER));
                 } else {
                     row.createCell(7).setCellValue("");
                 }
 
-                // Birth Weight - utiliser doubleValue()
                 if (infant.getBirthWeight() != null) {
                     row.createCell(8).setCellValue(infant.getBirthWeight().doubleValue());
                 } else {
                     row.createCell(8).setCellValue(0.0);
                 }
 
-                // Gestational Age - utiliser intValue()
                 if (infant.getGestationalAge() != null) {
                     row.createCell(9).setCellValue(infant.getGestationalAge().intValue());
                 } else {
                     row.createCell(9).setCellValue(0);
                 }
 
-                // Mother Name
                 if (mother != null && mother.getName() != null) {
                     row.createCell(10).setCellValue(mother.getName());
                 } else {
                     row.createCell(10).setCellValue("");
                 }
 
-                // Mother Code - utiliser intValue()
                 if (mother != null && mother.getCode() != null) {
                     row.createCell(11).setCellValue(mother.getCode().intValue());
                 } else {
                     row.createCell(11).setCellValue("");
                 }
 
-                // Follow-up Start Date
                 if (infant.getFollowUpStartDate() != null) {
                     row.createCell(12).setCellValue(infant.getFollowUpStartDate().format(DATE_ONLY_FORMATTER));
                 } else {
                     row.createCell(12).setCellValue("");
                 }
 
-                // Follow-up End Date
                 if (infant.getFollowUpEndDate() != null) {
                     row.createCell(13).setCellValue(infant.getFollowUpEndDate().format(DATE_ONLY_FORMATTER));
                 } else {
                     row.createCell(13).setCellValue("");
                 }
 
-                // Notes
                 if (infant.getNotes() != null) {
                     row.createCell(14).setCellValue(infant.getNotes());
                 } else {
@@ -174,7 +169,6 @@ public class ExcelExporter {
                 }
             }
 
-            // Ajuster les colonnes
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
                 if (sheet.getColumnWidth(i) < 3000) {
