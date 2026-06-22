@@ -125,7 +125,8 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 1;
         gbc.gridwidth = 2;
         patientField = new JTextField(25);
-        patientField.setEditable(false);
+        patientField.setEditable(true);
+        patientField.addActionListener(e -> selectPatientWithSearch(patientField.getText().trim()));
         mainPanel.add(patientField, gbc);
 
         gbc.gridx = 3;
@@ -137,7 +138,8 @@ public class HomeVisitEdit extends ModalJFrame {
         } catch (Exception e) {
             selectPatientBtn = new JButton(MessageBundle.getMessage("angal.common.select.btn"));
         }
-        selectPatientBtn.addActionListener(e -> selectPatient());
+        selectPatientBtn.addActionListener(e ->
+                selectPatientWithSearch(patientField.getText().trim()));
         mainPanel.add(selectPatientBtn, gbc);
 
         gbc.gridx = 4;
@@ -325,26 +327,46 @@ public class HomeVisitEdit extends ModalJFrame {
         }
     }
 
-    private void selectPatient() {
-        SelectPatient sp = new SelectPatient(this, false, false);
+    private void selectPatientWithSearch(String searchText) {
+        SelectPatient sp = new SelectPatient(
+                this,
+                searchText.isEmpty() ? null : searchText,
+                false,
+                false
+        );
+
         sp.addSelectionListener(patient -> {
             selectedPatient = patient;
+
             patientField.setText(patient.getName());
-            addressField.setText(patient.getAddress());
-            contactPhoneField.setText(patient.getTelephone());
+            patientField.setEditable(false);
+
+            if (patient.getAddress() != null && !patient.getAddress().isEmpty()) {
+                addressField.setText(patient.getAddress());
+                addressField.setEditable(false);
+            }
+            if (patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
+                contactPhoneField.setText(patient.getTelephone());
+                contactPhoneField.setEditable(false);
+            }
         });
+
         sp.setVisible(true);
     }
 
     private void clearPatient() {
         selectedPatient = null;
+        patientField.setEditable(true);
         patientField.setText("");
+        addressField.setText("");
+        contactPhoneField.setText("");
     }
 
     private void loadExistingData() {
         selectedPatient = homeVisit.getPatient();
         if (selectedPatient != null) {
             patientField.setText(selectedPatient.getName());
+            patientField.setEditable(false);
         }
         staffCombo.setSelectedItem(homeVisit.getStaff());
         visitStartDateChooser.setDateTime(homeVisit.getVisitStartDate());
