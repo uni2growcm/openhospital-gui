@@ -372,7 +372,9 @@ public class HomeVisitEdit extends ModalJFrame {
         visitStartDateChooser.setDateTime(homeVisit.getVisitStartDate());
         purposeArea.setText(homeVisit.getPurpose());
         addressField.setText(homeVisit.getAddress());
+        addressField.setEditable(false);
         contactPhoneField.setText(homeVisit.getContactPhone());
+        contactPhoneField.setEditable(false);
         clinicalNotesArea.setText(homeVisit.getClinicalNotes());
         observationsArea.setText(homeVisit.getObservations());
         if (homeVisit.getNextVisitDate() != null) {

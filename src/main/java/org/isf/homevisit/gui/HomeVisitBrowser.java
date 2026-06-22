@@ -165,17 +165,6 @@ public class HomeVisitBrowser extends ModalJFrame {
             }
         });
 
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                int row = table.rowAtPoint(e.getPoint());
-                int selectedRow = table.getSelectedRow();
-                if (row == selectedRow) {
-                    table.clearSelection();
-                }
-            }
-        });
-
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5));
