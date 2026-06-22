@@ -103,7 +103,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		return jContentPanel;
 	}
 
-	
+
 	private JPanel getJButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -189,7 +189,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	}
 
 	private JButton getJButtonNew() {
-            
+
 		if (jButtonNew == null) {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 			jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
@@ -221,7 +221,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		}
 		return jButtonEdit;
 	}
-	
+
 	private JButton getJButtonShow() {
 		if (jButtonShow == null) {
 			jButtonShow = new JButton(MessageBundle.getMessage("angal.exa.results.btn"));
@@ -238,7 +238,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		}
 		return jButtonShow;
 	}
-	
+
 	private JButton getJButtonClose() {
 		if (jButtonClose == null) {
 			jButtonClose = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
@@ -249,13 +249,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	}
 
 	class ExamBrowsingModel extends DefaultTableModel {
-		
+
 		private static final long serialVersionUID = 1L;
-		
+
 		public ExamBrowsingModel(String s) {
 			try {
 				examList = examBrowsingManager.getExamsByTypeDescription(s);
-                                
+
 			} catch (OHServiceException e) {
 				examList = null;
 				OHServiceExceptionUtil.showMessages(e);
@@ -276,7 +276,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			}
 			return examList.size();
 		}
-		
+
 		@Override
 		public String getColumnName(int c) {
 			return pColumns[c];
@@ -305,13 +305,13 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			}
 			return null;
 		}
-		
+
 		@Override
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
 	}
-	
+
 	@Override
 	public void examUpdated(AWTEvent e) {
 		reloadTable();

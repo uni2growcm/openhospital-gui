@@ -46,7 +46,7 @@ import org.isf.utils.jobjects.ModalJFrame;
 public class PatientBrowser extends ModalJFrame implements PatientListener {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
@@ -86,19 +86,19 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jTable;
 	}
-	
+
 	/**
-	 * This method initializes 
+	 * This method initializes
 	 */
 	public PatientBrowser() {
 		super();
 		initialize();
 		setVisible(true);
 	}
-	
+
 	/**
 	 * This method initializes jButtonPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJButtonPanel() {
@@ -111,8 +111,8 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jButtonPanel;
 	}
-	
-	
+
+
 	/**
 	 * This method initializes this
 	 */
@@ -122,16 +122,16 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		final int pfrmBase = 10;
         final int pfrmWidth = 6;
         final int pfrmHeight = 5;
-        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2, 
+        this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
                 screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setTitle(MessageBundle.getMessage("angal.patient.patientbrowser.title"));
 		this.setContentPane(getJContainPanel());
 	}
-	
+
 	/**
-	 * This method initializes containPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes containPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJContainPanel() {
 		if (jContainPanel == null) {
@@ -143,11 +143,11 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jContainPanel;
 	}
-	
+
 	/**
-	 * This method initializes jNewButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes jNewButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getJNewButton() {
 		if (jNewButton == null) {
@@ -162,11 +162,11 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jNewButton;
 	}
-	
+
 	/**
-	 * This method initializes jEditButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes jEditButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getJEditButton() {
 		if (jEditButton == null) {
@@ -186,11 +186,11 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jEditButton;
 	}
-	
+
 	/**
-	 * This method initializes jCloseButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes jCloseButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getJCloseButton() {
 		if (jCloseButton == null) {
@@ -200,11 +200,11 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		}
 		return jCloseButton;
 	}
-	
+
 	/**
 	 * This method initializes jDeleteButton
-	 * 	
-	 * @return javax.swing.JButton	
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getJDeleteButton() {
 		if (jDeleteButton == null) {
@@ -308,5 +308,4 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 			jTable.setRowSelectionInterval(0, 0);
 		}
 	}
-
 }

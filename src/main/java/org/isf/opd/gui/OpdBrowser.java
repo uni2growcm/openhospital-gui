@@ -182,7 +182,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JRadioButton radioMyPatients;
 	private JRadioButton radioAllPatients;
 
-	private static final int PAGE_SIZE = 100;
 	private int currentPage = 0;
 	private long totalRows = 0;
 	private int totalPages = 0;
@@ -378,7 +377,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	}
 
 	private int calculatePages(long rows) {
-		return rows == 0 ? 0 : (int) Math.ceil((double) rows / PAGE_SIZE);
+		return rows == 0 ? 0 : (int) Math.ceil((double) rows / GeneralData.PAGINATIONPAGESIZE);
 	}
 
 	private void refreshModel() {
@@ -477,7 +476,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			Page<Opd> opdPage;
 
 			if (searchMode == SearchMode.PROG_YEAR) {
-				opdPage = opdBrowserManager.getOpdListByProgYear(searchCode, currentPage, PAGE_SIZE);
+				opdPage = opdBrowserManager.getOpdListByProgYear(searchCode, currentPage, GeneralData.PAGINATIONPAGESIZE);
 				pSur = new ArrayList<>(opdPage.getContent());
 				totalRows = opdPage.getTotalElements();
 				totalPages = opdPage.getTotalPages();
@@ -489,7 +488,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 			if (searchMode == SearchMode.PATIENT_ID) {
 
-				opdPage = opdBrowserManager.getOpdListByPatientId(searchCode, currentPage, PAGE_SIZE);
+				opdPage = opdBrowserManager.getOpdListByPatientId(searchCode, currentPage, GeneralData.PAGINATIONPAGESIZE);
 				pSur = new ArrayList<>(opdPage.getContent());
 				totalRows = opdPage.getTotalElements();
 				totalPages = opdPage.getTotalPages();
@@ -514,7 +513,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			Page<Opd> opdPageResponse = opdBrowserManager.getOpds(
 					getSelectedWard(), getSelectedDiseaseType(), getSelectedDisease(),
 					dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo,
-					getGender(), getPatientAttendance(), currentPage, PAGE_SIZE);
+					getGender(), getPatientAttendance(), currentPage, GeneralData.PAGINATIONPAGESIZE);
 			pSur = new ArrayList<>(opdPageResponse.getContent());
 			totalRows = opdPageResponse.getTotalElements();
 			totalPages = opdPageResponse.getTotalPages();
@@ -744,6 +743,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		return jSelectionContentPanel;
 	}
 
+
 	private JPanel getButtonsPanel() {
 		JPanel buttonsPanel = new JPanel();
 		JPanel filterButtonPanel = new JPanel();
@@ -786,7 +786,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		JPanel userPanel = new JPanel();
 		ButtonGroup groupUserFilter = new ButtonGroup();
 		radioMyPatients = new JRadioButton(MessageBundle.getMessage("angal.opd.mypatient.btn"));
-		radioAllPatients = new JRadioButton(MessageBundle.getMessage("angal.common.all.btn"));
+		radioAllPatients = new JRadioButton(MessageBundle.getMessage("angal.opd.all.btn"));
 		radioAllPatients.setSelected(true);
 		groupUserFilter.add(radioMyPatients);
 		groupUserFilter.add(radioAllPatients);
@@ -1273,7 +1273,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			jAgePanel.add(getJAgeFromPanel());
 			jAgePanel.add(getJAgeToPanel());
 		}
-
 		return jAgePanel;
 	}
 
@@ -1303,7 +1302,6 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (pSur == null) {
 				return 0;
 			}
-
 			return pSur.size();
 		}
 

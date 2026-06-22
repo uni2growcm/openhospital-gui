@@ -34,25 +34,7 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -90,17 +72,25 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LabNew.class);
 
-//LISTENER INTERFACE --------------------------------------------------------
+	//LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList labListener = new EventListenerList();
 
 	public interface LabListener extends EventListener {
 
 		void labInserted();
+		void prescribersUpdated();
 	}
 
 	public void addLabListener(LabListener l) {
 		labListener.add(LabListener.class, l);
 
+	}
+
+	private void firePrescribersUpdated() {
+		EventListener[] listeners = labListener.getListeners(LabListener.class);
+		for (EventListener listener : listeners) {
+			((LabListener) listener).prescribersUpdated();
+		}
 	}
 
 	private void fireLabInserted() {
@@ -148,11 +138,13 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	private JLabel jLabelPatient;
 	private JTextField jTextFieldPatient;
 	private JButton jButtonPickPatient;
+	private JTextField jTextFieldPrescriber;
 	private JButton jButtonTrashPatient;
 	private JLabel jLabelDate;
 	private GoodDateTimeSpinnerChooser jCalendarDate;
 	private JPanel jPanelMaterial;
 	private JComboBox<String> jComboBoxMaterial;
+	private JComboBox<String> jComboBoxPrescriber;
 	private JPanel jPanelResults;
 	private JPanel jPanelNote;
 	private JPanel jPanelButtons;
@@ -165,7 +157,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	private JPanel jOpdIpdPanel;
 
 	private static final Dimension PATIENT_DIMENSION = new Dimension(200, 20);
-	private static final Dimension LABEL_DIMENSION = new Dimension(75, 20);
+	private static final Dimension LABEL_DIMENSION = new Dimension(90, 20);
 	private static final int EAST_WIDTH = 200;
 	private static final int COMPONENT_HEIGHT = 20;
 	private static final int RESULT_HEIGHT = 200;
@@ -302,25 +294,23 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				RememberDates.setLastLabExamDate(newDate);
 				String inOut = jRadioButtonOPD.isSelected() ? "O" : "I";
 
+				String prescriber = jTextFieldPrescriber != null ? jTextFieldPrescriber.getText().trim() : "";
+
 				int row = 0;
 				for (Laboratory lab : examItems) {
 					lab.setLabDate(newDate);
 					lab.setInOutPatient(inOut);
 					lab.setPatient(patientSelected);
+					lab.setPrescriber(prescriber);
 					lab.setStatus(LaboratoryStatus.done.toString());
 					int procedure = lab.getExam().getProcedure();
-					if ((procedure == 1 || procedure == 3) && lab.getResult().isEmpty()) {
-						MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
-						// select the first exam with the missing value
-						jTableExams.setRowSelectionInterval(row, row);
-						return;
-					}
 					row++;
 				}
 
 				try {
 					labManager.newLaboratory2(examItems, examResults);
 					fireLabInserted();
+					firePrescribersUpdated();
 					dispose();
 				} catch (OHServiceException e1) {
 					OHServiceExceptionUtil.showMessages(e1);
@@ -349,7 +339,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelNote = new JPanel();
 			jPanelNote.setLayout(new BoxLayout(jPanelNote, BoxLayout.Y_AXIS));
 			jPanelNote.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.note")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.note")));
 			jPanelNote.add(getJScrollPaneNote());
 		}
 		return jPanelNote;
@@ -360,7 +350,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelResults = new JPanel();
 			jPanelResults.setPreferredSize(new Dimension(EAST_WIDTH, RESULT_HEIGHT));
 			jPanelResults.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.common.result.txt")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.common.result.txt")));
 		} else {
 			jPanelResults.removeAll();
 			int selectedRow = jTableExams.getSelectedRow();
@@ -411,9 +401,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				jPanelResults.setLayout(new BoxLayout(jPanelResults, BoxLayout.Y_AXIS));
 
 				List<LaboratoryRow> checking = examResults.get(jTableExams.getSelectedRow());
-				boolean checked;
 				JPanel resultsContainer = new JPanel();
-				resultsContainer.setLayout(new GridLayout(0, 1));
+				resultsContainer.setLayout(new GridLayout(0, 1, 5, 5));
 				JScrollPane resultsContainerScroll = new JScrollPane(resultsContainer);
 				resultsContainerScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 				resultsContainerScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -430,14 +419,21 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					for (ExamRow exaRow : exaRowArray) {
 						if (selectedExam.getCode().compareTo(exaRow.getExamCode().getCode()) == 0) {
 
-							checked = false;
-							LaboratoryRow labRow = new LaboratoryRow();
-							labRow.setDescription(exaRow.getDescription());
-							if (checking.contains(labRow)) {
-								checked = true;
+							LaboratoryRow matchingLabRow = null;
+							for (LaboratoryRow lr : checking) {
+								if (lr.getDescription().equals(exaRow.getDescription())) {
+									matchingLabRow = lr;
+									break;
+								}
 							}
 
-							resultsContainer.add(new CheckBox(exaRow, checked));
+							boolean checked = (matchingLabRow != null);
+							LaboratoryRow labRow = checked ? matchingLabRow : new LaboratoryRow();
+							if (!checked) {
+								labRow.setDescription(exaRow.getDescription());
+							}
+
+							resultsContainer.add(new Procedure2RowPanel(labRow, checking, checked));
 						}
 					}
 				}
@@ -475,25 +471,56 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		return jPanelResults;
 	}
 
-	public class CheckBox extends JCheckBox {
+	public class Procedure2RowPanel extends JPanel {
 
 		private static final long serialVersionUID = 1L;
-		private JCheckBox check = this;
 
-		public CheckBox(ExamRow exaRow, boolean checked) {
-			this.setText(exaRow.getDescription());
-			this.setSelected(checked);
-			this.addActionListener(actionEvent -> {
-				if (check.isSelected()) {
-					LaboratoryRow laboratoryRow = new LaboratoryRow();
-					laboratoryRow.setDescription(actionEvent.getActionCommand());
-					examResults.get(jTableExams.getSelectedRow()).add(laboratoryRow);
+		public Procedure2RowPanel(LaboratoryRow labRow, List<LaboratoryRow> selectedList, boolean isChecked) {
+			setLayout(new BorderLayout(5, 0));
+			setBackground(Color.WHITE);
+
+			JCheckBox checkBox = new JCheckBox(labRow.getDescription());
+			checkBox.setSelected(isChecked);
+			checkBox.setBackground(Color.WHITE);
+
+			JTextField txtValue = new JTextField();
+			txtValue.setPreferredSize(new Dimension(60, COMPONENT_HEIGHT));
+			txtValue.setText(labRow.getResValue() != null ? labRow.getResValue() : "");
+			txtValue.setEnabled(isChecked);
+
+			checkBox.addActionListener(actionEvent -> {
+				if (checkBox.isSelected()) {
+					txtValue.setEnabled(true);
+					if (!selectedList.contains(labRow)) {
+						selectedList.add(labRow);
+					}
 				} else {
-					LaboratoryRow laboratoryRow = new LaboratoryRow();
-					laboratoryRow.setDescription(actionEvent.getActionCommand());
-					examResults.get(jTableExams.getSelectedRow()).remove(laboratoryRow);
+					txtValue.setEnabled(false);
+					txtValue.setText("");
+					labRow.setResValue("");
+					selectedList.remove(labRow);
 				}
 			});
+
+			txtValue.getDocument().addDocumentListener(new DocumentListener() {
+				private void updateValue() {
+					if (checkBox.isSelected()) {
+						labRow.setResValue(txtValue.getText().trim());
+					}
+				}
+
+				@Override
+				public void insertUpdate(DocumentEvent e) { updateValue(); }
+
+				@Override
+				public void removeUpdate(DocumentEvent e) { updateValue(); }
+
+				@Override
+				public void changedUpdate(DocumentEvent e) { updateValue(); }
+			});
+
+			add(checkBox, BorderLayout.CENTER);
+			add(txtValue, BorderLayout.EAST);
 		}
 	}
 
@@ -519,7 +546,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelMaterial = new JPanel();
 			jPanelMaterial.setLayout(new BoxLayout(jPanelMaterial, BoxLayout.Y_AXIS));
 			jPanelMaterial.setBorder(BorderFactory.createTitledBorder(
-							BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.material")));
+					BorderFactory.createLineBorder(Color.LIGHT_GRAY), MessageBundle.getMessage("angal.labnew.material")));
 			jPanelMaterial.add(getJComboBoxMaterial());
 		}
 		return jPanelMaterial;
@@ -563,7 +590,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				patientSelected = null;
 				// INTERFACE
 				jTextFieldPatient.setText("");
-				jTextFieldPatient.setEditable(false);
+				jTextFieldPatient.setEditable(true);
+                patientSelected = null;
 				jButtonPickPatient.setText(MessageBundle.getMessage("angal.labnew.findpatient.btn"));
 				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam")); //$NON-NLS-1$
 				jButtonTrashPatient.setEnabled(false);
@@ -578,12 +606,15 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jButtonPickPatient.setMnemonic(MessageBundle.getMnemonic("angal.labnew.findpatient.btn.key"));
 			jButtonPickPatient.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png")); //$NON-NLS-1$
 			jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam")); //$NON-NLS-1$
-			jButtonPickPatient.addActionListener(actionEvent -> {
-				SelectPatient sp = new SelectPatient(this, patientSelected);
-				sp.addSelectionListener(this);
-				sp.pack();
-				sp.setVisible(true);
-			});
+            jButtonPickPatient.addActionListener(actionEvent -> {
+
+                SelectPatient sp = new SelectPatient(this, patientSelected);
+                sp.addSelectionListener(this);
+                sp.pack();
+                sp.setVisible(true);
+
+                patientSelected = sp.getPatient();
+            });
 		}
 		return jButtonPickPatient;
 	}
@@ -593,7 +624,27 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jTextFieldPatient = new JTextField();
 			jTextFieldPatient.setText(""); //$NON-NLS-1$
 			jTextFieldPatient.setPreferredSize(PATIENT_DIMENSION);
-			jTextFieldPatient.setEditable(false);
+            jTextFieldPatient.addActionListener(actionEvent -> {
+                SelectPatient selectPatient = new SelectPatient(
+                        (JFrame) SwingUtilities.getWindowAncestor(jTextFieldPatient),
+                        jTextFieldPatient.getText()
+                );
+
+                selectPatient.setVisible(true);
+
+                patientSelected = selectPatient.getPatient();
+
+                if (patientSelected != null) {
+                    jTextFieldPatient.setText(patientSelected.getName());
+                    patientSelected(patientSelected);
+                    if (jButtonTrashPatient != null) {
+                        jButtonTrashPatient.setEnabled(true);
+                    }
+                }
+
+                jTextFieldPatient.requestFocus();
+            });
+
 		}
 		return jTextFieldPatient;
 	}
@@ -664,9 +715,52 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelNorth = new JPanel();
 			jPanelNorth.setLayout(new BoxLayout(jPanelNorth, BoxLayout.Y_AXIS));
 			jPanelNorth.add(getJPanelDate());
+			jPanelNorth.add(getJPanelPrescriber());
 			jPanelNorth.add(getJPanelPatient());
 		}
 		return jPanelNorth;
+	}
+
+	private JPanel getJPanelPrescriber() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		panel.setBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+				MessageBundle.getMessage("angal.lab.prescriber.title")));
+
+		JLabel label = new JLabel(MessageBundle.getMessage("angal.lab.prescriber.label"));
+		label.setPreferredSize(LABEL_DIMENSION);
+		panel.add(label);
+
+		jTextFieldPrescriber = new JTextField();
+		jTextFieldPrescriber.setPreferredSize(PATIENT_DIMENSION);
+		panel.add(jTextFieldPrescriber);
+
+		jComboBoxPrescriber = new JComboBox<>();
+		jComboBoxPrescriber.setPreferredSize(new Dimension(200, 25));
+
+		String placeholder = MessageBundle.getMessage("angal.lab.prescriber.selectOrType");
+		jComboBoxPrescriber.addItem(placeholder);
+		jComboBoxPrescriber.setSelectedIndex(0);
+
+		try {
+			List<String> prescribers = labManager.getDistinctPrescribers();
+			prescribers.forEach(jComboBoxPrescriber::addItem);
+		} catch (OHServiceException e) {
+			LOGGER.error("Error loading prescribers", e);
+		}
+
+		jComboBoxPrescriber.addActionListener(actionEvent -> {
+			String selected = (String) jComboBoxPrescriber.getSelectedItem();
+			if (selected != null && !selected.isEmpty() && !selected.equals(placeholder)) {
+				jTextFieldPrescriber.setText(selected);
+			} else if (selected != null && selected.equals(placeholder)) {
+				jTextFieldPrescriber.setText("");
+			}
+		});
+
+		panel.add(jComboBoxPrescriber);
+
+		return panel;
 	}
 
 	private JScrollPane getJScrollPaneTable() {

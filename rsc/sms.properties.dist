@@ -15,7 +15,7 @@ gsm-gateway-service.port=COM6
 gsm-gateway-service.driver-name=com.sun.comm.Win32Driver
 gsm-gateway-service.csmp=AT+CSMP\=17,167,0,0\r
 gsm-gateway-service.cmgf=AT+CMGF\=1\r
-gsm-gateway-service.gmm=AT+GMM\r\n 
+gsm-gateway-service.gmm=AT+GMM\r\n
 gsm-gateway-service.cmgs=AT+CMGS\="
 
 

@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -183,7 +183,7 @@ public class TherapyEntryForm extends JDialog {
 			setTitle(MessageBundle.getMessage("angal.therapy.edittherapyentryform.title"));
 			getContentPane().setBackground(Color.RED);
 		}
-		setSize(new Dimension(740, 400));
+		setSize(new Dimension(820, 400));
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		getContentPane().add(getTherapyPanel(), BorderLayout.CENTER);
 		getContentPane().add(getButtonPanel(), BorderLayout.SOUTH);
@@ -264,6 +264,7 @@ public class TherapyEntryForm extends JDialog {
 		if (medicalListscrollPane == null) {
 			medicalListscrollPane = new JScrollPane(getMedicalsList());
 			medicalListscrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+			medicalListscrollPane.setPreferredSize(new Dimension(350, ONE_LINE_COMPONENTS_HEIGHT * VISIBLE_MEDICALS_ROWS));
 			medicalListscrollPane.setMaximumSize(new Dimension(Short.MAX_VALUE,
 					ONE_LINE_COMPONENTS_HEIGHT * VISIBLE_MEDICALS_ROWS));
 		}
@@ -549,6 +550,8 @@ public class TherapyEntryForm extends JDialog {
 		if (noteScrollPane == null) {
 			noteScrollPane = new JScrollPane(getNoteTextArea());
 			noteScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			noteScrollPane.setPreferredSize(new Dimension(300, 120));
+			noteScrollPane.setMinimumSize(new Dimension(300, 120));
 		}
 		return noteScrollPane;
 	}
@@ -721,7 +724,19 @@ public class TherapyEntryForm extends JDialog {
 					thRow = therapyManager.getTherapyRow(therapyID, patID, startDate, endDate, medical, qty, unitID, freqInDay, freqInPeriod, note, notify, sms);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e, this);
+					return;
 				}
+
+				try {
+					TherapyRow savedRow = therapyManager.newTherapy(thRow);
+					if (savedRow != null && savedRow.getTherapyID() > 0) {
+						thRow.setTherapyID(savedRow.getTherapyID());
+					}
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+					return;
+				}
+
 				setVisible(false);
 
 			});

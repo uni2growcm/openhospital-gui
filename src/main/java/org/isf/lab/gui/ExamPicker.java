@@ -141,6 +141,21 @@ public class ExamPicker extends JPanel {
 			public void mouseExited(MouseEvent e) {
 				cellRenderer.setHoveredRow(-1);
 			}
+
+			@Override
+			public void mousePressed(MouseEvent mouseEvent) {
+				if (mouseEvent.getClickCount() == 2) {
+					int row = jTableData.rowAtPoint(mouseEvent.getPoint());
+					if (row >= 0) {
+						if (jTableData.isRowSelected(row)) {
+							jTableData.removeRowSelectionInterval(row, row);
+						} else {
+							jTableData.addRowSelectionInterval(row, row);
+						}
+						validateSelection();
+					}
+				}
+			}
 		});
 
 		jTableData.setModel(model);
@@ -151,13 +166,6 @@ public class ExamPicker extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent mouseEvent) {
 				jTableDataMouseClicked(mouseEvent);
-			}
-
-			@Override
-			public void mousePressed(MouseEvent mouseEvent) {
-				if (mouseEvent.getClickCount() == 2) {
-					validateSelection();
-				}
 			}
 		});
 

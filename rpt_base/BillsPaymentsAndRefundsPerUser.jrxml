@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="BillsPaymentsAndRefundsPerUser" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="BillsPaymentsAndRefundsPerUser" uuid="c86dd90a-c3a1-49f4-acb0-179e157a0329">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="fromdateshort" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="todateshort" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT US_ID_A, USR_PAYMENTS, USR_REFUNDS
+FROM (
+	SELECT US_ID_A,
+	(SELECT SUM(IF(BLP_AMOUNT > 0, BLP_AMOUNT, 0)) FROM OH_BILLPAYMENTS BLP1 WHERE (DATE(BLP1.BLP_DATE) BETWEEN $P{fromdate} AND $P{todate}) AND BLP_USR_ID_A = US_ID_A) AS USR_PAYMENTS,
+	(SELECT SUM(IF(BLP_AMOUNT < 0, ABS(BLP_AMOUNT), 0)) FROM OH_BILLPAYMENTS BLP2 WHERE (DATE(BLP2.BLP_DATE) BETWEEN $P{fromdate} AND $P{todate}) AND BLP_USR_ID_A = US_ID_A) AS USR_REFUNDS
+	FROM OH_USER
+) USERS 
+WHERE (USR_PAYMENTS > 0 OR USR_REFUNDS > 0)]]>
+	</queryString>
+	<field name="US_ID_A" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="US_ID_A"/>
+		<property name="com.jaspersoft.studio.field.label" value="US_ID_A"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="USERS"/>
+	</field>
+	<field name="USR_PAYMENTS" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="USR_PAYMENTS"/>
+		<property name="com.jaspersoft.studio.field.label" value="USR_PAYMENTS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="USERS"/>
+	</field>
+	<field name="USR_REFUNDS" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="USR_REFUNDS"/>
+		<property name="com.jaspersoft.studio.field.label" value="USR_REFUNDS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="USERS"/>
+	</field>
+	<variable name="PAID" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{USR_PAYMENTS} != null ? $F{USR_PAYMENTS} : new Double(0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="REFUNDS" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{USR_REFUNDS} != null ? $F{USR_REFUNDS} : new Double(0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="DEPOSIT" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[new java.lang.Double((($F{USR_PAYMENTS} != null ? $F{USR_PAYMENTS} : new Double(0)).doubleValue()) -(($F{USR_REFUNDS} != null ? $F{USR_REFUNDS} : new Double(0)).doubleValue()))]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="90" splitType="Stretch">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-18" x="0" y="0" width="535" height="22" uuid="6c01b65c-ee65-4c59-a72a-9ba2427b29ad"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-19" x="0" y="22" width="535" height="17" uuid="26768ee2-2914-46b3-9c9f-74daa3fb00aa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-20" x="0" y="39" width="535" height="17" uuid="654ff5c8-17fe-4652-9f9d-95879127ab86"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement key="textField-21" x="0" y="56" width="535" height="17" uuid="e68f4c9a-0ada-4439-a403-26261d5977fc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Telephone}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="59" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-32" x="0" y="0" width="534" height="21" uuid="5a308b57-98e0-46e0-a9c1-0c190d2abaee"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="15" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{billspaymentsandrefundperuserindate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="36" width="275" height="23" uuid="2eb2633d-c39b-469f-96ba-f756c70bb877"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{inDate} + "   " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{fromdate}) + "   " + $R{to2} + "   " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{todate})]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="23" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-35" x="1" y="1" width="225" height="20" uuid="8868b407-a716-46a7-97c4-87898c79046d"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cashier}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-47" x="345" y="1" width="102" height="20" uuid="6ba3b7d1-151f-426f-89e9-91a7c0cf69b2"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{refunds}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-49" x="232" y="1" width="107" height="20" uuid="b225815b-c18c-4725-af92-124bac5ed7de"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{payments}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-52" x="447" y="1" width="88" height="20" uuid="f3a557c1-0127-49e3-bdcf-c2c5e556d10b"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{deposit}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-8" x="1" y="0" width="226" height="18" uuid="bf8400b5-5091-444d-b553-5a014921d143"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{US_ID_A}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-46" x="345" y="0" width="102" height="18" isRemoveLineWhenBlank="true" uuid="d745845f-ba58-4bc9-b422-b63c6b443791"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{USR_REFUNDS} != null ? $F{USR_REFUNDS} : new Double(0)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-50" x="232" y="0" width="107" height="18" isRemoveLineWhenBlank="true" uuid="e8494b40-e07d-400f-b1d8-e4638691e695"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{USR_PAYMENTS} != null ? $F{USR_PAYMENTS} : new Double(0)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-53" x="447" y="0" width="88" height="18" isRemoveLineWhenBlank="true" uuid="bb957b07-0ea2-4d2d-b65b-0132e691ae7e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.lang.Double((($F{USR_PAYMENTS} != null ? $F{USR_PAYMENTS} : new Double(0)).doubleValue()) -(($F{USR_REFUNDS} != null ? $F{USR_REFUNDS} : new Double(0)).doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="22" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-44" x="454" y="2" width="47" height="19" uuid="444007ad-3e22-47d7-b6ac-775f5ce3b8e2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-45" x="501" y="2" width="34" height="19" uuid="1af2b824-0344-4843-93d0-e61009057572"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="26" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-41" x="0" y="1" width="226" height="24" uuid="a3c20744-a6b3-49a4-80fa-039fa120e505"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totals}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-48" x="345" y="1" width="102" height="24" uuid="253359b8-612a-4005-a5b6-7a6d70f73fc9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REFUNDS}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-51" x="231" y="1" width="108" height="24" uuid="8301bed6-dba9-4082-83e6-93ee708c3acb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-54" x="447" y="1" width="88" height="24" uuid="2f4adc59-6f81-4a85-b292-8adcaaf99f84"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DEPOSIT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
