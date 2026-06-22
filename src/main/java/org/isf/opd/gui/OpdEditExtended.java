@@ -2028,14 +2028,12 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		diseaseLabel.setToolTipText(fullName);
 		tag.add(diseaseLabel, BorderLayout.CENTER);
 
-		JButton removeButton = new JButton("x");
-		removeButton.setFont(removeButton.getFont().deriveFont(Font.BOLD, 11f));
-		removeButton.setForeground(new Color(160, 30, 30));
-		removeButton.setPreferredSize(new Dimension(22, 22));
-		removeButton.setMinimumSize(new Dimension(22, 22));
+		ImageIcon removeIcon = new ImageIcon("rsc/icons/regular_close_tab.JPG");
+		JButton removeButton = new JButton(removeIcon);
 		removeButton.setBorderPainted(false);
 		removeButton.setContentAreaFilled(false);
 		removeButton.setFocusPainted(false);
+		removeButton.setPreferredSize(new Dimension(30, 24));
 		removeButton.setToolTipText(MessageBundle.getMessage("angal.common.delete.btn"));
 		removeButton.addActionListener(e -> {
 			selectedDiagnosisModel.removeElement(entry);
