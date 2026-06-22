@@ -62,6 +62,7 @@ import org.isf.medtype.manager.MedicalTypeBrowserManager;
 import org.isf.medtype.model.MedicalType;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.command.gui.CommandBrowser;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPharmaceuticalAMC;
 import org.isf.stat.gui.report.GenericReportPharmaceuticalOrder;
@@ -279,6 +280,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonPanel.add(getJButtonStock());
 		buttonPanel.add(getJButtonStockCard());
 		buttonPanel.add(getJButtonOrderList());
+		buttonPanel.add(getJButtonPharmaceuticalOrder());
 		buttonPanel.add(getJButtonExpiring());
 		buttonPanel.add(getJButtonAMC());
 		buttonPanel.add(getJButtonClose());
@@ -384,7 +386,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private JButton getJButtonOrderList() {
 		JButton buttonOrderList = new JButton(MessageBundle.getMessage("angal.medicals.order.btn"));
 		buttonOrderList.setMnemonic(MessageBundle.getMnemonic("angal.medicals.order.btn.key"));
-		buttonOrderList.addActionListener(actionEvent -> {
+		buttonOrderList.addActionListener(actionEvent -> new CommandBrowser());
+		return buttonOrderList;
+	}
+
+	private JButton getJButtonPharmaceuticalOrder() {
+		JButton buttonPharmOrder = new JButton(MessageBundle.getMessage("angal.medicals.pharmaceuticalorder.btn"));
+		buttonPharmOrder.setMnemonic(MessageBundle.getMnemonic("angal.medicals.pharmaceuticalorder.btn.key"));
+		buttonPharmOrder.addActionListener(actionEvent -> {
 			boolean includeNonZeroQty = false;
 			int ok = MessageDialog.yesNoCancel(this, "angal.medicals.showonlycriticalstock.msg");
 			if (ok == JOptionPane.CANCEL_OPTION) return;
@@ -393,7 +402,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			}
 			new GenericReportPharmaceuticalOrder(GeneralData.PHARMACEUTICALORDER, includeNonZeroQty);
 		});
-		return buttonOrderList;
+		return buttonPharmOrder;
 	}
 
 	private JButton getJButtonStock() {
