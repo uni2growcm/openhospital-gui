@@ -34,25 +34,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JList;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JComboBox;
-import javax.swing.JTable;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.JScrollPane;
-import javax.swing.BorderFactory;
-import javax.swing.JOptionPane;
+import javax.swing.*;
+
+import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.layout.SpringUtilities;
+
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -85,9 +75,18 @@ public class HomeVisitBrowser extends ModalJFrame {
     private JComboBox<Integer> jPageComboBox;
     private long totalElements = 0;
     private JLabel jTotalLabel;
+    private JTextField codeFilterField;
+    private JRadioButton radioAll;
+    private JRadioButton radioMale;
+    private JRadioButton radioFemale;
+    private JTextField ageFromField;
+    private JTextField ageToField;
+    private GoodDateChooser dateFromChooser;
+    private GoodDateChooser dateToChooser;
 
     private static final String[] COLUMNS = {
             "ID",
+            MessageBundle.getMessage("angal.common.code.txt"),
             MessageBundle.getMessage("angal.common.patient.txt"),
             MessageBundle.getMessage("angal.homevisit.date.col"),
             MessageBundle.getMessage("angal.homevisit.status.col"),
@@ -106,26 +105,136 @@ public class HomeVisitBrowser extends ModalJFrame {
         setVisible(true);
     }
 
+//    private void initComponents() {
+//        setLayout(new BorderLayout());
+//
+//        JPanel topPanel = new JPanel(new BorderLayout());
+//
+//        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//        searchField = new JTextField(20);
+//        searchField.addKeyListener(new KeyAdapter() {
+//            @Override
+//            public void keyReleased(KeyEvent e) {
+//                loadHomeVisits();
+//            }
+//        });
+//
+//        searchPanel.add(new JLabel(MessageBundle.getMessage("angal.common.search.txt")));
+//        searchPanel.add(searchField);
+//        topPanel.add(searchPanel, BorderLayout.WEST);
+//
+//        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.filter.status") + ":"));
+//        statusFilter = new JComboBox<>();
+//        statusFilter.addItem(null);
+//        for (HomeVisitStatus status : HomeVisitStatus.values()) {
+//            statusFilter.addItem(status);
+//        }
+//        statusFilter.setRenderer(new DefaultListCellRenderer() {
+//            @Override
+//            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//                if (value == null) {
+//                    setText(MessageBundle.getMessage("angal.common.all.btn"));
+//                }
+//                return this;
+//            }
+//        });
+//        statusFilter.addActionListener(e -> loadHomeVisits());
+//        filterPanel.add(statusFilter);
+//        topPanel.add(filterPanel, BorderLayout.EAST);
+//
+//        add(topPanel, BorderLayout.NORTH);
+//
+//        tableModel = new DefaultTableModel(COLUMNS, 0) {
+//            @Override
+//            public boolean isCellEditable(int r, int c) {
+//                return false;
+//            }
+//        };
+//        table = new JTable(tableModel);
+//        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        table.getColumnModel().getColumn(0).setMinWidth(0);
+//        table.getColumnModel().getColumn(0).setMaxWidth(0);
+//        table.getColumnModel().getColumn(0).setWidth(0);
+//
+//        table.getSelectionModel().addListSelectionListener(e -> {
+//            if (!e.getValueIsAdjusting()) {
+//                updateButtonStates();
+//            }
+//        });
+//
+//        add(new JScrollPane(table), BorderLayout.CENTER);
+//
+//        JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+//
+//        JPanel paginationPanel = getPaginationPanel();
+//        paginationPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+//        bottomPanel.add(paginationPanel);
+//
+//        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+//        JButton printBtn = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
+//        JButton newBtn = new JButton(MessageBundle.getMessage("angal.homevisit.new.btn"));
+//        JButton editBtn = new JButton(MessageBundle.getMessage("angal.homevisit.edit.btn"));
+//        completeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
+//        cancelBtn = new JButton(MessageBundle.getMessage("angal.homevisit.cancel.btn"));
+//        postponeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
+//        reactivateBtn = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
+//        reactivateBtn.setEnabled(false);
+//        JButton deleteBtn = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
+//        JButton closeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
+//
+//        newBtn.addActionListener(e -> openEditor(null));
+//        editBtn.addActionListener(e -> {
+//            if (table.getSelectedRow() < 0) {
+//                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+//                return;
+//            }
+//            openEditor(getSelectedHomeVisit());
+//        });
+//        printBtn.addActionListener(e -> {
+//            MessageDialog.info(this, MessageBundle.getMessage("angal.common.featurenotimplemented.msg"));
+//        });
+//        completeBtn.addActionListener(e -> completeSelectedVisit());
+//        cancelBtn.addActionListener(e -> cancelSelectedVisit());
+//        postponeBtn.addActionListener(e -> postponeSelectedVisit());
+//        reactivateBtn.addActionListener(e -> reactivateSelectedVisit());
+//        deleteBtn.addActionListener(e -> deleteSelectedVisit());
+//        closeBtn.addActionListener(e -> dispose());
+//
+//        btnPanel.add(newBtn);
+//        btnPanel.add(editBtn);
+//        btnPanel.add(completeBtn);
+//        btnPanel.add(cancelBtn);
+//        btnPanel.add(postponeBtn);
+//        btnPanel.add(reactivateBtn);
+//        btnPanel.add(deleteBtn);
+//        btnPanel.add(closeBtn);
+//        btnPanel.add(printBtn);
+//        bottomPanel.add(btnPanel);
+//
+//        add(bottomPanel, BorderLayout.SOUTH);
+//
+//        addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                dispose();
+//            }
+//        });
+//    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        JPanel filtersContent = new JPanel(new SpringLayout());
+        filtersContent.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.homevisit.filters.border")));
 
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchField = new JTextField(20);
-        searchField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                loadHomeVisits();
-            }
-        });
+        codeFilterField = new JTextField(10);
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ":"));
+        filtersContent.add(codeFilterField);
 
-        searchPanel.add(new JLabel(MessageBundle.getMessage("angal.common.search.txt")));
-        searchPanel.add(searchField);
-        topPanel.add(searchPanel, BorderLayout.WEST);
-
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.filter.status") + ":"));
         statusFilter = new JComboBox<>();
         statusFilter.addItem(null);
         for (HomeVisitStatus status : HomeVisitStatus.values()) {
@@ -133,25 +242,83 @@ public class HomeVisitBrowser extends ModalJFrame {
         }
         statusFilter.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value == null) {
-                    setText(MessageBundle.getMessage("angal.common.all.btn"));
-                }
+                if (value == null) setText(MessageBundle.getMessage("angal.common.all.btn"));
                 return this;
             }
         });
-        statusFilter.addActionListener(e -> loadHomeVisits());
-        filterPanel.add(statusFilter);
-        topPanel.add(filterPanel, BorderLayout.EAST);
+        statusFilter.addActionListener(e -> {
+            currentPage = 0;
+            loadHomeVisits();
+        });
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.homevisit.filter.status") + ":"));
+        filtersContent.add(statusFilter);
 
-        add(topPanel, BorderLayout.NORTH);
+        JPanel sexPanel = new JPanel();
+        ButtonGroup sexGroup = new ButtonGroup();
+        radioAll = new JRadioButton(MessageBundle.getMessage("angal.common.all.btn"), true);
+        radioMale = new JRadioButton(MessageBundle.getMessage("angal.common.male.btn"));
+        radioFemale = new JRadioButton(MessageBundle.getMessage("angal.common.female.btn"));
+        sexGroup.add(radioAll);
+        sexGroup.add(radioMale);
+        sexGroup.add(radioFemale);
+        sexPanel.add(radioAll);
+        sexPanel.add(radioMale);
+        sexPanel.add(radioFemale);
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.common.sex.txt") + ":"));
+        filtersContent.add(sexPanel);
+
+        JPanel agePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        ageFromField = new JTextField(4);
+        ageToField = new JTextField(4);
+        agePanel.add(new JLabel(MessageBundle.getMessage("angal.common.agefrom.label")));
+        agePanel.add(ageFromField);
+        agePanel.add(new JLabel(MessageBundle.getMessage("angal.common.ageto.label")));
+        agePanel.add(ageToField);
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.common.age.txt") + ":"));
+        filtersContent.add(agePanel);
+
+        dateFromChooser = new GoodDateChooser(LocalDate.now().minusWeeks(1), true, true);
+        dateToChooser = new GoodDateChooser(LocalDate.now(), true, true);
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+        filtersContent.add(dateFromChooser);
+        filtersContent.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+        filtersContent.add(dateToChooser);
+
+        SpringUtilities.makeCompactGrid(filtersContent, 6, 2, 5, 5, 5, 5);
+
+        JPanel searchBtnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton searchBtn = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
+        JButton resetBtn = new JButton(MessageBundle.getMessage("angal.opd.reset.btn"));
+        searchBtnPanel.add(searchBtn);
+        searchBtnPanel.add(resetBtn);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchField = new JTextField(15);
+        searchPanel.add(new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ":"));
+        searchPanel.add(searchField);
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                currentPage = 0;
+                loadHomeVisits();
+            }
+        });
+
+        JPanel leftContent = new JPanel();
+        leftContent.setLayout(new BoxLayout(leftContent, BoxLayout.Y_AXIS));
+        leftContent.add(searchPanel);
+        leftContent.add(filtersContent);
+        leftContent.add(searchBtnPanel);
+
+        leftPanel.add(leftContent, BorderLayout.NORTH);
+        add(leftPanel, BorderLayout.WEST);
 
         tableModel = new DefaultTableModel(COLUMNS, 0) {
             @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
+            public boolean isCellEditable(int r, int c) { return false; }
         };
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -160,30 +327,31 @@ public class HomeVisitBrowser extends ModalJFrame {
         table.getColumnModel().getColumn(0).setWidth(0);
 
         table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                updateButtonStates();
-            }
+            if (!e.getValueIsAdjusting()) updateButtonStates();
         });
 
-        add(new JScrollPane(table), BorderLayout.CENTER);
-
-        JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel paginationPanel = getPaginationPanel();
-        paginationPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-        bottomPanel.add(paginationPanel);
+        paginationPanel.setBorder(BorderFactory.createEtchedBorder());
+        centerWrapper.add(paginationPanel, BorderLayout.SOUTH);
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton printBtn = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
-        JButton newBtn = new JButton(MessageBundle.getMessage("angal.homevisit.new.btn"));
-        JButton editBtn = new JButton(MessageBundle.getMessage("angal.homevisit.edit.btn"));
-        completeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
-        cancelBtn = new JButton(MessageBundle.getMessage("angal.homevisit.cancel.btn"));
-        postponeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
-        reactivateBtn = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JButton newBtn      = new JButton(MessageBundle.getMessage("angal.homevisit.new.btn"));
+        JButton editBtn     = new JButton(MessageBundle.getMessage("angal.homevisit.edit.btn"));
+        completeBtn         = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
+        cancelBtn           = new JButton(MessageBundle.getMessage("angal.homevisit.cancel.btn"));
+        postponeBtn         = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
+        reactivateBtn       = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
+        JButton deleteBtn   = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
+        JButton closeBtn    = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
+        JButton printBtn    = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
+
+        completeBtn.setEnabled(false);
+        cancelBtn.setEnabled(false);
+        postponeBtn.setEnabled(false);
         reactivateBtn.setEnabled(false);
-        JButton deleteBtn = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
-        JButton closeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
 
         newBtn.addActionListener(e -> openEditor(null));
         editBtn.addActionListener(e -> {
@@ -193,15 +361,30 @@ public class HomeVisitBrowser extends ModalJFrame {
             }
             openEditor(getSelectedHomeVisit());
         });
-        printBtn.addActionListener(e -> {
-            MessageDialog.info(this, MessageBundle.getMessage("angal.common.featurenotimplemented.msg"));
-        });
         completeBtn.addActionListener(e -> completeSelectedVisit());
         cancelBtn.addActionListener(e -> cancelSelectedVisit());
         postponeBtn.addActionListener(e -> postponeSelectedVisit());
         reactivateBtn.addActionListener(e -> reactivateSelectedVisit());
         deleteBtn.addActionListener(e -> deleteSelectedVisit());
         closeBtn.addActionListener(e -> dispose());
+
+        searchBtn.addActionListener(e -> {
+            currentPage = 0;
+            loadHomeVisits();
+        });
+
+        resetBtn.addActionListener(e -> {
+            codeFilterField.setText("");
+            statusFilter.setSelectedIndex(0);
+            radioAll.setSelected(true);
+            ageFromField.setText("");
+            ageToField.setText("");
+            dateFromChooser.setDate(LocalDate.now().minusWeeks(1));
+            dateToChooser.setDate(LocalDate.now());
+            searchField.setText("");
+            currentPage = 0;
+            loadHomeVisits();
+        });
 
         btnPanel.add(newBtn);
         btnPanel.add(editBtn);
@@ -212,15 +395,13 @@ public class HomeVisitBrowser extends ModalJFrame {
         btnPanel.add(deleteBtn);
         btnPanel.add(closeBtn);
         btnPanel.add(printBtn);
-        bottomPanel.add(btnPanel);
 
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(centerWrapper, BorderLayout.CENTER);
+        add(btnPanel, BorderLayout.SOUTH);
 
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                dispose();
-            }
+            public void windowClosing(WindowEvent e) { dispose(); }
         });
     }
 
@@ -253,37 +434,59 @@ public class HomeVisitBrowser extends ModalJFrame {
     private void loadHomeVisits() {
         tableModel.setRowCount(0);
         try {
-            Page<HomeVisit> page;
             HomeVisitStatus selectedStatus = (HomeVisitStatus) statusFilter.getSelectedItem();
-            String searchText = searchField.getText().trim();
 
-            if (selectedStatus != null) {
-                page = manager.getHomeVisitsByStatus(selectedStatus, currentPage, PAGE_SIZE);
-            } else {
-                page = manager.getHomeVisits(currentPage, PAGE_SIZE);
+            char sex = radioMale.isSelected() ? 'M' : radioFemale.isSelected() ? 'F' : 'A';
+            Character sexFilter = (sex == 'A') ? null : sex;
+
+            String ageFromStr = ageFromField.getText().trim();
+            String ageToStr = ageToField.getText().trim();
+            Integer ageFromVal = null;
+            Integer ageToVal = null;
+            try {
+                if (!ageFromStr.isEmpty()) ageFromVal = Integer.parseInt(ageFromStr);
+                if (!ageToStr.isEmpty()) ageToVal = Integer.parseInt(ageToStr);
+            } catch (NumberFormatException e) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+                return;
             }
+
+            String codeStr = codeFilterField.getText().trim();
+            Integer codeVal = null;
+            if (!codeStr.isEmpty()) {
+                try {
+                    codeVal = Integer.parseInt(codeStr);
+                } catch (NumberFormatException e) {
+                    MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavalidnumber.msg"));
+                    return;
+                }
+            }
+
+            LocalDate from = dateFromChooser.getDate();
+            LocalDate to = dateToChooser.getDate();
+            LocalDateTime dateFromDT = (from != null) ? from.atStartOfDay() : null;
+            LocalDateTime dateToDT = (to != null) ? to.atTime(23, 59, 59) : null;
+
+            String searchText = searchField.getText().trim();
+            String searchTextFilter = searchText.isEmpty() ? null : searchText;
+
+            Page<HomeVisit> page = manager.getHomeVisitsWithFilters(
+                    codeVal, selectedStatus, dateFromDT, dateToDT, sexFilter,
+                    ageFromVal, ageToVal, searchTextFilter, currentPage, PAGE_SIZE);
 
             totalElements = page.getTotalElements();
             totalPages = page.getTotalPages();
 
             for (HomeVisit hv : page.getContent()) {
+                Integer patientCode = hv.getPatient() != null ? hv.getPatient().getCode() : null;
                 String patientName = hv.getPatient() != null ? hv.getPatient().getName() : "";
                 String visitDate = hv.getVisitStartDate() != null ?
                         hv.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "";
                 String staffName = hv.getStaff() != null ? hv.getStaff().getFullName() : "";
-                String status = hv.getStatus() != null ? hv.getStatus().toString() : "";
-
-                if (!searchText.isEmpty() && !patientName.toLowerCase().contains(searchText.toLowerCase())) {
-                    continue;
-                }
+                String statusStr = hv.getStatus() != null ? hv.getStatus().toString() : "";
 
                 tableModel.addRow(new Object[]{
-                        hv.getId(),
-                        patientName,
-                        visitDate,
-                        status,
-                        staffName,
-                        hv.getPurpose()
+                        hv.getId(), patientCode, patientName, visitDate, statusStr, staffName, hv.getPurpose()
                 });
             }
 
@@ -412,8 +615,6 @@ public class HomeVisitBrowser extends ModalJFrame {
 
         LocalDateTime defaultDate = visit.getVisitStartDate().plusDays(1);
         GoodDateTimeSpinnerChooser dateChooser = new GoodDateTimeSpinnerChooser(defaultDate);
-//        dateChooser.setMinDate(LocalDate.now().plusDays(1));
-
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt")), BorderLayout.NORTH);
         panel.add(dateChooser, BorderLayout.CENTER);
@@ -477,7 +678,7 @@ public class HomeVisitBrowser extends ModalJFrame {
             return;
         }
 
-        String statusStr = (String) tableModel.getValueAt(row, 3);
+        String statusStr = (String) tableModel.getValueAt(row, 4);
         HomeVisitStatus status = null;
         for (HomeVisitStatus s : HomeVisitStatus.values()) {
             if (s.name().equals(statusStr) || s.toString().equals(statusStr)) {
@@ -493,7 +694,7 @@ public class HomeVisitBrowser extends ModalJFrame {
             return;
         }
 
-        String visitDateStr = (String) tableModel.getValueAt(row, 2);
+        String visitDateStr = (String) tableModel.getValueAt(row, 3);
         boolean visitDateReached = false;
         try {
             LocalDateTime visitDate = LocalDateTime.parse(visitDateStr,
