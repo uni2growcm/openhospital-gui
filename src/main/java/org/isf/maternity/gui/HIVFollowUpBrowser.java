@@ -368,40 +368,45 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
         filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filters.visits")));
-        filterPanel.setPreferredSize(new Dimension(350, 180));
-        filterPanel.setMinimumSize(new Dimension(350, 180));
+        filterPanel.setPreferredSize(new Dimension(250, 200));  // ← Largeur augmentée
 
-        JPanel typePanel = new JPanel();
-        typePanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.visit.type")));
-        typePanel.setLayout(new BoxLayout(typePanel, BoxLayout.Y_AXIS));
-        typePanel.setAlignmentX(LEFT_ALIGNMENT);
-
+        ButtonGroup visitTypeGroup = new ButtonGroup();
         allVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.common.all.label"));
         pcrVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.hiv.visit.pcr"));
         clinicalVisitsRadio = new JRadioButton(MessageBundle.getMessage("angal.hiv.visit.clinical"));
 
-        ButtonGroup visitTypeGroup = new ButtonGroup();
+        allVisitsRadio.setSelected(true);
+
         visitTypeGroup.add(allVisitsRadio);
         visitTypeGroup.add(pcrVisitsRadio);
         visitTypeGroup.add(clinicalVisitsRadio);
-        allVisitsRadio.setSelected(true);
 
-        typePanel.add(allVisitsRadio);
-        typePanel.add(pcrVisitsRadio);
-        typePanel.add(clinicalVisitsRadio);
-        filterPanel.add(typePanel);
+        filterPanel.add(allVisitsRadio);
+        filterPanel.add(pcrVisitsRadio);
+        filterPanel.add(clinicalVisitsRadio);
 
-        filterPanel.add(Box.createVerticalStrut(10));
+        filterPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JPanel pcrResultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pcrResultPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.filter.pcr")));
-        pcrResultPanel.setAlignmentX(LEFT_ALIGNMENT);
+        pcrResultPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.filter.pcr") + ":"));
         pcrResultCombo = new JComboBox<>();
-        pcrResultCombo.setPreferredSize(new Dimension(180, 25));
+
         pcrResultCombo.addItem(null);
         for (HIVVisit.PCRResult result : HIVVisit.PCRResult.values()) {
             pcrResultCombo.addItem(result);
         }
+
+        pcrResultCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value == null) {
+                    return super.getListCellRendererComponent(list, MessageBundle.getMessage("angal.common.all.label"), index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+
+        pcrResultCombo.setPreferredSize(new Dimension(180, 25));
         pcrResultPanel.add(pcrResultCombo);
         filterPanel.add(pcrResultPanel);
 

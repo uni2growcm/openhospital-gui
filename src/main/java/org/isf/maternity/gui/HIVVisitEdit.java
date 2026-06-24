@@ -378,7 +378,7 @@ public class HIVVisitEdit extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weight") + ":"), gbc);
+        panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weights") + "*:"), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -798,6 +798,15 @@ public class HIVVisitEdit extends JDialog {
 
             visit.setVisitDate(visitDate);
 
+            if (nextAppointmentDateField.getDate() != null) {
+                LocalDate nextAppointment = nextAppointmentDateField.getDate();
+                LocalDate visitDateLocal = visitDate.toLocalDate();
+                if (nextAppointment.isBefore(visitDateLocal)) {
+                    MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.next.appointment.before.visit"));
+                    return;
+                }
+            }
+
             // Clinical data
             String weightText = weightField.getText().trim();
             if (!weightText.isEmpty()) {
@@ -878,6 +887,10 @@ public class HIVVisitEdit extends JDialog {
                 LocalDate startDate = treatmentStartDateField.getDate();
                 LocalDate endDate = treatmentEndDateField.getDate();
 
+                if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+                    MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.treatment.end.before.start"));
+                    return;
+                }
             }
 
             visit.setNextAppointmentDate(nextAppointmentDateField.getDate());

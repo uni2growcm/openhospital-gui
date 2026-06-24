@@ -487,7 +487,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.weightx = 0.0;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.birth.weight") + " (kg):"), gbc);
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.birth.weight") + " (kg) *:"), gbc);
 
             gbc.gridx = 1;
             gbc.weightx = 1.0;
@@ -527,7 +527,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             // Status
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.status") + ":"), gbc);
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.status") + "*:"), gbc);
 
             gbc.gridx = 1;
             dataPanel.add(getStatusCombo(), gbc);
@@ -536,7 +536,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             // Follow-up Start Date
             gbc.gridx = 0;
             gbc.gridy = row;
-            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.followup.start") + ":"), gbc);
+            dataPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.followup.start") + "*:"), gbc);
 
             gbc.gridx = 1;
             dataPanel.add(getFollowUpStartDateField(), gbc);
@@ -696,7 +696,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             // Visit Date
             gbc.gridx = 0;
             gbc.gridy = row;
-            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.visitdate.col") + ":"), gbc);
+            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.visitdate.col") + "*:"), gbc);
 
             gbc.gridx = 1;
             firstVisitPanel.add(getFirstVisitDateField(), gbc);
@@ -834,6 +834,12 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             LocalDate followUpStart = followUpStartDateField.getDate();
             if (followUpStart == null) {
                 MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavaliddate.msg"));
+                return;
+            }
+
+            LocalDate followUpEnd = followUpEndDateField.getDate();
+            if (followUpEnd != null && followUpEnd.isBefore(followUpStart)) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.followup.end.before.start"));
                 return;
             }
 
