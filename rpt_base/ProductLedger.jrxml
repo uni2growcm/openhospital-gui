@@ -323,7 +323,7 @@ null : $V{OUT_QTY} :
 				<textFieldExpression><![CDATA["REPUBLIQUE DU CAMEROUN"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="14" width="300" height="12" uuid="2396125e-9ce0-4ce1-b6b9-bf41f9868b7d"/>
+				<reportElement x="30" y="15" width="300" height="12" uuid="2396125e-9ce0-4ce1-b6b9-bf41f9868b7d"/>
 				<textElement textAlignment="Left">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
@@ -344,7 +344,7 @@ null : $V{OUT_QTY} :
 				<textFieldExpression><![CDATA["REPUBLIC OF CAMEROON"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="450" y="14" width="300" height="12" uuid="e354b56a-407b-4693-8dfa-24324e002725"/>
+				<reportElement x="440" y="10" width="300" height="12" uuid="e354b56a-407b-4693-8dfa-24324e002725"/>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
