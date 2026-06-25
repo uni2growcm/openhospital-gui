@@ -696,8 +696,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				secondRow.add(getJLabelPartner());
 				secondRow.add(getJComboBoxPartner());
 			}
-
-
 			panelSupRange.add(firstRow);
 			panelSupRange.add(secondRow);
 		}
