@@ -40,15 +40,15 @@
 	<queryString>
 		<![CDATA[SELECT * FROM (
     -- Opening Stock Section
-    SELECT 
+    SELECT
         '1' AS ORDERING_FIELD,
         NULL AS MMVN_ID,
         DATE($P{fromdate}) AS MMVN_DATE,
         (SELECT MDSR_CODE FROM OH_MEDICALDSR WHERE MDSR_ID = $P{productID}) AS MDSR_CODE,
         (SELECT MDSR_DESC FROM OH_MEDICALDSR WHERE MDSR_ID = $P{productID}) AS MDSR_DESC,
-        (SELECT MDSRT_DESC 
-         FROM OH_MEDICALDSR 
-         JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A 
+        (SELECT MDSRT_DESC
+         FROM OH_MEDICALDSR
+         JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A
          WHERE MDSR_ID = $P{productID}) AS MDSRT_DESC,
          NULL AS ORIGIN_DESTINATION,
         NULL AS MMVN_LT_ID,
@@ -58,32 +58,32 @@
         NULL AS REFERENCE,
         (SELECT SUM(QTY_INPUT - QTY_OUTPUT)
          FROM (
-             SELECT 
-                 MDSR_ID, 
-                ( SELECT SUM(MMV_QTY)  FROM 
+             SELECT
+                 MDSR_ID,
+                ( SELECT SUM(MMV_QTY)  FROM
             OH_MEDICALDSRSTOCKMOV
-       			 LEFT JOIN 
+       			 LEFT JOIN
             OH_MEDICALDSRSTOCKMOVTYPE ON MMV_MMVT_ID_A = MMVT_ID_A
-        		WHERE 
+        		WHERE
             MMVT_TYPE LIKE '%-%'
             AND DATE(MMV_DATE) < DATE($P{fromdate})
             AND MMV_WRD_ID_A = $P{WardCode}
             AND MMV_MDSR_ID = $P{productID} ) +
-    	(SELECT SUM(MMVN_MDSR_QTY) 
-        FROM 
+    	(SELECT SUM(MMVN_MDSR_QTY)
+        FROM
             OH_MEDICALDSRSTOCKMOVWARD
-        WHERE 
+        WHERE
             DATE(MMVN_DATE) < DATE($P{fromdate})
             AND MMVN_WRD_ID_A = $P{WardCode}
-            AND MMVN_MDSR_ID = $P{productID} ) AS QTY_INPUT, 
+            AND MMVN_MDSR_ID = $P{productID} ) AS QTY_INPUT,
                  SUM(OUTPUT) AS QTY_OUTPUT
              FROM (
-                 SELECT 
+                 SELECT
                      MDSR_ID,
                      CASE WHEN MMVN_WRD_ID_A_FROM IS NULL THEN MMVN_MDSR_QTY ELSE 0 END AS OUTPUT
                  FROM OH_MEDICALDSR
                  LEFT JOIN OH_MEDICALDSRSTOCKMOVWARD ON MDSR_ID = MMVN_MDSR_ID
-                 WHERE 
+                 WHERE
             DATE(MMVN_DATE) < DATE($P{fromdate})
             AND MMVN_WRD_ID_A = $P{WardCode}
             AND MMVN_MDSR_ID = $P{productID}
@@ -92,15 +92,15 @@
         ) AS MMVN_MDSR_QTY,
         NULL AS VALUE,
         NULL AS START_VALUE,
-        NULL AS MOVT_TYPE 
+        NULL AS MOVT_TYPE
     UNION ALL
     -- Transactions Section
-    SELECT 
+    SELECT
         '2' AS ORDERING_FIELD,
-        MMVN_ID, 
+        MMVN_ID,
         MMVN_DATE,
         MDSR_CODE,
-        MDSR_DESC, 
+        MDSR_DESC,
         MDSRT_DESC,
    		MOVT_TYPE,
    		REFERENCE ,
@@ -116,20 +116,20 @@ FROM (
         (SELECT WRD_NAME FROM OH_WARD WHERE WRD_ID_A = MMVN_WRD_ID_A) AS WRD_NAME,
         (CASE WHEN MMVN_WRD_ID_A_TO IS NOT NULL THEN LT_COST * MMVN_MDSR_QTY ELSE -LT_COST * MMVN_MDSR_QTY END) AS VALUE,
         NULL AS START_VALUE,
-        CASE 
+        CASE
             WHEN MMVN_IS_PATIENT = 1 AND MMVN_MDSR_QTY < 0 THEN 'Return by Patient'
             WHEN MMVN_IS_PATIENT = 1 AND MMVN_MDSR_QTY > 0 THEN 'Discharge to Patient'
-            WHEN MMVN_WRD_ID_A_FROM IS NOT NULL THEN CONCAT('Transfer from Ward: ', 
+            WHEN MMVN_WRD_ID_A_FROM IS NOT NULL THEN CONCAT('Transfer from Ward: ',
                 (SELECT WRD_NAME FROM OH_WARD WHERE WRD_ID_A = MMVN_WRD_ID_A_FROM))
-            WHEN MMVN_WRD_ID_A_TO IS NOT NULL THEN CONCAT('Transfer to Ward: ', 
+            WHEN MMVN_WRD_ID_A_TO IS NOT NULL THEN CONCAT('Transfer to Ward: ',
                 (SELECT WRD_NAME FROM OH_WARD WHERE WRD_ID_A = MMVN_WRD_ID_A_TO))
             ELSE NULL
         END AS REFERENCE,
-        CASE 
+        CASE
         	WHEN MMVN_WRD_ID_A_FROM IS NULL THEN MMVN_MDSR_QTY ELSE NULL  AS OUTPUT,
 			WHEN MMVN_WRD_ID_A_TO IS NULL THEN MMVN_MDSR_QTY ELSE NULL  AS INPUT
 		END	,
-        CASE 
+        CASE
             WHEN MMVN_WRD_ID_A_FROM IS NULL AND MMVN_WRD_ID_A_TO IS NOT NULL THEN 'Charge'
             WHEN MMVN_WRD_ID_A_TO IS NULL AND MMVN_WRD_ID_A_FROM IS NOT NULL THEN 'Discharge'
             WHEN MMVN_IS_PATIENT = 1 AND MMVN_MDSR_QTY < 0 THEN 'Discharged'
@@ -145,9 +145,9 @@ FROM (
 				DATE(MMVN_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
 					AND MMVN_WRD_ID_A = $P{WardCode}
 					AND MMVN_MDSR_ID = $P{productID})
-					
-					UNION 
-					
+
+					UNION
+
 					SELECT
 				MMV_ID AS MMVN_ID,
 				MMV_DATE AS MMVN_DATE,
@@ -155,8 +155,8 @@ FROM (
 				(SELECT MDSR_DESC FROM OH_MEDICALDSR WHERE MDSR_ID = $P{productID}) AS MDSR_DESC,
 				(SELECT MDSRT_DESC FROM OH_MEDICALDSR JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A WHERE MDSR_ID = $P{productID}) AS MDSRT_DESC,
 				"Charge" AS MOVT_TYPE,
-				CONCAT("From MAINSTORE: ", MMVT_DESC) AS REFERNCE, 
-				LT_DUE_DATE, 
+				CONCAT("From MAINSTORE: ", MMVT_DESC) AS REFERNCE,
+				LT_DUE_DATE,
 				(LT_COST * MMV_QTY) AS VALUE,
 				 null AS START_VALUE,
 				MMV_QTY AS QTY_INPUT,
@@ -187,15 +187,15 @@ FROM (
 GROUP BY YEAR(MMVN_DATE), MONTH(MMVN_DATE), DAY(MMVN_DATE), MOVT_TYPE
     UNION ALL
     -- Closing Stock Section
-    SELECT 
+    SELECT
         '3' AS ORDERING_FIELD,
         NULL AS MMVN_ID,
         DATE($P{todate}) AS MMVN_DATE,
         (SELECT MDSR_CODE FROM OH_MEDICALDSR WHERE MDSR_ID = $P{productID}) AS MDSR_CODE,
         (SELECT MDSR_DESC FROM OH_MEDICALDSR WHERE MDSR_ID = $P{productID}) AS MDSR_DESC,
-        (SELECT MDSRT_DESC 
-         FROM OH_MEDICALDSR 
-         JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A 
+        (SELECT MDSRT_DESC
+         FROM OH_MEDICALDSR
+         JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A
          WHERE MDSR_ID = $P{productID}) AS MDSRT_DESC,
         NULL AS ORIGIN_DESTINATION,
         NULL AS MMVN_LT_ID,
@@ -205,18 +205,18 @@ GROUP BY YEAR(MMVN_DATE), MONTH(MMVN_DATE), DAY(MMVN_DATE), MOVT_TYPE
         NULL AS REFERNECE,
         (SELECT SUM(QTY_INPUT - QTY_OUTPUT)
          FROM (
-             SELECT 
-                 MDSR_ID, 
-                 SUM(INPUT) AS QTY_INPUT, 
+             SELECT
+                 MDSR_ID,
+                 SUM(INPUT) AS QTY_INPUT,
                  SUM(OUTPUT) AS QTY_OUTPUT
              FROM (
-                 SELECT 
+                 SELECT
                      MDSR_ID,
                      CASE WHEN MMVN_WRD_ID_A_TO IS NULL THEN MMVN_MDSR_QTY ELSE 0 END AS INPUT,
                      CASE WHEN MMVN_WRD_ID_A_FROM IS NULL THEN MMVN_MDSR_QTY ELSE 0 END AS OUTPUT
                  FROM OH_MEDICALDSR
                  LEFT JOIN OH_MEDICALDSRSTOCKMOVWARD ON MDSR_ID = MMVN_MDSR_ID
-                WHERE 
+                WHERE
             DATE(MMVN_DATE) < DATE($P{fromdate})
             AND MMVN_WRD_ID_A = $P{WardCode}
             AND MMVN_MDSR_ID = $P{productID}
@@ -835,7 +835,7 @@ ORDER BY ORDERING_FIELD;]]>
 				<textElement textAlignment="Right">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{ORDERING_FIELD}.equals("1") ? null : 
+				<textFieldExpression><![CDATA[$F{ORDERING_FIELD}.equals("1") ? null :
 	$F{ORDERING_FIELD}.equals("2") ? $V{IN_QTY}.doubleValue() == 0 ? null : $V{IN_QTY} :
 	$V{TOT_IN}]]></textFieldExpression>
 			</textField>
