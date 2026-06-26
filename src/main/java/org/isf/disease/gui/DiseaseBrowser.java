@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.List;
 
+import javax.swing.*;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -38,6 +39,10 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import java.awt.FlowLayout;
+import javax.swing.Box;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.isf.disease.gui.DiseaseEdit.DiseaseListener;
 import org.isf.disease.manager.DiseaseBrowserManager;
@@ -82,7 +87,8 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 	}
 	
 	private int selectedrow;
-	private JComboBox pbox;
+	private JComboBox<DiseaseType> pbox;
+	private JTextField searchField;
 	private List<Disease> pDisease;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
@@ -97,28 +103,43 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 	private DiseaseType pSelection;
 	private DiseaseBrowserManager diseaseBrowserManager = Context.getApplicationContext().getBean(DiseaseBrowserManager.class);
 	private DiseaseTypeBrowserManager diseaseTypeBrowserManager = Context.getApplicationContext().getBean(DiseaseTypeBrowserManager.class);
-	
-	
+
+
 	public DiseaseBrowser() {
-		
+
 		setTitle(MessageBundle.getMessage("angal.disease.diseasesbrowser.title"));
 		myFrame = this;
-		model = new DiseaseBrowserModel();
-		table = new JTable(model);
-		table.setDefaultRenderer(Object.class, new ColorTableCellRenderer());
-		table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
-		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
-		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		add(new JScrollPane(table), BorderLayout.CENTER);
-		
-		JPanel buttonPanel = new JPanel();
 
-		JLabel selectlabel = new JLabel(MessageBundle.getMessage("angal.disease.selecttype"));
-		buttonPanel.add(selectlabel);
-		
-		pbox = new JComboBox();
+		setLayout(new BorderLayout());
+
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+		JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
+		topPanel.add(searchLabel);
+
+		searchField = new JTextField(20);
+		searchField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				filterDiseases(searchField.getText());
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				filterDiseases(searchField.getText());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				filterDiseases(searchField.getText());
+			}
+		});
+		topPanel.add(searchField);
+
+		topPanel.add(Box.createHorizontalStrut(20));
+
+		JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.disease.selecttype"));
+		topPanel.add(typeLabel);
+
+		pbox = new JComboBox<>();
 		pbox.addItem(ALL_DISEASETYPES);
 		List<DiseaseType> type = null;
 		try {
@@ -126,7 +147,6 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		} catch(OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 		}
-		// for efficiency in the sequent for
 		if (type != null) {
 			for (DiseaseType elem : type) {
 				pbox.addItem(elem);
@@ -134,20 +154,28 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		}
 		pbox.addActionListener(actionEvent -> {
 			pSelection = (DiseaseType) pbox.getSelectedItem();
-			if (pSelection.getDescription().compareTo(ALL_DISEASETYPES.getDescription()) == 0) {
-				model = new DiseaseBrowserModel();
-			} else {
-				model = new DiseaseBrowserModel(pSelection.getCode());
-			}
-			model.fireTableDataChanged();
-			table.updateUI();
+			filterDiseases(searchField.getText());
 		});
-		buttonPanel.add(pbox);
+		topPanel.add(pbox);
+
+		add(topPanel, BorderLayout.NORTH);
+
+		model = new DiseaseBrowserModel();
+		table = new JTable(model);
+		table.setDefaultRenderer(Object.class, new ColorTableCellRenderer());
+		table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
+		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
+		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		add(new JScrollPane(table), BorderLayout.CENTER);
+
+		JPanel buttonPanel = new JPanel();
 
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		buttonNew.addActionListener(actionEvent -> {
-			disease = new Disease(null, "", new DiseaseType("", ""));    //disease will reference the new record
+			disease = new Disease(null, "", new DiseaseType("", ""));
 			DiseaseEdit newrecord = new DiseaseEdit(myFrame, disease, true);
 			newrecord.addDiseaseListener(this);
 			newrecord.setVisible(true);
@@ -199,6 +227,7 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		buttonPanel.add(buttonClose);
 
 		add(buttonPanel, BorderLayout.SOUTH);
+
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);
@@ -278,6 +307,35 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 				cell.setForeground(Color.GRAY);
 			}
 			return cell;
+		}
+	}
+
+	private void filterDiseases(String searchText) {
+		String currentTypeCode = pSelection != null ? pSelection.getCode() : "";
+		String searchLower = searchText.toLowerCase().trim();
+
+		List<Disease> filteredList;
+
+		try {
+			if (currentTypeCode.isEmpty() || currentTypeCode.equals(ALL_DISEASETYPES.getCode())) {
+				filteredList = diseaseBrowserManager.getDiseaseAll();
+			} else {
+				filteredList = diseaseBrowserManager.getDisease(currentTypeCode);
+			}
+
+			if (!searchLower.isEmpty()) {
+				filteredList = filteredList.stream()
+						.filter(d -> d.getCode().toLowerCase().contains(searchLower) ||
+								d.getDescription().toLowerCase().contains(searchLower))
+						.collect(java.util.stream.Collectors.toList());
+			}
+
+			pDisease = filteredList;
+			((DiseaseBrowserModel) table.getModel()).fireTableDataChanged();
+			table.updateUI();
+
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
 		}
 	}
 }

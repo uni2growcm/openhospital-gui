@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -35,6 +35,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.Box;
+import javax.swing.*;
+import java.awt.FlowLayout;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -90,6 +95,7 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 	private JScrollPane jScrollPane;
 	private JTable table;
 	private DefaultTableModel model;
+	private JTextField searchField;
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
@@ -120,9 +126,12 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 		final int pfrmBase = 6;
 		final int pfrmWidth = 4;
 		final int pfrmHeight = 2;
-		this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase) / 2,
+		this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase) / 2,
+				(screensize.height - screensize.height * pfrmHeight / pfrmBase) / 2,
 				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
+
+		filterVaccines("");
 	}
 
 	/**
@@ -134,8 +143,37 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+
+			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+			JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
+			topPanel.add(searchLabel);
+
+			searchField = new JTextField(20);
+			searchField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					filterVaccines(searchField.getText());
+				}
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					filterVaccines(searchField.getText());
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					filterVaccines(searchField.getText());
+				}
+			});
+			topPanel.add(searchField);
+
+			topPanel.add(Box.createHorizontalStrut(20));
+
+
+			jContentPane.add(topPanel, BorderLayout.NORTH);
+
 			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
+
+			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		}
 		return jContentPane;
 	}
@@ -179,16 +217,7 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 					vaccineTypeFilter.addItem(elem);
 				}
 			}
-			vaccineTypeFilter.addActionListener(actionEvent -> {
-				String pSelectionVaccineType = vaccineTypeFilter.getSelectedItem().toString();
-				if (pSelectionVaccineType.equals(STR_ALL)) {
-					model = new VaccineBrowserModel();
-				} else {
-					model = new VaccineBrowserModel(((VaccineType) vaccineTypeFilter.getSelectedItem()).getCode());
-				}
-				model.fireTableDataChanged();
-				table.updateUI();
-			});
+			vaccineTypeFilter.addActionListener(actionEvent -> filterVaccines(searchField.getText()));
 		}
 		return vaccineTypeFilter;
 	}
@@ -314,21 +343,7 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public VaccineBrowserModel() {
-            try {
-                pVaccine  = vaccineBrowserManager.getVaccine();
-            } catch (OHServiceException e) {
-                OHServiceExceptionUtil.showMessages(e);
-            }
-        }
-		
-		public VaccineBrowserModel(String vaccineType) {
-            try {
-                pVaccine = vaccineBrowserManager.getVaccine(vaccineType);
-            } catch (OHServiceException e) {
-                OHServiceExceptionUtil.showMessages(e);
-            }
-        }
+		public VaccineBrowserModel() { }
 		
 		@Override
 		public int getRowCount() {
@@ -367,6 +382,39 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 		public boolean isCellEditable(int arg0, int arg1) {
 			//return super.isCellEditable(arg0, arg1);
 			return false;
+		}
+	}
+
+
+	private void filterVaccines(String searchText) {
+		String selectedTypeCode = "";
+		if (vaccineTypeFilter.getSelectedItem() instanceof VaccineType) {
+			selectedTypeCode = ((VaccineType) vaccineTypeFilter.getSelectedItem()).getCode();
+		}
+		String searchLower = searchText.toLowerCase().trim();
+
+		List<Vaccine> filteredList;
+
+		try {
+			if (selectedTypeCode.isEmpty() || selectedTypeCode.equals("")) {
+				filteredList = vaccineBrowserManager.getVaccine();
+			} else {
+				filteredList = vaccineBrowserManager.getVaccine(selectedTypeCode);
+			}
+
+			if (!searchLower.isEmpty()) {
+				filteredList = filteredList.stream()
+						.filter(v -> v.getCode().toLowerCase().contains(searchLower) ||
+								v.getDescription().toLowerCase().contains(searchLower))
+						.collect(java.util.stream.Collectors.toList());
+			}
+
+			pVaccine = filteredList;
+			((VaccineBrowserModel) table.getModel()).fireTableDataChanged();
+			table.updateUI();
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
 	}
 }
