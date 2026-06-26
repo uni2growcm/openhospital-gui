@@ -130,7 +130,6 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 				(screensize.height - screensize.height * pfrmHeight / pfrmBase) / 2,
 				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
-
 		filterVaccines("");
 	}
 
@@ -145,7 +144,6 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 			jContentPane.setLayout(new BorderLayout());
 
 			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
 			JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
 			topPanel.add(searchLabel);
 
@@ -165,14 +163,9 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 				}
 			});
 			topPanel.add(searchField);
-
 			topPanel.add(Box.createHorizontalStrut(20));
-
-
 			jContentPane.add(topPanel, BorderLayout.NORTH);
-
 			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
-
 			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
 		}
 		return jContentPane;
@@ -384,7 +377,6 @@ public class VaccineBrowser extends ModalJFrame implements VaccineListener {
 			return false;
 		}
 	}
-
 
 	private void filterVaccines(String searchText) {
 		String selectedTypeCode = "";

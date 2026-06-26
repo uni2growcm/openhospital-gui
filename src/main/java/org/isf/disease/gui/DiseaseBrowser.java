@@ -147,6 +147,7 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		} catch(OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 		}
+		// for efficiency in the sequent for
 		if (type != null) {
 			for (DiseaseType elem : type) {
 				pbox.addItem(elem);
@@ -175,7 +176,7 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		buttonNew.addActionListener(actionEvent -> {
-			disease = new Disease(null, "", new DiseaseType("", ""));
+			disease = new Disease(null, "", new DiseaseType("", ""));    //disease will reference the new record
 			DiseaseEdit newrecord = new DiseaseEdit(myFrame, disease, true);
 			newrecord.addDiseaseListener(this);
 			newrecord.setVisible(true);
@@ -227,7 +228,6 @@ public class DiseaseBrowser extends ModalJFrame implements DiseaseListener {
 		buttonPanel.add(buttonClose);
 
 		add(buttonPanel, BorderLayout.SOUTH);
-
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);

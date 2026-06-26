@@ -59,7 +59,6 @@ public class ListBrowser extends ModalJFrame implements ListListener {
 
 	@Override
 	public void listUpdated(AWTEvent e) {
-
 		((ListBrowserModel)jTablePriceLists.getModel()).fireTableDataChanged();
 		jTablePriceLists.updateUI();
 	}

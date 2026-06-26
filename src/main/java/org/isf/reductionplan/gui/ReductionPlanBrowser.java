@@ -126,7 +126,6 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
             }
             scrollPane.setViewportView(table);
             contentPane.add(scrollPane, BorderLayout.CENTER);
-
             contentPane.add(getButtonPane(), BorderLayout.SOUTH);
         }
 
@@ -240,6 +239,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
     public void ReductionPlanInserted(AWTEvent aEvent) {
         filterReductionPlans(searchField != null ? searchField.getText() : "");
     }
+
     private class ReductionPlanModel extends DefaultTableModel {
 
         @Serial

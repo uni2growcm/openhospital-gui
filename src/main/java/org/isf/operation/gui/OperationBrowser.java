@@ -100,7 +100,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		int pfrmBordX = (screensize.width - (screensize.width / pfrmBase * pfrmWidth)) / 2;
 		int pfrmBordY = (screensize.height - (screensize.height / pfrmBase * pfrmHeight)) / 2;
 		this.setBounds(pfrmBordX, pfrmBordY, screensize.width / pfrmBase * pfrmWidth,
-				screensize.height / pfrmBase * pfrmHeight);
+			screensize.height / pfrmBase * pfrmHeight);
 		myFrame = this;
 
 		setLayout(new BorderLayout());
@@ -163,7 +163,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		buttonNew.addActionListener(actionEvent -> {
-			operation = new Operation(null, "", new OperationType("", ""), 0);
+			operation = new Operation(null, "", new OperationType("", ""), 0); // operation will reference the new record
 			OperationEdit newrecord = new OperationEdit(myFrame, operation, true);
 			newrecord.addOperationListener(this);
 			newrecord.setVisible(true);
@@ -211,14 +211,10 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		buttonClose.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 		buttonClose.addActionListener(actionEvent -> dispose());
 		buttonPanel.add(buttonClose);
-
 		add(buttonPanel, BorderLayout.SOUTH);
-
-		filterOperations("");
 
 		setVisible(true);
 	}
-
 	@Override
 	public void operationInserted(AWTEvent e) {
 		pOperation.add(0, operation);
