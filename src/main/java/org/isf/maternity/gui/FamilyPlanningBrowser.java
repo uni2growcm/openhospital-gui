@@ -30,8 +30,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
@@ -40,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -78,7 +77,6 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
-import org.isf.utils.jobjects.VoLimitedTextField;
 
 import org.springframework.data.domain.Page;
 
@@ -137,6 +135,10 @@ public class FamilyPlanningBrowser extends ModalJFrame {
 
     private FamilyPlanning selectedFP;
     private int selectedVisitRow = -1;
+    private GoodDateChooser visitDateFrom;
+    private GoodDateChooser visitDateTo;
+    private JComboBox<Typology> visitTypeFilterCombo;
+    private List<Typology> visitTypologies = new ArrayList<>();
 
     private List<Typology> methodTypologies = new ArrayList<>();
 
@@ -170,6 +172,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
         loadMethodTypologies();
+        loadVisitTypologies();
         initializeStatusCombo();
 
         JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -375,13 +378,24 @@ public class FamilyPlanningBrowser extends ModalJFrame {
 
     private JPanel getBottomPanel() {
         JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(getVisitFilterPanel(), BorderLayout.WEST);
         bottomPanel.add(getVisitListPanel(), BorderLayout.CENTER);
         return bottomPanel;
     }
 
     private JScrollPane getVisitListPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
         visitTable = new JTable(new FPVisitsTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        visitTable.setFillsViewportHeight(true);
+        visitTable.setRowHeight(20);
+
+        for (int i = 0; i < visitColumns.length; i++) {
+            visitTable.getColumnModel()
+                    .getColumn(i)
+                    .setPreferredWidth(visitColumnWidths[i]);
+        }
 
         visitTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -389,13 +403,66 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             }
         });
 
-        for (int i = 0; i < visitColumns.length; i++) {
-            visitTable.getColumnModel().getColumn(i).setPreferredWidth(visitColumnWidths[i]);
-        }
+        JScrollPane scrollPane = new JScrollPane(visitTable);
+        scrollPane.setBorder(null);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
-        JScrollPane visitScrollPane = new JScrollPane(visitTable);
-        visitScrollPane.setPreferredSize(new Dimension(600, 200));
-        return visitScrollPane;
+        return scrollPane;
+    }
+
+    private JPanel getVisitFilterPanel() {
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.familyplanning.visit.filter.label")));
+        filterPanel.setPreferredSize(new Dimension(280, 150));
+        filterPanel.setMinimumSize(new Dimension(280, 150));
+
+        JPanel dateIntervalPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        dateIntervalPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.familyplanning.visit.date.interval.label")));
+        visitDateFrom = new GoodDateChooser(LocalDate.now().minusMonths(1));
+        visitDateTo = new GoodDateChooser(LocalDate.now());
+        dateIntervalPanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+        dateIntervalPanel.add(visitDateFrom);
+        dateIntervalPanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+        dateIntervalPanel.add(visitDateTo);
+        filterPanel.add(dateIntervalPanel);
+
+        filterPanel.add(Box.createVerticalStrut(5));
+        JPanel typologyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        typologyPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.familyplanning.visit.typology.filter")));
+        visitTypeFilterCombo = new JComboBox<>();
+        visitTypeFilterCombo.addItem(null);
+        if (visitTypologies != null) {
+            for (Typology typology : visitTypologies) {
+                visitTypeFilterCombo.addItem(typology);
+            }
+        }
+        visitTypeFilterCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof Typology typology) {
+                    return super.getListCellRendererComponent(list, typology.getDescription(),
+                            index, isSelected, cellHasFocus);
+                }
+                if (value == null) {
+                    return super.getListCellRendererComponent(list,
+                            MessageBundle.getMessage("angal.common.all.label"),
+                            index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+        visitTypeFilterCombo.setPreferredSize(new Dimension(200, 25));
+        typologyPanel.add(visitTypeFilterCombo);
+        filterPanel.add(typologyPanel);
+        visitDateFrom.addDateChangeListener(e -> loadVisits());
+        visitDateTo.addDateChangeListener(e -> loadVisits());
+        visitTypeFilterCombo.addActionListener(e -> loadVisits());
+
+        return filterPanel;
     }
 
     private JPanel getButtonPanel() {
@@ -576,7 +643,22 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         }
 
         try {
-            List<FamilyPlanningVisit> visits = visitManager.getVisitsByFamilyPlanning(selectedFP.getId());
+            LocalDate dateFrom = visitDateFrom != null ? visitDateFrom.getDate() : null;
+            LocalDate dateTo = visitDateTo != null ? visitDateTo.getDate() : null;
+
+            Object selectedItem = visitTypeFilterCombo != null ? visitTypeFilterCombo.getSelectedItem() : null;
+            String typologyCode = null;
+            if (selectedItem instanceof Typology typology) {
+                typologyCode = typology.getCode();
+            }
+
+            List<FamilyPlanningVisit> visits = visitManager.getVisitsByFilters(
+                    selectedFP.getId(),
+                    dateFrom != null ? dateFrom.atStartOfDay() : null,
+                    dateTo != null ? dateTo.atTime(23, 59, 59) : null,
+                    typologyCode
+            );
+
             visitList = visits != null ? visits : new ArrayList<>();
             ((FPVisitsTableModel) visitTable.getModel()).fireTableDataChanged();
             selectedVisitRow = -1;
@@ -874,6 +956,17 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                     loadVisits();
                 }
             }
+        }
+    }
+
+    private void loadVisitTypologies() {
+        try {
+            visitTypologies = Context.getApplicationContext()
+                    .getBean(TypologyBrowserManager.class)
+                    .getTypologies(Family.FAMILYPLANNINGVISITTYPE);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            visitTypologies = new ArrayList<>();
         }
     }
 }
