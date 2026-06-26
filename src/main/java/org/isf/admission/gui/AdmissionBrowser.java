@@ -2074,4 +2074,3 @@ public class AdmissionBrowser extends ModalJFrame {
 	}
 
 }
-
