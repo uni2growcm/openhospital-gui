@@ -730,7 +730,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcMalnutrition.anchor = GridBagConstraints.WEST;
 			gbcMalnutrition.insets = new Insets(2, 5, 2, 5);
 			gbcMalnutrition.gridx = 0;
-			gbcMalnutrition.gridy = 4;           // juste sous additionalDiagnosisPanel
+			gbcMalnutrition.gridy = 4;
 			gbcMalnutrition.gridwidth = 2;
 			jPanelData.add(malnutritionCheckBox, gbcMalnutrition);
 			/////////////Search text field/////////////
