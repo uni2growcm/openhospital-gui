@@ -524,14 +524,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 			});
 
-			if (malnutritionCheckBox == null) {
-				malnutritionCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.malnutrition.txt"));
-				if (!insert && opd != null) {
-					malnutritionCheckBox.setSelected(opd.isMalnutrition());
-				}
-			}
-			jPanelNorth.add(malnutritionCheckBox);
-
 			JLabel reasonLabel = new JLabel(MessageBundle.getMessage("angal.opd.reason.label"));
 			jPanelNorth.add(reasonLabel);
 
@@ -728,6 +720,19 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcAdditional.weightx = 1.0;
 			gbcAdditional.weighty = 1.0;
 			jPanelData.add(additionalDiagnosisPanel, gbcAdditional);
+
+			malnutritionCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.malnutrition.txt"));
+			if (!insert && opd != null) {
+				malnutritionCheckBox.setSelected(opd.isMalnutrition());
+			}
+
+			GridBagConstraints gbcMalnutrition = new GridBagConstraints();
+			gbcMalnutrition.anchor = GridBagConstraints.WEST;
+			gbcMalnutrition.insets = new Insets(2, 5, 2, 5);
+			gbcMalnutrition.gridx = 0;
+			gbcMalnutrition.gridy = 4;           // juste sous additionalDiagnosisPanel
+			gbcMalnutrition.gridwidth = 2;
+			jPanelData.add(malnutritionCheckBox, gbcMalnutrition);
 			/////////////Search text field/////////////
 			// Last OPD Visit Label
 			jLabelLastOpdVisit = new JLabel(" ");
@@ -738,7 +743,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelLastOpdVisit.insets = new Insets(5, 5, 5, 5);
 			gbcLabelLastOpdVisit.anchor = GridBagConstraints.EAST;
 			gbcLabelLastOpdVisit.gridx = 0;
-			gbcLabelLastOpdVisit.gridy = 4;
+			gbcLabelLastOpdVisit.gridy = 5;
 			jPanelData.add(jLabelLastOpdVisit, gbcLabelLastOpdVisit);
 			jFieldLastOpdVisit = new JLabel(" ");
 			jFieldLastOpdVisit.setFocusable(false);
@@ -775,20 +780,20 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			GridBagConstraints gbcNextVisitLabel = new GridBagConstraints();
 			gbcNextVisitLabel.insets = new Insets(0, 0, 0, 5);
 			gbcNextVisitLabel.gridx = 0;
-			gbcNextVisitLabel.gridy = 8;
+			gbcNextVisitLabel.gridy = 9;
 			jPanelData.add(getNextVisitLabel(), gbcNextVisitLabel);
 			gbcOpdNextVisitDate = new GridBagConstraints();
 			gbcOpdNextVisitDate.insets = new Insets(0, 0, 0, 5);
 			gbcOpdNextVisitDate.fill = GridBagConstraints.HORIZONTAL;
 			gbcOpdNextVisitDate.gridx = 1;
-			gbcOpdNextVisitDate.gridy = 8;
+			gbcOpdNextVisitDate.gridy = 9;
 			jPanelData.add(getOpdNextVisitDate(), gbcOpdNextVisitDate);
 			GridBagConstraints gbcLabelNextVisitWard = new GridBagConstraints();
 			gbcLabelNextVisitWard.insets = new Insets(0, 0, 5, 0);
 			gbcLabelNextVisitWard.gridwidth = 2;
 			gbcLabelNextVisitWard.anchor = GridBagConstraints.WEST;
 			gbcLabelNextVisitWard.gridx = 2;
-			gbcLabelNextVisitWard.gridy = 8;
+			gbcLabelNextVisitWard.gridy = 9;
 			jPanelData.add(getJNextVisitWardPanel(), gbcLabelNextVisitWard);
 		}
 		return jPanelData;
