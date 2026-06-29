@@ -1677,7 +1677,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 						e.printStackTrace();
 					}
 				} else {
-					MessageDialog.info(OpdBrowser.this, "angal.opd.pleaseselectapatientmalnutri.msg");
+					MessageDialog.info(OpdBrowser.this, "angal.opd.pleaseselectapatientwithmalnutrition.msg");
 				}
 			});
 		}

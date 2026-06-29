@@ -355,5 +355,4 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 			return false;
 		}
 	}
-
 }
