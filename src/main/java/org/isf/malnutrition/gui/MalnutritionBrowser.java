@@ -101,7 +101,8 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 	private MalnutritionManager malnutritionManager = Context.getApplicationContext().getBean(MalnutritionManager.class);
 
 	public MalnutritionBrowser(JFrame owner, Admission aAdm) {
-		super(owner, true);
+		super(owner);
+		setModal(true);
 		adm = aAdm;
 		admId = String.valueOf(adm.getId());
 		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
@@ -111,17 +112,14 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 	}
 
 	public MalnutritionBrowser(JFrame owner, Opd opd) {
-		super(owner, true);
+		super(owner);
+		setModal(true);
 		this.opd = opd;
 		this.opdId = Integer.parseInt(String.valueOf(opd.getCode()));
 		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
 		add(getJContentPane());
 		pack();
 		setLocationRelativeTo(null);
-	}
-	
-	public void showAsModal() {
-		setVisible(true);
 	}
 
 	private JPanel getJContentPane() {
