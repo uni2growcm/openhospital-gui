@@ -264,9 +264,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		JPanel buttonPanel = new JPanel(new WrapLayout());
 		buttonPanel.add(getComboBoxActive());
 		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.medicals.selecttype")));
+		buttonPanel.add(getComboBoxMedicalType());
 		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exam.filter.family")));
 		buttonPanel.add(getJComboBoxArticleFamily());
-		buttonPanel.add(getComboBoxMedicalType());
 		if (MainMenu.checkUserGrants("btnpharmaceuticalnew")) {
 			buttonPanel.add(getJButtonNew());
 		}

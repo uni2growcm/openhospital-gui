@@ -77,7 +77,7 @@ ORDER BY
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.globalconsumptionreportbyservice.service")+ ": " + $F{MMV_WRD_NAME}]]></textFieldExpression>
 				</textField>
@@ -202,7 +202,7 @@ ORDER BY
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-35" x="0" y="0" width="535" height="62" uuid="e89760fb-6cb9-44e2-b5b7-e3ed9cf201cd"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Arial" size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.globalconsumptionreportbyservice.title" ) + " " + 
 $P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.billsreport.from2" ) + " " +

@@ -135,7 +135,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		diseaseTypeFilter.addActionListener(actionEvent -> reloadTable());
 		buttonPanel.add(diseaseTypeFilter);
 
-		JLabel familylabel = new JLabel(MessageBundle.getMessage("angal.operation.family"));
+		JLabel familylabel = new JLabel(MessageBundle.getMessage("angal.exam.filter.family"));
 		buttonPanel.add(familylabel);
 		articleFamilyFilter = new JComboBox<>();
 		articleFamilyFilter.addItem(null);

@@ -23,11 +23,9 @@ package org.isf.pricesothers.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Component;
 import java.util.EventListener;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -54,18 +52,18 @@ import org.isf.utils.layout.SpringUtilities;
 import java.util.List;
 
 public class PricesOthersEdit extends JDialog {
-	
+
 	private EventListenerList pricesOthersListeners = new EventListenerList();
-	
+
 	public interface PricesOthersListener extends EventListener {
 		void pricesOthersUpdated(AWTEvent e);
 		void pricesOthersInserted(AWTEvent e);
 	}
-	
+
 	public void addOtherListener(PricesOthersListener l) {
 		pricesOthersListeners.add(PricesOthersListener.class, l);
 	}
-	
+
 	public void removeOtherListener(PricesOthersListener listener) {
 		pricesOthersListeners.remove(PricesOthersListener.class, listener);
 	}
@@ -99,10 +97,8 @@ public class PricesOthersEdit extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelData;
-	private JPanel jPanelCodeDescription;
 	private JTextField jTextFieldCode;
 	private JTextField jTextFieldDescription;
-	private JPanel jPanelParameters;
 	private JCheckBox jCheckBoxOPD;
 	private JCheckBox jCheckBoxIPD;
 	private JCheckBox jCheckBoxDaily;
@@ -114,7 +110,7 @@ public class PricesOthersEdit extends JDialog {
 	private boolean insert;
 	private PricesOthers pOther;
 	private JComboBox<ArticleFamily> jComboBoxArticleFamily;
-	
+
 	public PricesOthersEdit(JFrame parent, PricesOthers other, boolean inserting) {
 		super(parent, true);
 		pOther = other;
@@ -126,7 +122,7 @@ public class PricesOthersEdit extends JDialog {
 	private void initComponents() {
 		add(getJPanelData(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
-		setSize(450, 280);
+		pack();
 		if (insert) {
 			this.setTitle(MessageBundle.getMessage("angal.pricesothers.newprice.title"));
 		} else {
@@ -192,7 +188,7 @@ public class PricesOthersEdit extends JDialog {
 		}
 		return jCheckBoxUndefined;
 	}
-	
+
 	private JCheckBox getJCheckBoxDischarge() {
 		if (jCheckBoxDischarge == null) {
 			jCheckBoxDischarge = new JCheckBox(MessageBundle.getMessage("angal.common.discharge.txt"));
@@ -200,7 +196,7 @@ public class PricesOthersEdit extends JDialog {
 		}
 		return jCheckBoxDischarge;
 	}
-	
+
 	private JCheckBox getJCheckBoxDaily() {
 		if (jCheckBoxDaily == null) {
 			jCheckBoxDaily = new JCheckBox(MessageBundle.getMessage("angal.pricesothers.daily.txt"));
@@ -229,18 +225,14 @@ public class PricesOthersEdit extends JDialog {
 		return jCheckBoxOPD;
 	}
 
-	private JPanel getJPanelParameters() {
-		if (jPanelParameters == null) {
-			jPanelParameters = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			jPanelParameters.add(getJCheckBoxOPD());
-			jPanelParameters.add(getJCheckBoxIPD());
-			jPanelParameters.add(getJCheckBoxDaily());
-			jPanelParameters.add(getJCheckBoxDischarge());
-			jPanelParameters.add(getJCheckBoxUndefined());
-			jPanelParameters.add(new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':'));
-			jPanelParameters.add(getJComboBoxArticleFamily());
-		}
-		return jPanelParameters;
+	private JPanel getJPanelCheckBoxes() {
+		JPanel panel = new JPanel();
+		panel.add(getJCheckBoxOPD());
+		panel.add(getJCheckBoxIPD());
+		panel.add(getJCheckBoxDaily());
+		panel.add(getJCheckBoxDischarge());
+		panel.add(getJCheckBoxUndefined());
+		return panel;
 	}
 
 	private JComboBox<ArticleFamily> getJComboBoxArticleFamily() {
@@ -279,7 +271,8 @@ public class PricesOthersEdit extends JDialog {
 	private JTextField getJTextFieldDescription() {
 		if (jTextFieldDescription == null) {
 			jTextFieldDescription = new VoLimitedTextField(100);
-			jTextFieldDescription.setText(insert? "" : pOther.getDescription()); //$NON-NLS-1$
+			jTextFieldDescription.setColumns(20);
+			jTextFieldDescription.setText(insert ? "" : pOther.getDescription()); //$NON-NLS-1$
 		}
 		return jTextFieldDescription;
 	}
@@ -287,30 +280,29 @@ public class PricesOthersEdit extends JDialog {
 	private JTextField getJTextFieldCode() {
 		if (jTextFieldCode == null) {
 			jTextFieldCode = new VoLimitedTextField(10);
+			jTextFieldCode.setColumns(20);
 			jTextFieldCode.setText(insert ? MessageBundle.getMessage("angal.pricesothers.othm") : pOther.getCode()); //$NON-NLS-1$
 		}
 		return jTextFieldCode;
 	}
 
-	private JPanel getJPanelCodeDescription() {
-		if (jPanelCodeDescription == null) {
-			jPanelCodeDescription = new JPanel();
-			jPanelCodeDescription.setLayout(new SpringLayout());
-			jPanelCodeDescription.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':'));
-			jPanelCodeDescription.add(getJTextFieldCode());
-			jPanelCodeDescription.add(new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':'));
-			jPanelCodeDescription.add(getJTextFieldDescription());
-			SpringUtilities.makeCompactGrid(jPanelCodeDescription, 2, 2, 5, 5, 5, 5);
-		}
-		return jPanelCodeDescription;
-	}
-
 	private JPanel getJPanelData() {
 		if (jPanelData == null) {
-			jPanelData = new JPanel();
-			jPanelData.setLayout(new BoxLayout(jPanelData, BoxLayout.Y_AXIS));
-			jPanelData.add(getJPanelCodeDescription());
-			jPanelData.add(getJPanelParameters());
+			jPanelData = new JPanel(new SpringLayout());
+
+			jPanelData.add(new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':'));
+			jPanelData.add(getJComboBoxArticleFamily());
+
+			jPanelData.add(new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':'));
+			jPanelData.add(getJTextFieldCode());
+
+			jPanelData.add(new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':'));
+			jPanelData.add(getJTextFieldDescription());
+
+			jPanelData.add(new JLabel(""));
+			jPanelData.add(getJPanelCheckBoxes());
+
+			SpringUtilities.makeCompactGrid(jPanelData, 4, 2, 5, 5, 5, 5);
 		}
 		return jPanelData;
 	}
