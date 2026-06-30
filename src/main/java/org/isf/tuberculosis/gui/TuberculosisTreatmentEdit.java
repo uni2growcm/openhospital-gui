@@ -64,14 +64,11 @@ import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
 import org.isf.tuberculosis.model.TuberculosisTreatment;
-import org.isf.tuberculosis.model.TuberculosisTreatment.Classification;
-import org.isf.tuberculosis.model.TuberculosisTreatment.DiseaseLocation;
-import org.isf.tuberculosis.model.TuberculosisTreatment.DstResult;
-import org.isf.tuberculosis.model.TuberculosisTreatment.HivStatus;
-import org.isf.tuberculosis.model.TuberculosisTreatment.LabResult;
-import org.isf.tuberculosis.model.TuberculosisTreatment.ResistanceResult;
-import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentOutcome;
-import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentStatus;
+import org.isf.tuberculosis.model.Classification;
+import org.isf.tuberculosis.model.DiseaseLocation;
+import org.isf.tuberculosis.model.HivStatus;
+import org.isf.tuberculosis.model.TreatmentOutcome;
+import org.isf.tuberculosis.model.TreatmentStatus;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
@@ -136,11 +133,6 @@ public class TuberculosisTreatmentEdit extends JDialog
     private JComboBox<DiseaseLocation> diseaseLocationCombo;
     private JTextField diseaseLocationDetailsField;
     private GoodDateChooser diagnosisDateField;
-    private JComboBox<LabResult> smearResultCombo;
-    private JComboBox<LabResult> geneXpertResultCombo;
-    private JComboBox<ResistanceResult> rifResistanceCombo;
-    private JComboBox<LabResult> cultureResultCombo;
-    private JComboBox<DstResult> dstResultCombo;
     private JComboBox<Typology> regimenCombo;
     private GoodDateChooser treatmentStartDateField;
     private GoodDateChooser treatmentEndDateField;
@@ -223,7 +215,7 @@ public class TuberculosisTreatmentEdit extends JDialog
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.generaltab"), getGeneralPanel());
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.labtab"), getLabPanel());
+        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.hivtab"), getHivPanel());
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.outcometab"), getOutcomePanel());
         mainPanel.add(tabbedPane);
 
@@ -247,21 +239,6 @@ public class TuberculosisTreatmentEdit extends JDialog
             }
             if (treatment.getDiagnosisDate() != null) {
                 diagnosisDateField.setDate(treatment.getDiagnosisDate());
-            }
-            if (treatment.getSmearResult() != null) {
-                smearResultCombo.setSelectedItem(treatment.getSmearResult());
-            }
-            if (treatment.getGeneXpertResult() != null) {
-                geneXpertResultCombo.setSelectedItem(treatment.getGeneXpertResult());
-            }
-            if (treatment.getGeneXpertRifResistance() != null) {
-                rifResistanceCombo.setSelectedItem(treatment.getGeneXpertRifResistance());
-            }
-            if (treatment.getCultureResult() != null) {
-                cultureResultCombo.setSelectedItem(treatment.getCultureResult());
-            }
-            if (treatment.getDstResult() != null) {
-                dstResultCombo.setSelectedItem(treatment.getDstResult());
             }
             if (treatment.getRegimenCode() != null && regimenTypologies != null) {
                 for (Typology typology : regimenTypologies) {
@@ -551,7 +528,7 @@ public class TuberculosisTreatmentEdit extends JDialog
         return panel;
     }
 
-    private JPanel getLabPanel() {
+    private JPanel getHivPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -561,71 +538,6 @@ public class TuberculosisTreatmentEdit extends JDialog
         gbc.anchor = GridBagConstraints.WEST;
 
         int row = 0;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.treatment.smearresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        smearResultCombo = new JComboBox<>(LabResult.values());
-        smearResultCombo.setRenderer(new EnumRenderer());
-        panel.add(smearResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.treatment.genexpertresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        geneXpertResultCombo = new JComboBox<>(LabResult.values());
-        geneXpertResultCombo.setRenderer(new EnumRenderer());
-        panel.add(geneXpertResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.treatment.rifresistance") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        rifResistanceCombo = new JComboBox<>(ResistanceResult.values());
-        rifResistanceCombo.setRenderer(new EnumRenderer());
-        panel.add(rifResistanceCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.treatment.cultureresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        cultureResultCombo = new JComboBox<>(LabResult.values());
-        cultureResultCombo.setRenderer(new EnumRenderer());
-        panel.add(cultureResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.treatment.dstresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        dstResultCombo = new JComboBox<>(DstResult.values());
-        dstResultCombo.setRenderer(new EnumRenderer());
-        panel.add(dstResultCombo, gbc);
-
-        row++;
 
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -777,12 +689,6 @@ public class TuberculosisTreatmentEdit extends JDialog
         treatment.setDiseaseLocation(location);
         treatment.setDiseaseLocationDetails(diseaseLocationDetailsField.getText().trim());
         treatment.setDiagnosisDate(diagnosisDateField.getDate());
-
-        treatment.setSmearResult((LabResult) smearResultCombo.getSelectedItem());
-        treatment.setGeneXpertResult((LabResult) geneXpertResultCombo.getSelectedItem());
-        treatment.setGeneXpertRifResistance((ResistanceResult) rifResistanceCombo.getSelectedItem());
-        treatment.setCultureResult((LabResult) cultureResultCombo.getSelectedItem());
-        treatment.setDstResult((DstResult) dstResultCombo.getSelectedItem());
 
         Typology selectedRegimen = (Typology) regimenCombo.getSelectedItem();
         treatment.setRegimenCode(selectedRegimen != null ? selectedRegimen.getCode() : null);

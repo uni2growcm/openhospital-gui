@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -39,11 +39,15 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.operation.enums.OperationTarget;
 import org.isf.operation.gui.OperationEdit.OperationListener;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
 import org.isf.opetype.manager.OperationTypeBrowserManager;
@@ -70,14 +74,16 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 	private static final int pfrmHeight = 5;
 	private int selectedrow;
 	private final JComboBox<OperationType> diseaseTypeFilter;
+	private JComboBox<ArticleFamily> articleFamilyFilter;
 	private List<Operation> pOperation;
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.common.id.txt").toUpperCase(),
 		MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 		MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.operation.articlefamily.col").toUpperCase(),
 		MessageBundle.getMessage("angal.operation.operationcontext.col").toUpperCase()
 	};
-	private final int[] pColumnWidth = { 50, 180, 200, 100 };
+	private final int[] pColumnWidth = { 50, 180, 200, 130, 100 };
 	private Operation operation;
 	private DefaultTableModel model;
 	private final JTable table;
@@ -85,6 +91,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 	private String pSelection;
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final OperationTypeBrowserManager operationTypeBrowserManager = Context.getApplicationContext().getBean(OperationTypeBrowserManager.class);
+	private final ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	public OperationBrowser() {
 
@@ -102,7 +109,8 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
 		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
 		table.getColumnModel().getColumn(3).setPreferredWidth(pColumnWidth[3]);
-		table.getColumnModel().getColumn(3).setCellRenderer(new CenterAlignmentCellRenderer());
+		table.getColumnModel().getColumn(4).setPreferredWidth(pColumnWidth[4]);
+		table.getColumnModel().getColumn(4).setCellRenderer(new CenterAlignmentCellRenderer());
 
 		setLayout(new BorderLayout());
 		add(new JScrollPane(table), BorderLayout.CENTER);
@@ -124,17 +132,34 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 			OHServiceExceptionUtil.showMessages(e1);
 		}
 
-		diseaseTypeFilter.addActionListener(actionEvent -> {
-			pSelection = diseaseTypeFilter.getSelectedItem().toString();
-			if (pSelection.compareTo(STR_ALL) == 0) {
-				model = new OperationBrowserModel();
-			} else {
-				model = new OperationBrowserModel(pSelection);
-			}
-			model.fireTableDataChanged();
-			table.updateUI();
-		});
+		diseaseTypeFilter.addActionListener(actionEvent -> reloadTable());
 		buttonPanel.add(diseaseTypeFilter);
+
+		JLabel familylabel = new JLabel(MessageBundle.getMessage("angal.exam.filter.family"));
+		buttonPanel.add(familylabel);
+		articleFamilyFilter = new JComboBox<>();
+		articleFamilyFilter.addItem(null);
+		articleFamilyFilter.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value,
+			                                              int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value == null) {
+					setText(STR_ALL);
+				}
+				return this;
+			}
+		});
+		try {
+			List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+			for (ArticleFamily af : families) {
+				articleFamilyFilter.addItem(af);
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		articleFamilyFilter.addActionListener(actionEvent -> reloadTable());
+		buttonPanel.add(articleFamilyFilter);
 
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
@@ -191,6 +216,16 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 		setVisible(true);
 	}
+
+	private void reloadTable() {
+		String selectedType = diseaseTypeFilter.getSelectedItem().toString();
+		String typeDesc = selectedType.equals(STR_ALL) ? null : selectedType;
+		ArticleFamily selectedFamily = (ArticleFamily) articleFamilyFilter.getSelectedItem();
+		model = new OperationBrowserModel(typeDesc, selectedFamily);
+		model.fireTableDataChanged();
+		table.updateUI();
+	}
+
 	@Override
 	public void operationInserted(AWTEvent e) {
 		pOperation.add(0, operation);
@@ -230,6 +265,14 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 		}
 
+		public OperationBrowserModel(String typeDesc, ArticleFamily family) {
+			try {
+				pOperation = operationBrowserManager.getOperationsByFilters(typeDesc, family);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+
 		@Override
 		public int getRowCount() {
 			if (pOperation == null) {
@@ -260,7 +303,9 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 				return operation.getType().getDescription();
 			} else if (c == 2) {
 				return operation.getDescription();
-			} else if (c == 3) { // TODO: use bundles
+			} else if (c == 3) {
+				return operation.getArticleFamily() != null ? operation.getArticleFamily().toString() : "";
+			} else if (c == 4) { // TODO: use bundles
 				if (opeFor != null) {
 					return switch (opeFor) {
 						case admission -> ADMISSION;
@@ -293,5 +338,4 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 			return cell;
 		}
 	}
-
 }

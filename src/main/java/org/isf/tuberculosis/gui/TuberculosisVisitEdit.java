@@ -51,10 +51,7 @@ import javax.swing.JTextField;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.tuberculosis.manager.TuberculosisVisitManager;
-import org.isf.tuberculosis.model.TuberculosisTreatment;
-import org.isf.tuberculosis.model.TuberculosisTreatment.LabResult;
-import org.isf.tuberculosis.model.TuberculosisVisit;
-import org.isf.tuberculosis.model.TuberculosisVisit.DotStatus;
+import org.isf.tuberculosis.model.*;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -74,14 +71,15 @@ public class TuberculosisVisitEdit extends JDialog {
     private TuberculosisVisitManager manager;
 
     private GoodDateTimeSpinnerChooser visitDateField;
-    private JTextField weightField;
-    private JTextField temperatureField;
     private JCheckBox symptomsImprovedCheck;
     private JTextField adherenceField;
     private JComboBox<DotStatus> dotStatusCombo;
     private JTextArea sideEffectsArea;
     private JComboBox<LabResult> smearResultCombo;
+    private JComboBox<LabResult> geneXpertResultCombo;
+    private JComboBox<ResistanceResult> geneXpertRifResistanceCombo;
     private JComboBox<LabResult> cultureResultCombo;
+    private JComboBox<DstResult> dstResultCombo;
     private GoodDateChooser conversionDateField;
     private JTextField chestXrayField;
     private JTextField altField;
@@ -137,12 +135,6 @@ public class TuberculosisVisitEdit extends JDialog {
             if (visit.getVisitDate() != null) {
                 visitDateField.setDateTime(visit.getVisitDate());
             }
-            if (visit.getWeight() != null) {
-                weightField.setText(String.valueOf(visit.getWeight()));
-            }
-            if (visit.getTemperature() != null) {
-                temperatureField.setText(String.valueOf(visit.getTemperature()));
-            }
             symptomsImprovedCheck.setSelected(visit.getSymptomsImproved() != null && visit.getSymptomsImproved());
             if (visit.getAdherence() != null) {
                 adherenceField.setText(String.valueOf(visit.getAdherence()));
@@ -158,6 +150,15 @@ public class TuberculosisVisitEdit extends JDialog {
             }
             if (visit.getCultureResult() != null) {
                 cultureResultCombo.setSelectedItem(visit.getCultureResult());
+            }
+            if (visit.getGeneXpertResult() != null) {
+                geneXpertResultCombo.setSelectedItem(visit.getGeneXpertResult());
+            }
+            if (visit.getGeneXpertRifResistance() != null) {
+                geneXpertRifResistanceCombo.setSelectedItem(visit.getGeneXpertRifResistance());
+            }
+            if (visit.getDstResult() != null) {
+                dstResultCombo.setSelectedItem(visit.getDstResult());
             }
             if (visit.getConversionDate() != null) {
                 conversionDateField.setDate(visit.getConversionDate());
@@ -221,30 +222,6 @@ public class TuberculosisVisitEdit extends JDialog {
         gbc.weightx = 1.0;
         visitDateField = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
         panel.add(visitDateField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.weight") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        weightField = new JTextField(8);
-        panel.add(weightField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.temperature") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        temperatureField = new JTextField(8);
-        panel.add(temperatureField, gbc);
 
         row++;
 
@@ -346,6 +323,45 @@ public class TuberculosisVisitEdit extends JDialog {
         cultureResultCombo = new JComboBox<>(LabResult.values());
         cultureResultCombo.setRenderer(new EnumRenderer());
         panel.add(cultureResultCombo, gbc);
+
+        row++;
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.0;
+        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.genexpertresult") + ":"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        geneXpertResultCombo = new JComboBox<>(LabResult.values());
+        geneXpertResultCombo.setRenderer(new EnumRenderer());
+        panel.add(geneXpertResultCombo, gbc);
+
+        row++;
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.0;
+        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.rifresistance") + ":"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        geneXpertRifResistanceCombo = new JComboBox<>(ResistanceResult.values());
+        geneXpertRifResistanceCombo.setRenderer(new EnumRenderer());
+        panel.add(geneXpertRifResistanceCombo, gbc);
+
+        row++;
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.0;
+        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.dstresult") + ":"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        dstResultCombo = new JComboBox<>(DstResult.values());
+        dstResultCombo.setRenderer(new EnumRenderer());
+        panel.add(dstResultCombo, gbc);
 
         row++;
 
@@ -483,27 +499,6 @@ public class TuberculosisVisitEdit extends JDialog {
         }
 
         visit.setVisitDate(visitDateField.getLocalDateTime());
-
-        String weightText = weightField.getText().trim().replace(',', '.');
-        if (!weightText.isEmpty()) {
-            try {
-                visit.setWeight(Double.parseDouble(weightText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidweight.msg");
-                return;
-            }
-        }
-
-        String tempText = temperatureField.getText().trim().replace(',', '.');
-        if (!tempText.isEmpty()) {
-            try {
-                visit.setTemperature(Double.parseDouble(tempText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidtemperature.msg");
-                return;
-            }
-        }
-
         visit.setSymptomsImproved(symptomsImprovedCheck.isSelected() ? true : null);
 
         String adherenceText = adherenceField.getText().trim();
@@ -524,7 +519,10 @@ public class TuberculosisVisitEdit extends JDialog {
         visit.setDotStatus((DotStatus) dotStatusCombo.getSelectedItem());
         visit.setSideEffects(sideEffectsArea.getText().trim());
         visit.setSmearResult((LabResult) smearResultCombo.getSelectedItem());
+        visit.setGeneXpertResult((LabResult) geneXpertResultCombo.getSelectedItem());
+        visit.setGeneXpertRifResistance((ResistanceResult) geneXpertRifResistanceCombo.getSelectedItem());
         visit.setCultureResult((LabResult) cultureResultCombo.getSelectedItem());
+        visit.setDstResult((DstResult) dstResultCombo.getSelectedItem());
         visit.setConversionDate(conversionDateField.getDate());
         visit.setChestXrayFindings(chestXrayField.getText().trim());
 

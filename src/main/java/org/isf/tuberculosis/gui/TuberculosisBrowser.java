@@ -68,7 +68,7 @@ import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
 import org.isf.tuberculosis.manager.TuberculosisVisitManager;
 import org.isf.tuberculosis.model.TuberculosisContact;
 import org.isf.tuberculosis.model.TuberculosisTreatment;
-import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentStatus;
+import org.isf.tuberculosis.model.TreatmentStatus;
 import org.isf.tuberculosis.model.TuberculosisVisit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -101,11 +101,11 @@ public class TuberculosisBrowser extends ModalJFrame {
     private final String[] visitColumns = {
             MessageBundle.getMessage("angal.tb.browser.visitdate.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.dotstatus.col").toUpperCase(),
-            MessageBundle.getMessage("angal.tb.browser.visitweight.col").toUpperCase(),
+            MessageBundle.getMessage("angal.tb.browser.smearresult.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.visitnotes.col").toUpperCase()
     };
 
-    private final int[] visitColumnWidths = { 130, 100, 80, 350 };
+    private final int[] visitColumnWidths = { 130, 100, 100, 350 };
 
     private final String[] contactColumns = {
             MessageBundle.getMessage("angal.tb.browser.contactname.col").toUpperCase(),
@@ -893,7 +893,7 @@ public class TuberculosisBrowser extends ModalJFrame {
             } else if (c == 1) {
                 return visit.getDotStatus() != null ? visit.getDotStatus().toString() : "";
             } else if (c == 2) {
-                return visit.getWeight() != null ? visit.getWeight() : "";
+                return visit.getSmearResult() != null ? visit.getSmearResult().toString() : "";
             } else if (c == 3) {
                 String notes = visit.getNotes();
                 if (notes != null && notes.length() > 50) {
