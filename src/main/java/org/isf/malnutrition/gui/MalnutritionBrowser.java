@@ -54,22 +54,35 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 
 	@Override
 	public void malnutritionInserted() {
-		if (pMaln != null) {
-			pMaln.add(pMaln.size(), malnutrition);
-			((DefaultTableModel) table.getModel()).fireTableDataChanged();
-			if (table.getRowCount() > 0) {
-				table.setRowSelectionInterval(0, 0);
+		if (pMaln != null && malnutrition != null) {
+			pMaln.add(malnutrition);
+
+			if (table.getModel() instanceof DefaultTableModel) {
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+				model.fireTableDataChanged();
+				table.updateUI();
+
+				if (table.getRowCount() > 0) {
+					table.setRowSelectionInterval(0, 0);
+				}
 			}
 		}
 	}
 
 	@Override
 	public void malnutritionUpdated(Malnutrition maln) {
-		pMaln.set(selectedrow, maln);
-		((MalnBrowsingModel) table.getModel()).fireTableDataChanged();
-		table.updateUI();
-		if (table.getRowCount() > 0 && selectedrow > -1) {
-			table.setRowSelectionInterval(selectedrow, selectedrow);
+		if (pMaln != null && selectedrow >= 0 && selectedrow < pMaln.size()) {
+			pMaln.set(selectedrow, maln);
+
+			if (table.getModel() instanceof DefaultTableModel) {
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+				model.fireTableDataChanged();
+				table.updateUI();
+
+				if (table.getRowCount() > 0 && selectedrow < table.getRowCount()) {
+					table.setRowSelectionInterval(selectedrow, selectedrow);
+				}
+			}
 		}
 	}
 
