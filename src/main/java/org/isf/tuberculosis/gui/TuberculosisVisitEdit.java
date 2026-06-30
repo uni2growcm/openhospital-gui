@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package org.isf.opd.gui;
+package org.isf.tuberculosis.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -50,11 +50,11 @@ import javax.swing.JTextField;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
-import org.isf.opd.manager.TuberculosisVisitManager;
-import org.isf.opd.model.TuberculosisTreatment;
-import org.isf.opd.model.TuberculosisTreatment.LabResult;
-import org.isf.opd.model.TuberculosisVisit;
-import org.isf.opd.model.TuberculosisVisit.DotStatus;
+import org.isf.tuberculosis.manager.TuberculosisVisitManager;
+import org.isf.tuberculosis.model.TuberculosisTreatment;
+import org.isf.tuberculosis.model.TuberculosisTreatment.LabResult;
+import org.isf.tuberculosis.model.TuberculosisVisit;
+import org.isf.tuberculosis.model.TuberculosisVisit.DotStatus;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;

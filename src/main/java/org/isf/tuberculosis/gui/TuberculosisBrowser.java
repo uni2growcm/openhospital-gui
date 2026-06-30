@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright Â© 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package org.isf.opd.gui;
+package org.isf.tuberculosis.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -63,13 +63,13 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
-import org.isf.opd.manager.TuberculosisContactManager;
-import org.isf.opd.manager.TuberculosisTreatmentManager;
-import org.isf.opd.manager.TuberculosisVisitManager;
-import org.isf.opd.model.TuberculosisContact;
-import org.isf.opd.model.TuberculosisTreatment;
-import org.isf.opd.model.TuberculosisTreatment.TreatmentStatus;
-import org.isf.opd.model.TuberculosisVisit;
+import org.isf.tuberculosis.manager.TuberculosisContactManager;
+import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
+import org.isf.tuberculosis.manager.TuberculosisVisitManager;
+import org.isf.tuberculosis.model.TuberculosisContact;
+import org.isf.tuberculosis.model.TuberculosisTreatment;
+import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentStatus;
+import org.isf.tuberculosis.model.TuberculosisVisit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -414,31 +414,31 @@ public class TuberculosisBrowser extends ModalJFrame {
         JPanel buttonPanel = new JPanel(new WrapLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
 
-        if (MainMenu.checkUserGrants("opd.tuberculosis.new")) {
+        if (MainMenu.checkUserGrants("tuberculosis.new")) {
             buttonPanel.add(getNewTreatmentButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.update")) {
+        if (MainMenu.checkUserGrants("tuberculosis.update")) {
             buttonPanel.add(getUpdateTreatmentButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.delete")) {
+        if (MainMenu.checkUserGrants("tuberculosis.delete")) {
             buttonPanel.add(getDeleteTreatmentButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.newvisit")) {
+        if (MainMenu.checkUserGrants("tuberculosis.newvisit")) {
             buttonPanel.add(getNewVisitButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.updatevisit")) {
+        if (MainMenu.checkUserGrants("tuberculosis.updatevisit")) {
             buttonPanel.add(getUpdateVisitButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.deletevisit")) {
+        if (MainMenu.checkUserGrants("tuberculosis.deletevisit")) {
             buttonPanel.add(getDeleteVisitButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.newcontact")) {
+        if (MainMenu.checkUserGrants("tuberculosis.newcontact")) {
             buttonPanel.add(getNewContactButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.updatecontact")) {
+        if (MainMenu.checkUserGrants("tuberculosis.updatecontact")) {
             buttonPanel.add(getUpdateContactButton());
         }
-        if (MainMenu.checkUserGrants("opd.tuberculosis.deletecontact")) {
+        if (MainMenu.checkUserGrants("tuberculosis.deletecontact")) {
             buttonPanel.add(getDeleteContactButton());
         }
         buttonPanel.add(getCloseButton());

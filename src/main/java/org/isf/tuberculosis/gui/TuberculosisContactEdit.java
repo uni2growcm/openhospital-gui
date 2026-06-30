@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package org.isf.opd.gui;
+package org.isf.tuberculosis.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -48,9 +48,9 @@ import javax.swing.JTextField;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
-import org.isf.opd.manager.TuberculosisContactManager;
-import org.isf.opd.model.TuberculosisContact;
-import org.isf.opd.model.TuberculosisTreatment;
+import org.isf.tuberculosis.manager.TuberculosisContactManager;
+import org.isf.tuberculosis.model.TuberculosisContact;
+import org.isf.tuberculosis.model.TuberculosisTreatment;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;

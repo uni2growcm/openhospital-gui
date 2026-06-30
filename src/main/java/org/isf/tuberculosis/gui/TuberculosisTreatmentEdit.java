@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package org.isf.opd.gui;
+package org.isf.tuberculosis.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -62,16 +62,16 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
-import org.isf.opd.manager.TuberculosisTreatmentManager;
-import org.isf.opd.model.TuberculosisTreatment;
-import org.isf.opd.model.TuberculosisTreatment.Classification;
-import org.isf.opd.model.TuberculosisTreatment.DiseaseLocation;
-import org.isf.opd.model.TuberculosisTreatment.DstResult;
-import org.isf.opd.model.TuberculosisTreatment.HivStatus;
-import org.isf.opd.model.TuberculosisTreatment.LabResult;
-import org.isf.opd.model.TuberculosisTreatment.ResistanceResult;
-import org.isf.opd.model.TuberculosisTreatment.TreatmentOutcome;
-import org.isf.opd.model.TuberculosisTreatment.TreatmentStatus;
+import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
+import org.isf.tuberculosis.model.TuberculosisTreatment;
+import org.isf.tuberculosis.model.TuberculosisTreatment.Classification;
+import org.isf.tuberculosis.model.TuberculosisTreatment.DiseaseLocation;
+import org.isf.tuberculosis.model.TuberculosisTreatment.DstResult;
+import org.isf.tuberculosis.model.TuberculosisTreatment.HivStatus;
+import org.isf.tuberculosis.model.TuberculosisTreatment.LabResult;
+import org.isf.tuberculosis.model.TuberculosisTreatment.ResistanceResult;
+import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentOutcome;
+import org.isf.tuberculosis.model.TuberculosisTreatment.TreatmentStatus;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
