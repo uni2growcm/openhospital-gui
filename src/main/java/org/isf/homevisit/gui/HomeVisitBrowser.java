@@ -34,7 +34,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
-import javax.swing.*;
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.SpringLayout;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.ButtonGroup;
+import javax.swing.BoxLayout;
+import javax.swing.ListSelectionModel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.layout.SpringUtilities;
@@ -104,124 +120,6 @@ public class HomeVisitBrowser extends ModalJFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
     }
-
-//    private void initComponents() {
-//        setLayout(new BorderLayout());
-//
-//        JPanel topPanel = new JPanel(new BorderLayout());
-//
-//        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//        searchField = new JTextField(20);
-//        searchField.addKeyListener(new KeyAdapter() {
-//            @Override
-//            public void keyReleased(KeyEvent e) {
-//                loadHomeVisits();
-//            }
-//        });
-//
-//        searchPanel.add(new JLabel(MessageBundle.getMessage("angal.common.search.txt")));
-//        searchPanel.add(searchField);
-//        topPanel.add(searchPanel, BorderLayout.WEST);
-//
-//        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.filter.status") + ":"));
-//        statusFilter = new JComboBox<>();
-//        statusFilter.addItem(null);
-//        for (HomeVisitStatus status : HomeVisitStatus.values()) {
-//            statusFilter.addItem(status);
-//        }
-//        statusFilter.setRenderer(new DefaultListCellRenderer() {
-//            @Override
-//            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//                if (value == null) {
-//                    setText(MessageBundle.getMessage("angal.common.all.btn"));
-//                }
-//                return this;
-//            }
-//        });
-//        statusFilter.addActionListener(e -> loadHomeVisits());
-//        filterPanel.add(statusFilter);
-//        topPanel.add(filterPanel, BorderLayout.EAST);
-//
-//        add(topPanel, BorderLayout.NORTH);
-//
-//        tableModel = new DefaultTableModel(COLUMNS, 0) {
-//            @Override
-//            public boolean isCellEditable(int r, int c) {
-//                return false;
-//            }
-//        };
-//        table = new JTable(tableModel);
-//        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        table.getColumnModel().getColumn(0).setMinWidth(0);
-//        table.getColumnModel().getColumn(0).setMaxWidth(0);
-//        table.getColumnModel().getColumn(0).setWidth(0);
-//
-//        table.getSelectionModel().addListSelectionListener(e -> {
-//            if (!e.getValueIsAdjusting()) {
-//                updateButtonStates();
-//            }
-//        });
-//
-//        add(new JScrollPane(table), BorderLayout.CENTER);
-//
-//        JPanel bottomPanel = new JPanel(new GridLayout(2, 1, 0, 5));
-//
-//        JPanel paginationPanel = getPaginationPanel();
-//        paginationPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-//        bottomPanel.add(paginationPanel);
-//
-//        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-//        JButton printBtn = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
-//        JButton newBtn = new JButton(MessageBundle.getMessage("angal.homevisit.new.btn"));
-//        JButton editBtn = new JButton(MessageBundle.getMessage("angal.homevisit.edit.btn"));
-//        completeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
-//        cancelBtn = new JButton(MessageBundle.getMessage("angal.homevisit.cancel.btn"));
-//        postponeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
-//        reactivateBtn = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
-//        reactivateBtn.setEnabled(false);
-//        JButton deleteBtn = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
-//        JButton closeBtn = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
-//
-//        newBtn.addActionListener(e -> openEditor(null));
-//        editBtn.addActionListener(e -> {
-//            if (table.getSelectedRow() < 0) {
-//                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
-//                return;
-//            }
-//            openEditor(getSelectedHomeVisit());
-//        });
-//        printBtn.addActionListener(e -> {
-//            MessageDialog.info(this, MessageBundle.getMessage("angal.common.featurenotimplemented.msg"));
-//        });
-//        completeBtn.addActionListener(e -> completeSelectedVisit());
-//        cancelBtn.addActionListener(e -> cancelSelectedVisit());
-//        postponeBtn.addActionListener(e -> postponeSelectedVisit());
-//        reactivateBtn.addActionListener(e -> reactivateSelectedVisit());
-//        deleteBtn.addActionListener(e -> deleteSelectedVisit());
-//        closeBtn.addActionListener(e -> dispose());
-//
-//        btnPanel.add(newBtn);
-//        btnPanel.add(editBtn);
-//        btnPanel.add(completeBtn);
-//        btnPanel.add(cancelBtn);
-//        btnPanel.add(postponeBtn);
-//        btnPanel.add(reactivateBtn);
-//        btnPanel.add(deleteBtn);
-//        btnPanel.add(closeBtn);
-//        btnPanel.add(printBtn);
-//        bottomPanel.add(btnPanel);
-//
-//        add(bottomPanel, BorderLayout.SOUTH);
-//
-//        addWindowListener(new WindowAdapter() {
-//            @Override
-//            public void windowClosing(WindowEvent e) {
-//                dispose();
-//            }
-//        });
-//    }
 
     private void initComponents() {
         setLayout(new BorderLayout());
@@ -337,7 +235,7 @@ public class HomeVisitBrowser extends ModalJFrame {
         paginationPanel.setBorder(BorderFactory.createEtchedBorder());
         centerWrapper.add(paginationPanel, BorderLayout.SOUTH);
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JPanel btnPanel     = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         JButton newBtn      = new JButton(MessageBundle.getMessage("angal.homevisit.new.btn"));
         JButton editBtn     = new JButton(MessageBundle.getMessage("angal.homevisit.edit.btn"));
         completeBtn         = new JButton(MessageBundle.getMessage("angal.homevisit.complete.btn"));
@@ -345,8 +243,8 @@ public class HomeVisitBrowser extends ModalJFrame {
         postponeBtn         = new JButton(MessageBundle.getMessage("angal.homevisit.postpone.btn"));
         reactivateBtn       = new JButton(MessageBundle.getMessage("angal.homevisit.reactivate.btn"));
         JButton deleteBtn   = new JButton(MessageBundle.getMessage("angal.homevisit.delete.btn"));
-        JButton closeBtn    = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
         JButton printBtn    = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
+        JButton closeBtn    = new JButton(MessageBundle.getMessage("angal.homevisit.close.btn"));
 
         completeBtn.setEnabled(false);
         cancelBtn.setEnabled(false);
@@ -393,8 +291,8 @@ public class HomeVisitBrowser extends ModalJFrame {
         btnPanel.add(postponeBtn);
         btnPanel.add(reactivateBtn);
         btnPanel.add(deleteBtn);
-        btnPanel.add(closeBtn);
         btnPanel.add(printBtn);
+        btnPanel.add(closeBtn);
 
         add(centerWrapper, BorderLayout.CENTER);
         add(btnPanel, BorderLayout.SOUTH);

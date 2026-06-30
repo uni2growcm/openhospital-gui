@@ -76,6 +76,8 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.homevisit.gui.HomeVisitBrowser;
+import org.isf.homevisit.gui.HomeVisitEdit;
+import org.isf.homevisit.manager.HomeVisitBrowserManager;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -304,9 +306,32 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		if (jHomeVisitButton == null) {
 			jHomeVisitButton = new JButton(MessageBundle.getMessage("angal.menu.btn.homevisit"));
 			jHomeVisitButton.setMnemonic(MessageBundle.getMnemonic("angal.menu.btn.homevisit.key"));
+
 			jHomeVisitButton.addActionListener(e -> {
-				HomeVisitBrowser homeVisitBrowser = new HomeVisitBrowser();
-				homeVisitBrowser.setVisible(true);
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				Patient patient = opd.getPatient();
+				if (patient == null) {
+					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+					return;
+				}
+				HomeVisitBrowserManager hvManager = Context.getApplicationContext()
+						.getBean(HomeVisitBrowserManager.class);
+
+				HomeVisitEdit editor = new HomeVisitEdit(
+						null,
+						hvManager,
+						null,
+						saved -> {
+							HomeVisitBrowser browser = new HomeVisitBrowser();
+							browser.setVisible(true);
+						}
+				);
+				editor.preSelectPatient(patient);
+				editor.setVisible(true);
 			});
 		}
 		return jHomeVisitButton;

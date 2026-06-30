@@ -174,13 +174,13 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 1;
         gbc.gridwidth = 4;
         visitStartDateChooser = new GoodDateTimeSpinnerChooser(LocalDateTime.now());
-        visitStartDateChooser.addDateChangeListener(e -> {
-            LocalDate newVisitDate = e.getNewDate();
-            if (newVisitDate != null) {
-                LocalDate minNext = newVisitDate.plusDays(1);
+        visitStartDateChooser.addDateTimeChangeListener(e -> {
+            LocalDateTime newVisitDateTime = visitStartDateChooser.getLocalDateTime();
+            if (newVisitDateTime != null) {
+                LocalDateTime minNext = newVisitDateTime.plusHours(1);
                 LocalDateTime currentNext = nextVisitDateChooser.getLocalDateTime();
-                if (currentNext != null && currentNext.toLocalDate().isBefore(minNext)) {
-                    nextVisitDateChooser.setDateTime(minNext.atStartOfDay());
+                if (currentNext != null && currentNext.isBefore(minNext)) {
+                    nextVisitDateChooser.setDateTime(minNext);
                 }
             }
         });
@@ -343,11 +343,11 @@ public class HomeVisitEdit extends ModalJFrame {
 
             if (patient.getAddress() != null && !patient.getAddress().isEmpty()) {
                 addressField.setText(patient.getAddress());
-                addressField.setEditable(false);
+                addressField.setEditable(true);
             }
             if (patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
                 contactPhoneField.setText(patient.getTelephone());
-                contactPhoneField.setEditable(false);
+                contactPhoneField.setEditable(true);
             }
         });
 
@@ -428,8 +428,8 @@ public class HomeVisitEdit extends ModalJFrame {
         }
 
         LocalDateTime nextVisitDate = nextVisitDateChooser.getLocalDateTime();
-        if (nextVisitDate != null && !nextVisitDate.isAfter(visitStartDate)) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.validation.nextvisitdate.afterstart.msg"));
+        if (nextVisitDate != null && !nextVisitDate.isAfter(visitStartDate.plusHours(1).minusSeconds(1))) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.validation.nextvisitdate.min1hour.msg"));
             return;
         }
 
@@ -463,6 +463,20 @@ public class HomeVisitEdit extends ModalJFrame {
         } catch (OHServiceException e) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.save.error.msg"));
             LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    public void preSelectPatient(Patient patient) {
+        if (patient == null) return;
+        selectedPatient = patient;
+        patientField.setText(patient.getName());
+        patientField.setEditable(false);
+
+        if (patient.getAddress() != null && !patient.getAddress().isEmpty()) {
+            addressField.setText(patient.getAddress());
+        }
+        if (patient.getTelephone() != null && !patient.getTelephone().isEmpty()) {
+            contactPhoneField.setText(patient.getTelephone());
         }
     }
 }
