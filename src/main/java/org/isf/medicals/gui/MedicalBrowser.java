@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -53,6 +53,8 @@ import javax.swing.table.DefaultTableModel;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.gui.MedicalEdit.MedicalListener;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
 import org.isf.medicalstock.manager.MovStockInsertingManager;
@@ -109,16 +111,17 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.exam.articlefamily.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.pcsperpck.col"),
 			MessageBundle.getMessage("angal.medicals.stock.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.critlevel.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.outofstock.col").toUpperCase()
 	};
 
-	private String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, "STOCK", "MDSR_MIN_STOCK_QTI", "STOCK" };
-	private boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, false };
-	private int[] pColumnWidth = { 100, 100, 400, 60, 60, 80, 100 };
-	private boolean[] pColumnResizable = { true, true, true, true, true, true, true };
+	private String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, null, "STOCK", "MDSR_MIN_STOCK_QTI", "STOCK" };
+	private boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, true, false };
+	private int[] pColumnWidth = { 100, 100, 400, 150, 60, 60, 80, 100 };
+	private boolean[] pColumnResizable = { true, true, true, true, true, true, true, true };
 
 	private Medical medical;
 	private DefaultTableModel model;
@@ -134,11 +137,13 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private String monthFrom;
 	private String monthTo;
 	private List<Medical> pMedicals;
+	private JComboBox<ArticleFamily> articleFamilyFilter;
 
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private final MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
 	private final MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	private Map<Integer, LocalDate> expiryDateCache = new HashMap<>();
 	private Map<Integer, Double> actualQtyCache = new HashMap<>();
@@ -260,6 +265,8 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonPanel.add(getComboBoxActive());
 		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.medicals.selecttype")));
 		buttonPanel.add(getComboBoxMedicalType());
+		buttonPanel.add(new JLabel(MessageBundle.getMessage("angal.exam.filter.family")));
+		buttonPanel.add(getJComboBoxArticleFamily());
 		if (MainMenu.checkUserGrants("btnpharmaceuticalnew")) {
 			buttonPanel.add(getJButtonNew());
 		}
@@ -278,6 +285,32 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		buttonPanel.add(getJButtonAMC());
 		buttonPanel.add(getJButtonClose());
 		return buttonPanel;
+	}
+
+	private JComboBox<ArticleFamily> getJComboBoxArticleFamily() {
+		if (articleFamilyFilter == null) {
+			articleFamilyFilter = new JComboBox<>();
+			articleFamilyFilter.addItem(null);
+			articleFamilyFilter.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value,
+				                                              int index, boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if (value == null) setText(STR_ALL);
+					return this;
+				}
+			});
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				for (ArticleFamily af : families) {
+					articleFamilyFilter.addItem(af);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			articleFamilyFilter.addActionListener(e -> applyFilter());
+		}
+		return articleFamilyFilter;
 	}
 
 	private JButton getJButtonAMC() {
@@ -762,10 +795,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			if (c == 0) return String.class;
 			else if (c == 1) return String.class;
 			else if (c == 2) return String.class;
-			else if (c == 3) return Integer.class;
-			else if (c == 4) return Double.class;
+			else if (c == 3) return String.class;
+			else if (c == 4) return Integer.class;
 			else if (c == 5) return Double.class;
-			else if (c == 6) return Boolean.class;
+			else if (c == 6) return Double.class;
+			else if (c == 7) return Boolean.class;
 			return null;
 		}
 
@@ -794,10 +828,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			else if (c == 0) return med.getType().getDescription();
 			else if (c == 1) return med.getProdCode();
 			else if (c == 2) return med.getDescription();
-			else if (c == 3) return med.getPcsperpck();
-			else if (c == 4) return actualQty;
-			else if (c == 5) return minQuantity;
-			else if (c == 6) return actualQty == 0;
+			else if (c == 3) return med.getArticleFamily() != null ? med.getArticleFamily().toString() : "";
+			else if (c == 4) return med.getPcsperpck();
+			else if (c == 5) return actualQty;
+			else if (c == 6) return minQuantity;
+			else if (c == 7) return actualQty == 0;
 			return null;
 		}
 
@@ -989,10 +1024,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			}
 
 			boolean nameSorted = false;
+			ArticleFamily selectedFamily = (ArticleFamily) articleFamilyFilter.getSelectedItem();
 
-			Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeAndDescription(
+			Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeDescriptionFamilyAndDeleted(
 					medicalTypeCode,
 					searchString.getText().trim(),
+					selectedFamily,
 					active,
 					nameSorted,
 					CURRENT_PAGE,
