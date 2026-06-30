@@ -26,13 +26,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.io.Serial;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -67,37 +65,33 @@ import org.isf.stat2.model.OperationStat;
 import org.isf.stat2.model.VaccineStat;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
-import org.isf.utils.time.TimeTools;
 import org.isf.vaccine.manager.VaccineBrowserManager;
 import org.isf.vaccine.model.Vaccine;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
 
-import com.toedter.calendar.JDateChooser;
-
-/**
- * General Statistics Browsing
- *
- * @author uni2growCameroun
- * @createdby Silevester D. on 14/03/2022
- * @updated for Spring Boot 1.15
- */
 public class StatsBrowsing extends ModalJFrame {
 
+    @Serial
     private static final long serialVersionUID = 3534376108035586486L;
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-    // Panels
+    public enum ResultatType {
+        REUSSIE,
+        COMPLIQUEE,
+        DECES,
+        AUTRE
+    }
+
     private JPanel filtersPanel;
     private JPanel dataPanel;
     private JPanel paginationPanel;
 
-    /**
-     * Filters Panel UI Components
-     */
     private JPanel periodPanel;
     private JPanel ageAndSexPanel;
     private JPanel wardsPanel;
@@ -106,13 +100,11 @@ public class StatsBrowsing extends ModalJFrame {
     private JPanel operationsPanel;
     private JPanel diseasesAndDischargeTypesPanel;
 
-    // Period panel
     private JLabel periodFromLabel;
     private JLabel periodToLabel;
-    private JDateChooser periodFromDateChooser;
-    private JDateChooser periodToDateChooser;
+    private GoodDateChooser periodFromDateChooser;
+    private GoodDateChooser periodToDateChooser;
 
-    // Age and Sex panel
     private JLabel sexLabel;
     private JComboBox<String> sexCombo;
     private JLabel ageFromLabel;
@@ -120,52 +112,41 @@ public class StatsBrowsing extends ModalJFrame {
     private JTextField ageFromField;
     private JTextField ageToField;
 
-    // Ward Panel
     private JComboBox<Ward> wardsCombo;
 
-    // Exams panel
     private JLabel examsLabel;
     private JLabel examResultsLabel;
     private JComboBox<String> examsCombo;
     private JComboBox<String> examResultsCombo;
-    private JDateChooser examPeriodFrom;
-    private JDateChooser examPeriodTo;
+    private GoodDateChooser examPeriodFrom;
+    private GoodDateChooser examPeriodTo;
     private JCheckBox allExamsCheck;
 
-    // Vaccines panel
     private JComboBox<String> vaccinesCombo;
-    private JDateChooser vaccinePeriodFrom;
-    private JDateChooser vaccinePeriodTo;
+    private GoodDateChooser vaccinePeriodFrom;
+    private GoodDateChooser vaccinePeriodTo;
     private JCheckBox allVaccinesCheck;
 
-    // Operations Panel
     private JLabel operationsLabel;
     private JLabel operationResultsLabel;
     private JComboBox<String> operationsCombo;
     private JComboBox<String> operationResultsCombo;
-    private JDateChooser operationPeriodFrom;
-    private JDateChooser operationPeriodTo;
+    private GoodDateChooser operationPeriodFrom;
+    private GoodDateChooser operationPeriodTo;
     private JCheckBox allOperationsCheck;
 
-    // Diseases Panel
     private JLabel diseasesLabel;
     private JLabel dischargeTypesLabel;
     private JComboBox<Disease> diseasesCombo;
     private JComboBox<DischargeType> dischargeTypesCombo;
     private JCheckBox allDiseasesCheck;
 
-    // Additional UI
     private JLabel resultCountLabel;
     private int resultCount = 0;
     private JButton filterBtn;
     private JButton filterResetBtn;
     private boolean isApplyFilter = false;
 
-    // End filter panel
-
-    /**
-     * Data Panel
-     */
     private final String[] sexData = { "", "F", "M" };
     private List<Exam> examsData;
     private List<ExamRow> examResultsData;
@@ -176,7 +157,6 @@ public class StatsBrowsing extends ModalJFrame {
     private List<Ward> wardsData;
     private JTable jDataTable;
 
-    // Data Table Models
     private StatsBrowsingTableModel jDataTableModel;
     private VaccinesTableModel jVaccineTableModel;
     private ExamsTableModel jExamTableModel;
@@ -216,9 +196,7 @@ public class StatsBrowsing extends ModalJFrame {
     };
 
     private final int[] jDataTableColumnWidth = { 200, 50, 50 };
-    // End data panel
 
-    // Current filter
     private int _start_index = 0;
     private static int _items_per_page = 100;
     private int _age_from = 0;
@@ -241,11 +219,7 @@ public class StatsBrowsing extends ModalJFrame {
     private String _operation_period_from = "";
     private String _operation_period_to = "";
     private String _selectedFilter = "general";
-    // end current data
 
-    /**
-     * Pagination Panel
-     */
     private JButton paginationFirstBtn;
     private JButton paginationLastBtn;
     private JButton paginationPrevBtn;
@@ -253,9 +227,6 @@ public class StatsBrowsing extends ModalJFrame {
     private JComboBox<Integer> paginationCombo;
     private JLabel paginationLabel = new JLabel();
 
-    /**
-     * Data Managers (Spring Beans)
-     */
     private final VaccineBrowserManager vaccinesManager = Context.getApplicationContext().getBean(VaccineBrowserManager.class);
     private final ExamBrowsingManager examsManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
     private final ExamRowBrowsingManager examResultsManager = Context.getApplicationContext().getBean(ExamRowBrowsingManager.class);
@@ -265,17 +236,11 @@ public class StatsBrowsing extends ModalJFrame {
     private final WardBrowserManager wardsManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
     private final StatsManager statsManager = Context.getApplicationContext().getBean(StatsManager.class);
 
-    /**
-     * Constructor
-     */
     public StatsBrowsing() {
         super();
         initialize();
     }
 
-    /**
-     * Initialize window
-     */
     private void initialize() {
         setTitle(MessageBundle.getMessage("angal.stat.generalstatsbrowsing"));
 
@@ -309,18 +274,11 @@ public class StatsBrowsing extends ModalJFrame {
         });
     }
 
-    /**
-     * Initialize window components
-     */
     private void initComponents() {
         getContentPane().add(getFiltersPanel(), BorderLayout.WEST);
         getContentPane().add(getDataPanel(), BorderLayout.CENTER);
         getContentPane().add(getPaginationPanel(), BorderLayout.SOUTH);
     }
-
-    // ============================================================
-    // PANELS
-    // ============================================================
 
     private JPanel getFiltersPanel() {
         if (filtersPanel != null) return filtersPanel;
@@ -396,23 +354,13 @@ public class StatsBrowsing extends ModalJFrame {
         return paginationPanel;
     }
 
-    // ============================================================
-    // FILTER PANELS
-    // ============================================================
-
     private JPanel getPeriodPanel() {
         if (periodPanel != null) return periodPanel;
 
         periodFromLabel = new JLabel(MessageBundle.getMessage("angal.common.dateFrom"));
-        periodFromDateChooser = new JDateChooser();
-        periodFromDateChooser.setLocale(Locale.getDefault());
-        periodFromDateChooser.setDateFormatString(DATE_FORMAT);
-
+        periodFromDateChooser = new GoodDateChooser(LocalDate.now().minusDays(7));
         periodToLabel = new JLabel(MessageBundle.getMessage("angal.common.dateTo"));
-        periodToDateChooser = new JDateChooser();
-        periodToDateChooser.setLocale(Locale.getDefault());
-        periodToDateChooser.setDateFormatString(DATE_FORMAT);
-
+        periodToDateChooser = new GoodDateChooser(LocalDate.now());
         periodPanel = new JPanel(new FlowLayout());
         periodPanel.add(periodFromLabel);
         periodPanel.add(periodFromDateChooser);
@@ -512,12 +460,8 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        vaccinePeriodFrom = new JDateChooser();
-        vaccinePeriodFrom.setLocale(Locale.getDefault());
-        vaccinePeriodFrom.setDateFormatString(DATE_FORMAT);
-        vaccinePeriodTo = new JDateChooser();
-        vaccinePeriodTo.setLocale(Locale.getDefault());
-        vaccinePeriodTo.setDateFormatString(DATE_FORMAT);
+        vaccinePeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
+        vaccinePeriodTo = new GoodDateChooser(LocalDate.now());
 
         allVaccinesCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.allvaccinescheck"));
         allVaccinesCheck.addActionListener(e -> {
@@ -626,12 +570,8 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        examPeriodFrom = new JDateChooser();
-        examPeriodFrom.setLocale(Locale.getDefault());
-        examPeriodFrom.setDateFormatString(DATE_FORMAT);
-        examPeriodTo = new JDateChooser();
-        examPeriodTo.setLocale(Locale.getDefault());
-        examPeriodTo.setDateFormatString(DATE_FORMAT);
+        examPeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
+        examPeriodTo = new GoodDateChooser(LocalDate.now());
 
         allExamsCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.allexamscheck"));
         allExamsCheck.addActionListener(e -> {
@@ -718,12 +658,8 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        operationPeriodFrom = new JDateChooser();
-        operationPeriodFrom.setLocale(Locale.getDefault());
-        operationPeriodFrom.setDateFormatString(DATE_FORMAT);
-        operationPeriodTo = new JDateChooser();
-        operationPeriodTo.setLocale(Locale.getDefault());
-        operationPeriodTo.setDateFormatString(DATE_FORMAT);
+        operationPeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
+        operationPeriodTo = new GoodDateChooser(LocalDate.now());
 
         allOperationsCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.alloperationscheck"));
         allOperationsCheck.addActionListener(e -> {
@@ -844,21 +780,6 @@ public class StatsBrowsing extends ModalJFrame {
         return diseasesAndDischargeTypesPanel;
     }
 
-    // ============================================================
-    // ENUM RESULTAT TYPE (local)
-    // ============================================================
-
-    public enum ResultatType {
-        REUSSIE,
-        COMPLIQUEE,
-        DECES,
-        AUTRE
-    }
-
-    // ============================================================
-    // FILTER BUTTONS
-    // ============================================================
-
     private JPanel getFilterButtonsPanel() {
         JPanel filterButtonPanel = new JPanel(new FlowLayout());
         filterButtonPanel.add(getFilterButton());
@@ -878,9 +799,6 @@ public class StatsBrowsing extends ModalJFrame {
             if (!checkVaccinePeriod()) return;
             if (!checkExamPeriod()) return;
             if (!checkOperationPeriod()) return;
-
-            logCurrentFilter();
-
             try {
                 switch (_selectedFilter) {
                     case "exam":
@@ -986,23 +904,23 @@ public class StatsBrowsing extends ModalJFrame {
             _operation_period_from = "";
             _operation_period_to = "";
 
-            periodFromDateChooser.setCalendar(null);
-            periodToDateChooser.setCalendar(null);
+            periodFromDateChooser.setDate(null);
+            periodToDateChooser.setDate(null);
             sexCombo.setSelectedItem(null);
             ageFromField.setText("");
             ageToField.setText("");
             vaccinesCombo.setSelectedItem(null);
             wardsCombo.setSelectedItem(null);
-            vaccinePeriodFrom.setCalendar(null);
-            vaccinePeriodTo.setCalendar(null);
+            vaccinePeriodFrom.setDate(null);
+            vaccinePeriodTo.setDate(null);
             examsCombo.setSelectedItem(null);
             examResultsCombo.setSelectedItem(null);
-            examPeriodFrom.setCalendar(null);
-            examPeriodTo.setCalendar(null);
+            examPeriodFrom.setDate(null);
+            examPeriodTo.setDate(null);
             operationsCombo.setSelectedItem(null);
             operationResultsCombo.setSelectedItem(null);
-            operationPeriodFrom.setCalendar(null);
-            operationPeriodTo.setCalendar(null);
+            operationPeriodFrom.setDate(null);
+            operationPeriodTo.setDate(null);
             diseasesCombo.setSelectedItem(null);
             dischargeTypesCombo.setSelectedItem(null);
             allDiseasesCheck.setSelected(false);
@@ -1028,10 +946,6 @@ public class StatsBrowsing extends ModalJFrame {
 
         return filterResetBtn;
     }
-
-    // ============================================================
-    // FILTER APPLICATIONS
-    // ============================================================
 
     private void applyFilters() {
         emptyJDataTable();
@@ -1231,10 +1145,6 @@ public class StatsBrowsing extends ModalJFrame {
         }
     }
 
-    // ============================================================
-    // PAGINATION
-    // ============================================================
-
     private JButton getPaginationFirstButton() {
         if (paginationFirstBtn != null) return paginationFirstBtn;
 
@@ -1304,7 +1214,6 @@ public class StatsBrowsing extends ModalJFrame {
         paginationLastBtn = new JButton(">>");
         paginationLastBtn.setEnabled(false);
         paginationLastBtn.addActionListener(e -> {
-            // Navigate to last page
         });
 
         return paginationLastBtn;
@@ -1352,13 +1261,9 @@ public class StatsBrowsing extends ModalJFrame {
         return resultCountPanel;
     }
 
-    // ============================================================
-    // VALIDATION METHODS
-    // ============================================================
-
     private boolean checkAdmissionPeriod() {
-        Date dateFrom = periodFromDateChooser.getDate();
-        Date dateTo = periodToDateChooser.getDate();
+        LocalDate dateFrom = periodFromDateChooser.getDate();
+        LocalDate dateTo = periodToDateChooser.getDate();
 
         if (dateFrom == null && dateTo == null) {
             return true;
@@ -1369,22 +1274,16 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (dateTo != null) {
-            GregorianCalendar gregDateFrom = new GregorianCalendar();
-            gregDateFrom.setTime(dateFrom);
-            GregorianCalendar gregDateTo = new GregorianCalendar();
-            gregDateTo.setTime(dateTo);
-            if (gregDateTo.before(gregDateFrom)) {
-                MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidadmissionperiod");
-                return false;
-            }
+        if (dateTo != null && dateTo.isBefore(dateFrom)) {
+            MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidadmissionperiod");
+            return false;
         }
 
         if (dateFrom != null) {
-            _period_from = formatDate(dateFrom);
+            _period_from = dateFrom.format(DATE_FORMATTER);
         }
         if (dateTo != null) {
-            _period_to = formatDate(dateTo);
+            _period_to = dateTo.format(DATE_FORMATTER);
         }
 
         return true;
@@ -1412,8 +1311,8 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private boolean checkVaccinePeriod() {
-        Date vaccineDateFrom = vaccinePeriodFrom.getDate();
-        Date vaccineDateTo = vaccinePeriodTo.getDate();
+        LocalDate vaccineDateFrom = vaccinePeriodFrom.getDate();
+        LocalDate vaccineDateTo = vaccinePeriodTo.getDate();
 
         if (vaccineDateFrom == null && vaccineDateTo == null) {
             return true;
@@ -1424,31 +1323,24 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (vaccineDateTo != null) {
-            GregorianCalendar gregVaccineDateFrom = new GregorianCalendar();
-            gregVaccineDateFrom.setTime(vaccineDateFrom);
-            GregorianCalendar gregVaccineDateTo = new GregorianCalendar();
-            gregVaccineDateTo.setTime(vaccineDateTo);
-
-            if (gregVaccineDateTo.before(gregVaccineDateFrom)) {
-                MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidvaccineperiod");
-                return false;
-            }
+        if (vaccineDateTo != null && vaccineDateTo.isBefore(vaccineDateFrom)) {
+            MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidvaccineperiod");
+            return false;
         }
 
         if (vaccineDateFrom != null) {
-            _vaccine_period_from = formatDate(vaccineDateFrom);
+            _vaccine_period_from = vaccineDateFrom.format(DATE_FORMATTER);
         }
         if (vaccineDateTo != null) {
-            _vaccine_period_to = formatDate(vaccineDateTo);
+            _vaccine_period_to = vaccineDateTo.format(DATE_FORMATTER);
         }
 
         return true;
     }
 
     private boolean checkExamPeriod() {
-        Date examDateFrom = examPeriodFrom.getDate();
-        Date examDateTo = examPeriodTo.getDate();
+        LocalDate examDateFrom = examPeriodFrom.getDate();
+        LocalDate examDateTo = examPeriodTo.getDate();
 
         if (examDateFrom == null && examDateTo == null) {
             return true;
@@ -1459,31 +1351,24 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (examDateTo != null) {
-            GregorianCalendar gregExamDateFrom = new GregorianCalendar();
-            gregExamDateFrom.setTime(examDateFrom);
-            GregorianCalendar gregExamDateTo = new GregorianCalendar();
-            gregExamDateTo.setTime(examDateTo);
-
-            if (gregExamDateTo.before(gregExamDateFrom)) {
-                MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidexamperiod");
-                return false;
-            }
+        if (examDateTo != null && examDateTo.isBefore(examDateFrom)) {
+            MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidexamperiod");
+            return false;
         }
 
         if (examDateFrom != null) {
-            _exam_period_from = formatDate(examDateFrom);
+            _exam_period_from = examDateFrom.format(DATE_FORMATTER);
         }
         if (examDateTo != null) {
-            _exam_period_to = formatDate(examDateTo);
+            _exam_period_to = examDateTo.format(DATE_FORMATTER);
         }
 
         return true;
     }
 
     private boolean checkOperationPeriod() {
-        Date operationDateFrom = operationPeriodFrom.getDate();
-        Date operationDateTo = operationPeriodTo.getDate();
+        LocalDate operationDateFrom = operationPeriodFrom.getDate();
+        LocalDate operationDateTo = operationPeriodTo.getDate();
 
         if (operationDateFrom == null && operationDateTo == null) {
             return true;
@@ -1494,59 +1379,19 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (operationDateTo != null) {
-            GregorianCalendar gregOperationDateFrom = new GregorianCalendar();
-            gregOperationDateFrom.setTime(operationDateFrom);
-            GregorianCalendar gregOperationDateTo = new GregorianCalendar();
-            gregOperationDateTo.setTime(operationDateTo);
-
-            if (gregOperationDateTo.before(gregOperationDateFrom)) {
-                MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidoperationperiod");
-                return false;
-            }
+        if (operationDateTo != null && operationDateTo.isBefore(operationDateFrom)) {
+            MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidoperationperiod");
+            return false;
         }
 
         if (operationDateFrom != null) {
-            _operation_period_from = formatDate(operationDateFrom);
+            _operation_period_from = operationDateFrom.format(DATE_FORMATTER);
         }
         if (operationDateTo != null) {
-            _operation_period_to = formatDate(operationDateTo);
+            _operation_period_to = operationDateTo.format(DATE_FORMATTER);
         }
 
         return true;
-    }
-
-    // ============================================================
-    // UTILITY METHODS
-    // ============================================================
-
-    private String formatDate(Date date) {
-        return TimeTools.formatDateTime(
-                LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()),
-                DATE_FORMAT
-        );
-    }
-
-    private void logCurrentFilter() {
-        System.out.println("-----------------------------\nCurrent Filters \n-----------------------------");
-        System.out.println("Current Filter: " + _selectedFilter);
-        System.out.println("Start index: " + _start_index);
-        System.out.println("Items per page: " + _items_per_page);
-        System.out.println("Age from: " + _age_from);
-        System.out.println("Age to: " + _age_to);
-        System.out.println("Selected sex: " + _selectedSex);
-        System.out.println("Selected exam: " + _selectedExam);
-        System.out.println("Selected ward: " + _selectedWard);
-        System.out.println("Selected exam result: " + _selectedExamResult);
-        System.out.println("Selected vaccine: " + _selectedVaccine);
-        System.out.println("Selected operation: " + _selectedOperation);
-        System.out.println("Selected operation result: " + _selectedOperationResult);
-        System.out.println("Selected disease: " + _selectedDisease);
-        System.out.println("Selected discharge type: " + _selectedDischargeType);
-        System.out.println("Admission period: " + _period_from + " - " + _period_to);
-        System.out.println("Exam period: " + _exam_period_from + " - " + _exam_period_to);
-        System.out.println("Vaccine period: " + _vaccine_period_from + " - " + _vaccine_period_to);
-        System.out.println("Operation period: " + _operation_period_from + " - " + _operation_period_to);
     }
 
     private JPanel setPanelBorder(JPanel panel, String panelTitle) {
@@ -1568,11 +1413,8 @@ public class StatsBrowsing extends ModalJFrame {
         jDataTable.updateUI();
     }
 
-    // ============================================================
-    // TABLE MODELS
-    // ============================================================
-
     class StatsBrowsingTableModel extends DefaultTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1609,6 +1451,7 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     class VaccinesTableModel extends DefaultTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1645,6 +1488,7 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     class ExamsTableModel extends DefaultTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1681,6 +1525,7 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     class DiseasesTableModel extends DefaultTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1717,6 +1562,7 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     class OperationsTableModel extends DefaultTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
