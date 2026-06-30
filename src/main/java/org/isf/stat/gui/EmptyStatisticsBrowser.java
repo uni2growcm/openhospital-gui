@@ -21,7 +21,14 @@
  */
 package org.isf.stat.gui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.Font;
+import java.awt.Cursor;
+import java.awt.Color;
+import java.awt.Container;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
@@ -29,7 +36,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JTextField;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JCheckBox;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.Box;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
@@ -132,19 +151,19 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private int _start_index = 0;
     private final int _items_per_page = 100;
-    private Integer _age_from = null;
-    private Integer _age_to = null;
+    private Integer ageFrom = null;
+    private Integer ageTo = null;
     private String _selectedExam = "";
     private String _selectedExamResult = "";
     private String _selectedVaccine = "";
     private String _selectedDisease = "";
     private String _selectedDischargeType = "";
-    private LocalDateTime _period_from = null;
-    private LocalDateTime _period_to = null;
-    private LocalDateTime _exam_period_from = null;
-    private LocalDateTime _exam_period_to = null;
-    private LocalDateTime _vaccine_period_from = null;
-    private LocalDateTime _vaccine_period_to = null;
+    private LocalDateTime periodFrom = null;
+    private LocalDateTime periodTo = null;
+    private LocalDateTime examperiodFrom = null;
+    private LocalDateTime examperiodTo = null;
+    private LocalDateTime vaccineperiodFrom = null;
+    private LocalDateTime vaccineperiodTo = null;
     private boolean _parameter_height_check = false;
     private boolean _parameter_weight_check = false;
     private boolean _parameter_art_press_check = false;
@@ -176,8 +195,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         setTitle(MessageBundle.getMessage("angal.stat.menu.cpn"));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         initComponents();
-        setSize(1200, 800);
-        setMinimumSize(new Dimension(800, 500));
+
+        setMinimumSize(new Dimension(900, 600));
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -206,50 +225,89 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         JPanel visitTypePanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.visit.type"),
-                visitTypeCombo = new JComboBox<>(new String[]{"Tous", "ANC", "PNC"})
+                visitTypeCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.visittype.anc"),
+                        MessageBundle.getMessage("angal.stat.visittype.pnc")
+                })
         );
         gridPanel.add(visitTypePanel);
 
         JPanel weightPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.maternal.weight"),
-                maternalWeightCombo = new JComboBox<>(new String[]{"Tous", "< 50 kg", "50-70 kg", "70-90 kg", "90+ kg"})
+                maternalWeightCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.maternalweight.lt50"),
+                        MessageBundle.getMessage("angal.stat.maternalweight.50to70"),
+                        MessageBundle.getMessage("angal.stat.maternalweight.70to90"),
+                        MessageBundle.getMessage("angal.stat.maternalweight.gt90")
+                })
         );
         gridPanel.add(weightPanel);
 
         JPanel proteinPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.urine.protein"),
-                urineProteinCombo = new JComboBox<>(new String[]{"Tous", "Positive", "Negative"})
+                urineProteinCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.urineprotein.positive"),
+                        MessageBundle.getMessage("angal.stat.urineprotein.negative")
+                })
         );
         gridPanel.add(proteinPanel);
 
         JPanel visitCountPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.visit.count"),
-                visitCountCombo = new JComboBox<>(new String[]{"Tous", "1", "2", "2-3", "4-7", "8+"})
+                visitCountCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.count.1"),
+                        MessageBundle.getMessage("angal.stat.count.2"),
+                        MessageBundle.getMessage("angal.stat.count.2to3"),
+                        MessageBundle.getMessage("angal.stat.count.4to7"),
+                        MessageBundle.getMessage("angal.stat.count.8plus")
+                })
         );
         gridPanel.add(visitCountPanel);
 
         JPanel edemaPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.edema"),
-                edemaCombo = new JComboBox<>(new String[]{"Tous", "Present", "Absent"})
+                edemaCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.edema.present"),
+                        MessageBundle.getMessage("angal.stat.edema.absent")
+                })
         );
         gridPanel.add(edemaPanel);
 
         JPanel presentationPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.fetal.presentation"),
-                fetalPresentationCombo = new JComboBox<>(new String[]{"Tous", "Cephalic", "Breech", "Transverse", "Other"})
+                fetalPresentationCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.fetalpresentation.cephalic"),
+                        MessageBundle.getMessage("angal.stat.fetalpresentation.breech"),
+                        MessageBundle.getMessage("angal.stat.fetalpresentation.transverse"),
+                        MessageBundle.getMessage("angal.stat.fetalpresentation.other")
+                })
         );
         gridPanel.add(presentationPanel);
 
         JPanel systolicPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.systolic.bp"),
-                systolicBpCombo = new JComboBox<>(new String[]{"Tous", "< 120", "120-139", "140+"})
-        );
+                systolicBpCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.systolic.lt120"),
+                        MessageBundle.getMessage("angal.stat.systolic.120to139"),
+                        MessageBundle.getMessage("angal.stat.systolic.gt140")
+                })        );
         gridPanel.add(systolicPanel);
 
         JPanel diastolicPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.diastolic.bp"),
-                diastolicBpCombo = new JComboBox<>(new String[]{"Tous", "< 80", "80-89", "90+"})
-        );
+                diastolicBpCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.diastolic.lt80"),
+                        MessageBundle.getMessage("angal.stat.diastolic.80to89"),
+                        MessageBundle.getMessage("angal.stat.diastolic.gt90")
+                })        );
         gridPanel.add(diastolicPanel);
 
         JPanel emptyPanel = new JPanel();
@@ -275,38 +333,65 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         JPanel riskPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.risk.level"),
-                riskLevelCombo = new JComboBox<>(new String[]{"Tous", "LOW", "MEDIUM", "HIGH"})
-        );
+                riskLevelCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.risklevel.low"),
+                        MessageBundle.getMessage("angal.stat.risklevel.medium"),
+                        MessageBundle.getMessage("angal.stat.risklevel.high")
+                })        );
         gridPanel.add(riskPanel);
 
         JPanel parityPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.parity"),
-                parityCombo = new JComboBox<>(new String[]{"Tous", "0", "1", "2", "3+"})
-        );
+                parityCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.count.0"),
+                        MessageBundle.getMessage("angal.stat.count.1"),
+                        MessageBundle.getMessage("angal.stat.count.2"),
+                        MessageBundle.getMessage("angal.stat.count.3plus")
+                })        );
         gridPanel.add(parityPanel);
 
         JPanel miscarriagePanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.miscarriages"),
-                miscarriageCombo = new JComboBox<>(new String[]{"Tous", "0", "1", "2", "3+"})
-        );
+                miscarriageCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.count.0"),
+                        MessageBundle.getMessage("angal.stat.count.1"),
+                        MessageBundle.getMessage("angal.stat.count.2"),
+                        MessageBundle.getMessage("angal.stat.count.3plus")
+                })        );
         gridPanel.add(miscarriagePanel);
 
         JPanel statusPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.status"),
-                statusCombo = new JComboBox<>(new String[]{"Tous", "ONGOING", "COMPLETED"})
-        );
+                statusCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.status.ongoing"),
+                        MessageBundle.getMessage("angal.stat.status.completed")
+                })        );
         gridPanel.add(statusPanel);
 
         JPanel gravidityPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.gravidity"),
-                gravidityCombo = new JComboBox<>(new String[]{"Tous", "1", "2", "3", "4+"})
-        );
+                gravidityCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.count.1"),
+                        MessageBundle.getMessage("angal.stat.count.2"),
+                        MessageBundle.getMessage("angal.stat.count.3"),
+                        MessageBundle.getMessage("angal.stat.count.4plus")
+                })        );
         gridPanel.add(gravidityPanel);
 
         JPanel gestationalAgePanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.gestational.age"),
-                gestationalAgeCombo = new JComboBox<>(new String[]{"Tous", "< 12 sem", "12-24 sem", "24-36 sem", "36+ sem"})
-        );
+                gestationalAgeCombo = new JComboBox<>(new String[]{
+                        MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.gestage.lt12"),
+                        MessageBundle.getMessage("angal.stat.gestage.12to24"),
+                        MessageBundle.getMessage("angal.stat.gestage.24to36"),
+                        MessageBundle.getMessage("angal.stat.gestage.gt36")
+                })        );
         gridPanel.add(gestationalAgePanel);
 
         pregnancyPanel.add(gridPanel);
@@ -330,52 +415,44 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return filtersPanel;
         }
 
-        // Panel contenant tous les filtres
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        // 1. GÉNÉRAL - EN PREMIER (true = développé)
-        mainPanel.add(new AccordionPanel(
-                "⚙️ GÉNÉRAL (Âge, Période, Vaccins, Examens, Maladies, Paramètres)",
-                getGeneralFiltersPanel(),
-                true
-        ));
+        AccordionPanel general = new AccordionPanel(
+                MessageBundle.getMessage("angal.stat.title.general"),
+                getGeneralFiltersPanel(), true);
 
+        AccordionPanel visites = new AccordionPanel(
+                MessageBundle.getMessage("angal.stat.title.visits"),
+                getPregnancyVisitPanel(), false);
+
+        AccordionPanel grossesse = new AccordionPanel(
+                MessageBundle.getMessage("angal.stat.title.pregnancy"),
+                getPregnancyPanel(), false);
+
+        List<AccordionPanel> all = List.of(general, visites, grossesse);
+        general.setSiblings(all);
+        visites.setSiblings(all);
+        grossesse.setSiblings(all);
+
+        mainPanel.add(general);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-
-        // 2. VISITES DE GROSSESSE - EN DEUXIÈME (false = réduit)
-        mainPanel.add(new AccordionPanel(
-                "📋 VISITES DE GROSSESSE (9 filtres)",
-                getPregnancyVisitPanel(),
-                false
-        ));
-
+        mainPanel.add(visites);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-
-        // 3. GROSSESSE - EN TROISIÈME (false = réduit)
-        mainPanel.add(new AccordionPanel(
-                "📋 GROSSESSE (6 filtres)",
-                getPregnancyPanel(),
-                false
-        ));
-
+        mainPanel.add(grossesse);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         mainPanel.add(getFilterButtonsPanel());
 
-        // AJOUTER UN JScrollPane POUR PERMETTRE LE SCROLLING
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // Définir une taille préférée pour le scroll pane
-        scrollPane.setPreferredSize(new Dimension(450, 600));
-        scrollPane.setMinimumSize(new Dimension(400, 300));
-
-        // Panel final
         filtersPanel = new JPanel(new BorderLayout());
         filtersPanel.add(scrollPane, BorderLayout.CENTER);
+
+        filtersPanel.setPreferredSize(new Dimension(860, 0));
 
         return filtersPanel;
     }
@@ -568,7 +645,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                         }
                     }
                 } catch (NumberFormatException nfe) {
-                    MessageDialog.error(EmptyStatisticsBrowser.this, "Invalid exam code format");
+                    MessageDialog.error(EmptyStatisticsBrowser.this,
+                            MessageBundle.getMessage("angal.stat.error.invalidexamcode"));
                 } catch (OHServiceException ex) {
                     MessageDialog.showExceptions(ex);
                 }
@@ -759,9 +837,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             String diastolicBp = getSelectedDiastolicBp();
 
             Page<Patient> result = statsManager.getPregnanciesStats(
-                    _age_from, _age_to, _period_from, _period_to,
-                    _selectedExam, _selectedExamResult, _exam_period_from, _exam_period_to,
-                    _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
+                    ageFrom, ageTo, periodFrom, periodTo,
+                    _selectedExam, _selectedExamResult, examperiodFrom, examperiodTo,
+                    _selectedVaccine, vaccineperiodFrom, vaccineperiodTo,
                     _selectedDisease, _selectedDischargeType,
                     _parameter_height_check, _parameter_weight_check, _parameter_art_press_check,
                     _parameter_card_freq_check, _parameter_temp_check, _parameter_saturation_check,
@@ -812,19 +890,19 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         filterResetBtn.addActionListener(e -> {
             _start_index = 0;
-            _age_from = null;
-            _age_to = null;
+            ageFrom = null;
+            ageTo = null;
             _selectedExam = "";
             _selectedExamResult = "";
             _selectedVaccine = "";
             _selectedDisease = "";
             _selectedDischargeType = "";
-            _period_from = null;
-            _period_to = null;
-            _exam_period_from = null;
-            _exam_period_to = null;
-            _vaccine_period_from = null;
-            _vaccine_period_to = null;
+            periodFrom = null;
+            periodTo = null;
+            examperiodFrom = null;
+            examperiodTo = null;
+            vaccineperiodFrom = null;
+            vaccineperiodTo = null;
             _parameter_height_check = false;
             _parameter_weight_check = false;
             _parameter_art_press_check = false;
@@ -996,8 +1074,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         LocalDate dateTo = periodToDateChooser.getDate();
 
         if (dateFrom == null && dateTo == null) {
-            _period_from = null;
-            _period_to = null;
+            periodFrom = null;
+            periodTo = null;
             return true;
         }
 
@@ -1011,8 +1089,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return false;
         }
 
-        _period_from = dateFrom.atStartOfDay();
-        _period_to = dateTo != null ? dateTo.atStartOfDay() : null;
+        periodFrom = dateFrom.atStartOfDay();
+        periodTo = dateTo != null ? dateTo.atStartOfDay() : null;
 
         return true;
     }
@@ -1022,20 +1100,20 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         String toText = ageToField.getText().trim();
 
         if (fromText.isEmpty() && toText.isEmpty()) {
-            _age_from = null;
-            _age_to = null;
+            ageFrom = null;
+            ageTo = null;
             return true;
         }
 
         try {
-            _age_from = fromText.isEmpty() ? null : Integer.valueOf(fromText);
-            _age_to = toText.isEmpty() ? null : Integer.valueOf(toText);
+            ageFrom = fromText.isEmpty() ? null : Integer.valueOf(fromText);
+            ageTo = toText.isEmpty() ? null : Integer.valueOf(toText);
         } catch (NumberFormatException nfe) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.stat.error.pleaseinsertvalidagerange"));
             return false;
         }
 
-        if (_age_from != null && _age_to != null && _age_from > _age_to) {
+        if (ageFrom != null && ageTo != null && ageFrom > ageTo) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.stat.error.pleaseinsertvalidagerange"));
             return false;
         }
@@ -1048,8 +1126,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         LocalDate dateTo = vaccinePeriodTo.getDate();
 
         if (dateFrom == null && dateTo == null) {
-            _vaccine_period_from = null;
-            _vaccine_period_to = null;
+            vaccineperiodFrom = null;
+            vaccineperiodTo = null;
             return true;
         }
 
@@ -1063,8 +1141,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return false;
         }
 
-        _vaccine_period_from = dateFrom.atStartOfDay();
-        _vaccine_period_to = dateTo != null ? dateTo.atStartOfDay() : null;
+        vaccineperiodFrom = dateFrom.atStartOfDay();
+        vaccineperiodTo = dateTo != null ? dateTo.atStartOfDay() : null;
 
         return true;
     }
@@ -1074,8 +1152,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         LocalDate dateTo = examPeriodTo.getDate();
 
         if (dateFrom == null && dateTo == null) {
-            _exam_period_from = null;
-            _exam_period_to = null;
+            examperiodFrom = null;
+            examperiodTo = null;
             return true;
         }
 
@@ -1089,8 +1167,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return false;
         }
 
-        _exam_period_from = dateFrom.atStartOfDay();
-        _exam_period_to = dateTo != null ? dateTo.atStartOfDay() : null;
+        examperiodFrom = dateFrom.atStartOfDay();
+        examperiodTo = dateTo != null ? dateTo.atStartOfDay() : null;
 
         return true;
     }
@@ -1115,139 +1193,131 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private String getSelectedRiskLevel() {
         String selected = (String) riskLevelCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedStatus() {
         String selected = (String) statusCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private Integer getGravidityMin() {
         String selected = (String) gravidityCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("4+")) return 4;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.4plus"))) return 4;
         return Integer.parseInt(selected);
     }
 
     private Integer getGravidityMax() {
         String selected = (String) gravidityCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("4+")) return Integer.MAX_VALUE;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.4plus"))) return Integer.MAX_VALUE;
         return Integer.parseInt(selected);
     }
 
     private Integer getParityMin() {
         String selected = (String) parityCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("3+")) return 3;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.3plus"))) return 3;
         return Integer.parseInt(selected);
     }
 
     private Integer getParityMax() {
         String selected = (String) parityCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("3+")) return Integer.MAX_VALUE;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.3plus"))) return Integer.MAX_VALUE;
         return Integer.parseInt(selected);
     }
 
     private Integer getMiscarriageMin() {
         String selected = (String) miscarriageCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("3+")) return 3;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.3plus"))) return 3;
         return Integer.parseInt(selected);
     }
 
     private Integer getMiscarriageMax() {
         String selected = (String) miscarriageCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        if (selected.equals("3+")) return Integer.MAX_VALUE;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.3plus"))) return Integer.MAX_VALUE;
         return Integer.parseInt(selected);
     }
 
     private Integer getGestationalAgeMin() {
         String selected = (String) gestationalAgeCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        switch (selected) {
-            case "< 12 semaines": return 0;
-            case "12-24 semaines": return 12;
-            case "24-36 semaines": return 24;
-            case "36+ semaines": return 36;
-            default: return null;
-        }
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.lt12"))) return 0;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.12to24"))) return 12;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.24to36"))) return 24;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.gt36"))) return 36;
+        return null;
     }
 
     private Integer getGestationalAgeMax() {
         String selected = (String) gestationalAgeCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        switch (selected) {
-            case "< 12 semaines": return 11;
-            case "12-24 semaines": return 24;
-            case "24-36 semaines": return 36;
-            case "36+ semaines": return Integer.MAX_VALUE;
-            default: return null;
-        }
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.lt12"))) return 11;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.12to24"))) return 24;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.24to36"))) return 36;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.gestage.gt36"))) return Integer.MAX_VALUE;
+        return null;
     }
 
     private String getSelectedVisitType() {
         String selected = (String) visitTypeCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedMaternalWeight() {
         String selected = (String) maternalWeightCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedUrineProtein() {
         String selected = (String) urineProteinCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedEdema() {
         String selected = (String) edemaCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedFetalPresentation() {
         String selected = (String) fetalPresentationCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedSystolicBp() {
         String selected = (String) systolicBpCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private String getSelectedDiastolicBp() {
         String selected = (String) diastolicBpCombo.getSelectedItem();
-        return (selected == null || selected.equals("Tous")) ? null : selected;
+        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
     }
 
     private Integer getVisitCountMin() {
         String selected = (String) visitCountCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        switch (selected) {
-            case "1": return 1;
-            case "2": return 2;
-            case "2-3": return 2;
-            case "4-7": return 4;
-            case "8+": return 8;
-            default: return null;
-        }
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.1"))) return 1;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.2"))) return 2;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.2to3"))) return 2;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.4to7"))) return 4;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.8plus"))) return 8;
+        return null;
     }
 
     private Integer getVisitCountMax() {
         String selected = (String) visitCountCombo.getSelectedItem();
-        if (selected == null || selected.equals("Tous")) return null;
-        switch (selected) {
-            case "1": return 1;
-            case "2": return 2;
-            case "2-3": return 3;
-            case "4-7": return 7;
-            case "8+": return Integer.MAX_VALUE;
-            default: return null;
-        }
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) return null;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.1"))) return 1;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.2"))) return 2;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.2to3"))) return 3;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.4to7"))) return 7;
+        if (selected.equals(MessageBundle.getMessage("angal.stat.count.8plus"))) return Integer.MAX_VALUE;
+        return null;
     }
 
     private class StatsPregnancyBrowsingTableModel extends DefaultTableModel {
@@ -1287,12 +1357,32 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private class AccordionPanel extends JPanel {
 
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension header = headerPanel.getPreferredSize();
+            if (!expanded) {
+                return new Dimension(header.width, header.height);
+            }
+            return super.getPreferredSize();
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            Dimension pref = getPreferredSize();
+            return new Dimension(Integer.MAX_VALUE, pref.height);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return getPreferredSize();
+        }
+
         private static final long serialVersionUID = 1L;
         private final JPanel headerPanel;
         private final JPanel contentPanel;
         private final JLabel toggleLabel;
         private boolean expanded;
-        private int contentHeight = 0;
+        private List<AccordionPanel> siblings = new ArrayList<>();
 
         public AccordionPanel(String title, JPanel content, boolean defaultExpanded) {
             setLayout(new BorderLayout());
@@ -1301,6 +1391,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                     BorderFactory.createEmptyBorder(2, 2, 2, 2)
             ));
             this.expanded = defaultExpanded;
+
             headerPanel = new JPanel(new BorderLayout());
             headerPanel.setBackground(new Color(240, 240, 240));
             headerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1311,7 +1402,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             toggleLabel = new JLabel(expanded ? " ▼" : " ▶");
             toggleLabel.setFont(toggleLabel.getFont().deriveFont(Font.BOLD, 14));
 
-            headerPanel.add(titleLabel, BorderLayout.WEST);
+            headerPanel.add(titleLabel, BorderLayout.CENTER);
             headerPanel.add(toggleLabel, BorderLayout.EAST);
 
             contentPanel = content;
@@ -1326,18 +1417,33 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                     toggle();
                 }
             });
+        }
 
-            SwingUtilities.invokeLater(() -> {
-                contentHeight = contentPanel.getPreferredSize().height;
-            });
+        public void setSiblings(List<AccordionPanel> siblings) {
+            this.siblings = siblings;
         }
 
         public void toggle() {
             expanded = !expanded;
+
+            if (expanded) {
+                add(contentPanel, BorderLayout.CENTER);
+            } else {
+                remove(contentPanel);
+            }
             contentPanel.setVisible(expanded);
             toggleLabel.setText(expanded ? " ▼" : " ▶");
-            revalidate();
-            repaint();
+
+            revalidateFully();
+        }
+
+        private void revalidateFully() {
+            Container top = this;
+            while (top.getParent() != null) {
+                top = top.getParent();
+            }
+            top.revalidate();
+            top.repaint();
         }
     }
 }
