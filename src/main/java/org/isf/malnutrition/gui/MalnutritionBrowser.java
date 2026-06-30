@@ -108,7 +108,6 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 		add(getJContentPane());
 		pack();
 		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 
 	public MalnutritionBrowser(JFrame owner, Opd opd) {
@@ -119,6 +118,9 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 		add(getJContentPane());
 		pack();
 		setLocationRelativeTo(null);
+	}
+	
+	public void showAsModal() {
 		setVisible(true);
 	}
 
