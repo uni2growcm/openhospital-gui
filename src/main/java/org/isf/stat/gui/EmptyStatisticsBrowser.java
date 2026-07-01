@@ -52,6 +52,7 @@ import javax.swing.Box;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
+import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.disctype.model.DischargeType;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
@@ -63,6 +64,8 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
 import org.isf.stat2.manager.StatsBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -121,7 +124,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private JComboBox<String> gestationalAgeCombo;
 
     private JPanel pregnancyVisitPanel;
-    private JComboBox<String> visitTypeCombo;
+    private JComboBox<Typology> visitTypeCombo;
     private JComboBox<String> visitCountCombo;
     private JComboBox<String> maternalWeightCombo;
     private JComboBox<String> urineProteinCombo;
@@ -129,6 +132,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private JComboBox<String> fetalPresentationCombo;
     private JComboBox<String> systolicBpCombo;
     private JComboBox<String> diastolicBpCombo;
+    private List<Typology> visitTypesData;
 
     private JLabel resultCountLabel;
     private int resultCount = 0;
@@ -185,6 +189,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private final DiseaseBrowserManager diseasesManager = Context.getApplicationContext().getBean(DiseaseBrowserManager.class);
     private final AdmissionBrowserManager admissionsManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
     private final StatsBrowserManager statsManager = Context.getApplicationContext().getBean(StatsBrowserManager.class);
+    private final TypologyBrowserManager typologyManager = Context.getApplicationContext().getBean(TypologyBrowserManager.class);
 
     public EmptyStatisticsBrowser() {
         super();
@@ -223,13 +228,22 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel gridPanel = new JPanel(new GridLayout(3, 3, 10, 5));
         gridPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
+        try {
+            visitTypesData = typologyManager.getTypologies(Family.VISITTYPE);
+        } catch (OHServiceException e) {
+            MessageDialog.showExceptions(e);
+            visitTypesData = new ArrayList<>();
+        }
+
+        visitTypeCombo = new JComboBox<>();
+        visitTypeCombo.addItem(null);
+        for (Typology t : visitTypesData) {
+            visitTypeCombo.addItem(t);
+        }
+
         JPanel visitTypePanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.visit.type"),
-                visitTypeCombo = new JComboBox<>(new String[]{
-                        MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.stat.visittype.anc"),
-                        MessageBundle.getMessage("angal.stat.visittype.pnc")
-                })
+                visitTypeCombo
         );
         gridPanel.add(visitTypePanel);
 
@@ -249,8 +263,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                 MessageBundle.getMessage("angal.stat.urine.protein"),
                 urineProteinCombo = new JComboBox<>(new String[]{
                         MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.stat.urineprotein.positive"),
-                        MessageBundle.getMessage("angal.stat.urineprotein.negative")
+                        MessageBundle.getMessage("angal.stat.urineprotein.none"),
+                        MessageBundle.getMessage("angal.stat.urineprotein.plus"),
+                        MessageBundle.getMessage("angal.stat.urineprotein.plusplus"),
+                        MessageBundle.getMessage("angal.stat.urineprotein.plusplusplus")
                 })
         );
         gridPanel.add(proteinPanel);
@@ -272,8 +288,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                 MessageBundle.getMessage("angal.stat.edema"),
                 edemaCombo = new JComboBox<>(new String[]{
                         MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.stat.edema.present"),
-                        MessageBundle.getMessage("angal.stat.edema.absent")
+                        MessageBundle.getMessage("angal.stat.edema.none"),
+                        MessageBundle.getMessage("angal.stat.edema.mild"),
+                        MessageBundle.getMessage("angal.stat.edema.moderate"),
+                        MessageBundle.getMessage("angal.stat.edema.severe")
                 })
         );
         gridPanel.add(edemaPanel);
@@ -398,7 +416,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return pregnancyPanel;
     }
 
-    private JPanel createFilterPanel(String label, JComboBox<String> combo) {
+    private JPanel createFilterPanel(String label, JComboBox<?> combo) {
         JPanel panel = new JPanel(new BorderLayout(5, 2));
         panel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
 
@@ -437,10 +455,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         mainPanel.add(general);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        mainPanel.add(visites);
-        mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         mainPanel.add(grossesse);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mainPanel.add(visites);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         mainPanel.add(getFilterButtonsPanel());
 
         JScrollPane scrollPane = new JScrollPane(mainPanel);
@@ -524,8 +542,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         JLabel periodFromLabel = new JLabel(MessageBundle.getMessage("angal.common.dateFrom"));
         JLabel periodToLabel = new JLabel(MessageBundle.getMessage("angal.common.dateTo"));
-        periodFromDateChooser = new GoodDateChooser(LocalDate.now());
-        periodToDateChooser = new GoodDateChooser(LocalDate.now());
+        periodFromDateChooser = new GoodDateChooser(null);
+        periodToDateChooser = new GoodDateChooser(null);
 
         JLabel ageFromLabel = new JLabel(MessageBundle.getMessage("angal.stat.agefrom"));
         ageFromField = new JTextField();
@@ -573,8 +591,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             _selectedVaccine = selected != null ? selected.toString() : "";
         });
 
-        vaccinePeriodFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
-        vaccinePeriodTo = new GoodDateChooser(LocalDate.now());
+        vaccinePeriodFrom = new GoodDateChooser(null);
+        vaccinePeriodTo = new GoodDateChooser(null);
 
         JPanel vaccinePeriodPanel = new JPanel(new FlowLayout());
         vaccinePeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodfrom")));
@@ -658,8 +676,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             _selectedExamResult = selected != null ? selected.toString() : "";
         });
 
-        examPeriodFrom = new GoodDateChooser(LocalDate.now().minusMonths(6));
-        examPeriodTo = new GoodDateChooser(LocalDate.now());
+        examPeriodFrom = new GoodDateChooser(null);
+        examPeriodTo = new GoodDateChooser(null);
 
         JPanel examPeriodPanel = new JPanel(new FlowLayout());
         examPeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodfrom")));
@@ -875,7 +893,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private JButton getFilterResetButton() {
         if (filterResetBtn != null) {
-            visitTypeCombo.setSelectedIndex(0);
+            visitTypeCombo.setSelectedItem(null);
             visitCountCombo.setSelectedIndex(0);
             maternalWeightCombo.setSelectedIndex(0);
             urineProteinCombo.setSelectedIndex(0);
@@ -910,23 +928,15 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             _parameter_temp_check = false;
             _parameter_saturation_check = false;
             _parameter_resp_rate_check = false;
-
-            riskLevelCombo.setSelectedIndex(0);
-            statusCombo.setSelectedIndex(0);
-            gravidityCombo.setSelectedIndex(0);
-            parityCombo.setSelectedIndex(0);
-            miscarriageCombo.setSelectedIndex(0);
-            gestationalAgeCombo.setSelectedIndex(0);
-
             periodFromDateChooser.setDate(null);
             periodToDateChooser.setDate(null);
             ageFromField.setText("");
             ageToField.setText("");
-            vaccinesCombo.setSelectedItem(null);
+            vaccinesCombo.setSelectedIndex(0);
             vaccinePeriodFrom.setDate(null);
             vaccinePeriodTo.setDate(null);
-            examsCombo.setSelectedItem(null);
-            examResultsCombo.setSelectedItem(null);
+            examsCombo.setSelectedIndex(0);
+            examResultsCombo.removeAllItems();
             examPeriodFrom.setDate(null);
             examPeriodTo.setDate(null);
             diseasesCombo.setSelectedItem(null);
@@ -938,6 +948,20 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             temperatureCheck.setSelected(false);
             saturationCheck.setSelected(false);
             respiratoryRateCheck.setSelected(false);
+            riskLevelCombo.setSelectedIndex(0);
+            statusCombo.setSelectedIndex(0);
+            gravidityCombo.setSelectedIndex(0);
+            parityCombo.setSelectedIndex(0);
+            miscarriageCombo.setSelectedIndex(0);
+            gestationalAgeCombo.setSelectedIndex(0);
+            visitTypeCombo.setSelectedItem(null);
+            visitCountCombo.setSelectedIndex(0);
+            maternalWeightCombo.setSelectedIndex(0);
+            urineProteinCombo.setSelectedIndex(0);
+            edemaCombo.setSelectedIndex(0);
+            fetalPresentationCombo.setSelectedIndex(0);
+            systolicBpCombo.setSelectedIndex(0);
+            diastolicBpCombo.setSelectedIndex(0);
         });
 
         return filterResetBtn;
@@ -1264,8 +1288,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     }
 
     private String getSelectedVisitType() {
-        String selected = (String) visitTypeCombo.getSelectedItem();
-        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
+        Object selected = visitTypeCombo.getSelectedItem();
+        if (selected == null) return null;
+        return ((Typology) selected).getCode();
     }
 
     private String getSelectedMaternalWeight() {
@@ -1275,12 +1300,42 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private String getSelectedUrineProtein() {
         String selected = (String) urineProteinCombo.getSelectedItem();
-        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
+            return null;
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.urineprotein.none"))) {
+            return "-";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.urineprotein.plus"))) {
+            return "+";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.urineprotein.plusplus"))) {
+            return "++";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.urineprotein.plusplusplus"))) {
+            return "+++";
+        }
+        return null;
     }
 
     private String getSelectedEdema() {
         String selected = (String) edemaCombo.getSelectedItem();
-        return (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) ? null : selected;
+        if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
+            return null;
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.edema.none"))) {
+            return "Pas d'œdème";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.edema.mild"))) {
+            return "Léger";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.edema.moderate"))) {
+            return "Modéré";
+        }
+        if (selected.equals(MessageBundle.getMessage("angal.stat.edema.severe"))) {
+            return "Sévère";
+        }
+        return null;
     }
 
     private String getSelectedFetalPresentation() {
