@@ -1032,10 +1032,7 @@ public class StatsBrowsing extends ModalJFrame {
                 jDataTable.setModel(jDataTableModel);
                 jDataTable.updateUI();
             } else {
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
+                showNoMatchFoundMessage();
             }
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
@@ -1067,10 +1064,7 @@ public class StatsBrowsing extends ModalJFrame {
                 jDataTable.setModel(jVaccineTableModel);
                 jDataTable.updateUI();
             } else {
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
+                showNoMatchFoundMessage();
             }
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
@@ -1102,10 +1096,7 @@ public class StatsBrowsing extends ModalJFrame {
                 jDataTable.setModel(jExamTableModel);
                 jDataTable.updateUI();
             } else {
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
+                showNoMatchFoundMessage();
             }
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
@@ -1137,16 +1128,26 @@ public class StatsBrowsing extends ModalJFrame {
                 jDataTable.setModel(jDiseaseTableModel);
                 jDataTable.updateUI();
             } else {
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
+                showNoMatchFoundMessage();
             }
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
         }
+    }
+
+    private void showNoMatchFoundMessage() {
+        JLabel label = new JLabel(MessageBundle.getMessage("angal.stat.nomatchfound"));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 14f));
+        label.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        JOptionPane pane = new JOptionPane(label, JOptionPane.PLAIN_MESSAGE );
+        JDialog dialog = pane.createDialog(StatsBrowsing.this,
+                MessageBundle.getMessage("angal.stat.operationresult"));
+        dialog.setLocationRelativeTo(StatsBrowsing.this);
+        dialog.setVisible(true);
     }
 
     private void operationFilter() {
@@ -1172,10 +1173,7 @@ public class StatsBrowsing extends ModalJFrame {
                 jDataTable.setModel(jOperationTableModel);
                 jDataTable.updateUI();
             } else {
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
+                showNoMatchFoundMessage();
             }
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
