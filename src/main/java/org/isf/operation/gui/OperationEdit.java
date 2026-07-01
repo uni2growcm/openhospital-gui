@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -43,6 +43,8 @@ import javax.swing.event.EventListenerList;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.operation.enums.OperationTarget;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
 import org.isf.opetype.manager.OperationTypeBrowserManager;
@@ -62,6 +64,7 @@ public class OperationEdit extends JDialog {
 	private final EventListenerList operationListeners = new EventListenerList();
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final OperationTypeBrowserManager operationTypeBrowserManager = Context.getApplicationContext().getBean(OperationTypeBrowserManager.class);
+	private final ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 	private final Operation operation;
 	private final boolean insert;
 	private JPanel jContentPane;
@@ -72,6 +75,7 @@ public class OperationEdit extends JDialog {
 	private JTextField descriptionTextField;
 	private JTextField codeTextField;
 	private JComboBox<OperationType> operationTypeComboBox;
+	private JComboBox<ArticleFamily> articleFamilyComboBox;
 	private String lastdescription;
 	private JRadioButton major;
 	private JPanel radioButtonPanel;
@@ -147,13 +151,16 @@ public class OperationEdit extends JDialog {
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.operation.type") + ':');
-			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':');
+			JLabel familyLabel = new JLabel(MessageBundle.getMessage("angal.operation.articlefamily.col") + ':');
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
+			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':');
 			JLabel operForLabel = new JLabel(MessageBundle.getMessage("angal.operation.operationcontext") + ':');
 
 			dataPanel = new JPanel(new SpringLayout());
 			dataPanel.add(typeLabel);
 			dataPanel.add(getOperationTypeComboBox());
+			dataPanel.add(familyLabel);
+			dataPanel.add(getArticleFamilyComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -162,7 +169,7 @@ public class OperationEdit extends JDialog {
 			dataPanel.add(getRadioButtonPanel());
 			dataPanel.add(operForLabel);
 			dataPanel.add(getOpeFor());
-			SpringUtilities.makeCompactGrid(dataPanel, 5, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
@@ -256,6 +263,7 @@ public class OperationEdit extends JDialog {
 					};
 					operation.setOpeFor(opeForSelection);
 					operation.setType((OperationType) operationTypeComboBox.getSelectedItem());
+					operation.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 					operation.setDescription(descriptionTextField.getText());
 					operation.setCode(codeTextField.getText().trim().toUpperCase());
 					if (major.isSelected()) {
@@ -290,6 +298,32 @@ public class OperationEdit extends JDialog {
 		}
 		return okButton;
 	}
+
+	private JComboBox<ArticleFamily> getArticleFamilyComboBox() {
+		if (articleFamilyComboBox == null) {
+			articleFamilyComboBox = new JComboBox<>();
+			articleFamilyComboBox.addItem(null);
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				if (families != null) {
+					ArticleFamily toSelect = null;
+					for (ArticleFamily af : families) {
+						articleFamilyComboBox.addItem(af);
+						if (!insert && af.equals(operation.getArticleFamily())) {
+							toSelect = af;
+						}
+					}
+					if (toSelect != null) {
+						articleFamilyComboBox.setSelectedItem(toSelect);
+					}
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		return articleFamilyComboBox;
+	}
+
 	/**
 	 * This method initializes descriptionTextField
 	 * @return javax.swing.JTextField
@@ -402,5 +436,4 @@ public class OperationEdit extends JDialog {
 
 		void operationInserted(AWTEvent e);
 	}
-
 }

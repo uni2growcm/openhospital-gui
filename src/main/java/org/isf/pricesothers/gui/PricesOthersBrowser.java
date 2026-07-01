@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -72,12 +72,13 @@ public class PricesOthersBrowser extends ModalJFrame implements PricesOthersList
 			MessageBundle.getMessage("angal.pricesothers.ipd.col").toUpperCase(),
 			MessageBundle.getMessage("angal.pricesothers.daily.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.discharge.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.undefined.txt").toUpperCase()
+			MessageBundle.getMessage("angal.common.undefined.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.exam.articlefamily.col").toUpperCase()
 	};
-	private int[] columnWidth = {100, 100, 50, 50, 50, 100, 100};
-	private boolean[] columnResizable = {false, true, false, false, false, false, false};
-	
-	protected static Class<?>[] cTypes = {String.class, String.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class};
+	private int[] columnWidth = {100, 100, 50, 50, 50, 100, 100, 150};
+	private boolean[] columnResizable = {false, true, false, false, false, false, false, true};
+
+	protected static Class<?>[] cTypes = {String.class, String.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class, String.class };
 	
 	private PricesOthers pOthers;
 	private PricesOthersManager pricesOthersManager = Context.getApplicationContext().getBean(PricesOthersManager.class);
@@ -266,6 +267,8 @@ public class PricesOthersBrowser extends ModalJFrame implements PricesOthersList
 				return price.isDischarge();
 			} else if (c == 6) {
 				return price.isUndefined();
+			} else if (c == 7) {
+				return price.getArticleFamily() != null ? price.getArticleFamily().toString() : "";
 			}
 			return null;
 		}
@@ -280,5 +283,4 @@ public class PricesOthersBrowser extends ModalJFrame implements PricesOthersList
 			return false;
 		}
 	}
-
 }

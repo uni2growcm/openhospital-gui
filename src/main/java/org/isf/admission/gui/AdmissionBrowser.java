@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -24,13 +24,9 @@ package org.isf.admission.gui;
 import static javax.swing.GroupLayout.Alignment.BASELINE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -38,13 +34,10 @@ import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collection;
-import java.util.EventListener;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -78,8 +71,10 @@ import org.isf.anamnesis.manager.PatientHistoryManager;
 import org.isf.anamnesis.model.PatientHistory;
 import org.isf.anamnesis.model.PatientPatientHistory;
 import org.isf.disctype.model.DischargeType;
+import org.isf.disease.gui.DiseaseEdit;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
+import org.isf.distype.model.DiseaseType;
 import org.isf.dlvrrestype.manager.DeliveryResultTypeBrowserManager;
 import org.isf.dlvrrestype.model.DeliveryResultType;
 import org.isf.dlvrtype.manager.DeliveryTypeBrowserManager;
@@ -128,6 +123,7 @@ public class AdmissionBrowser extends ModalJFrame {
 	private static final int PREFERRED_WIDTH_DIAGNOSIS = 550;
 	private static final int PREFERRED_WIDTH_TYPES = 220;
 	private static final int PREFERRED_HEIGHT_LINE = 24;
+
 
 	private EventListenerList admissionListeners = new EventListenerList();
 
@@ -264,6 +260,10 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JComboBox diseaseInBox;
 
+	private JTextField searchDiseaseInTextField;
+
+	private JButton searchDiseaseInButton;
+
 	private List<Disease> diseaseInList;
 
 	private List<Disease> diseaseOutList;
@@ -273,6 +273,10 @@ public class AdmissionBrowser extends ModalJFrame {
 	private JCheckBox malnuCheck;
 
 	private JPanel diseaseInPanel;
+
+	private JPanel diagnosisInListPanel;
+
+	private List<Disease> diagnosisInDisplayList;
 
 	private JPanel malnuPanel;
 
@@ -288,19 +292,21 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JPanel admissionTypePanel;
 
-	private JComboBox diseaseOut1Box;
+	private JComboBox diseaseOutBox;
 
-	private JComboBox diseaseOut2Box;
+	private JTextField searchDiseaseOutTextField;
 
-	private JComboBox diseaseOut3Box;
+	private JButton searchDiseaseOutButton;
+
+	private List<Disease> diagnosisOutDisplayList;
+
+	private JPanel diagnosisOutListPanel;
+
+	private JScrollPane diseaseInSelectedScrollPane;
+
+	private JScrollPane diseaseOutSelectedScrollPane;
 
 	private JPanel diseaseOutPanel;
-
-	private JPanel diseaseOut1Panel;
-
-	private JPanel diseaseOut2Panel;
-
-	private JPanel diseaseOut3Panel;
 
 	private LocalDateTime dateOut;
 
@@ -350,11 +356,6 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private OperationRowAdm operationad;
 
-	private JButton searchButton;
-	private JButton searchDiseaseOut1Button;
-	private JButton searchDiseaseOut2Button;
-	private JButton searchDiseaseOut3Button;
-
 	/*
 	 * from AdmittedPatientBrowser
 	 */
@@ -386,8 +387,16 @@ public class AdmissionBrowser extends ModalJFrame {
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
+		diagnosisInDisplayList = new ArrayList<>();
+		diagnosisOutDisplayList = new ArrayList<>();
 		if (editing) {
 			admission = admissionBrowserManager.getCurrentAdmission(patient);
+			if (admission.getDiagnosisIn() != null && !admission.getDiagnosisIn().isEmpty()) {
+				diagnosisInDisplayList.addAll(admission.getDiagnosisIn());
+			}
+			if (admission.getDiagnosisOut() != null && !admission.getDiagnosisOut().isEmpty()) {
+				diagnosisOutDisplayList.addAll(admission.getDiagnosisOut());
+			}
 			if (admission != null && admission.getWard().getCode().equalsIgnoreCase("M")) {
 				viewingPregnancy = true;
 			}
@@ -451,6 +460,16 @@ public class AdmissionBrowser extends ModalJFrame {
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
+
+		diagnosisInDisplayList = new ArrayList<>();
+		if (admission.getDiagnosisIn() != null && !admission.getDiagnosisIn().isEmpty()) {
+			diagnosisInDisplayList.addAll(admission.getDiagnosisIn());
+		}
+		diagnosisOutDisplayList = new ArrayList<>();
+		if (admission.getDiagnosisOut() != null && !admission.getDiagnosisOut().isEmpty()) {
+			diagnosisOutDisplayList.addAll(admission.getDiagnosisOut());
+		}
+
 		if (admission.getWard().getCode().equalsIgnoreCase("M")) {
 			viewingPregnancy = true;
 		}
@@ -975,91 +994,294 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JPanel getDiseaseInPanel() {
 		if (diseaseInPanel == null) {
-			diseaseInPanel = new JPanel();
-			diseaseInPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+			diseaseInPanel = new JPanel(new BorderLayout());
 			diseaseInPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.diagnosisinstar.border")));
-			diseaseInPanel.add(Box.createHorizontalStrut(50));
+			diseaseInPanel.setPreferredSize(new Dimension(600, 220));
+			diseaseInPanel.setMinimumSize(new Dimension(500, 180));
 
-			diseaseInBox = new JComboBox();
-			diseaseInBox.setPreferredSize(new Dimension(PREFERRED_WIDTH_DIAGNOSIS, PREFERRED_HEIGHT_LINE));
+			JPanel topPanel = new JPanel(new GridBagLayout());
+			searchDiseaseInTextField = new JTextField(15);
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 0.4;
+			topPanel.add(searchDiseaseInTextField, gbc);
 
-			Disease diseaseIn = admission.getDiseaseIn();
-			diseaseInBox.removeAllItems();
+			searchDiseaseInButton = new JButton();
+			searchDiseaseInButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+			searchDiseaseInButton.setPreferredSize(new Dimension(24, 24));
+			searchDiseaseInButton.addActionListener(e -> performDiseaseInSearch());
+			gbc.gridx = 1;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(2, 2, 2, 8);
+			topPanel.add(searchDiseaseInButton, gbc);
+
+			diseaseInBox = new JComboBox<>();
+			diseaseInBox.setPreferredSize(new Dimension(220, 28));
 			diseaseInBox.addItem(null);
-			Optional<Disease> found = diseaseFinder.findAndSelectDisease(diseaseIn, diseaseInList, diseaseInBox);
-
-			if (editing && !found.isPresent() && diseaseIn != null) {
-
-				// Not found: search among all diseases
-				try {
-					if (diseaseAllList == null) {
-						diseaseAllList = diseaseBrowserManager.getDiseaseAll();
-					}
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				found = diseaseFinder.findAndSelectFromAllDiseases(diseaseIn, diseaseAllList, diseaseInBox);
-
-				if (!found.isPresent()) {
-					// Still not found
-					diseaseInBox.addItem(
-									MessageBundle.formatMessage("angal.admission.notfoundasinpatientdisease.fmt.msg",
-													admission.getDiseaseIn().getDescription()));
-					diseaseInBox.setSelectedIndex(diseaseInBox.getItemCount() - 1);
+			if (diseaseInList != null) {
+				for (Disease disease : diseaseInList) {
+					diseaseInBox.addItem(disease);
 				}
 			}
 
-			JTextField searchDiseasetextField = new JTextField();
-			diseaseInPanel.add(searchDiseasetextField);
-			searchDiseasetextField.setColumns(10);
-			searchDiseasetextField.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchButton.doClick();
+			diseaseInBox.addItemListener(e -> {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					Disease selected = (Disease) e.getItem();
+					if (selected != null) {
+						SwingUtilities.invokeLater(() -> {
+							addDiagnosisToList(selected);
+							diseaseInBox.setSelectedItem(null);
+						});
 					}
 				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
 			});
 
-			searchButton = new JButton("");
-			diseaseInPanel.add(searchButton);
-			searchButton.addActionListener(actionEvent -> {
-				diseaseInBox.removeAllItems();
-				diseaseInBox.addItem("");
-				for (Disease disease : diseaseFinder.getSearchDiagnosisResults(searchDiseasetextField.getText(), diseaseInList)) {
-					diseaseInBox.addItem(disease);
-				}
+			gbc.gridx = 2;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 0.6;
+			topPanel.add(diseaseInBox, gbc);
 
-				if (diseaseInBox.getItemCount() >= 2) {
-					diseaseInBox.setSelectedIndex(1);
-				}
-				diseaseInBox.requestFocus();
-				if (diseaseInBox.getItemCount() > 2) {
-					diseaseInBox.showPopup();
-				}
-			});
-			searchButton.setPreferredSize(new Dimension(20, 20));
-			searchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+			JButton addDiagnosisButton = new JButton(MessageBundle.getMessage("angal.disease.newdisease.title"));
+			addDiagnosisButton.addActionListener(e -> openCreateDiseaseDialog());
+			gbc.gridx = 3;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(2, 8, 2, 2);
+			topPanel.add(addDiagnosisButton, gbc);
 
-			diseaseInPanel.add(diseaseInBox);
+			diseaseInPanel.add(topPanel, BorderLayout.NORTH);
+
+			diagnosisInListPanel = new JPanel();
+			diagnosisInListPanel.setLayout(new GridWrapLayout(6, 6, 3));
+			diagnosisInListPanel.setBackground(new Color(248, 250, 255));
+			diagnosisInListPanel.setVisible(true);
+
+			diseaseInSelectedScrollPane = new JScrollPane(diagnosisInListPanel);
+			diseaseInSelectedScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			diseaseInSelectedScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			diseaseInSelectedScrollPane.getVerticalScrollBar().setUnitIncrement(40);
+			diseaseInSelectedScrollPane.setPreferredSize(new Dimension(560, 130));
+			diseaseInSelectedScrollPane.setMinimumSize(new Dimension(500, 100));
+
+			diagnosisInDisplayList = new ArrayList<>();
+			if (editing && admission.getDiagnosisIn() != null && !admission.getDiagnosisIn().isEmpty()) {
+				for (Disease disease : admission.getDiagnosisIn()) {
+					diagnosisInDisplayList.add(disease);
+				}
+			}
+			refreshDiagnosisInList();
+			searchDiseaseInTextField.addActionListener(e -> performDiseaseInSearch());
 		}
 		return diseaseInPanel;
+	}
+
+	private void addDiagnosisToList(Disease disease) {
+		if (diagnosisInDisplayList == null) {
+			diagnosisInDisplayList = new ArrayList<>();
+		}
+
+		boolean alreadyExists = diagnosisInDisplayList.stream()
+				.anyMatch(d -> d.getCode().equals(disease.getCode()));
+
+		if (alreadyExists) {
+			MessageDialog.info(this, "angal.disease.thediseasisealreadypresent.msg");
+			return;
+		}
+
+		diagnosisInDisplayList.add(disease);
+		refreshDiagnosisInList();
+	}
+
+	private void removeDiagnosisFromList(Disease disease) {
+		if (diagnosisInDisplayList != null) {
+			diagnosisInDisplayList.removeIf(d -> d.getCode().equals(disease.getCode()));
+			refreshDiagnosisInList();
+		}
+	}
+
+	private void performDiseaseInSearch() {
+		String query = searchDiseaseInTextField.getText().trim().toLowerCase();
+		diseaseInBox.removeAllItems();
+		diseaseInBox.addItem(null);
+		if (diseaseInList != null) {
+			for (Disease disease : diseaseInList) {
+				if (query.isEmpty() || disease.getDescription().toLowerCase().contains(query)) {
+					diseaseInBox.addItem(disease);
+				}
+			}
+		}
+		diseaseInBox.setSelectedItem(null);
+		diseaseInBox.showPopup();
+	}
+
+	private void refreshDiagnosisInList() {
+		if (diagnosisInListPanel != null) {
+			diagnosisInListPanel.removeAll();
+
+			if (diagnosisInDisplayList != null && !diagnosisInDisplayList.isEmpty()) {
+				if (diseaseInSelectedScrollPane.getParent() == null) {
+					diseaseInPanel.add(diseaseInSelectedScrollPane, BorderLayout.CENTER);
+				}
+				for (int i = 0; i < diagnosisInDisplayList.size(); i++) {
+					JPanel tagPanel = createDiagnosisItemPanel(i + 1, diagnosisInDisplayList.get(i));
+					diagnosisInListPanel.add(tagPanel);
+				}
+			} else {
+				if (diseaseInSelectedScrollPane.getParent() != null) {
+					diseaseInPanel.remove(diseaseInSelectedScrollPane);
+				}
+			}
+
+			diagnosisInListPanel.revalidate();
+			diagnosisInListPanel.repaint();
+			diseaseInPanel.revalidate();
+			diseaseInPanel.repaint();
+
+			SwingUtilities.invokeLater(() -> {
+				diseaseInPanel.repaint();
+				if (getContentPane() != null) {
+					getContentPane().revalidate();
+					getContentPane().repaint();
+				}
+			});
+		}
+	}
+
+	private JPanel createDiagnosisItemPanel(int index, Disease disease) {
+		String fullName = (disease != null && disease.getDescription() != null)
+				? disease.getDescription() : "";
+
+		JPanel tag = new JPanel(new BorderLayout(4, 0));
+		tag.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(new Color(100, 150, 200), 1),
+				BorderFactory.createEmptyBorder(3, 5, 3, 3)
+		));
+		tag.setBackground(new Color(220, 240, 255));
+
+		JLabel numberLabel = new JLabel(index + ".");
+		numberLabel.setFont(numberLabel.getFont().deriveFont(Font.BOLD, 11f));
+		numberLabel.setPreferredSize(new Dimension(26, 22));
+		tag.add(numberLabel, BorderLayout.WEST);
+
+		String displayName = fullName.length() > 16
+				? fullName.substring(0, 14) + "\u2026"
+				: fullName;
+		JLabel diseaseLabel = new JLabel(displayName);
+		diseaseLabel.setToolTipText(fullName);
+		tag.add(diseaseLabel, BorderLayout.CENTER);
+
+		ImageIcon removeIcon = new ImageIcon("rsc/icons/regular_close_tab.JPG");
+		JButton removeButton = new JButton(removeIcon);
+		removeButton.setBorderPainted(false);
+		removeButton.setContentAreaFilled(false);
+		removeButton.setFocusPainted(false);
+		removeButton.setPreferredSize(new Dimension(30, 24));
+		removeButton.setToolTipText(MessageBundle.getMessage("angal.common.delete.btn"));
+		removeButton.addActionListener(e -> removeDiagnosisFromList(disease));
+		tag.add(removeButton, BorderLayout.EAST);
+
+		return tag;
 	}
 
 	/**
 	 * @return
 	 */
+	private void addDiagnosisOutToList(Disease disease) {
+		if (diagnosisOutDisplayList == null) {
+			diagnosisOutDisplayList = new ArrayList<>();
+		}
+
+		boolean alreadyExists = diagnosisOutDisplayList.stream()
+				.anyMatch(d -> d.getCode().equals(disease.getCode()));
+
+		if (alreadyExists) {
+			MessageDialog.info(this, "angal.disease.thediseasisealreadypresent.msg");
+			return;
+		}
+
+		diagnosisOutDisplayList.add(disease);
+		refreshDiagnosisOutList();
+	}
+
+	private void removeDiagnosisFromOutList(Disease disease) {
+		if (diagnosisOutDisplayList != null) {
+			diagnosisOutDisplayList.removeIf(d -> d.getCode().equals(disease.getCode()));
+			refreshDiagnosisOutList();
+		}
+	}
+
+	private void refreshDiagnosisOutList() {
+		if (diagnosisOutListPanel != null) {
+			diagnosisOutListPanel.removeAll();
+
+			if (diagnosisOutDisplayList != null && !diagnosisOutDisplayList.isEmpty()) {
+				if (diseaseOutSelectedScrollPane.getParent() == null) {
+					diseaseOutPanel.add(diseaseOutSelectedScrollPane, BorderLayout.CENTER);
+				}
+				for (int i = 0; i < diagnosisOutDisplayList.size(); i++) {
+					JPanel tagPanel = createDiagnosisOutItemPanel(i + 1, diagnosisOutDisplayList.get(i));
+					diagnosisOutListPanel.add(tagPanel);
+				}
+			} else {
+				if (diseaseOutSelectedScrollPane.getParent() != null) {
+					diseaseOutPanel.remove(diseaseOutSelectedScrollPane);
+				}
+			}
+
+			diagnosisOutListPanel.revalidate();
+			diagnosisOutListPanel.repaint();
+			diseaseOutPanel.revalidate();
+			diseaseOutPanel.repaint();
+
+			SwingUtilities.invokeLater(() -> {
+				diseaseOutPanel.repaint();
+				if (getContentPane() != null) {
+					getContentPane().revalidate();
+					getContentPane().repaint();
+				}
+			});
+		}
+	}
+
+	private JPanel createDiagnosisOutItemPanel(int index, Disease disease) {
+		String fullName = (disease != null && disease.getDescription() != null)
+				? disease.getDescription() : "";
+
+		JPanel tag = new JPanel(new BorderLayout(4, 0));
+		tag.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(new Color(100, 150, 200), 1),
+				BorderFactory.createEmptyBorder(3, 5, 3, 3)
+		));
+		tag.setBackground(new Color(220, 240, 255));
+
+		JLabel numberLabel = new JLabel(index + ".");
+		numberLabel.setFont(numberLabel.getFont().deriveFont(Font.BOLD, 11f));
+		numberLabel.setPreferredSize(new Dimension(26, 22));
+		tag.add(numberLabel, BorderLayout.WEST);
+
+		String displayName = fullName.length() > 16
+				? fullName.substring(0, 14) + "\u2026"
+				: fullName;
+		JLabel diseaseLabel = new JLabel(displayName);
+		diseaseLabel.setToolTipText(fullName);
+		tag.add(diseaseLabel, BorderLayout.CENTER);
+
+		ImageIcon removeIcon = new ImageIcon("rsc/icons/regular_close_tab.JPG");
+		JButton removeButton = new JButton(removeIcon);
+		removeButton.setBorderPainted(false);
+		removeButton.setContentAreaFilled(false);
+		removeButton.setFocusPainted(false);
+		removeButton.setPreferredSize(new Dimension(30, 24));
+		removeButton.setToolTipText(MessageBundle.getMessage("angal.common.delete.btn"));
+		removeButton.addActionListener(e -> removeDiagnosisFromOutList(disease));
+		tag.add(removeButton, BorderLayout.EAST);
+
+		return tag;
+	}
+
 	private JPanel getMalnutritionPanel() {
 		if (malnuPanel == null) {
 			malnuPanel = new JPanel();
@@ -1131,9 +1353,7 @@ public class AdmissionBrowser extends ModalJFrame {
 					}
 					updateBedDays();
 					getDiseaseInPanel();
-					getDiseaseOut1Panel();
-					getDiseaseOut2Panel();
-					getDiseaseOut3Panel();
+					getDiseaseOutPanel();
 				}
 			});
 			admissionDatePanel.add(dateInFieldCal);
@@ -1144,279 +1364,103 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JPanel getDiseaseOutPanel() {
 		if (diseaseOutPanel == null) {
-			diseaseOutPanel = new JPanel();
-			diseaseOutPanel.setLayout(new BoxLayout(diseaseOutPanel, BoxLayout.Y_AXIS));
+			diseaseOutPanel = new JPanel(new BorderLayout());
 			diseaseOutPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.diagnosisout.border")));
-			diseaseOutPanel.add(getDiseaseOut1Panel());
-			diseaseOutPanel.add(getDiseaseOut2Panel());
-			diseaseOutPanel.add(getDiseaseOut3Panel());
+			diseaseOutPanel.setPreferredSize(new Dimension(600, 220));
+			diseaseOutPanel.setMinimumSize(new Dimension(500, 180));
+
+			JPanel topPanel = new JPanel(new GridBagLayout());
+			searchDiseaseOutTextField = new JTextField(15);
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 0.4;
+			topPanel.add(searchDiseaseOutTextField, gbc);
+
+			searchDiseaseOutButton = new JButton();
+			searchDiseaseOutButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
+			searchDiseaseOutButton.setPreferredSize(new Dimension(24, 24));
+			searchDiseaseOutButton.addActionListener(e -> performDiseaseOutSearch());
+			gbc.gridx = 1;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(2, 2, 2, 8);
+			topPanel.add(searchDiseaseOutButton, gbc);
+
+			diseaseOutBox = new JComboBox<>();
+			diseaseOutBox.setPreferredSize(new Dimension(220, 28));
+			diseaseOutBox.addItem(null);
+			if (diseaseOutList != null) {
+				for (Disease disease : diseaseOutList) {
+					diseaseOutBox.addItem(disease);
+				}
+			}
+
+			diseaseOutBox.addItemListener(e -> {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					Disease selected = (Disease) e.getItem();
+					if (selected != null) {
+						SwingUtilities.invokeLater(() -> {
+							addDiagnosisOutToList(selected);
+							diseaseOutBox.setSelectedItem(null);
+						});
+					}
+				}
+			});
+
+			gbc.gridx = 2;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 0.6;
+			topPanel.add(diseaseOutBox, gbc);
+
+			JButton addDiagnosisButton = new JButton(MessageBundle.getMessage("angal.disease.newdisease.title"));
+			addDiagnosisButton.addActionListener(e -> openCreateDiseaseOutDialog());
+			gbc.gridx = 3;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(2, 8, 2, 2);
+			topPanel.add(addDiagnosisButton, gbc);
+
+			diseaseOutPanel.add(topPanel, BorderLayout.NORTH);
+
+			diagnosisOutListPanel = new JPanel();
+			diagnosisOutListPanel.setLayout(new GridWrapLayout(6, 6, 3));
+			diagnosisOutListPanel.setBackground(new Color(248, 250, 255));
+			diagnosisOutListPanel.setVisible(true);
+
+			diseaseOutSelectedScrollPane = new JScrollPane(diagnosisOutListPanel);
+			diseaseOutSelectedScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			diseaseOutSelectedScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			diseaseOutSelectedScrollPane.getVerticalScrollBar().setUnitIncrement(40);
+			diseaseOutSelectedScrollPane.setPreferredSize(new Dimension(560, 130));
+			diseaseOutSelectedScrollPane.setMinimumSize(new Dimension(500, 100));
+
+			diagnosisOutDisplayList = new ArrayList<>();
+			if (editing && admission.getDiagnosisOut() != null && !admission.getDiagnosisOut().isEmpty()) {
+				for (Disease disease : admission.getDiagnosisOut()) {
+					diagnosisOutDisplayList.add(disease);
+				}
+			}
+			refreshDiagnosisOutList();
+			searchDiseaseOutTextField.addActionListener(e -> performDiseaseOutSearch());
 		}
 		return diseaseOutPanel;
 	}
 
-	/**
-	 * @return
-	 */
-	private JPanel getDiseaseOut1Panel() {
-		if (diseaseOut1Panel == null) {
-			diseaseOut1Panel = new JPanel();
-			diseaseOut1Panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-			JLabel label = new JLabel(MessageBundle.getMessage("angal.admission.number1.txt"), SwingConstants.RIGHT);
-			label.setPreferredSize(new Dimension(50, 50));
-			label.setHorizontalTextPosition(SwingConstants.RIGHT);
-
-			diseaseOut1Panel.add(label);
-
-			diseaseOut1Box = new JComboBox();
-			diseaseOut1Box.setPreferredSize(new Dimension(PREFERRED_WIDTH_DIAGNOSIS, PREFERRED_HEIGHT_LINE));
-
-			Disease diseaseOut1 = admission.getDiseaseOut1();
-			diseaseOut1Box.removeAllItems();
-			diseaseOut1Box.addItem("");
-			Optional<Disease> found = diseaseFinder.findAndSelectDisease(diseaseOut1, diseaseOutList, diseaseOut1Box);
-
-			if (editing && !found.isPresent() && diseaseOut1 != null) {
-				// Not found: search among all diseases
-				try {
-					if (diseaseAllList == null) {
-						diseaseAllList = diseaseBrowserManager.getDiseaseAll();
-					}
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				found = diseaseFinder.findAndSelectFromAllDiseases(diseaseOut1, diseaseAllList, diseaseInBox);
-
-				if (!found.isPresent()) {
-					// Still not found
-					diseaseOut1Box.addItem(MessageBundle.formatMessage("angal.admission.notfoundasoutpatientdisease.fmt.msg",
-									admission.getDiseaseOut1().getDescription(), 1));
-					diseaseOut1Box.setSelectedIndex(diseaseOut1Box.getItemCount() - 1);
+	private void performDiseaseOutSearch() {
+		String query = searchDiseaseOutTextField.getText().trim().toLowerCase();
+		diseaseOutBox.removeAllItems();
+		diseaseOutBox.addItem(null);
+		if (diseaseOutList != null) {
+			for (Disease disease : diseaseOutList) {
+				if (query.isEmpty() || disease.getDescription().toLowerCase().contains(query)) {
+					diseaseOutBox.addItem(disease);
 				}
 			}
-
-			/////////////
-			JTextField searchDiseaseOut1textField = new JTextField();
-			diseaseOut1Panel.add(searchDiseaseOut1textField);
-			searchDiseaseOut1textField.setColumns(10);
-			searchDiseaseOut1textField.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseOut1Button.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-
-			searchDiseaseOut1Button = new JButton("");
-			diseaseOut1Panel.add(searchDiseaseOut1Button);
-			searchDiseaseOut1Button.addActionListener(actionEvent -> {
-				diseaseOut1Box.removeAllItems();
-				diseaseOut1Box.addItem("");
-				for (Disease disease : diseaseFinder.getSearchDiagnosisResults(searchDiseaseOut1textField.getText(), diseaseOutList)) {
-					diseaseOut1Box.addItem(disease);
-				}
-
-				if (diseaseOut1Box.getItemCount() >= 2) {
-					diseaseOut1Box.setSelectedIndex(1);
-				}
-				diseaseOut1Box.requestFocus();
-				if (diseaseOut1Box.getItemCount() > 2) {
-					diseaseOut1Box.showPopup();
-				}
-			});
-			searchDiseaseOut1Button.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseOut1Button.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			/////////////
-
-			diseaseOut1Panel.add(diseaseOut1Box);
 		}
-		return diseaseOut1Panel;
-	}
-
-	private JPanel getDiseaseOut2Panel() {
-
-		if (diseaseOut2Panel == null) {
-			diseaseOut2Panel = new JPanel();
-			diseaseOut2Panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-			JLabel label = new JLabel(MessageBundle.getMessage("angal.admission.number2.txt"), SwingConstants.RIGHT);
-			label.setPreferredSize(new Dimension(50, 50));
-			label.setHorizontalTextPosition(SwingConstants.RIGHT);
-
-			diseaseOut2Panel.add(label);
-
-			diseaseOut2Box = new JComboBox();
-			diseaseOut2Box.setPreferredSize(new Dimension(PREFERRED_WIDTH_DIAGNOSIS, PREFERRED_HEIGHT_LINE));
-
-			Disease diseaseOut2 = admission.getDiseaseOut2();
-			diseaseOut2Box.removeAllItems();
-			diseaseOut2Box.addItem("");
-			Optional<Disease> found = diseaseFinder.findAndSelectDisease(diseaseOut2, diseaseOutList, diseaseOut2Box);
-
-			if (editing && !found.isPresent() && diseaseOut2 != null) {
-				// Not found: search among all diseases
-				try {
-					if (diseaseAllList == null) {
-						diseaseAllList = diseaseBrowserManager.getDiseaseAll();
-					}
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				found = diseaseFinder.findAndSelectFromAllDiseases(diseaseOut2, diseaseAllList, diseaseInBox);
-
-				if (!found.isPresent()) {
-					// Still not found
-					diseaseOut2Box.addItem(MessageBundle.formatMessage("angal.admission.notfoundasoutpatientdisease.fmt.msg",
-									admission.getDiseaseOut2().getDescription(), 2));
-					diseaseOut2Box.setSelectedIndex(diseaseOut2Box.getItemCount() - 1);
-				}
-			}
-
-			/////////////
-			JTextField searchDiseaseOut2textField = new JTextField();
-			diseaseOut2Panel.add(searchDiseaseOut2textField);
-			searchDiseaseOut2textField.setColumns(10);
-			searchDiseaseOut2textField.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseOut2Button.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-
-			searchDiseaseOut2Button = new JButton("");
-			diseaseOut2Panel.add(searchDiseaseOut2Button);
-			searchDiseaseOut2Button.addActionListener(actionEvent -> {
-				diseaseOut2Box.removeAllItems();
-				diseaseOut2Box.addItem("");
-				for (Disease disease : diseaseFinder.getSearchDiagnosisResults(searchDiseaseOut2textField.getText(), diseaseOutList)) {
-					diseaseOut2Box.addItem(disease);
-				}
-
-				if (diseaseOut2Box.getItemCount() >= 2) {
-					diseaseOut2Box.setSelectedIndex(1);
-				}
-				diseaseOut2Box.requestFocus();
-				if (diseaseOut2Box.getItemCount() > 2) {
-					diseaseOut2Box.showPopup();
-				}
-			});
-			searchDiseaseOut2Button.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseOut2Button.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			/////////////
-
-			diseaseOut2Panel.add(diseaseOut2Box);
-		}
-		return diseaseOut2Panel;
-	}
-
-	private JPanel getDiseaseOut3Panel() {
-
-		if (diseaseOut3Panel == null) {
-			diseaseOut3Panel = new JPanel();
-			diseaseOut3Panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-			JLabel label = new JLabel(MessageBundle.getMessage("angal.admission.number3.txt"), SwingConstants.RIGHT);
-			label.setPreferredSize(new Dimension(50, 50));
-
-			diseaseOut3Panel.add(label);
-
-			diseaseOut3Box = new JComboBox();
-			diseaseOut3Box.setPreferredSize(new Dimension(PREFERRED_WIDTH_DIAGNOSIS, PREFERRED_HEIGHT_LINE));
-
-			Disease diseaseOut3 = admission.getDiseaseOut3();
-			diseaseOut3Box.removeAllItems();
-			diseaseOut3Box.addItem("");
-			// TODO: populate diseaseList
-			Optional<Disease> found = diseaseFinder.findAndSelectDisease(diseaseOut3, diseaseOutList, diseaseOut3Box);
-
-			if (editing && !found.isPresent() && diseaseOut3 != null) {
-				// Not found: search among all diseases
-				List<Disease> diseaseAllList = null;
-				try {
-					diseaseAllList = diseaseBrowserManager.getDiseaseAll();
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-				found = diseaseFinder.findAndSelectFromAllDiseases(diseaseOut3, diseaseAllList, diseaseInBox);
-
-				if (!found.isPresent()) {
-					// Still not found
-					diseaseOut3Box.addItem(MessageBundle.formatMessage("angal.admission.notfoundasoutpatientdisease.fmt.msg",
-									admission.getDiseaseOut2().getDescription(), 3));
-					diseaseOut3Box.setSelectedIndex(diseaseOut3Box.getItemCount() - 1);
-				}
-			}
-
-			/////////////
-			JTextField searchDiseaseOut3textField = new JTextField();
-			diseaseOut3Panel.add(searchDiseaseOut3textField);
-			searchDiseaseOut3textField.setColumns(10);
-			searchDiseaseOut3textField.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						searchDiseaseOut3Button.doClick();
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-				}
-			});
-
-			searchDiseaseOut3Button = new JButton("");
-			diseaseOut3Panel.add(searchDiseaseOut3Button);
-			searchDiseaseOut3Button.addActionListener(actionEvent -> {
-				diseaseOut3Box.removeAllItems();
-				diseaseOut3Box.addItem("");
-				for (Disease disease : diseaseFinder.getSearchDiagnosisResults(searchDiseaseOut3textField.getText(), diseaseOutList)) {
-					diseaseOut3Box.addItem(disease);
-				}
-
-				if (diseaseOut3Box.getItemCount() >= 2) {
-					diseaseOut3Box.setSelectedIndex(1);
-				}
-				diseaseOut3Box.requestFocus();
-				if (diseaseOut3Box.getItemCount() > 2) {
-					diseaseOut3Box.showPopup();
-				}
-			});
-			searchDiseaseOut3Button.setPreferredSize(new Dimension(20, 20));
-			searchDiseaseOut3Button.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			/////////////
-
-			diseaseOut3Panel.add(diseaseOut3Box);
-		}
-		return diseaseOut3Panel;
+		diseaseOutBox.setSelectedItem(null);
+		diseaseOutBox.showPopup();
 	}
 
 	private JPanel getDischargeTypePanel() {
@@ -1628,46 +1672,30 @@ public class AdmissionBrowser extends ModalJFrame {
 					isPregnancy = true;
 				}
 
-				// get disease in id ( it can be null)
-				if (diseaseInBox.getSelectedIndex() == 0 || diseaseInBox.getSelectedItem() == null) {
+				if (diagnosisInDisplayList == null || diagnosisInDisplayList.isEmpty()) {
 					MessageDialog.error(this, "angal.admission.pleaseselectavaliddiseasein.msg");
 					return;
 				}
-				try {
-					Disease diseaseIn = (Disease) diseaseInBox.getSelectedItem();
-					admission.setDiseaseIn(diseaseIn);
-				} catch (IndexOutOfBoundsException e1) {
-					/*
-					 * Workaround in case a fake-disease is selected (ie when previous disease has been deleted)
-					 */
-					admission.setDiseaseIn(null);
+				admission.setDiagnosisIn(new ArrayList<>(diagnosisInDisplayList));
+				if (!diagnosisInDisplayList.isEmpty()) {
+					admission.setDiseaseIn(diagnosisInDisplayList.get(0));
 				}
 
-				// get disease out id ( it can be null)
-				int disease1index = diseaseOut1Box.getSelectedIndex();
-				if (disease1index == 0) {
+				admission.setDiagnosisOut(new ArrayList<>(diagnosisOutDisplayList));
+				if (!diagnosisOutDisplayList.isEmpty()) {
+					admission.setDiseaseOut1(diagnosisOutDisplayList.get(0));
+				} else {
 					admission.setDiseaseOut1(null);
-				} else {
-					Disease diseaseOut1 = (Disease) diseaseOut1Box.getSelectedItem();
-					admission.setDiseaseOut1(diseaseOut1);
 				}
-
-				// get disease out id 2 ( it can be null)
-				int disease2index = diseaseOut2Box.getSelectedIndex();
-				if (disease2index == 0) {
+				if (diagnosisOutDisplayList.size() > 1) {
+					admission.setDiseaseOut2(diagnosisOutDisplayList.get(1));
+				} else {
 					admission.setDiseaseOut2(null);
-				} else {
-					Disease diseaseOut2 = (Disease) diseaseOut2Box.getSelectedItem();
-					admission.setDiseaseOut2(diseaseOut2);
 				}
-
-				// get disease out id 3 ( it can be null)
-				int disease3index = diseaseOut3Box.getSelectedIndex();
-				if (disease3index == 0) {
-					admission.setDiseaseOut3(null);
+				if (diagnosisOutDisplayList.size() > 2) {
+					admission.setDiseaseOut3(diagnosisOutDisplayList.get(2));
 				} else {
-					Disease diseaseOut3 = (Disease) diseaseOut3Box.getSelectedItem();
-					admission.setDiseaseOut3(diseaseOut3);
+					admission.setDiseaseOut3(null);
 				}
 
 				// get year prog (not null)
@@ -1913,6 +1941,136 @@ public class AdmissionBrowser extends ModalJFrame {
 			});
 		}
 		return saveButton;
+	}
+
+	private void openCreateDiseaseDialog() {
+		Disease newDisease = new Disease();
+		DiseaseEdit diseaseEditDialog = new DiseaseEdit(this, newDisease, true);
+
+		diseaseEditDialog.addDiseaseListener(new DiseaseEdit.DiseaseListener() {
+			@Override
+			public void diseaseInserted(AWTEvent e) {
+				addDiagnosisToList(newDisease);
+
+				try {
+					if (diseaseInList != null) {
+						diseaseInList = diseaseBrowserManager.getDiseaseIpdIn();
+						diseaseInBox.removeAllItems();
+						diseaseInBox.addItem(null);
+						for (Disease disease : diseaseInList) {
+							diseaseInBox.addItem(disease);
+						}
+					}
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex);
+				}
+			}
+
+			@Override
+			public void diseaseUpdated(AWTEvent e) {
+			}
+		});
+		
+		diseaseEditDialog.setVisible(true);
+	}
+
+	private void openCreateDiseaseOutDialog() {
+		Disease newDisease = new Disease();
+		DiseaseEdit diseaseEditDialog = new DiseaseEdit(this, newDisease, true);
+
+		diseaseEditDialog.addDiseaseListener(new DiseaseEdit.DiseaseListener() {
+			@Override
+			public void diseaseInserted(AWTEvent e) {
+				addDiagnosisOutToList(newDisease);
+
+				try {
+					if (diseaseOutList != null) {
+						diseaseOutList = diseaseBrowserManager.getDiseaseIpdOut();
+						diseaseOutBox.removeAllItems();
+						diseaseOutBox.addItem(null);
+						for (Disease disease : diseaseOutList) {
+							diseaseOutBox.addItem(disease);
+						}
+					}
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex);
+				}
+			}
+
+			@Override
+			public void diseaseUpdated(AWTEvent e) {
+			}
+		});
+		
+		diseaseEditDialog.setVisible(true);
+	}
+
+	/**
+	 * Layout that displays components in a grid with a maximum number of columns per line and vertical scrolling
+	 */
+	private static class GridWrapLayout implements LayoutManager {
+		private final int hgap;
+		private final int vgap;
+		private final int maxColumns;
+
+		public GridWrapLayout(int hgap, int vgap, int maxColumns) {
+			this.hgap = hgap;
+			this.vgap = vgap;
+			this.maxColumns = maxColumns;
+		}
+
+		@Override public void addLayoutComponent(String name, Component comp) {}
+		@Override public void removeLayoutComponent(Component comp) {}
+
+		private int tagWidth(Container parent) {
+			int parentW = parent.getWidth();
+			if (parentW <= 0) parentW = 560;
+			return (parentW - (maxColumns + 1) * hgap) / maxColumns;
+		}
+
+		@Override
+		public Dimension preferredLayoutSize(Container parent) {
+			synchronized (parent.getTreeLock()) {
+				int n = parent.getComponentCount();
+				if (n == 0) return new Dimension(0, 0);
+				int rows = (int) Math.ceil((double) n / maxColumns);
+				int tw = tagWidth(parent);
+				int tagH = 34;
+				int w = (tw + hgap) * maxColumns + hgap;
+				int h = (tagH + vgap) * rows + vgap;
+				return new Dimension(w, h);
+			}
+		}
+
+		@Override
+		public Dimension minimumLayoutSize(Container parent) {
+			return preferredLayoutSize(parent);
+		}
+
+		@Override
+		public void layoutContainer(Container parent) {
+			synchronized (parent.getTreeLock()) {
+				int n = parent.getComponentCount();
+				if (n == 0) return;
+				int tw = tagWidth(parent);
+				int tagH = 34;
+				int x = hgap;
+				int y = vgap;
+				int col = 0;
+				for (int i = 0; i < n; i++) {
+					Component comp = parent.getComponent(i);
+					comp.setBounds(x, y, tw, tagH);
+					col++;
+					if (col >= maxColumns) {
+						col = 0;
+						x = hgap;
+						y += tagH + vgap;
+					} else {
+						x += tw + hgap;
+					}
+				}
+			}
+		}
 	}
 
 }
