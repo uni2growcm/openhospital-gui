@@ -78,10 +78,10 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.default.col").toUpperCase()
 	};
-	private int[] pColumnWidth = { 60, 330, 160, 60, 200 };
+	private int[] pColumnWidth = {60, 330, 160, 60, 200};
 	private Exam exam;
 
-	private DefaultTableModel model ;
+	private DefaultTableModel model;
 	private JTable table;
 	private final JFrame myFrame;
 	private JButton jButtonNew;
@@ -122,10 +122,12 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 				public void insertUpdate(DocumentEvent e) {
 					filterExams(searchField.getText());
 				}
+
 				@Override
 				public void removeUpdate(DocumentEvent e) {
 					filterExams(searchField.getText());
 				}
+
 				@Override
 				public void changedUpdate(DocumentEvent e) {
 					filterExams(searchField.getText());
@@ -225,9 +227,20 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().addListSelectionListener(selectionEvent -> {
 				if (!selectionEvent.getValueIsAdjusting()) {
-					selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
-					exam = (Exam) model.getValueAt(selectedrow, -1);
-					jButtonShow.setEnabled(exam.getProcedure() != 3);
+					int selectedRow = table.getSelectedRow();
+					if (selectedRow >= 0 && selectedRow < table.getRowCount()) {
+						selectedrow = table.convertRowIndexToModel(selectedRow);
+						Object value = model.getValueAt(selectedrow, -1);
+						if (value instanceof Exam) {
+							exam = (Exam) value;
+							jButtonShow.setEnabled(exam.getProcedure() != 3);
+						} else {
+							jButtonShow.setEnabled(false);
+						}
+					} else {
+						selectedrow = -1;
+						jButtonShow.setEnabled(false);
+					}
 				}
 			});
 		}
@@ -325,7 +338,9 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public ExamBrowsingModel() { }
+		public ExamBrowsingModel() {
+		}
+
 		@Override
 		public int getRowCount() {
 			if (examList == null) {
@@ -346,6 +361,9 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		@Override
 		public Object getValueAt(int r, int c) {
+			if (examList == null || r >= examList.size() || r < 0) {
+				return null;
+			}
 			Exam exam = examList.get(r);
 			if (c == -1) {
 				return exam;
@@ -356,10 +374,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 2) {
 				return exam.getDescription();
 			} else if (c == 3) {
-				return exam.getArticleFamily() != null ? exam.getArticleFamily().toString() : "";
-			} else if (c == 4) {
 				return exam.getProcedure();
-			} else if (c == 5) {
+			} else if (c == 4) {
 				return exam.getDefaultResult();
 			}
 			return null;
@@ -374,7 +390,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	@Override
 	public void examUpdated(AWTEvent e) {
 		reloadTable();
-		if (table.getRowCount() > 0 && selectedrow > -1) {
+		if (table != null && table.getRowCount() > 0 && selectedrow > -1 && selectedrow < table.getRowCount()) {
 			table.setRowSelectionInterval(selectedrow, selectedrow);
 		}
 	}
@@ -382,8 +398,9 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	@Override
 	public void examInserted(AWTEvent e) {
 		reloadTable();
-		if (table.getRowCount() > 0) {
+		if (table != null && table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
+			selectedrow = 0;
 		}
 	}
 
@@ -412,8 +429,18 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			}
 
 			examList = filteredList;
-			((ExamBrowsingModel) table.getModel()).fireTableDataChanged();
-			table.updateUI();
+
+			if (table != null && table.getModel() instanceof ExamBrowsingModel) {
+				((ExamBrowsingModel) table.getModel()).fireTableDataChanged();
+				table.updateUI();
+			}
+
+			if (table != null && table.getRowCount() > 0) {
+				table.setRowSelectionInterval(0, 0);
+				selectedrow = 0;
+			} else {
+				selectedrow = -1;
+			}
 
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
