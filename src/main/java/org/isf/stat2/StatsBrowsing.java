@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
+import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.*;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -241,6 +243,13 @@ public class StatsBrowsing extends ModalJFrame {
         initialize();
     }
 
+    private void loadDefaultData() {
+        _start_index = 0;
+        _period_from = LocalDate.now().minusDays(7).format(DATE_FORMATTER);
+        _period_to = LocalDate.now().format(DATE_FORMATTER);
+        filterBtn.doClick();
+    }
+
     private void initialize() {
         setTitle(MessageBundle.getMessage("angal.stat.generalstatsbrowsing"));
 
@@ -416,13 +425,24 @@ public class StatsBrowsing extends ModalJFrame {
         }
 
         wardsCombo.addItem(null);
+        wardsCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value == null) {
+                    return super.getListCellRendererComponent(list, MessageBundle.getMessage("angal.stat.allwards"), index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+
         for (Ward ward : wardsData) {
             wardsCombo.addItem(ward);
         }
 
         wardsCombo.addActionListener(e -> {
-            if (wardsCombo.getSelectedItem() != null) {
-                _selectedWard = wardsCombo.getSelectedItem().toString();
+            Object selected = wardsCombo.getSelectedItem();
+            if (selected != null) {
+                _selectedWard = selected.toString();
             } else {
                 _selectedWard = "";
             }
@@ -446,7 +466,7 @@ public class StatsBrowsing extends ModalJFrame {
         }
 
         vaccinesCombo = new JComboBox<>();
-        vaccinesCombo.addItem("");
+        vaccinesCombo.addItem(MessageBundle.getMessage("angal.stat.allvaccines"));
 
         for (Vaccine vaccine : vaccinesData) {
             vaccinesCombo.addItem(vaccine.getDescription());
@@ -511,7 +531,7 @@ public class StatsBrowsing extends ModalJFrame {
         }
 
         examsCombo = new JComboBox<>();
-        examsCombo.addItem("");
+        examsCombo.addItem(MessageBundle.getMessage("angal.stat.allexams"));
         for (Exam exam : examsData) {
             examsCombo.addItem(exam.getDescription());
         }
@@ -615,7 +635,7 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel operationsFlowPanel = new JPanel(new FlowLayout());
         operationsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operation"));
         operationsCombo = new JComboBox<>();
-        operationsCombo.addItem("");
+        operationsCombo.addItem(MessageBundle.getMessage("angal.stat.alloperations"));
 
         try {
             operationsData = operationsManager.getOperation();
@@ -634,7 +654,7 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel operationResultsFlowPanel = new JPanel(new FlowLayout());
         operationResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operationresult"));
         operationResultsCombo = new JComboBox<>();
-        operationResultsCombo.addItem("");
+        operationResultsCombo.addItem(MessageBundle.getMessage("angal.stat.allresults"));
         for (ResultatType result : ResultatType.values()) {
             operationResultsCombo.addItem(result.toString());
         }
@@ -642,11 +662,12 @@ public class StatsBrowsing extends ModalJFrame {
         operationResultsFlowPanel.add(operationResultsLabel);
         operationResultsFlowPanel.add(operationResultsCombo);
 
-        operationsCombo.addActionListener(e -> {
-            if (operationsCombo.getSelectedItem() != null) {
-                _selectedOperation = operationsCombo.getSelectedItem().toString();
+        operationResultsCombo.addActionListener(e -> {
+            Object selected = operationResultsCombo.getSelectedItem();
+            if (selected != null && !selected.equals(MessageBundle.getMessage("angal.stat.allresults"))) {
+                _selectedOperationResult = selected.toString();
             } else {
-                _selectedOperation = "";
+                _selectedOperationResult = "";
             }
         });
 
@@ -712,6 +733,16 @@ public class StatsBrowsing extends ModalJFrame {
         allDiseasesCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.alldiseasescheck"));
 
         diseasesCombo.addItem(null);
+        diseasesCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value == null) {
+                    return super.getListCellRendererComponent(list, MessageBundle.getMessage("angal.stat.alldiseases"), index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+
         for (Disease disease : diseasesData) {
             diseasesCombo.addItem(disease);
         }
@@ -729,6 +760,16 @@ public class StatsBrowsing extends ModalJFrame {
         }
 
         dischargeTypesCombo.addItem(null);
+        dischargeTypesCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value == null) {
+                    return super.getListCellRendererComponent(list, MessageBundle.getMessage("angal.stat.alldischargetypes"), index, isSelected, cellHasFocus);
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+
         for (DischargeType dischargeType : dischargeTypesData) {
             dischargeTypesCombo.addItem(dischargeType);
         }
@@ -737,16 +778,18 @@ public class StatsBrowsing extends ModalJFrame {
         dischargeTypesPanel.add(allDiseasesCheck);
 
         diseasesCombo.addActionListener(e -> {
-            if (diseasesCombo.getSelectedItem() != null) {
-                _selectedDisease = diseasesCombo.getSelectedItem().toString();
+            Object selected = diseasesCombo.getSelectedItem();
+            if (selected != null) {
+                _selectedDisease = selected.toString();
             } else {
                 _selectedDisease = "";
             }
         });
 
         dischargeTypesCombo.addActionListener(e -> {
-            if (dischargeTypesCombo.getSelectedItem() != null) {
-                _selectedDischargeType = dischargeTypesCombo.getSelectedItem().toString();
+            Object selected = dischargeTypesCombo.getSelectedItem();
+            if (selected != null) {
+                _selectedDischargeType = selected.toString();
             } else {
                 _selectedDischargeType = "";
             }
@@ -863,10 +906,6 @@ public class StatsBrowsing extends ModalJFrame {
             if (resultCount == 0) {
                 emptyJDataTable();
                 resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
-                JOptionPane.showMessageDialog(StatsBrowsing.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
-                        MessageBundle.getMessage("angal.stat.operationresult"),
-                        JOptionPane.PLAIN_MESSAGE);
             }
 
             applyFilters();
@@ -1403,12 +1442,11 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private void emptyJDataTable() {
-        patientList.clear();
-        vaccinesList.clear();
-        examsList.clear();
-        operationsList.clear();
-        diseasesList.clear();
-
+        patientList = new ArrayList<>();
+        vaccinesList = new ArrayList<>();
+        examsList = new ArrayList<>();
+        operationsList = new ArrayList<>();
+        diseasesList = new ArrayList<>();
         jDataTableModel.fireTableDataChanged();
         jDataTable.updateUI();
     }
