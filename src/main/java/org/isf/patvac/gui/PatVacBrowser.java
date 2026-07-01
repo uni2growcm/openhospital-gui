@@ -174,7 +174,6 @@ public class PatVacBrowser extends ModalJFrame {
 		for (java.awt.event.ActionListener l : listeners) {
 			jPageComboBox.removeActionListener(l);
 		}
-
 		jPageComboBox.removeAllItems();
 		for (int i = 1; i <= totalPages; i++) {
 			jPageComboBox.addItem(i);
@@ -195,8 +194,6 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * Loads a specific page of patient vaccines based on current filters.
-	 *
-	 * @param page the page number to load
 	 */
 	private void loadPage(int page) {
 		try {
@@ -266,8 +263,6 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes the pagination panel with navigation controls.
-	 *
-	 * @return paginationPanel (JPanel)
 	 */
 	private JPanel getPaginationPanel() {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
@@ -974,10 +969,7 @@ public class PatVacBrowser extends ModalJFrame {
 	}
 
 	/**
-	 * This method initializes the patient search filter panel.
-	 * Allows searching by patient name or code.
-	 *
-	 * @return patientFilterPanel (JPanel)
+	 * This method initializes the patient search filter panel.Allows searching by patient name or code.
 	 */
 	private JPanel getPatientFilterPanel() {
 		JPanel patientFilterPanel = new JPanel();
@@ -1003,10 +995,7 @@ public class PatVacBrowser extends ModalJFrame {
 	}
 
 	/**
-	 * This method initializes the village filter panel.
-	 * Allows filtering by village.
-	 *
-	 * @return villageFilterPanel (JPanel)
+	 * This method initializes the village filter panel. Allows filtering by village.
 	 */
 	private JPanel getVillageFilterPanel() {
 		JPanel villageFilterPanel = new JPanel();
