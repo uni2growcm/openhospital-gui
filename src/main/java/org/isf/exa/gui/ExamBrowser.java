@@ -27,6 +27,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Component;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -75,10 +78,10 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			MessageBundle.getMessage("angal.exa.proc.col").toUpperCase(),
 			MessageBundle.getMessage("angal.exa.default.col").toUpperCase()
 	};
-	private int[] pColumnWidth = { 60, 200, 250, 150, 60, 200 };
+	private int[] pColumnWidth = {60, 330, 160, 60, 200};
 	private Exam exam;
 
-	private DefaultTableModel model ;
+	private DefaultTableModel model;
 	private JTable table;
 	private final JFrame myFrame;
 	private JButton jButtonNew;
@@ -87,6 +90,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	private JButton jButtonShow;
 	private JPanel jContentPanel;
 	private JPanel buttonPanel;
+	private JTextField searchField;
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
@@ -98,6 +102,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		filterExams("");
 		setVisible(true);
 	}
 
@@ -105,8 +110,38 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 		if (jContentPanel == null) {
 			jContentPanel = new JPanel();
 			jContentPanel.setLayout(new BorderLayout());
-			jContentPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
+
+			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+			JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
+			topPanel.add(searchLabel);
+
+			searchField = new JTextField(20);
+			searchField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					filterExams(searchField.getText());
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					filterExams(searchField.getText());
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					filterExams(searchField.getText());
+				}
+			});
+			topPanel.add(searchField);
+
+			topPanel.add(Box.createHorizontalStrut(20));
+
+			jContentPanel.add(topPanel, BorderLayout.NORTH);
+
 			jContentPanel.add(new JScrollPane(getJTable()), BorderLayout.CENTER);
+
+			jContentPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 		}
 		return jContentPanel;
 	}
@@ -144,7 +179,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					examTypeFilter.addItem(elem);
 				}
 			}
-			examTypeFilter.addActionListener(actionEvent -> reloadTable());
+			examTypeFilter.addActionListener(actionEvent -> filterExams(searchField.getText()));
 		}
 		return examTypeFilter;
 	}
@@ -192,9 +227,20 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().addListSelectionListener(selectionEvent -> {
 				if (!selectionEvent.getValueIsAdjusting()) {
-					selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
-					exam = (Exam) model.getValueAt(selectedrow, -1);
-					jButtonShow.setEnabled(exam.getProcedure() != 3);
+					int selectedRow = table.getSelectedRow();
+					if (selectedRow >= 0 && selectedRow < table.getRowCount()) {
+						selectedrow = table.convertRowIndexToModel(selectedRow);
+						Object value = model.getValueAt(selectedrow, -1);
+						if (value instanceof Exam) {
+							exam = (Exam) value;
+							jButtonShow.setEnabled(exam.getProcedure() != 3);
+						} else {
+							jButtonShow.setEnabled(false);
+						}
+					} else {
+						selectedrow = -1;
+						jButtonShow.setEnabled(false);
+					}
 				}
 			});
 		}
@@ -292,32 +338,9 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public ExamBrowsingModel(String examTypeDesc, ArticleFamily family) {
-			try {
-				examList = examBrowsingManager.getExamsByFilters(examTypeDesc, family);
-			} catch (OHServiceException e) {
-				examList = null;
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		}
-
-		public ExamBrowsingModel(String s) {
-			try {
-				examList = examBrowsingManager.getExamsByTypeDescription(s);
-
-			} catch (OHServiceException e) {
-				examList = null;
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		}
 		public ExamBrowsingModel() {
-			try {
-				examList = examBrowsingManager.getExams();
-			} catch (OHServiceException e) {
-				examList = null;
-				OHServiceExceptionUtil.showMessages(e);
-			}
 		}
+
 		@Override
 		public int getRowCount() {
 			if (examList == null) {
@@ -338,6 +361,9 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 
 		@Override
 		public Object getValueAt(int r, int c) {
+			if (examList == null || r >= examList.size() || r < 0) {
+				return null;
+			}
 			Exam exam = examList.get(r);
 			if (c == -1) {
 				return exam;
@@ -348,10 +374,8 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 2) {
 				return exam.getDescription();
 			} else if (c == 3) {
-				return exam.getArticleFamily() != null ? exam.getArticleFamily().toString() : "";
-			} else if (c == 4) {
 				return exam.getProcedure();
-			} else if (c == 5) {
+			} else if (c == 4) {
 				return exam.getDefaultResult();
 			}
 			return null;
@@ -366,7 +390,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	@Override
 	public void examUpdated(AWTEvent e) {
 		reloadTable();
-		if (table.getRowCount() > 0 && selectedrow > -1) {
+		if (table != null && table.getRowCount() > 0 && selectedrow > -1 && selectedrow < table.getRowCount()) {
 			table.setRowSelectionInterval(selectedrow, selectedrow);
 		}
 	}
@@ -374,17 +398,52 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 	@Override
 	public void examInserted(AWTEvent e) {
 		reloadTable();
-		if (table.getRowCount() > 0) {
+		if (table != null && table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
+			selectedrow = 0;
 		}
 	}
 
 	private void reloadTable() {
-		String selectedType = examTypeFilter.getSelectedItem().toString();
-		String examTypeDesc = selectedType.equals(STR_ALL) ? null : selectedType;
-		ArticleFamily selectedFamily = (ArticleFamily) articleFamilyFilter.getSelectedItem();
-		model = new ExamBrowsingModel(examTypeDesc, selectedFamily);
-		model.fireTableDataChanged();
-		table.updateUI();
+		filterExams(searchField != null ? searchField.getText() : "");
+	}
+
+	private void filterExams(String searchText) {
+		String selectedTypeDesc = examTypeFilter.getSelectedItem().toString();
+		String searchLower = searchText.toLowerCase().trim();
+
+		List<Exam> filteredList;
+
+		try {
+			if (selectedTypeDesc.equals(STR_ALL)) {
+				filteredList = examBrowsingManager.getExams();
+			} else {
+				filteredList = examBrowsingManager.getExamsByTypeDescription(selectedTypeDesc);
+			}
+
+			if (!searchLower.isEmpty()) {
+				filteredList = filteredList.stream()
+						.filter(e -> e.getCode().toLowerCase().contains(searchLower) ||
+								e.getDescription().toLowerCase().contains(searchLower))
+						.collect(java.util.stream.Collectors.toList());
+			}
+
+			examList = filteredList;
+
+			if (table != null && table.getModel() instanceof ExamBrowsingModel) {
+				((ExamBrowsingModel) table.getModel()).fireTableDataChanged();
+				table.updateUI();
+			}
+
+			if (table != null && table.getRowCount() > 0) {
+				table.setRowSelectionInterval(0, 0);
+				selectedrow = 0;
+			} else {
+				selectedrow = -1;
+			}
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
 	}
 }

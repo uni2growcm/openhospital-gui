@@ -1405,7 +1405,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				}
 				if (options.indexOf(option) == 8) {
 						new GenericReportFromDateToDate(from, to, "rpt_base", "GlobalConsumptionReportByService",
-								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), false, true);
+								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), true);
 				}
 			});
 		}
