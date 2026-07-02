@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -36,6 +36,7 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.malnutrition.manager.MalnutritionManager;
 import org.isf.malnutrition.model.Malnutrition;
 import org.isf.menu.manager.Context;
+import org.isf.opd.model.Opd;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -44,6 +45,7 @@ import org.isf.utils.layout.SpringUtilities;
 public class InsertMalnutrition extends JDialog {
 
 	private static final long serialVersionUID = 1L;
+	private Opd opd;
 	
 	private EventListenerList malnutritionListeners = new EventListenerList();
 
@@ -93,6 +95,7 @@ public class InsertMalnutrition extends JDialog {
 		super(owner, true);
 		maln = malnutrition;
 		inserting = insert;
+		this.opd = maln.getOpd();
 		if (inserting) {
 			setTitle(MessageBundle.getMessage("angal.malnutrition.newmalnutrition.title"));
 		} else {
