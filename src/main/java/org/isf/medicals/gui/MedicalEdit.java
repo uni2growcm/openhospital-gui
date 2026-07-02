@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -28,7 +28,6 @@ import java.awt.event.ActionListener;
 import java.util.EventListener;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -44,6 +43,8 @@ import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
 import org.isf.medtype.manager.MedicalTypeBrowserManager;
@@ -122,13 +123,14 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField shapeTextField;
 	private JComboBox<MedicalType> typeComboBox;
 	private JCheckBox activeCheckbox;
+	private JComboBox<ArticleFamily> articleFamilyComboBox;
 	private Medical oldMedical;
 	private Medical medical;
 	private boolean insert;
 
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
-
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
 	 */
@@ -193,9 +195,12 @@ public class MedicalEdit extends JDialog {
 			JLabel conditioningLabel = new JLabel(MessageBundle.getMessage("angal.medicals.conditioning.label") + ':');
 			JLabel shapeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.shape.label") + ':');
 			JLabel dosingLabel = new JLabel(MessageBundle.getMessage("angal.medicals.dosing.label") + ':');
+			JLabel familyLabel = new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':');
 
 			dataPanel.add(typeLabel);
 			dataPanel.add(getTypeComboBox());
+			dataPanel.add(familyLabel);
+			dataPanel.add(getArticleFamilyComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -212,9 +217,34 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getDosingTextField());
 			dataPanel.add(activeLabel);
 			dataPanel.add(getActiveField());
-			SpringUtilities.makeCompactGrid(dataPanel, 9, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 10, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
+	}
+
+	private JComboBox<ArticleFamily> getArticleFamilyComboBox() {
+		if (articleFamilyComboBox == null) {
+			articleFamilyComboBox = new JComboBox<>();
+			articleFamilyComboBox.addItem(null);
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				if (families != null) {
+					ArticleFamily toSelect = null;
+					for (ArticleFamily af : families) {
+						articleFamilyComboBox.addItem(af);
+						if (!insert && af.equals(medical.getArticleFamily())) {
+							toSelect = af;
+						}
+					}
+					if (toSelect != null) {
+						articleFamilyComboBox.setSelectedItem(toSelect);
+					}
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		return articleFamilyComboBox;
 	}
 
 	private JCheckBox getActiveField() {
@@ -273,6 +303,7 @@ public class MedicalEdit extends JDialog {
 							newMedical = (Medical) medical.clone();
 							newMedical.setType((MedicalType) typeComboBox.getSelectedItem());
 							newMedical.setDescription(descriptionTextField.getText());
+							newMedical.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 							newMedical.setProdCode(codeTextField.getText());
 							newMedical.setPcsperpck(pcsperpckField.getValue());
 							newMedical.setMinqty(minQtiField.getValue());
@@ -318,6 +349,7 @@ public class MedicalEdit extends JDialog {
 					} else { // updating
 						oldMedical.setType((MedicalType) typeComboBox.getSelectedItem());
 						oldMedical.setDescription(descriptionTextField.getText());
+						oldMedical.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 						oldMedical.setProdCode(codeTextField.getText());
 						oldMedical.setPcsperpck(pcsperpckField.getValue());
 						oldMedical.setMinqty(minQtiField.getValue());
@@ -515,5 +547,4 @@ public class MedicalEdit extends JDialog {
 		}
 		return typeComboBox;
 	}
-
 }
