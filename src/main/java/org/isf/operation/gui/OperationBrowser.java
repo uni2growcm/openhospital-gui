@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -37,13 +37,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.Box;
+import java.awt.FlowLayout;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.operation.enums.OperationTarget;
 import org.isf.operation.gui.OperationEdit.OperationListener;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
 import org.isf.opetype.manager.OperationTypeBrowserManager;
@@ -70,25 +79,30 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 	private static final int pfrmHeight = 5;
 	private int selectedrow;
 	private final JComboBox<OperationType> diseaseTypeFilter;
+	private JComboBox<ArticleFamily> articleFamilyFilter;
 	private List<Operation> pOperation;
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.common.id.txt").toUpperCase(),
 		MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
 		MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+		MessageBundle.getMessage("angal.operation.articlefamily.col").toUpperCase(),
 		MessageBundle.getMessage("angal.operation.operationcontext.col").toUpperCase()
 	};
-	private final int[] pColumnWidth = { 50, 180, 200, 100 };
+	private final int[] pColumnWidth = { 50, 180, 200, 130, 100 };
 	private Operation operation;
 	private DefaultTableModel model;
 	private final JTable table;
 	private final JFrame myFrame;
+	private JTextField searchField;
 	private String pSelection;
 	private final OperationBrowserManager operationBrowserManager = Context.getApplicationContext().getBean(OperationBrowserManager.class);
 	private final OperationTypeBrowserManager operationTypeBrowserManager = Context.getApplicationContext().getBean(OperationTypeBrowserManager.class);
+	private final ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	public OperationBrowser() {
+        JTable table1;
 
-		setTitle(MessageBundle.getMessage("angal.operation.operationsbrowser.title"));
+        setTitle(MessageBundle.getMessage("angal.operation.operationsbrowser.title"));
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screensize = kit.getScreenSize();
 		int pfrmBordX = (screensize.width - (screensize.width / pfrmBase * pfrmWidth)) / 2;
@@ -97,20 +111,39 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 			screensize.height / pfrmBase * pfrmHeight);
 		myFrame = this;
 		model = new OperationBrowserModel();
-		table = new JTable(model);
-		table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
-		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
-		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
-		table.getColumnModel().getColumn(3).setPreferredWidth(pColumnWidth[3]);
-		table.getColumnModel().getColumn(3).setCellRenderer(new CenterAlignmentCellRenderer());
+		table1 = new JTable(model);
+		table1.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
+		table1.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
+		table1.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
+		table1.getColumnModel().getColumn(3).setPreferredWidth(pColumnWidth[3]);
+		table1.getColumnModel().getColumn(4).setPreferredWidth(pColumnWidth[4]);
+		table1.getColumnModel().getColumn(4).setCellRenderer(new CenterAlignmentCellRenderer());
 
 		setLayout(new BorderLayout());
-		add(new JScrollPane(table), BorderLayout.CENTER);
 
-		JPanel buttonPanel = new JPanel();
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
-		JLabel selectlabel = new JLabel(MessageBundle.getMessage("angal.operation.selecttype")); //$NON-NLS-1$
-		buttonPanel.add(selectlabel);
+		JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
+		topPanel.add(searchLabel);
+
+		searchField = new JTextField(20);
+		searchField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				filterOperations(searchField.getText());
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				filterOperations(searchField.getText());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				filterOperations(searchField.getText());
+			}
+		});
+		topPanel.add(searchField);
+
+		topPanel.add(Box.createHorizontalStrut(20));
 
 		diseaseTypeFilter = new JComboBox<>();
 		diseaseTypeFilter.addItem(new OperationType("", MessageBundle.getMessage("angal.common.all.txt").toUpperCase()));
@@ -125,16 +158,50 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		}
 
 		diseaseTypeFilter.addActionListener(actionEvent -> {
-			pSelection = diseaseTypeFilter.getSelectedItem().toString();
-			if (pSelection.compareTo(STR_ALL) == 0) {
-				model = new OperationBrowserModel();
-			} else {
-				model = new OperationBrowserModel(pSelection);
-			}
-			model.fireTableDataChanged();
-			table.updateUI();
+			filterOperations(searchField.getText());
 		});
-		buttonPanel.add(diseaseTypeFilter);
+		topPanel.add(diseaseTypeFilter);
+
+		add(topPanel, BorderLayout.NORTH);
+
+		model = new OperationBrowserModel();
+		table1 = new JTable(model);
+        table = table1;
+        table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
+		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
+		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
+		table.getColumnModel().getColumn(3).setPreferredWidth(pColumnWidth[3]);
+		table.getColumnModel().getColumn(3).setCellRenderer(new CenterAlignmentCellRenderer());
+
+		add(new JScrollPane(table), BorderLayout.CENTER);
+
+		JPanel buttonPanel = new JPanel();
+
+		JLabel familylabel = new JLabel(MessageBundle.getMessage("angal.exam.filter.family"));
+		buttonPanel.add(familylabel);
+		articleFamilyFilter = new JComboBox<>();
+		articleFamilyFilter.addItem(null);
+		articleFamilyFilter.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value,
+			                                              int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value == null) {
+					setText(STR_ALL);
+				}
+				return this;
+			}
+		});
+		try {
+			List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+			for (ArticleFamily af : families) {
+				articleFamilyFilter.addItem(af);
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		articleFamilyFilter.addActionListener(actionEvent -> reloadTable());
+		buttonPanel.add(articleFamilyFilter);
 
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
@@ -191,6 +258,16 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 		setVisible(true);
 	}
+
+	private void reloadTable() {
+		String selectedType = diseaseTypeFilter.getSelectedItem().toString();
+		String typeDesc = selectedType.equals(STR_ALL) ? null : selectedType;
+		ArticleFamily selectedFamily = (ArticleFamily) articleFamilyFilter.getSelectedItem();
+		model = new OperationBrowserModel(typeDesc, selectedFamily);
+		model.fireTableDataChanged();
+		table.updateUI();
+	}
+
 	@Override
 	public void operationInserted(AWTEvent e) {
 		pOperation.add(0, operation);
@@ -213,21 +290,15 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public OperationBrowserModel(String s) {
-			try {
-				pOperation = operationBrowserManager.getOperationByTypeDescription(s);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
+		public OperationBrowserModel() {
 		}
 
-		public OperationBrowserModel() {
+		public OperationBrowserModel(String typeDesc, ArticleFamily family) {
 			try {
-				pOperation = operationBrowserManager.getOperation();
+				pOperation = operationBrowserManager.getOperationsByFilters(typeDesc, family);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
-
 		}
 
 		@Override
@@ -260,7 +331,9 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 				return operation.getType().getDescription();
 			} else if (c == 2) {
 				return operation.getDescription();
-			} else if (c == 3) { // TODO: use bundles
+			} else if (c == 3) {
+				return operation.getArticleFamily() != null ? operation.getArticleFamily().toString() : "";
+			} else if (c == 4) { // TODO: use bundles
 				if (opeFor != null) {
 					return switch (opeFor) {
 						case admission -> ADMISSION;
@@ -291,6 +364,35 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			setHorizontalAlignment(SwingConstants.CENTER);
 			return cell;
+		}
+	}
+
+	private void filterOperations(String searchText) {
+		String selectedTypeDesc = diseaseTypeFilter.getSelectedItem().toString();
+		String searchLower = searchText.toLowerCase().trim();
+
+		List<Operation> filteredList;
+
+		try {
+			if (selectedTypeDesc.equals(STR_ALL)) {
+				filteredList = operationBrowserManager.getOperation();
+			} else {
+				filteredList = operationBrowserManager.getOperationByTypeDescription(selectedTypeDesc);
+			}
+
+			if (!searchLower.isEmpty()) {
+				filteredList = filteredList.stream()
+						.filter(o -> o.getCode().toLowerCase().contains(searchLower) ||
+								o.getDescription().toLowerCase().contains(searchLower))
+						.collect(java.util.stream.Collectors.toList());
+			}
+
+			pOperation = filteredList;
+			((OperationBrowserModel) table.getModel()).fireTableDataChanged();
+			table.updateUI();
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
 	}
 
