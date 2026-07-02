@@ -222,6 +222,24 @@ public class SelectPatient extends JDialog implements PatientListener {
 		loadPatientPage();
 	}
 
+	public SelectPatient(JFrame owner, String searchText, boolean enableAddPatient, boolean femaleOnly) {
+		super(owner, true);
+
+		this.femalesOnly = femaleOnly;
+
+		ps = new PatientSummary(patient);
+
+		initializeDialog();
+
+		getButtonNew().setVisible(enableAddPatient);
+
+		if (searchText != null) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+
+		loadPatientPage();
+	}
+
 	public SelectPatient(JDialog owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
 
