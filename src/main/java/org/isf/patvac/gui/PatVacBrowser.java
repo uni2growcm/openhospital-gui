@@ -31,8 +31,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.*;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -69,6 +71,9 @@ import org.isf.vactype.manager.VaccineTypeBrowserManager;
 import org.isf.vactype.model.VaccineType;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * PatVacBrowser - list all patient's vaccines
@@ -105,17 +110,31 @@ public class PatVacBrowser extends ModalJFrame {
 	private JComboBox vaccineTypeComboBox;
 	private int pfrmHeight;
 	private List<PatientVaccine> lPatVac;
+	private JTextField patientSearchField;
+	private JTextField villageFilterField;
+
+	private int currentPage = 0;
+	private static final int PAGE_SIZE = 100;
+	private long totalElements = 0;
+	private int totalPages = 0;
+	private JButton jPrevButton;
+	private JButton jNextButton;
+	private JComboBox<Integer> jPageComboBox;
+	private JLabel jPageLabel;
+	private JLabel jElementsLabel;
 
 	private String[] pColumns = {
-			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.patientid.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.patient.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.patvac.vaccine.col").toUpperCase(),
-			MessageBundle.getMessage("angal.patvac.vaccinetype.col").toUpperCase()
+			MessageBundle.getMessage("angal.patvac.vaccinetype.col").toUpperCase(),
+			MessageBundle.getMessage("angal.patvac.village").toUpperCase()
 	};
-	private int[] pColumnWidth = {100, 150, 50, 50, 150, 150};
-	private boolean[] columnsVisible = {true, GeneralData.PATIENTVACCINEEXTENDED, true, true, true, true};
+	private int[] pColumnWidth = {80, 150, 50, 50,100, 150, 150,100};
+	private boolean[] columnsVisible = {true, GeneralData.PATIENTVACCINEEXTENDED, true, true, true, true,true,true};
 	private PatVacBrowsingModel model;
 	private PatientVaccine patientVaccine;
 	private int selectedrow;
@@ -128,6 +147,7 @@ public class PatVacBrowser extends ModalJFrame {
 		super();
 		myFrame = this;
 		initialize();
+		loadPage(0);
 		setVisible(true);
 	}
 
@@ -143,17 +163,163 @@ public class PatVacBrowser extends ModalJFrame {
 		updateRowCounter();
 		this.setLocationRelativeTo(null);
 	}
-	
+
+	/**
+	 * Updates the pagination controls (buttons, combo box, labels) based on current page state.
+	 */
+	private void updatePaginationControls() {
+		jPrevButton.setEnabled(currentPage > 0);
+		jNextButton.setEnabled(currentPage + 1 < totalPages);
+
+		java.awt.event.ActionListener[] listeners = jPageComboBox.getActionListeners();
+		for (java.awt.event.ActionListener l : listeners) {
+			jPageComboBox.removeActionListener(l);
+		}
+		jPageComboBox.removeAllItems();
+		for (int i = 1; i <= totalPages; i++) {
+			jPageComboBox.addItem(i);
+		}
+		if (totalPages > 0) {
+			jPageComboBox.setSelectedItem(currentPage + 1);
+		}
+		jPageComboBox.setEnabled(totalPages > 1);
+
+		for (java.awt.event.ActionListener l : listeners) {
+			jPageComboBox.addActionListener(l);
+		}
+
+		jPageLabel.setText(MessageBundle.formatMessage("angal.common.page.label") + ": "
+				+ (totalPages == 0 ? 0 : currentPage + 1) + "/" + totalPages);
+		jElementsLabel.setText(MessageBundle.formatMessage("angal.common.total.label") + ": " + totalElements);
+	}
+
+	/**
+	 * Loads a specific page of patient vaccines based on current filters.
+	 */
+	private void loadPage(int page) {
+		try {
+			String vaccineTypeCode = null;
+			String vaccineCode = null;
+
+			if (vaccineTypeComboBox != null && vaccineTypeComboBox.getSelectedItem() != null) {
+				VaccineType vt = (VaccineType) vaccineTypeComboBox.getSelectedItem();
+				if (vt.getCode() != null && !vt.getCode().isEmpty()
+						&& !vt.getDescription().equals(MessageBundle.getMessage("angal.patvac.allvaccinetype"))) {
+					vaccineTypeCode = vt.getCode();
+				}
+			}
+
+			if (vaccineComboBox != null && vaccineComboBox.getSelectedItem() != null) {
+				Vaccine v = (Vaccine) vaccineComboBox.getSelectedItem();
+				if (v.getCode() != null && !v.getCode().isEmpty()
+						&& !v.getDescription().equals(MessageBundle.getMessage("angal.patvac.allvaccine"))) {
+					vaccineCode = v.getCode();
+				}
+			}
+			String patientSearchText = patientSearchField != null ? patientSearchField.getText().trim() : "";
+			String villageText = villageFilterField != null ? villageFilterField.getText().trim() : "";
+
+			char sex;
+			if (radiof != null && radiof.isSelected()) {
+				sex = 'F';
+			} else if (radiom != null && radiom.isSelected()) {
+				sex = 'M';
+			} else {
+				sex = 'A';
+			}
+
+			LocalDateTime dateFrom = this.dateFrom != null ? this.dateFrom.getDateStartOfDay() : null;
+			LocalDateTime dateTo = this.dateTo != null ? this.dateTo.getDateEndOfDay() : null;
+
+			int ageFromValue = ageFrom != null ? ageFrom : 0;
+			int ageToValue = ageTo != null ? ageTo : 0;
+
+			Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+
+			Page<PatientVaccine> pageResult = patVacManager.getPatientVaccinePage(
+					vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex,
+					ageFromValue, ageToValue, patientSearchText, villageText, pageable);
+			lPatVac = pageResult.getContent();
+			currentPage = pageResult.getNumber();
+			totalPages = pageResult.getTotalPages();
+			totalElements = pageResult.getTotalElements();
+
+			updatePaginationControls();
+			model.fireTableDataChanged();
+			jTable.updateUI();
+			updateRowCounter();
+
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+			lPatVac = new ArrayList<>();
+			currentPage = 0;
+			totalPages = 0;
+			totalElements = 0;
+			updatePaginationControls();
+			model.fireTableDataChanged();
+			jTable.updateUI();
+			updateRowCounter();
+		}
+	}
+
+	/**
+	 * This method initializes the pagination panel with navigation controls.
+	 */
+	private JPanel getPaginationPanel() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+		jPrevButton = new JButton("<");
+		jPrevButton.setEnabled(false);
+		jPrevButton.addActionListener(e -> {
+			if (currentPage > 0) {
+				loadPage(currentPage - 1);
+			}
+		});
+
+		jPageComboBox = new JComboBox<>();
+		jPageComboBox.setPreferredSize(new Dimension(80, 25));
+		jPageComboBox.addActionListener(e -> {
+			if (jPageComboBox.getSelectedItem() != null) {
+				int selected = (int) jPageComboBox.getSelectedItem() - 1;
+				if (selected != currentPage) {
+					loadPage(selected);
+				}
+			}
+		});
+
+		jPageLabel = new JLabel();
+		jNextButton = new JButton(">");
+		jNextButton.setEnabled(false);
+		jNextButton.addActionListener(e -> {
+			if (currentPage + 1 < totalPages) {
+				loadPage(currentPage + 1);
+			}
+		});
+
+		jElementsLabel = new JLabel();
+
+		panel.add(jPrevButton);
+		panel.add(jPageComboBox);
+		panel.add(jPageLabel);
+		panel.add(jNextButton);
+		panel.add(jElementsLabel);
+
+		return panel;
+	}
+
 	/**
 	 * This method initializes jContentPane, adds the main parts of the frame
-	 * 
+	 *
 	 * @return jContentPanel (JPanel)
 	 */
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new BorderLayout());
-			jContentPane.add(getJButtonPanel(), BorderLayout.SOUTH);
+			JPanel southPanel = new JPanel(new BorderLayout());
+			southPanel.add(getPaginationPanel(), BorderLayout.NORTH);
+			southPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
+			jContentPane.add(southPanel, BorderLayout.SOUTH);
 			jContentPane.add(getJSelectionPanel(), BorderLayout.WEST);
 			jContentPane.add(new JScrollPane(getJTable()), BorderLayout.CENTER);
 			validate();
@@ -187,7 +353,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes buttonNew, that loads patientVaccineEdit Mask
-	 * 
+	 *
 	 * @return buttonNew (JButton)
 	 */
 	private JButton getButtonNew() {
@@ -199,18 +365,11 @@ public class PatVacBrowser extends ModalJFrame {
 				patientVaccine = new PatientVaccine(0, 0, now, new Patient(),
 						new Vaccine("", "", new VaccineType("", "")), 0);
 
-				PatientVaccine last = new PatientVaccine(0, 0, now, new Patient(),
-						new Vaccine("", "", new VaccineType("", "")), 0);
-				new PatVacEdit(myFrame, patientVaccine, true);
-
-				if (!last.equals(patientVaccine)) {
-					lPatVac.add(0, patientVaccine);
-					((PatVacBrowsingModel) jTable.getModel()).fireTableDataChanged();
-					updateRowCounter();
-					if (jTable.getRowCount() > 0) {
-						jTable.setRowSelectionInterval(0, 0);
-					}
-				}
+				PatVacEdit editRecord = new PatVacEdit(myFrame, patientVaccine, true);
+				SwingUtilities.invokeLater(() -> {
+					currentPage = 0;
+					loadPage(0);
+				});
 			});
 		}
 		return buttonNew;
@@ -218,7 +377,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes buttonEdit, that loads patientVaccineEdit Mask
-	 * 
+	 *
 	 * @return buttonEdit (JButton)
 	 */
 	private JButton getButtonEdit() {
@@ -234,22 +393,10 @@ public class PatVacBrowser extends ModalJFrame {
 				selectedrow = jTable.getSelectedRow();
 				patientVaccine = (PatientVaccine) model.getValueAt(selectedrow, -1);
 
-				PatientVaccine last = new PatientVaccine(patientVaccine.getCode(),
-						patientVaccine.getProgr(),
-						patientVaccine.getVaccineDate(),
-						patientVaccine.getPatient(),
-						patientVaccine.getVaccine(),
-						patientVaccine.getLock());
-
-				new PatVacEdit(myFrame, patientVaccine, false);
-
-				if (!last.equals(patientVaccine)) {
-					((PatVacBrowsingModel) jTable.getModel()).fireTableDataChanged();
-					updateRowCounter();
-					if (jTable.getRowCount() > 0 && selectedrow > -1) {
-						jTable.setRowSelectionInterval(selectedrow, selectedrow);
-					}
-				}
+				PatVacEdit editRecord = new PatVacEdit(myFrame, patientVaccine, false);
+				SwingUtilities.invokeLater(() -> {
+					loadPage(currentPage);
+				});
 			});
 		}
 		return buttonEdit;
@@ -279,9 +426,7 @@ public class PatVacBrowser extends ModalJFrame {
 				if (answer == JOptionPane.YES_OPTION) {
 					try {
 						patVacManager.deletePatientVaccine(patientVaccine);
-						lPatVac.remove(jTable.getSelectedRow());
-						model.fireTableDataChanged();
-						jTable.updateUI();
+						loadPage(currentPage);
 					} catch (OHServiceException e) {
 						OHServiceExceptionUtil.showMessages(e);
 					}
@@ -289,7 +434,7 @@ public class PatVacBrowser extends ModalJFrame {
 			});
 		}
 		return buttonDelete;
-	}	
+	}
 	
 	/**
 	 * This method initializes buttonClose
@@ -314,6 +459,9 @@ public class PatVacBrowser extends ModalJFrame {
 		if (jSelectionPanel == null) {
 			jSelectionPanel = new JPanel();
 			jSelectionPanel.setPreferredSize(new Dimension(225, pfrmHeight));
+
+			jSelectionPanel.add(getPatientFilterPanel());
+			jSelectionPanel.add(getVillageFilterPanel());
 
 			jSelectionPanel.add(getVaccineTypePanel());
 			jSelectionPanel.add(getVaccinePanel());
@@ -434,11 +582,14 @@ public class PatVacBrowser extends ModalJFrame {
 	private JPanel getFilterPanel() {
 
 		JPanel filterPanel = new JPanel();
-		filterPanel.setPreferredSize(new Dimension(225, 30));
-		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
-		JPanel label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		label1Panel.add(getFilterButton());
-		filterPanel.add(label1Panel);
+		filterPanel.setPreferredSize(new Dimension(225, 35));
+		filterPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		filterPanel.add(getFilterButton());
+		JButton resetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+		resetButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
+		resetButton.addActionListener(e -> resetFilters());
+		filterPanel.add(resetButton);
+
 		return filterPanel;
 	}
 	
@@ -659,11 +810,8 @@ public class PatVacBrowser extends ModalJFrame {
 					MessageDialog.error(null, "angal.patvac.pleaseinsertvaliddateto");
 					return;
 				}
-
-				model = new PatVacBrowsingModel(vaccineTypeCode, vaccineCode, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(), sex, ageFrom, ageTo);
-				model.fireTableDataChanged();
-				jTable.updateUI();
-				updateRowCounter();
+				currentPage = 0;
+				loadPage(0);
 			});
 		}
 		return filterButton;
@@ -672,7 +820,7 @@ public class PatVacBrowser extends ModalJFrame {
 	/**
 	 * This method initializes jTable, that contains the information about the
 	 * patient's vaccines
-	 * 
+	 *
 	 * @return jTable (JTable)
 	 */
 	private JTable getJTable() {
@@ -687,12 +835,17 @@ public class PatVacBrowser extends ModalJFrame {
 				columnModel.getColumn(3).setMinWidth(pColumnWidth[3]);
 				columnModel.getColumn(4).setMinWidth(pColumnWidth[4]);
 				columnModel.getColumn(5).setMinWidth(pColumnWidth[5]);
+				columnModel.getColumn(6).setMinWidth(pColumnWidth[6]);
+				columnModel.getColumn(7).setMinWidth(pColumnWidth[7]);
 			} else {
 				columnModel.getColumn(0).setMinWidth(pColumnWidth[0]);
 				columnModel.getColumn(1).setMaxWidth(pColumnWidth[2]);
 				columnModel.getColumn(2).setMinWidth(pColumnWidth[3]);
 				columnModel.getColumn(3).setMinWidth(pColumnWidth[4]);
 				columnModel.getColumn(4).setMinWidth(pColumnWidth[5]);
+				if (columnsVisible.length > 7 && columnsVisible[7] && columnModel.getColumnCount() > 5) {
+					columnModel.getColumn(5).setMinWidth(pColumnWidth[7]);
+				}
 			}
 		}
 		return jTable;
@@ -775,7 +928,7 @@ public class PatVacBrowser extends ModalJFrame {
 			if (c == -1) {
 				return patVac;
 			} else if (getNumber(c) == 0) {
-				return patVac.getVaccineDate().format(DATE_FORMATTER);
+				return patVac.getPatient().getCode();
 			} else if (getNumber(c) == 1) {
 				return patVac.getPatient().getName();
 			} else if (getNumber(c) == 2) {
@@ -783,9 +936,13 @@ public class PatVacBrowser extends ModalJFrame {
 			} else if (getNumber(c) == 3) {
 				return patVac.getPatAge();
 			} else if (getNumber(c) == 4) {
-				return patVac.getVaccine().getDescription();
+				return patVac.getVaccineDate().format(DATE_FORMATTER);
 			} else if (getNumber(c) == 5) {
+				return patVac.getVaccine().getDescription();
+			} else if (getNumber(c) == 6) {
 				return patVac.getVaccine().getVaccineType().getDescription();
+			}else if (getNumber(c)==7){
+				return patVac.getVillage();
 			}
 			return null;
 		}
@@ -799,6 +956,83 @@ public class PatVacBrowser extends ModalJFrame {
 
 	private void updateRowCounter() {
 		rowCounter.setText(rowCounterText + lPatVac.size());
+	}
+
+	/**
+	 * This method initializes the patient search filter panel.Allows searching by patient name or code.
+	 */
+	private JPanel getPatientFilterPanel() {
+		JPanel patientFilterPanel = new JPanel();
+		patientFilterPanel.setLayout(new BoxLayout(patientFilterPanel, BoxLayout.Y_AXIS));
+		patientFilterPanel.setBorder(BorderFactory.createTitledBorder(
+				MessageBundle.getMessage("angal.patvac.filter.patient")));
+
+		JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		labelPanel.add(new JLabel(MessageBundle.getMessage("angal.patvac.filter.patient.nameorcode")));
+		patientFilterPanel.add(labelPanel);
+
+		JPanel fieldPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		patientSearchField = new JTextField(15);
+		patientSearchField.setToolTipText(MessageBundle.getMessage("angal.patvac.filter.patient.tooltip"));
+		patientSearchField.addActionListener(e -> {
+			currentPage = 0;
+			loadPage(0);
+		});
+		fieldPanel.add(patientSearchField);
+		patientFilterPanel.add(fieldPanel);
+
+		return patientFilterPanel;
+	}
+
+	/**
+	 * This method initializes the village filter panel. Allows filtering by village.
+	 */
+	private JPanel getVillageFilterPanel() {
+		JPanel villageFilterPanel = new JPanel();
+		villageFilterPanel.setLayout(new BoxLayout(villageFilterPanel, BoxLayout.Y_AXIS));
+		villageFilterPanel.setBorder(BorderFactory.createTitledBorder(
+				MessageBundle.getMessage("angal.patvac.filter.village")));
+
+		JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		labelPanel.add(new JLabel(MessageBundle.getMessage("angal.patvac.filter.village")));
+		villageFilterPanel.add(labelPanel);
+
+		JPanel fieldPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		villageFilterField = new JTextField(15);
+		villageFilterField.setToolTipText(MessageBundle.getMessage("angal.patvac.filter.village.tooltip"));
+		villageFilterField.addActionListener(e -> {
+			currentPage = 0;
+			loadPage(0);
+		});
+		fieldPanel.add(villageFilterField);
+		villageFilterPanel.add(fieldPanel);
+
+		return villageFilterPanel;
+	}
+
+	/**
+	 * Resets all filters to their default values.
+	 */
+	private void resetFilters() {
+		if (patientSearchField != null) {
+			patientSearchField.setText("");
+		}
+		if (villageFilterField != null) {
+			villageFilterField.setText("");
+		}
+		dateFrom.setDate(LocalDate.now().minusWeeks(1));
+		dateTo.setDate(LocalDate.now());
+		ageFrom = 0;
+		ageTo = 0;
+		jAgeFromTextField.setText("0");
+		jAgeToTextField.setText("0");
+		vaccineTypeComboBox.setSelectedIndex(0);
+		vaccineComboBox.removeAllItems();
+		getComboVaccines();
+		radiof.setSelected(false);
+		radiom.setSelected(false);
+		currentPage = 0;
+		loadPage(0);
 	}
 
 }

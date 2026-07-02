@@ -38,7 +38,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         setSize(400, 300);
         setLocationRelativeTo(null);
 
-        JLabel label = new JLabel(MessageBundle.getMessage("angal.stat.menu.placeholder"), SwingConstants.CENTER);
+        JLabel label = new JLabel(MessageBundle.getMessage("disponible bientot"), SwingConstants.CENTER);
         add(label);
 
         setVisible(true);

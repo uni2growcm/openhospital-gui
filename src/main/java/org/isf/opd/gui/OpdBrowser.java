@@ -75,6 +75,9 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
+import org.isf.homevisit.gui.HomeVisitBrowser;
+import org.isf.homevisit.gui.HomeVisitEdit;
+import org.isf.homevisit.manager.HomeVisitBrowserManager;
 import org.isf.malnutrition.gui.MalnutritionBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
@@ -112,6 +115,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jExamButton;
 	private JButton jTherapyButton;
 	private JButton jCloseButton;
+	private JButton jHomeVisitButton;
 	private JButton jDeleteButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
@@ -292,12 +296,50 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (MainMenu.checkUserGrants("btnopddel")) {
 				jButtonPanel.add(getJDeleteButton(), null);
 			}
+			if (MainMenu.checkUserGrants("homevisit")) {
+				jButtonPanel.add(getJHomeVisitButton(), null);
+			}
 			if (MainMenu.checkUserGrants("btnopdmalnutrition")) {
 				jButtonPanel.add(getJMalnutritionButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
 		return jButtonPanel;
+	}
+
+	private JButton getJHomeVisitButton() {
+		if (jHomeVisitButton == null) {
+			jHomeVisitButton = new JButton(MessageBundle.getMessage("angal.menu.btn.homevisit"));
+			jHomeVisitButton.setMnemonic(MessageBundle.getMnemonic("angal.menu.btn.homevisit.key"));
+
+			jHomeVisitButton.addActionListener(e -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				Patient patient = opd.getPatient();
+				if (patient == null) {
+					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+					return;
+				}
+				HomeVisitBrowserManager hvManager = Context.getApplicationContext()
+						.getBean(HomeVisitBrowserManager.class);
+
+				HomeVisitEdit editor = new HomeVisitEdit(
+						null,
+						hvManager,
+						null,
+						saved -> {
+							HomeVisitBrowser browser = new HomeVisitBrowser();
+							browser.setVisible(true);
+						}
+				);
+				editor.preSelectPatient(patient);
+				editor.setVisible(true);
+			});
+		}
+		return jHomeVisitButton;
 	}
 
 	private JPanel getPaginationPanel() {
