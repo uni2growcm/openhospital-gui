@@ -307,11 +307,6 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.CANCELLED) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.reactivate.error"));
-            return;
-        }
-
         int confirm = MessageDialog.yesNo(this,
                 MessageBundle.formatMessage("angal.homevisit.reactivate.confirm",
                         visit.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))),
@@ -319,7 +314,8 @@ public class HomeVisitBrowser extends ModalJFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                manager.reactivateHomeVisit(visit.getId());
+                visit.setStatus(HomeVisitStatus.PLANNED);
+                manager.updateHomeVisit(visit);
                 loadHomeVisits();
                 MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.reactivate.success"));
             } catch (OHServiceException e) {
@@ -423,11 +419,6 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.PLANNED) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.complete.error"));
-            return;
-        }
-
         int confirm = MessageDialog.yesNo(this,
                 MessageBundle.formatMessage("angal.homevisit.complete.confirm",
                         visit.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))),
@@ -435,7 +426,8 @@ public class HomeVisitBrowser extends ModalJFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                manager.completeHomeVisit(visit.getId());
+                visit.setStatus(HomeVisitStatus.COMPLETED);
+                manager.updateHomeVisit(visit);
                 loadHomeVisits();
                 MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.complete.success"));
             } catch (OHServiceException e) {
@@ -449,21 +441,12 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.PLANNED &&
-                visit.getStatus() != HomeVisitStatus.POSTPONED &&
-                visit.getStatus() != HomeVisitStatus.COMPLETED) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.cancel.error"));
-            return;
-        }
-
         int confirm = MessageDialog.yesNo(this,
                 MessageBundle.formatMessage("angal.homevisit.cancel.confirm",
                         visit.getVisitStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))),
                 MessageBundle.getMessage("angal.homevisit.cancel.dialog.title"));
 
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (confirm != JOptionPane.YES_OPTION) return;
 
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.cancel.reason.prompt")),
@@ -474,16 +457,11 @@ public class HomeVisitBrowser extends ModalJFrame {
         panel.add(new JScrollPane(reasonArea), BorderLayout.CENTER);
 
         int reasonConfirm = JOptionPane.showConfirmDialog(
-                this,
-                panel,
+                this, panel,
                 MessageBundle.getMessage("angal.homevisit.cancel.reason.dialog.title"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (reasonConfirm != JOptionPane.OK_OPTION) {
-            return;
-        }
+        if (reasonConfirm != JOptionPane.OK_OPTION) return;
 
         String reason = reasonArea.getText().trim();
         if (reason.isEmpty()) {
@@ -492,7 +470,9 @@ public class HomeVisitBrowser extends ModalJFrame {
         }
 
         try {
-            manager.cancelHomeVisit(visit.getId(), reason);
+            visit.setStatus(HomeVisitStatus.CANCELLED);
+            visit.setCancellationReason(reason);
+            manager.updateHomeVisit(visit);
             loadHomeVisits();
             MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.cancel.success"));
         } catch (OHServiceException e) {
@@ -505,38 +485,24 @@ public class HomeVisitBrowser extends ModalJFrame {
         HomeVisit visit = getSelectedHomeVisit();
         if (visit == null) return;
 
-        if (visit.getStatus() != HomeVisitStatus.PLANNED &&
-                visit.getStatus() != HomeVisitStatus.POSTPONED) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.error"));
-            return;
-        }
-
         LocalDateTime defaultDate = visit.getVisitStartDate().plusDays(1);
         GoodDateTimeSpinnerChooser dateChooser = new GoodDateTimeSpinnerChooser(defaultDate);
         JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt")), BorderLayout.NORTH);
+        panel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.postpone.newdate.prompt")),
+                BorderLayout.NORTH);
         panel.add(dateChooser, BorderLayout.CENTER);
 
         int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
+                this, panel,
                 MessageBundle.getMessage("angal.homevisit.postpone.dialog.title"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             LocalDateTime newDate = dateChooser.getLocalDateTime();
-            if (newDate == null) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.newdate.required"));
-                return;
-            }
-            if (!newDate.toLocalDate().isAfter(LocalDate.now())) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.homevisit.postpone.newdate.future.error"));
-                return;
-            }
             try {
-                manager.postponeHomeVisit(visit.getId(), newDate);
+                visit.setStatus(HomeVisitStatus.POSTPONED);
+                visit.setVisitStartDate(newDate);
+                manager.updateHomeVisit(visit);
                 loadHomeVisits();
                 MessageDialog.info(this, MessageBundle.getMessage("angal.homevisit.postpone.success"));
             } catch (OHServiceException e) {
