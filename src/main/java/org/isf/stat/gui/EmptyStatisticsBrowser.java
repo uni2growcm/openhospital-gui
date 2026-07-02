@@ -115,6 +115,23 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private JCheckBox saturationCheck;
     private JCheckBox respiratoryRateCheck;
 
+    private JTextField heightMinField;
+    private JTextField heightMaxField;
+    private JTextField weightMinField;
+    private JTextField weightMaxField;
+    private JTextField systolicMinField;
+    private JTextField systolicMaxField;
+    private JTextField diastolicMinField;
+    private JTextField diastolicMaxField;
+    private JTextField cardiacMinField;
+    private JTextField cardiacMaxField;
+    private JTextField tempMinField;
+    private JTextField tempMaxField;
+    private JTextField satMinField;
+    private JTextField satMaxField;
+    private JTextField respMinField;
+    private JTextField respMaxField;
+
     private JPanel pregnancyPanel;
     private JComboBox<String> riskLevelCombo;
     private JComboBox<String> statusCombo;
@@ -175,6 +192,23 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private boolean _parameter_temp_check = false;
     private boolean _parameter_saturation_check = false;
     private boolean _parameter_resp_rate_check = false;
+
+    private Double _height_min = null;
+    private Double _height_max = null;
+    private Double _weight_min = null;
+    private Double _weight_max = null;
+    private Double _systolic_min = null;
+    private Double _systolic_max = null;
+    private Double _diastolic_min = null;
+    private Double _diastolic_max = null;
+    private Double _cardiac_min = null;
+    private Double _cardiac_max = null;
+    private Double _temp_min = null;
+    private Double _temp_max = null;
+    private Double _sat_min = null;
+    private Double _sat_max = null;
+    private Double _resp_min = null;
+    private Double _resp_max = null;
 
     private JButton paginationFirstBtn;
     private JButton paginationLastBtn;
@@ -763,31 +797,175 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
 
         parametersPanel = new JPanel();
-
-        JPanel parametersPanelLine1 = new JPanel(new FlowLayout());
-        JPanel parametersPanelLine2 = new JPanel(new FlowLayout());
-
-        heightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.height"));
-        weightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.weight"));
-        arterialPressureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.arterialpressure"));
-        cardiacFrequencyCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.cardiacfrequency"));
-        parametersPanelLine1.add(heightCheck);
-        parametersPanelLine1.add(weightCheck);
-        parametersPanelLine1.add(arterialPressureCheck);
-        parametersPanelLine1.add(cardiacFrequencyCheck);
-
-        temperatureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.temperature"));
-        saturationCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.saturation"));
-        respiratoryRateCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.respiratoryrate"));
-        parametersPanelLine2.add(temperatureCheck);
-        parametersPanelLine2.add(saturationCheck);
-        parametersPanelLine2.add(respiratoryRateCheck);
-
         parametersPanel.setLayout(new BoxLayout(parametersPanel, BoxLayout.Y_AXIS));
-        parametersPanel.add(parametersPanelLine1);
-        parametersPanel.add(parametersPanelLine2);
+        parametersPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.stat.parameters")));
 
-        parametersPanel = setPanelBorder(parametersPanel, MessageBundle.getMessage("angal.stat.parameters"));
+        JPanel heightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        heightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.height"));
+        heightMinField = new JTextField(5);
+        heightMaxField = new JTextField(5);
+        heightPanel.add(heightCheck);
+        heightPanel.add(new JLabel("Min (cm):"));
+        heightPanel.add(heightMinField);
+        heightPanel.add(new JLabel("Max (cm):"));
+        heightPanel.add(heightMaxField);
+        heightMinField.setEnabled(false);
+        heightMaxField.setEnabled(false);
+        heightCheck.addActionListener(e -> {
+            boolean selected = heightCheck.isSelected();
+            heightMinField.setEnabled(selected);
+            heightMaxField.setEnabled(selected);
+            if (!selected) {
+                heightMinField.setText("");
+                heightMaxField.setText("");
+            }
+        });
+        parametersPanel.add(heightPanel);
+
+        JPanel weightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        weightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.weight"));
+        weightMinField = new JTextField(5);
+        weightMaxField = new JTextField(5);
+        weightPanel.add(weightCheck);
+        weightPanel.add(new JLabel("Min (kg):"));
+        weightPanel.add(weightMinField);
+        weightPanel.add(new JLabel("Max (kg):"));
+        weightPanel.add(weightMaxField);
+        weightMinField.setEnabled(false);
+        weightMaxField.setEnabled(false);
+        weightCheck.addActionListener(e -> {
+            boolean selected = weightCheck.isSelected();
+            weightMinField.setEnabled(selected);
+            weightMaxField.setEnabled(selected);
+            if (!selected) {
+                weightMinField.setText("");
+                weightMaxField.setText("");
+            }
+        });
+        parametersPanel.add(weightPanel);
+
+        JPanel pressurePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        arterialPressureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.arterialpressure"));
+        systolicMinField = new JTextField(5);
+        systolicMaxField = new JTextField(5);
+        diastolicMinField = new JTextField(5);
+        diastolicMaxField = new JTextField(5);
+        pressurePanel.add(arterialPressureCheck);
+        pressurePanel.add(new JLabel("Systolique Min:"));
+        pressurePanel.add(systolicMinField);
+        pressurePanel.add(new JLabel("Max:"));
+        pressurePanel.add(systolicMaxField);
+        pressurePanel.add(new JLabel("Diastolique Min:"));
+        pressurePanel.add(diastolicMinField);
+        pressurePanel.add(new JLabel("Max:"));
+        pressurePanel.add(diastolicMaxField);
+        systolicMinField.setEnabled(false);
+        systolicMaxField.setEnabled(false);
+        diastolicMinField.setEnabled(false);
+        diastolicMaxField.setEnabled(false);
+        arterialPressureCheck.addActionListener(e -> {
+            boolean selected = arterialPressureCheck.isSelected();
+            systolicMinField.setEnabled(selected);
+            systolicMaxField.setEnabled(selected);
+            diastolicMinField.setEnabled(selected);
+            diastolicMaxField.setEnabled(selected);
+            if (!selected) {
+                systolicMinField.setText("");
+                systolicMaxField.setText("");
+                diastolicMinField.setText("");
+                diastolicMaxField.setText("");
+            }
+        });
+        parametersPanel.add(pressurePanel);
+
+        JPanel cardiacPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        cardiacFrequencyCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.cardiacfrequency"));
+        cardiacMinField = new JTextField(5);
+        cardiacMaxField = new JTextField(5);
+        cardiacPanel.add(cardiacFrequencyCheck);
+        cardiacPanel.add(new JLabel("Min (bpm):"));
+        cardiacPanel.add(cardiacMinField);
+        cardiacPanel.add(new JLabel("Max (bpm):"));
+        cardiacPanel.add(cardiacMaxField);
+        cardiacMinField.setEnabled(false);
+        cardiacMaxField.setEnabled(false);
+        cardiacFrequencyCheck.addActionListener(e -> {
+            boolean selected = cardiacFrequencyCheck.isSelected();
+            cardiacMinField.setEnabled(selected);
+            cardiacMaxField.setEnabled(selected);
+            if (!selected) {
+                cardiacMinField.setText("");
+                cardiacMaxField.setText("");
+            }
+        });
+        parametersPanel.add(cardiacPanel);
+
+        JPanel tempPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        temperatureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.temperature"));
+        tempMinField = new JTextField(5);
+        tempMaxField = new JTextField(5);
+        tempPanel.add(temperatureCheck);
+        tempPanel.add(new JLabel("Min (°C):"));
+        tempPanel.add(tempMinField);
+        tempPanel.add(new JLabel("Max (°C):"));
+        tempPanel.add(tempMaxField);
+        tempMinField.setEnabled(false);
+        tempMaxField.setEnabled(false);
+        temperatureCheck.addActionListener(e -> {
+            boolean selected = temperatureCheck.isSelected();
+            tempMinField.setEnabled(selected);
+            tempMaxField.setEnabled(selected);
+            if (!selected) {
+                tempMinField.setText("");
+                tempMaxField.setText("");
+            }
+        });
+        parametersPanel.add(tempPanel);
+
+        JPanel satPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        saturationCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.saturation"));
+        satMinField = new JTextField(5);
+        satMaxField = new JTextField(5);
+        satPanel.add(saturationCheck);
+        satPanel.add(new JLabel("Min (%):"));
+        satPanel.add(satMinField);
+        satPanel.add(new JLabel("Max (%):"));
+        satPanel.add(satMaxField);
+        satMinField.setEnabled(false);
+        satMaxField.setEnabled(false);
+        saturationCheck.addActionListener(e -> {
+            boolean selected = saturationCheck.isSelected();
+            satMinField.setEnabled(selected);
+            satMaxField.setEnabled(selected);
+            if (!selected) {
+                satMinField.setText("");
+                satMaxField.setText("");
+            }
+        });
+        parametersPanel.add(satPanel);
+
+        JPanel respPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        respiratoryRateCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.respiratoryrate"));
+        respMinField = new JTextField(5);
+        respMaxField = new JTextField(5);
+        respPanel.add(respiratoryRateCheck);
+        respPanel.add(new JLabel("Min (/min):"));
+        respPanel.add(respMinField);
+        respPanel.add(new JLabel("Max (/min):"));
+        respPanel.add(respMaxField);
+        respMinField.setEnabled(false);
+        respMaxField.setEnabled(false);
+        respiratoryRateCheck.addActionListener(e -> {
+            boolean selected = respiratoryRateCheck.isSelected();
+            respMinField.setEnabled(selected);
+            respMaxField.setEnabled(selected);
+            if (!selected) {
+                respMinField.setText("");
+                respMaxField.setText("");
+            }
+        });
+        parametersPanel.add(respPanel);
 
         return parametersPanel;
     }
@@ -854,6 +1032,23 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             String systolicBp = getSelectedSystolicBp();
             String diastolicBp = getSelectedDiastolicBp();
 
+            Double heightMin = _height_min;
+            Double heightMax = _height_max;
+            Double weightMin = _weight_min;
+            Double weightMax = _weight_max;
+            Double systolicMin = _systolic_min;
+            Double systolicMax = _systolic_max;
+            Double diastolicMin = _diastolic_min;
+            Double diastolicMax = _diastolic_max;
+            Double cardiacMin = _cardiac_min;
+            Double cardiacMax = _cardiac_max;
+            Double tempMin = _temp_min;
+            Double tempMax = _temp_max;
+            Double satMin = _sat_min;
+            Double satMax = _sat_max;
+            Double respMin = _resp_min;
+            Double respMax = _resp_max;
+
             Page<Patient> result = statsManager.getPregnanciesStats(
                     ageFrom, ageTo, periodFrom, periodTo,
                     _selectedExam, _selectedExamResult, examperiodFrom, examperiodTo,
@@ -862,6 +1057,14 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                     _parameter_height_check, _parameter_weight_check, _parameter_art_press_check,
                     _parameter_card_freq_check, _parameter_temp_check, _parameter_saturation_check,
                     _parameter_resp_rate_check,
+                    heightMin, heightMax,
+                    weightMin, weightMax,
+                    systolicMin, systolicMax,
+                    diastolicMin, diastolicMax,
+                    cardiacMin, cardiacMax,
+                    tempMin, tempMax,
+                    satMin, satMax,
+                    respMin, respMax,
                     riskLevel, status,
                     gravidityMin, gravidityMax,
                     parityMin, parityMax,
@@ -928,6 +1131,24 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             _parameter_temp_check = false;
             _parameter_saturation_check = false;
             _parameter_resp_rate_check = false;
+
+            _height_min = null;
+            _height_max = null;
+            _weight_min = null;
+            _weight_max = null;
+            _systolic_min = null;
+            _systolic_max = null;
+            _diastolic_min = null;
+            _diastolic_max = null;
+            _cardiac_min = null;
+            _cardiac_max = null;
+            _temp_min = null;
+            _temp_max = null;
+            _sat_min = null;
+            _sat_max = null;
+            _resp_min = null;
+            _resp_max = null;
+
             periodFromDateChooser.setDate(null);
             periodToDateChooser.setDate(null);
             ageFromField.setText("");
@@ -948,6 +1169,24 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             temperatureCheck.setSelected(false);
             saturationCheck.setSelected(false);
             respiratoryRateCheck.setSelected(false);
+
+            heightMinField.setText("");
+            heightMaxField.setText("");
+            weightMinField.setText("");
+            weightMaxField.setText("");
+            systolicMinField.setText("");
+            systolicMaxField.setText("");
+            diastolicMinField.setText("");
+            diastolicMaxField.setText("");
+            cardiacMinField.setText("");
+            cardiacMaxField.setText("");
+            tempMinField.setText("");
+            tempMaxField.setText("");
+            satMinField.setText("");
+            satMaxField.setText("");
+            respMinField.setText("");
+            respMaxField.setText("");
+
             riskLevelCombo.setSelectedIndex(0);
             statusCombo.setSelectedIndex(0);
             gravidityCombo.setSelectedIndex(0);
@@ -1205,6 +1444,33 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         _parameter_temp_check = temperatureCheck.isSelected();
         _parameter_saturation_check = saturationCheck.isSelected();
         _parameter_resp_rate_check = respiratoryRateCheck.isSelected();
+
+        _height_min = parseDouble(heightMinField.getText());
+        _height_max = parseDouble(heightMaxField.getText());
+        _weight_min = parseDouble(weightMinField.getText());
+        _weight_max = parseDouble(weightMaxField.getText());
+        _systolic_min = parseDouble(systolicMinField.getText());
+        _systolic_max = parseDouble(systolicMaxField.getText());
+        _diastolic_min = parseDouble(diastolicMinField.getText());
+        _diastolic_max = parseDouble(diastolicMaxField.getText());
+        _cardiac_min = parseDouble(cardiacMinField.getText());
+        _cardiac_max = parseDouble(cardiacMaxField.getText());
+        _temp_min = parseDouble(tempMinField.getText());
+        _temp_max = parseDouble(tempMaxField.getText());
+        _sat_min = parseDouble(satMinField.getText());
+        _sat_max = parseDouble(satMaxField.getText());
+        _resp_min = parseDouble(respMinField.getText());
+        _resp_max = parseDouble(respMaxField.getText());
+    }
+    private Double parseDouble(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(text.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private JPanel setPanelBorder(JPanel panel, String panelTitle) {
