@@ -36,6 +36,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.Serial;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.Box;
+import java.awt.FlowLayout;
 
 public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanListener {
     @Serial
@@ -47,6 +51,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
     private JButton jDeleteButton;
     private JButton jCloseButton;
     private JTable table;
+    private JTextField searchField;
     private ReductionPlanModel reductionPlanModel;
     private final String[] columnHeaders = new String[] {
             MessageBundle.getMessage("angal.common.code.txt"),
@@ -76,6 +81,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
         pack();
         setLocationRelativeTo(null);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        filterReductionPlans("");
     }
 
     /**
@@ -86,6 +92,31 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
         if (contentPane == null) {
             contentPane = new JPanel();
             contentPane.setLayout(new BorderLayout());
+
+            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+            JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt") + ": ");
+            topPanel.add(searchLabel);
+
+            searchField = new JTextField(20);
+            searchField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    filterReductionPlans(searchField.getText());
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    filterReductionPlans(searchField.getText());
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    filterReductionPlans(searchField.getText());
+                }
+            });
+            topPanel.add(searchField);
+
+            contentPane.add(topPanel, BorderLayout.NORTH);
+
             table = new JTable();
             JScrollPane scrollPane = new JScrollPane();
             reductionPlanModel = new ReductionPlanModel();
@@ -206,7 +237,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
 
     @Override
     public void ReductionPlanInserted(AWTEvent aEvent) {
-        table.setModel(new ReductionPlanModel());
+        filterReductionPlans(searchField != null ? searchField.getText() : "");
     }
 
     private class ReductionPlanModel extends DefaultTableModel {
@@ -214,13 +245,7 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
         @Serial
         private static final long serialVersionUID = 1L;
 
-        public ReductionPlanModel() {
-            try {
-                reductionplansList = reductionPlanManager.getAll();
-            } catch (OHServiceException e) {
-                OHServiceExceptionUtil.showMessages(e);
-            }
-        }
+        public ReductionPlanModel() { }
 
         public int getRowCount() {
             return reductionplansList == null ? 0 : reductionplansList.size();
@@ -257,6 +282,29 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
         @Override
         public boolean isCellEditable(int row, int col) {
             return false;
+        }
+    }
+
+    private void filterReductionPlans(String searchText) {
+        String searchLower = searchText.toLowerCase().trim();
+
+        List<ReductionPlan> filteredList;
+
+        try {
+            filteredList = reductionPlanManager.getAll();
+
+            if (!searchLower.isEmpty()) {
+                filteredList = filteredList.stream()
+                        .filter(rp -> String.valueOf(rp.getId()).contains(searchLower) ||
+                                rp.getDescription().toLowerCase().contains(searchLower))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            reductionplansList = filteredList;
+            ((ReductionPlanModel) table.getModel()).fireTableDataChanged();
+            table.updateUI();
+
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
         }
     }
 }
