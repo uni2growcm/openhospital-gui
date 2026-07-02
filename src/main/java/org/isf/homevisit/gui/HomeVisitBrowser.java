@@ -107,7 +107,7 @@ public class HomeVisitBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.homevisit.date.col"),
             MessageBundle.getMessage("angal.homevisit.status.col"),
             MessageBundle.getMessage("angal.homevisit.staff.col"),
-            MessageBundle.getMessage("angal.homevisit.purpose.col")
+            MessageBundle.getMessage("angal.homevisit.nextvisit.col")
     };
 
     public HomeVisitBrowser() {
@@ -379,8 +379,11 @@ public class HomeVisitBrowser extends ModalJFrame {
                 String staffName = hv.getStaff() != null ? hv.getStaff().getFullName() : "";
                 String statusStr = hv.getStatus() != null ? hv.getStatus().toString() : "";
 
+                String nextVisitDate = hv.getNextVisitDate() != null ?
+                        hv.getNextVisitDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "";
+
                 tableModel.addRow(new Object[]{
-                        hv.getId(), patientCode, patientName, visitDate, statusStr, staffName, hv.getPurpose()
+                        hv.getId(), patientCode, patientName, visitDate, statusStr, staffName, nextVisitDate
                 });
             }
 
