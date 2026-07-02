@@ -31,7 +31,6 @@ import java.awt.Insets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.EventListener;
-import java.util.EventObject;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -44,7 +43,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
@@ -60,7 +58,6 @@ import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
-import org.isf.utils.time.TimeTools;
 
 public class HIVVisitEdit extends JDialog {
 
@@ -212,24 +209,6 @@ public class HIVVisitEdit extends JDialog {
             if (visit.getClinicalStatus() != null) {
                 clinicalStatusArea.setText(visit.getClinicalStatus());
             }
-            if (visit.getPcrResult() != null) {
-                pcrCombo.setSelectedItem(visit.getPcrResult());
-            }
-            if (visit.getViralLoad() != null) {
-                viralLoadField.setText(String.valueOf(visit.getViralLoad()));
-            }
-            if (visit.getCd4Count() != null) {
-                cd4CountField.setText(String.valueOf(visit.getCd4Count()));
-            }
-            if (visit.getCd4Percent() != null) {
-                cd4PercentField.setText(String.valueOf(visit.getCd4Percent()));
-            }
-            if (visit.getHemoglobin() != null) {
-                hemoglobinField.setText(String.valueOf(visit.getHemoglobin()));
-            }
-            if (visit.getAdherence() != null) {
-                adherenceField.setText(String.valueOf(visit.getAdherence()));
-            }
             if (visit.getSideEffects() != null) {
                 sideEffectsArea.setText(visit.getSideEffects());
             }
@@ -300,13 +279,6 @@ public class HIVVisitEdit extends JDialog {
             gbc.gridwidth = 2;
             gbc.weightx = 1.0;
             dataPanel.add(getClinicalDataPanel(), gbc);
-            row++;
-
-            // Lab Data
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            dataPanel.add(getLabDataPanel(), gbc);
             row++;
 
             // Treatment Data
@@ -844,43 +816,6 @@ public class HIVVisitEdit extends JDialog {
                             ? clinicalStatus.trim()
                             : null
             );
-
-            visit.setPcrResult((PCRResult) pcrCombo.getSelectedItem());
-
-            String viralLoadText = viralLoadField.getText().trim();
-            if (!viralLoadText.isEmpty()) {
-                visit.setViralLoad(Double.parseDouble(viralLoadText));
-            } else {
-                visit.setViralLoad(null);
-            }
-
-            String cd4CountText = cd4CountField.getText().trim();
-            if (!cd4CountText.isEmpty()) {
-                visit.setCd4Count(Integer.parseInt(cd4CountText));
-            } else {
-                visit.setCd4Count(null);
-            }
-
-            String cd4PercentText = cd4PercentField.getText().trim();
-            if (!cd4PercentText.isEmpty()) {
-                visit.setCd4Percent(Integer.parseInt(cd4PercentText));
-            } else {
-                visit.setCd4Percent(null);
-            }
-
-            String hemoglobinText = hemoglobinField.getText().trim();
-            if (!hemoglobinText.isEmpty()) {
-                visit.setHemoglobin(Double.parseDouble(hemoglobinText));
-            } else {
-                visit.setHemoglobin(null);
-            }
-
-            String adherenceText = adherenceField.getText().trim();
-            if (!adherenceText.isEmpty()) {
-                visit.setAdherence(Integer.parseInt(adherenceText));
-            } else {
-                visit.setAdherence(null);
-            }
 
             String sideEffects = sideEffectsArea.getText();
             visit.setSideEffects(

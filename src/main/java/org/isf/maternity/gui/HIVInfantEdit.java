@@ -869,6 +869,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                         MessageBundle.getMessage("angal.hiv.message.weight.required"));
                 return;
             }
+            infant.setBirthWeight(Double.parseDouble(birthWeightField.getText().trim()));
             if (!gestationalAgeField.getText().trim().isEmpty()) {
                 infant.setGestationalAge(Integer.parseInt(gestationalAgeField.getText().trim()));
             }
