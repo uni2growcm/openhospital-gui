@@ -571,21 +571,23 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             row++;
             gbc.gridwidth = 1;
 
-            // First Visit Checkbox
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            dataPanel.add(getAddFirstVisitCheckBox(), gbc);
-            row++;
+            if (insert) {
+                // First Visit Checkbox
+                gbc.gridx = 0;
+                gbc.gridy = row;
+                gbc.gridwidth = 2;
+                dataPanel.add(getAddFirstVisitCheckBox(), gbc);
+                row++;
 
-            // First Visit Panel
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            dataPanel.add(getFirstVisitPanel(), gbc);
-            row++;
+                // First Visit Panel
+                gbc.gridx = 0;
+                gbc.gridy = row;
+                gbc.gridwidth = 2;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1.0;
+                dataPanel.add(getFirstVisitPanel(), gbc);
+                row++;
+            }
 
             // Add vertical filler
             gbc.gridx = 0;
@@ -705,7 +707,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             // Weight
             gbc.gridx = 0;
             gbc.gridy = row;
-            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weight") + " (kg):"), gbc);
+            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weights") + " (kg)*:"), gbc);
 
             gbc.gridx = 1;
             firstVisitPanel.add(getFirstVisitWeightField(), gbc);
@@ -843,6 +845,12 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                 return;
             }
 
+            if (insert && addFirstVisitCheckBox.isSelected()
+                    && firstVisitWeightField.getText().trim().isEmpty()) {
+                MessageDialog.error(this,
+                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
+                return;
+            }
             if (selectedPatient != null) {
                 infant.setPatient(selectedPatient);
             }
@@ -856,14 +864,13 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             } else {
                 infant.setRegistrationDate(registrationDate);
             }
-
-            // Birth data
-            if (!birthWeightField.getText().trim().isEmpty()) {
-                infant.setBirthWeight(Double.parseDouble(birthWeightField.getText()));
+            if (birthWeightField.getText().trim().isEmpty()) {
+                MessageDialog.error(this,
+                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
+                return;
             }
-
             if (!gestationalAgeField.getText().trim().isEmpty()) {
-                infant.setGestationalAge(Integer.parseInt(gestationalAgeField.getText()));
+                infant.setGestationalAge(Integer.parseInt(gestationalAgeField.getText().trim()));
             }
 
             infant.setFeedingType((FeedingType) feedingCombo.getSelectedItem());
@@ -881,11 +888,11 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                     HIVVisit firstVisit = new HIVVisit();
                     firstVisit.setHivInfant(savedInfant);
                     firstVisit.setVisitDate(firstVisitDateField.getDate().atStartOfDay());
-                    if (!firstVisitWeightField.getText().trim().isEmpty()) {
-                        firstVisit.setWeight(Double.parseDouble(firstVisitWeightField.getText()));
-                    }
+
+                    firstVisit.setWeight(Double.parseDouble(firstVisitWeightField.getText().trim()));
+
                     if (!firstVisitHeightField.getText().trim().isEmpty()) {
-                        firstVisit.setHeight(Double.parseDouble(firstVisitHeightField.getText()));
+                        firstVisit.setHeight(Double.parseDouble(firstVisitHeightField.getText().trim()));
                     }
                     firstVisit.setPcrResult((PCRResult) firstVisitPcrCombo.getSelectedItem());
                     firstVisit.setNotes(firstVisitNotesArea.getText());
@@ -896,14 +903,14 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
 
                     visitManager.newVisit(firstVisit);
                 }
-
-                MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"),
+                MessageDialog.info(this,
                         MessageBundle.getMessage("angal.hiv.message.save.success"));
                 dispose();
             } else {
                 savedInfant = infantManager.updateInfant(infant);
                 fireInfantUpdated(savedInfant);
-                MessageDialog.info(this, MessageBundle.getMessage("angal.common.info.title"),
+
+                MessageDialog.info(this,
                         MessageBundle.getMessage("angal.hiv.message.save.success"));
                 dispose();
             }
@@ -920,9 +927,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
         if (patient != null) {
             int ageInMonths = patient.getAge();
             if (ageInMonths > GeneralData.HIV_INFANT_MAX_AGE_MONTHS) {
-                MessageDialog.error(this, MessageBundle.formatMessage(
-                        "angal.hiv.message.age.constraint",
-                        GeneralData.HIV_INFANT_MAX_AGE_MONTHS));
+                MessageDialog.error(this, MessageBundle.formatMessage("angal.hiv.message.age.constraint", GeneralData.HIV_INFANT_MAX_AGE_MONTHS));
                 return;
             }
             this.selectedPatient = patient;

@@ -801,19 +801,21 @@ public class HIVVisitEdit extends JDialog {
             if (nextAppointmentDateField.getDate() != null) {
                 LocalDate nextAppointment = nextAppointmentDateField.getDate();
                 LocalDate visitDateLocal = visitDate.toLocalDate();
+
                 if (nextAppointment.isBefore(visitDateLocal)) {
-                    MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.next.appointment.before.visit"));
+                    MessageDialog.error(this,
+                            MessageBundle.getMessage("angal.hiv.message.next.appointment.before.visit"));
                     return;
                 }
             }
-
-            // Clinical data
             String weightText = weightField.getText().trim();
-            if (!weightText.isEmpty()) {
-                visit.setWeight(Double.parseDouble(weightText));
-            } else {
-                visit.setWeight(null);
+            if (weightText.isEmpty()) {
+                MessageDialog.error(this,
+                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
+                return;
             }
+
+            visit.setWeight(Double.parseDouble(weightText));
 
             String heightText = heightField.getText().trim();
             if (!heightText.isEmpty()) {
@@ -837,9 +839,12 @@ public class HIVVisitEdit extends JDialog {
             }
 
             String clinicalStatus = clinicalStatusArea.getText();
-            visit.setClinicalStatus((clinicalStatus != null && !clinicalStatus.trim().isEmpty()) ? clinicalStatus.trim() : null);
+            visit.setClinicalStatus(
+                    clinicalStatus != null && !clinicalStatus.trim().isEmpty()
+                            ? clinicalStatus.trim()
+                            : null
+            );
 
-            // Lab data
             visit.setPcrResult((PCRResult) pcrCombo.getSelectedItem());
 
             String viralLoadText = viralLoadField.getText().trim();
@@ -878,17 +883,20 @@ public class HIVVisitEdit extends JDialog {
             }
 
             String sideEffects = sideEffectsArea.getText();
-            visit.setSideEffects((sideEffects != null && !sideEffects.trim().isEmpty()) ? sideEffects.trim() : null);
+            visit.setSideEffects(
+                    sideEffects != null && !sideEffects.trim().isEmpty()
+                            ? sideEffects.trim()
+                            : null
+            );
 
-            // Treatment data
             String treatmentType = (String) treatmentTypeCombo.getSelectedItem();
             if (treatmentType != null && !treatmentType.isEmpty()) {
-                String medication = (String) treatmentMedicationCombo.getSelectedItem();
                 LocalDate startDate = treatmentStartDateField.getDate();
                 LocalDate endDate = treatmentEndDateField.getDate();
 
                 if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
-                    MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.treatment.end.before.start"));
+                    MessageDialog.error(this,
+                            MessageBundle.getMessage("angal.hiv.message.treatment.end.before.start"));
                     return;
                 }
             }
@@ -896,23 +904,31 @@ public class HIVVisitEdit extends JDialog {
             visit.setNextAppointmentDate(nextAppointmentDateField.getDate());
 
             String notes = notesArea.getText();
-            visit.setNotes((notes != null && !notes.trim().isEmpty()) ? notes.trim() : null);
+            visit.setNotes(
+                    notes != null && !notes.trim().isEmpty()
+                            ? notes.trim()
+                            : null
+            );
 
             if (insert) {
                 HIVVisit saved = visitManager.newVisit(visit);
+
                 if (saved != null) {
                     fireVisitInserted(saved);
                     dispose();
                 } else {
-                    MessageDialog.error(this, MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
+                    MessageDialog.error(this,
+                            MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
                 }
             } else {
                 HIVVisit updated = visitManager.updateVisit(visit);
+
                 if (updated != null) {
                     fireVisitUpdated(updated);
                     dispose();
                 } else {
-                    MessageDialog.error(this, MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
+                    MessageDialog.error(this,
+                            MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
                 }
             }
 

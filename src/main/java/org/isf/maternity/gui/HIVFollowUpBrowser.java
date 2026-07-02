@@ -614,7 +614,6 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 xlsExport.exportHIVInfantsToExcel(infantList, exportFile);
 
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.common.info.title"),
                         MessageBundle.getMessage("angal.hiv.export.success.msg") + " " + exportFile.getAbsolutePath());
 
                 Desktop.getDesktop().open(exportFile);
@@ -852,7 +851,6 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 infantManager.deleteInfant(infant);
                 performSearch();
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.common.info.title"),
                         MessageBundle.getMessage("angal.hiv.message.delete.success"));
             } catch (OHServiceException ex) {
                 OHServiceExceptionUtil.showMessages(ex);
@@ -870,8 +868,8 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         edit.addHIVVisitListener(new HIVVisitEdit.HIVVisitListener() {
             @Override
             public void visitInserted(AWTEvent e, HIVVisit visit) {
-                filterVisits(); // Rafraîchir la liste des visites
-                performSearch(); // Rafraîchir la liste des nourrissons (pour mettre à jour la dernière visite)
+                filterVisits();
+                performSearch();
             }
 
             @Override
@@ -932,7 +930,6 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 filterVisits();
                 performSearch();
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.common.info.title"),
                         MessageBundle.getMessage("angal.hiv.message.visit.delete.success"));
             } catch (OHServiceException ex) {
                 OHServiceExceptionUtil.showMessages(ex);
