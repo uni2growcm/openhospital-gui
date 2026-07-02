@@ -25,6 +25,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -125,6 +126,77 @@ public class GenericReportFromDateToDate extends DisplayReport {
 			LOGGER.error("", e);
 			MessageDialog.error(null, "angal.stat.reporterror.msg");
 		}
+	}
+
+	public GenericReportFromDateToDate(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName, String defaultName, boolean toExcel, boolean useStringDateParams) {
+		try {
+			File defaultFilename = new File(jasperReportsManager.compileDefaultFilename(defaultName));
+
+			if (toExcel) {
+				JFileChooser fcExcel = ExcelExporter.getJFileChooserExcel(defaultFilename);
+
+				int iRetVal = fcExcel.showSaveDialog(null);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File exportFile = fcExcel.getSelectedFile();
+					FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fcExcel.getFileFilter();
+					String extension = selectedFilter.getExtensions()[0];
+					if (!exportFile.getName().endsWith(extension)) {
+						exportFile = new File(exportFile.getAbsoluteFile() + "." + extension);
+					}
+					jasperReportsManager.getGenericReportFromDateToDateExcel(fromDate, toDate, jasperFileFolder, jasperFileName, exportFile.getAbsolutePath());
+				}
+			} else {
+				JasperReportResultDto jasperReportResultDto = useStringDateParams
+						? getGenericReportFromDateToDatePdfWithStringDates(fromDate, toDate, jasperFileFolder, jasperFileName)
+						: getGenericReportFromDateToDatePdf(fromDate, toDate, jasperFileFolder, jasperFileName);
+				showReport(jasperReportResultDto);
+			}
+		} catch (OHReportException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		} catch (Exception e) {
+			LOGGER.error("", e);
+			MessageDialog.error(null, "angal.stat.reporterror.msg");
+		}
+	}
+
+	private JasperReportResultDto getGenericReportFromDateToDatePdfWithStringDates(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName) throws Exception {
+		DataSource dataSource = Context.getApplicationContext().getBean(DataSource.class);
+		HospitalBrowsingManager hospitalManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
+
+		String jasperFilename = jasperFileFolder + File.separator + jasperFileName + ".jasper";
+		String pdfFilename = jasperFileFolder + File.separator + "PDF" + File.separator + jasperFileName + ".pdf";
+
+		HashMap<String, Object> parameters = new HashMap<>();
+
+		Hospital hosp = hospitalManager.getHospital();
+		parameters.put("Hospital", hosp.getDescription());
+		parameters.put("Address", hosp.getAddress());
+		parameters.put("City", hosp.getCity());
+		parameters.put("Email", hosp.getEmail());
+		parameters.put("Telephone", hosp.getTelephone());
+		parameters.put("Currency", hosp.getCurrencyCod());
+
+		DateTimeFormatter sqlDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		parameters.put("fromdate", fromDate != null ? fromDate.format(sqlDateFormat) : null);
+		parameters.put("todate", toDate != null ? toDate.format(sqlDateFormat) : null);
+		parameters.put("IMAGE_PATH", "./rsc/images/logo_report.png");
+
+		parameters.put(JRParameter.REPORT_LOCALE, Locale.getDefault());
+
+		try {
+			ResourceBundle resourceBundle = ResourceBundle.getBundle(jasperFileName, Locale.getDefault(), new UTF8Control());
+			parameters.put(JRParameter.REPORT_RESOURCE_BUNDLE, resourceBundle);
+		} catch (MissingResourceException e) {
+			LOGGER.error(">> no resource bundle for language '{}' found for report {}", GeneralData.LANGUAGE, jasperFileName);
+		}
+
+		File jasperFile = new File(jasperFilename);
+		JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperFile);
+		Connection connection = dataSource.getConnection();
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, connection);
+		connection.close();
+		JasperExportManager.exportReportToPdfFile(jasperPrint, pdfFilename);
+		return new JasperReportResultDto(jasperPrint, jasperFilename, pdfFilename);
 	}
 	
 	public GenericReportFromDateToDate(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName, String defaultName, boolean toExcel) {

@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -92,6 +92,7 @@ public class PatVacEdit extends JDialog {
 	private Patient selectedPatient;
 	private GoodDateChooser vaccineDateFieldCal;
 	private int patNextYProg;
+	private VoLimitedTextField villageTextField;
 
 	private JPanel centerPanel;
 
@@ -175,21 +176,21 @@ public class PatVacEdit extends JDialog {
 			gbcPatientLabel.gridx = 0;
 			gbcPatientLabel.gridy = 1;
 			dataPanel.add(patientLabel, gbcPatientLabel);
-			
+
 			GridBagConstraints gbcTextFieldPatient = new GridBagConstraints();
 			gbcTextFieldPatient.fill = GridBagConstraints.HORIZONTAL;
 			gbcTextFieldPatient.insets = new Insets(5, 5, 5, 5);
 			gbcTextFieldPatient.gridx = 1;
 			gbcTextFieldPatient.gridy = 1;
 			dataPanel.add(getJTextFieldPatient(), gbcTextFieldPatient);
-			
+
 			GridBagConstraints gbcPickPatientButton = new GridBagConstraints();
 			gbcPickPatientButton.insets = new Insets(5, 5, 5, 5);
 			gbcPickPatientButton.anchor = GridBagConstraints.WEST;
 			gbcPickPatientButton.gridx = 2;
 			gbcPickPatientButton.gridy = 1;
 			dataPanel.add(getJButtonPickPatient(), gbcPickPatientButton);
-			
+
 			if (!insert) {
 				jTextFieldPatient.setEnabled(false);
 				getJButtonPickPatient().setEnabled(false);
@@ -260,8 +261,41 @@ public class PatVacEdit extends JDialog {
 			gbcVaccineComboBox.gridx = 1;
 			gbcVaccineComboBox.gridy = 3;
 			dataPanel.add(getVaccineComboBox(), gbcVaccineComboBox);
+
+			JLabel villageLabel = new JLabel(MessageBundle.getMessage("angal.patvac.village") + ':');
+			GridBagConstraints gbcVillageLabel = new GridBagConstraints();
+			gbcVillageLabel.anchor = GridBagConstraints.WEST;
+			gbcVillageLabel.fill = GridBagConstraints.VERTICAL;
+			gbcVillageLabel.insets = new Insets(5, 5, 5, 5);
+			gbcVillageLabel.gridx = 0;
+			gbcVillageLabel.gridy = 4;
+			dataPanel.add(villageLabel, gbcVillageLabel);
+
+			GridBagConstraints gbcVillageTextField = new GridBagConstraints();
+			gbcVillageTextField.fill = GridBagConstraints.BOTH;
+			gbcVillageTextField.insets = new Insets(5, 5, 5, 5);
+			gbcVillageTextField.gridwidth = 4;
+			gbcVillageTextField.gridx = 1;
+			gbcVillageTextField.gridy = 4;
+			dataPanel.add(getVillageTextField(), gbcVillageTextField);
 		}
 		return dataPanel;
+	}
+
+	/**
+	 * This method initializes villageTextField
+	 */
+	private VoLimitedTextField getVillageTextField() {
+		if (villageTextField == null) {
+			villageTextField = new VoLimitedTextField(50, 25);
+			if (!insert && patVac != null) {
+				String village = patVac.getVillage();
+				if (village != null) {
+					villageTextField.setText(village);
+				}
+			}
+		}
+		return villageTextField;
 	}
 
 	private JTextField getJTextFieldPatient() {
@@ -578,6 +612,7 @@ public class PatVacEdit extends JDialog {
 				patVac.setProgr(Integer.parseInt(progrTextField.getText()));
 				patVac.setVaccineDate(vaccineDate.atStartOfDay());
 				patVac.setVaccine((Vaccine) vaccineComboBox.getSelectedItem());
+				patVac.setVillage(villageTextField.getText());
 				patVac.setPatient(selectedPatient);
 				patVac.setLock(0);
 
