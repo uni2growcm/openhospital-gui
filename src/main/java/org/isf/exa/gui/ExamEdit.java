@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -40,7 +40,9 @@ import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
 
 import org.isf.exa.manager.ExamBrowsingManager;
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
 import org.isf.exa.model.Exam;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -106,10 +108,12 @@ public class ExamEdit extends JDialog {
 	private JComboBox<String> procComboBox;
 	private VoLimitedTextField defTextField;
 	private JComboBox<ExamType> examTypeComboBox;
+	private JComboBox<ArticleFamily> articleFamilyComboBox;
 	private Exam exam;
 	private boolean insert;
 
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
@@ -131,7 +135,7 @@ public class ExamEdit extends JDialog {
 		Dimension screensize = kit.getScreenSize();
         final int pfrmBase = 20;
         final int pfrmWidth = 7;
-        final int pfrmHeight = 8;
+		final int pfrmHeight = 9;
         this.setBounds((screensize.width - screensize.width * pfrmWidth / pfrmBase ) / 2, (screensize.height - screensize.height * pfrmHeight / pfrmBase)/2,
                 screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
@@ -145,7 +149,7 @@ public class ExamEdit extends JDialog {
 
 	/**
 	 * This method initializes jContentPane
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJContentPane() {
@@ -166,6 +170,7 @@ public class ExamEdit extends JDialog {
 	private JPanel getDataPanel() {
 		if (dataPanel == null) {
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.exa.type") + ':');
+			JLabel familyLabel = new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':');
 			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':');
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
 			JLabel procLabel = new JLabel(MessageBundle.getMessage("angal.exa.procedure") + ':');
@@ -173,6 +178,8 @@ public class ExamEdit extends JDialog {
 			dataPanel = new JPanel(new SpringLayout());
 			dataPanel.add(typeLabel);
 			dataPanel.add(getExamTypeComboBox());
+			dataPanel.add(familyLabel);
+			dataPanel.add(getArticleFamilyComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -181,7 +188,7 @@ public class ExamEdit extends JDialog {
 			dataPanel.add(getProcComboBox());
 			dataPanel.add(defLabel);
 			dataPanel.add(getDefTextField());
-			SpringUtilities.makeCompactGrid(dataPanel, 5, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
@@ -231,7 +238,7 @@ public class ExamEdit extends JDialog {
 
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
-
+					exam.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 					exam.setCode(codeTextField.getText().toUpperCase());
 					exam.setDefaultResult(defTextField.getText().toUpperCase());
 					exam.setProcedure(procedure);
@@ -363,4 +370,28 @@ public class ExamEdit extends JDialog {
 		return examTypeComboBox;
 	}
 
+	private JComboBox<ArticleFamily> getArticleFamilyComboBox() {
+		if (articleFamilyComboBox == null) {
+			articleFamilyComboBox = new JComboBox<>();
+			articleFamilyComboBox.addItem(null);
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				if (families != null) {
+					ArticleFamily toSelect = null;
+					for (ArticleFamily af : families) {
+						articleFamilyComboBox.addItem(af);
+						if (!insert && af.equals(exam.getArticleFamily())) {
+							toSelect = af;
+						}
+					}
+					if (toSelect != null) {
+						articleFamilyComboBox.setSelectedItem(toSelect);
+					}
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		return articleFamilyComboBox;
+	}
 }

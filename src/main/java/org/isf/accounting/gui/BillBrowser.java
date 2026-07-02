@@ -70,6 +70,7 @@ import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
+import org.isf.stat.manager.JasperReportsManager;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
@@ -185,6 +186,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 	private List<Bill> billPeriod;
 	private List<BillPayments> paymentsPeriod;
 	private List<Bill> billFromPayments;
@@ -1335,6 +1337,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
 				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.reportgroupbyreduction.txt"));
+				options.add(MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.title"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1399,6 +1402,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					String reduc_code = option.trim().split("-")[0];
 					new GenericReportFromDateToDate(from, to, reduc_code, "rpt_base", "BillsReportGroupByReduction", MessageBundle.getMessage("angal.billbrowser.fullreportbillsreductionplanperuser.txt"),
 							false);
+				}
+				if (options.indexOf(option) == 8) {
+						new GenericReportFromDateToDate(from, to, "rpt_base", "GlobalConsumptionReportByService",
+								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), true);
 				}
 			});
 		}
