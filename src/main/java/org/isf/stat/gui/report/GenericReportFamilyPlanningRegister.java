@@ -42,20 +42,8 @@ public class GenericReportFamilyPlanningRegister extends DisplayReport {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericReportFamilyPlanningRegister.class);
     private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 
-    public GenericReportFamilyPlanningRegister(
-            LocalDate fromDate,
-            LocalDate toDate,
-            String statut,
-            String methodCode,
-            Boolean actif,
-            String sexe,
-            String jasperFileName) {
-
-        System.out.println("=== GenericReportFamilyPlanningRegister ===");
-        System.out.println("fromDate = " + fromDate);
-        System.out.println("toDate   = " + toDate);
-        System.out.println("jasper   = " + jasperFileName);
-
+    public GenericReportFamilyPlanningRegister(LocalDate fromDate, LocalDate toDate, String statut, String methodCode,
+            Boolean actif, String sexe, String jasperFileName) {
         if (fromDate == null || toDate == null) {
             return;
         }
@@ -65,18 +53,14 @@ public class GenericReportFamilyPlanningRegister extends DisplayReport {
             showReport(jasperReportResultDto);
 
         } catch (Exception e) {
-            LOGGER.error("Erreur lors de la génération du rapport", e);
             e.printStackTrace();
             MessageDialog.error(null, "angal.stat.reporterror.msg");
         }
     }
 
-    private String compileFilename(String jasperFileName,
-                                   LocalDate fromDate,
-                                   LocalDate toDate) {
+    private String compileFilename(String jasperFileName, LocalDate fromDate, LocalDate toDate) {
 
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD);
 
         StringBuilder fileName = new StringBuilder(jasperFileName);
 
