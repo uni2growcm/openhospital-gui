@@ -41,7 +41,7 @@ $F{ORDERING_FIELD}.equals( "3" ))]]></conditionExpression>
 	<queryString>
 		<![CDATA[SELECT 
    
-    fp.FP_ID AS id,
+   p.PAT_ID AS patient_code,
     
     p.PAT_NAME AS patient,
     
@@ -130,28 +130,100 @@ ORDER BY
     fp.FP_REGISTRATION_DATE DESC,
     p.PAT_NAME ASC]]>
 	</queryString>
-	<field name="id" class="java.lang.Integer"/>
-	<field name="patient" class="java.lang.String"/>
-	<field name="date_inscription" class="java.lang.String"/>
-	<field name="date_inscription_sort" class="java.time.LocalDateTime"/>
-	<field name="statut" class="java.lang.String"/>
-	<field name="statut_affichage" class="java.lang.String"/>
-	<field name="methode_actuelle" class="java.lang.String"/>
-	<field name="methode_code" class="java.lang.String"/>
-	<field name="derniere_visite" class="java.time.LocalDateTime"/>
-	<field name="derniere_visite_format" class="java.lang.String"/>
-	<field name="prochain_rdv" class="java.sql.Date"/>
-	<field name="prochain_rdv_format" class="java.lang.String"/>
-	<field name="nb_visites" class="java.lang.Long"/>
-	<field name="actif" class="java.lang.Boolean"/>
-	<field name="actif_affichage" class="java.lang.String"/>
-	<field name="structure_name" class="java.lang.String"/>
-	<field name="district_name" class="java.lang.String"/>
-	<field name="hos_address" class="java.lang.String"/>
-	<field name="hos_telephone" class="java.lang.String"/>
-	<field name="hos_email" class="java.lang.String"/>
+	<field name="patient_code" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_ID"/>
+		<property name="com.jaspersoft.studio.field.label" value="patient_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="patient" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="patient"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
+	</field>
+	<field name="date_inscription" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="date_inscription"/>
+		<property name="com.jaspersoft.studio.field.label" value="date_inscription"/>
+	</field>
+	<field name="date_inscription_sort" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="FP_REGISTRATION_DATE"/>
+		<property name="com.jaspersoft.studio.field.label" value="date_inscription_sort"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_familyplanning"/>
+	</field>
+	<field name="statut" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="FP_STATUS"/>
+		<property name="com.jaspersoft.studio.field.label" value="statut"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_familyplanning"/>
+	</field>
+	<field name="statut_affichage" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="statut_affichage"/>
+		<property name="com.jaspersoft.studio.field.label" value="statut_affichage"/>
+	</field>
+	<field name="methode_actuelle" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="TYPO_DESCRIPTION"/>
+		<property name="com.jaspersoft.studio.field.label" value="methode_actuelle"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_typologies"/>
+	</field>
+	<field name="methode_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="FP_CURRENT_METHOD_CODE"/>
+		<property name="com.jaspersoft.studio.field.label" value="methode_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_familyplanning"/>
+	</field>
+	<field name="derniere_visite" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="derniere_visite"/>
+		<property name="com.jaspersoft.studio.field.label" value="derniere_visite"/>
+	</field>
+	<field name="derniere_visite_format" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="derniere_visite_format"/>
+		<property name="com.jaspersoft.studio.field.label" value="derniere_visite_format"/>
+	</field>
+	<field name="prochain_rdv" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="prochain_rdv"/>
+		<property name="com.jaspersoft.studio.field.label" value="prochain_rdv"/>
+	</field>
+	<field name="prochain_rdv_format" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="prochain_rdv_format"/>
+		<property name="com.jaspersoft.studio.field.label" value="prochain_rdv_format"/>
+	</field>
+	<field name="nb_visites" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="nb_visites"/>
+		<property name="com.jaspersoft.studio.field.label" value="nb_visites"/>
+	</field>
+	<field name="actif" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="FP_ACTIVE"/>
+		<property name="com.jaspersoft.studio.field.label" value="actif"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_familyplanning"/>
+	</field>
+	<field name="actif_affichage" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="actif_affichage"/>
+		<property name="com.jaspersoft.studio.field.label" value="actif_affichage"/>
+	</field>
+	<field name="structure_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="HOS_NAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_hospital"/>
+	</field>
+	<field name="district_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="HOS_CITY"/>
+		<property name="com.jaspersoft.studio.field.label" value="district_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_hospital"/>
+	</field>
+	<field name="hos_address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="HOS_ADDR"/>
+		<property name="com.jaspersoft.studio.field.label" value="hos_address"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_hospital"/>
+	</field>
+	<field name="hos_telephone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="HOS_TELE"/>
+		<property name="com.jaspersoft.studio.field.label" value="hos_telephone"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_hospital"/>
+	</field>
+	<field name="hos_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="HOS_EMAIL"/>
+		<property name="com.jaspersoft.studio.field.label" value="hos_email"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="oh_hospital"/>
+	</field>
 	<variable name="TOTAL_PATIENTS" class="java.lang.Integer" calculation="Count">
-		<variableExpression><![CDATA[$F{id}]]></variableExpression>
+		<variableExpression><![CDATA[$F{patient_code}]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_ACTIFS" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{actif} == true ? 1 : 0]]></variableExpression>
@@ -402,7 +474,7 @@ ORDER BY
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{patient_code}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="Opening" x="40" y="0" width="120" height="16" uuid="33d0adf3-701c-4f4d-ab06-49e3c156b300"/>
