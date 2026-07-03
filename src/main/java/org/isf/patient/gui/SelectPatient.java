@@ -138,6 +138,9 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	private JPanel jPanelPagination;
 
+	private Integer minAge;
+	private Integer maxAge;
+
 	public SelectPatient(JFrame owner, Patient pat) {
 		super(owner, true);
 
@@ -219,6 +222,24 @@ public class SelectPatient extends JDialog implements PatientListener {
 		loadPatientPage();
 	}
 
+	public SelectPatient(JFrame owner, String searchText, boolean enableAddPatient, boolean femaleOnly) {
+		super(owner, true);
+
+		this.femalesOnly = femaleOnly;
+
+		ps = new PatientSummary(patient);
+
+		initializeDialog();
+
+		getButtonNew().setVisible(enableAddPatient);
+
+		if (searchText != null) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+
+		loadPatientPage();
+	}
+
 	public SelectPatient(JDialog owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
 
@@ -281,11 +302,18 @@ public class SelectPatient extends JDialog implements PatientListener {
 				}
 			}
 
-			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLike(
+			org.springframework.data.domain.PageRequest pageable =
+					org.springframework.data.domain.PageRequest.of(
+							currentPage,
+							GeneralData.PAGINATIONPAGESIZE,
+							org.springframework.data.domain.Sort.by("name"));
+
+			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLikeWith(
 					keyword,
 					femalesOnly,
-					currentPage,
-                    GeneralData.PAGINATIONPAGESIZE);
+					minAge,
+					maxAge,
+					pageable);
 
 			patSearch = new ArrayList<>(page.getContent());
 
@@ -813,4 +841,33 @@ public class SelectPatient extends JDialog implements PatientListener {
 		currentPage = 0;
 		loadPatientPage();
 	}
+
+	public SelectPatient(JDialog owner, String searchText, boolean enableAddPatient, Integer minAge, Integer maxAge) {
+		super(owner, true);
+		this.minAge = minAge;
+		this.maxAge = maxAge;
+		this.femalesOnly = false;
+		ps = new PatientSummary(patient);
+		initializeDialog();
+		getButtonNew().setVisible(enableAddPatient);
+		if (searchText != null) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+		loadPatientPage();
+	}
+
+	public SelectPatient(JFrame owner, String searchText, boolean enableAddPatient, Integer minAge, Integer maxAge) {
+		super(owner, true);
+		this.minAge = minAge;
+		this.maxAge = maxAge;
+		this.femalesOnly = false;
+		ps = new PatientSummary(patient);
+		initializeDialog();
+		getButtonNew().setVisible(enableAddPatient);
+		if (searchText != null) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+		loadPatientPage();
+	}
+
 }
