@@ -614,7 +614,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         insert = inserting;
         if (insert) {
             thisBill = new Bill();
-			thisBill.setDate(today);
+			thisBill.setDate(today.withSecond(0).withNano(0));
             thisBill.setPriceList(lstArray.get(0));
         } else {
             try {
@@ -2274,20 +2274,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	}
 
 	private boolean isValidPaymentDate(LocalDateTime datePay) {
-		LocalDateTime now = TimeTools.getNow();
-		LocalDateTime lastPay;
-		if (!payItems.isEmpty()) {
-			lastPay = payItems.get(payItems.size() - 1).getDate();
-		} else {
-			lastPay = thisBill.getDate();
-		}
-		if (datePay.isBefore(thisBill.getDate())) {
+		LocalDateTime now = TimeTools.getNow().withSecond(0).withNano(0);
+
+		LocalDateTime billDate = thisBill.getDate().withSecond(0).withNano(0);
+		LocalDateTime paymentDate = datePay.withSecond(0).withNano(0);
+
+		LocalDateTime lastPay = payItems.isEmpty()
+				? billDate
+				: payItems.get(payItems.size() - 1).getDate().withSecond(0).withNano(0);
+
+		if (paymentDate.isBefore(billDate)) {
 			MessageDialog.error(this, "angal.newbill.paymentmadebeforebilldate.msg");
 			return false;
-		} else if (datePay.isBefore(lastPay)) {
+		} else if (paymentDate.isBefore(lastPay)) {
 			MessageDialog.error(this, "angal.newbill.thedateisbeforethelastpayment.msg");
 			return false;
-		} else if (datePay.isAfter(now)) {
+		} else if (paymentDate.isAfter(now)) {
 			MessageDialog.error(this, "angal.newbill.payementsinthefuturearenotallowed.msg");
 			return false;
 		}
