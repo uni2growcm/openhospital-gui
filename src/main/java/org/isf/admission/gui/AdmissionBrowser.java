@@ -356,6 +356,12 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private OperationRowAdm operationad;
 
+	private JTextField roomNumberTextField;
+	private JTextField bedNumberTextField;
+
+	private JPanel roomNumberPanel;
+	private JPanel bedNumberPanel;
+
 	/*
 	 * from AdmittedPatientBrowser
 	 */
@@ -560,30 +566,39 @@ public class AdmissionBrowser extends ModalJFrame {
 											.addComponent(getDiseaseInPanel())
 											.addComponent(getDiseaseOutPanel())
 											.addGroup(layout.createSequentialGroup()
-															.addGroup(layout.createParallelGroup(LEADING)
-																			.addComponent(getWardPanel())
-																			.addComponent(getAdmissionDatePanel())
-																			.addComponent(getDischargeDatePanel()))
-															.addGroup(layout.createParallelGroup(LEADING)
-																			.addComponent(getFHUPanel())
-																			.addComponent(getAdmissionTypePanel())
-																			.addComponent(getBedDaysPanel()))
-															.addGroup(layout.createParallelGroup(LEADING)
-																			.addComponent(getProgYearPanel())
-																			.addComponent(getMalnutritionPanel())
-																			.addComponent(getDischargeTypePanel())
-																			.addComponent(getJLabelRequiredFields())))));
+													.addGroup(layout.createParallelGroup(LEADING)
+															.addComponent(getWardPanel())
+															.addComponent(getAdmissionDatePanel())
+															.addComponent(getRoomNumberPanel())
+															.addComponent(getDischargeDatePanel()))
+
+													.addGroup(layout.createParallelGroup(LEADING)
+															.addComponent(getFHUPanel())
+															.addComponent(getAdmissionTypePanel())
+															.addComponent(getBedNumberPanel())
+															.addComponent(getBedDaysPanel()))
+
+													.addGroup(layout.createParallelGroup(LEADING)
+															.addComponent(getProgYearPanel())
+															.addComponent(getMalnutritionPanel())
+															.addComponent(getDischargeTypePanel())
+															.addComponent(getJLabelRequiredFields())))));
 
 			layout.setVerticalGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(BASELINE)
 											.addComponent(getWardPanel())
 											.addComponent(getFHUPanel())
 											.addComponent(getProgYearPanel()))
-							.addGroup(layout.createParallelGroup(BASELINE)
-											.addComponent(getAdmissionDatePanel())
-											.addComponent(getAdmissionTypePanel())
-											.addComponent(getMalnutritionPanel()))
-							.addComponent(getDiseaseInPanel())
+					.addGroup(layout.createParallelGroup(BASELINE)
+							.addComponent(getAdmissionDatePanel())
+							.addComponent(getAdmissionTypePanel())
+							.addComponent(getMalnutritionPanel()))
+
+					.addGroup(layout.createParallelGroup(BASELINE)
+							.addComponent(getRoomNumberPanel())
+							.addComponent(getBedNumberPanel()))
+
+					.addComponent(getDiseaseInPanel())
 							.addGroup(layout.createParallelGroup(BASELINE)
 											.addComponent(getDischargeDatePanel())
 											.addComponent(getBedDaysPanel())
@@ -1703,6 +1718,17 @@ public class AdmissionBrowser extends ModalJFrame {
 
 				// get FHU (it can be null)
 				String s = FHUTextField.getText();
+				if (roomNumberTextField.getText().trim().isEmpty()) {
+					admission.setRoomNumber(null);
+				} else {
+					admission.setRoomNumber(roomNumberTextField.getText().trim());
+				}
+
+				if (bedNumberTextField.getText().trim().isEmpty()) {
+					admission.setBedNumber(null);
+				} else {
+					admission.setBedNumber(bedNumberTextField.getText().trim());
+				}
 				if (s.equals("")) {
 					admission.setFHU(null);
 				} else {
@@ -2072,5 +2098,44 @@ public class AdmissionBrowser extends ModalJFrame {
 			}
 		}
 	}
+
+	private JPanel getRoomNumberPanel() {
+		if (roomNumberPanel == null) {
+			roomNumberPanel = new JPanel();
+
+			if (editing) {
+				roomNumberTextField = new JTextField(admission.getRoomNumber());
+			} else {
+				roomNumberTextField = new JTextField();
+			}
+
+			roomNumberTextField.setColumns(10);
+
+			roomNumberPanel.add(roomNumberTextField);
+			roomNumberPanel.setBorder(BorderFactory.createTitledBorder(
+					MessageBundle.getMessage("angal.admission.roomnumber.border")));
+		}
+		return roomNumberPanel;
+	}
+
+	private JPanel getBedNumberPanel() {
+		if (bedNumberPanel == null) {
+			bedNumberPanel = new JPanel();
+
+			if (editing) {
+				bedNumberTextField = new JTextField(admission.getBedNumber());
+			} else {
+				bedNumberTextField = new JTextField();
+			}
+
+			bedNumberTextField.setColumns(10);
+
+			bedNumberPanel.add(bedNumberTextField);
+			bedNumberPanel.setBorder(BorderFactory.createTitledBorder(
+					MessageBundle.getMessage("angal.admission.bednumber.border")));
+		}
+		return bedNumberPanel;
+	}
+
 
 }
