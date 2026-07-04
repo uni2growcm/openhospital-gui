@@ -496,8 +496,11 @@ public class StatsBrowsing extends ModalJFrame {
         }
 
         vaccinesCombo.addActionListener(e -> {
-            if (vaccinesCombo.getSelectedItem() != null) {
-                _selectedVaccine = vaccinesCombo.getSelectedItem().toString();
+            Object selected = vaccinesCombo.getSelectedItem();
+
+            if (selected != null
+                    && !selected.toString().equals(MessageBundle.getMessage("angal.stat.allvaccines"))) {
+                _selectedVaccine = selected.toString();
             } else {
                 _selectedVaccine = "";
             }
@@ -569,8 +572,11 @@ public class StatsBrowsing extends ModalJFrame {
         examResultsFlowPanel.add(examResultsCombo);
 
         examsCombo.addActionListener(e -> {
-            if (examsCombo.getSelectedItem() != null) {
-                _selectedExam = examsCombo.getSelectedItem().toString();
+            Object selected = examsCombo.getSelectedItem();
+
+            if (selected != null
+                    && !selected.toString().equals(MessageBundle.getMessage("angal.stat.allexams"))) {
+                _selectedExam = selected.toString();
             } else {
                 _selectedExam = "";
             }
@@ -685,12 +691,14 @@ public class StatsBrowsing extends ModalJFrame {
         operationResultsFlowPanel.add(operationResultsLabel);
         operationResultsFlowPanel.add(operationResultsCombo);
 
-        operationResultsCombo.addActionListener(e -> {
-            Object selected = operationResultsCombo.getSelectedItem();
-            if (selected != null && !selected.equals(MessageBundle.getMessage("angal.stat.allresults"))) {
-                _selectedOperationResult = selected.toString();
+        operationsCombo.addActionListener(e -> {
+            Object selected = operationsCombo.getSelectedItem();
+
+            if (selected != null
+                    && !selected.toString().equals(MessageBundle.getMessage("angal.stat.alloperations"))) {
+                _selectedOperation = selected.toString();
             } else {
-                _selectedOperationResult = "";
+                _selectedOperation = "";
             }
         });
 
@@ -1405,6 +1413,13 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private boolean checkExamPeriod() {
+
+        if (allExamsCheck.isSelected()) {
+            _exam_period_from = "";
+            _exam_period_to = "";
+            return true;
+        }
+
         LocalDate examDateFrom = examPeriodFrom.getDate();
         LocalDate examDateTo = examPeriodTo.getDate();
 
