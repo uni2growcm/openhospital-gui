@@ -22,6 +22,9 @@
 package org.isf.maternity.gui;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.GridBagLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -31,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
@@ -38,7 +43,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -69,8 +73,9 @@ import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
+import org.isf.utils.jobjects.ModalJFrame;
 
-public class DeliveryEdit extends JDialog {
+public class DeliveryEdit extends ModalJFrame {
 
     private final Pregnancy pregnancy;
     private PregnancyDelivery delivery;
@@ -88,23 +93,26 @@ public class DeliveryEdit extends JDialog {
     private JTextField fatherAge, fatherBirthplace, fatherProfession;
     private JCheckBox fatherAliveCheck, motherAliveCheck;
     private JComboBox deliveryModeCombo;
+    private JTextField feedingModeField;
+    private JTextField lochiaField;
+    private JTextArea noteArea;
     private JTable newbornTable;
     private DefaultTableModel tableModel;
     private JScrollPane tableScroll;
     private java.util.Map<Integer, Newborn> existingNewborns = new java.util.HashMap<>();
 
     public DeliveryEdit(JFrame owner, Pregnancy pregnancy) {
-        super(owner, true);
         this.pregnancy = pregnancy;
         init();
+        setLocationRelativeTo(owner);
     }
 
     private void init() {
         loadOrCreateDelivery();
         setTitle(MessageBundle.getMessage("angal.maternity.delivery.title.txt"));
         setSize(1600, 850);
-        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         add(topPanel(), BorderLayout.NORTH);
         add(centerPanel(), BorderLayout.CENTER);
         add(bottomPanel(), BorderLayout.SOUTH);
@@ -155,9 +163,11 @@ public class DeliveryEdit extends JDialog {
     }
 
     private JPanel fatherPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.delivery.father.txt")));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
         fatherName = new JTextField(50);
         fatherAge = new JTextField(50);
         fatherPhone = new JTextField(50);
@@ -166,24 +176,82 @@ public class DeliveryEdit extends JDialog {
         fatherProfession = new JTextField(50);
         fatherAliveCheck = new JCheckBox(MessageBundle.getMessage("angal.maternity.delivery.fatheralive.label"), true);
         motherAliveCheck = new JCheckBox(MessageBundle.getMessage("angal.maternity.delivery.motheralive.label"), true);
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fathername.label"), fatherName));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherage.label"), fatherAge));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherphone.label"), fatherPhone));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherbirthplace.label"), fatherBirthplace));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.address.label"), fatherAddress));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.fatherprofession.label"), fatherProfession));
 
+        int row = 0;
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.fathername.label"), fatherName);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.fatherage.label"), fatherAge);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.fatherphone.label"), fatherPhone);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.fatherbirthplace.label"), fatherBirthplace);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.address.label"), fatherAddress);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.fatherprofession.label"), fatherProfession);
+
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.insets = new Insets(8, 4, 4, 4);
         JPanel checks = new JPanel(new FlowLayout(FlowLayout.LEFT));
         checks.add(fatherAliveCheck);
         checks.add(motherAliveCheck);
-        panel.add(checks);
+        panel.add(checks, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel.add(new JLabel(), gbc);
+
         return panel;
     }
 
+    private void addRow(JPanel panel, GridBagConstraints gbc, int rowIndex, String label, Component field) {
+        gbc.gridx = 0;
+        gbc.gridy = rowIndex;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.insets = new Insets(4, 4, 4, 8);
+        panel.add(new JLabel(label), gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(4, 0, 4, 4);
+        panel.add(field, gbc);
+    }
+
+    private void addNoteRow(JPanel panel, GridBagConstraints gbc, int rowIndex, String label, Component field) {
+        gbc.gridx = 0;
+        gbc.gridy = rowIndex;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.insets = new Insets(4, 4, 4, 8);
+        panel.add(new JLabel(label), gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.insets = new Insets(4, 0, 4, 4);
+        panel.add(field, gbc);
+    }
+
     private JPanel otherInfoPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.maternity.delivery.other.txt")));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
         anesthesiaField = new JTextField(50);
         perinealCombo = new JComboBox<>(PerinealIntegrity.values());
         deliveryModeCombo = new JComboBox<>();
@@ -208,16 +276,27 @@ public class DeliveryEdit extends JDialog {
         JTextField placentaWeightField = new JTextField(50);
         JTextField bloodLossField = new JTextField(50);
 
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.mode.label"), deliveryModeCombo));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.indication.label"), indicationField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.laboronset.label"), laborOnsetField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.rom.label"), romField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.anasthesia.label"), anesthesiaField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.perineal.label"), perinealCombo));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.placentacomplete.label"), placentaCompleteCheck));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.placentaweight.label"), placentaWeightField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.estimatedbloodloss.label"), bloodLossField));
-        panel.add(row(MessageBundle.getMessage("angal.maternity.delivery.clinician.label"), clinicianField));
+        feedingModeField = new JTextField(50);
+        lochiaField = new JTextField(50);
+        noteArea = new JTextArea(4, 38);
+        noteArea.setLineWrap(true);
+        noteArea.setWrapStyleWord(true);
+        JScrollPane noteScroll = new JScrollPane(noteArea);
+
+        int row = 0;
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.mode.label"), deliveryModeCombo);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.indication.label"), indicationField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.laboronset.label"), laborOnsetField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.rom.label"), romField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.anasthesia.label"), anesthesiaField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.perineal.label"), perinealCombo);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.placentacomplete.label"), placentaCompleteCheck);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.placentaweight.label"), placentaWeightField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.estimatedbloodloss.label"), bloodLossField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.clinician.label"), clinicianField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.feedingmode.label"), feedingModeField);
+        addRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.lochia.label"), lochiaField);
+        addNoteRow(panel, gbc, row++, MessageBundle.getMessage("angal.maternity.delivery.note.label"), noteScroll);
 
         return panel;
     }
@@ -239,6 +318,7 @@ public class DeliveryEdit extends JDialog {
                 MessageBundle.getMessage("angal.maternity.delivery.crytime.col"),
                 MessageBundle.getMessage("angal.maternity.delivery.resuscitation.col"),
                 MessageBundle.getMessage("angal.maternity.delivery.congenitalanomalies.col"),
+                MessageBundle.getMessage("angal.maternity.delivery.complication.col"),
                 MessageBundle.getMessage("angal.maternity.delivery.neonatalstatus.col"),
                 MessageBundle.getMessage("angal.maternity.delivery.hiv.col")
         };
@@ -292,8 +372,8 @@ public class DeliveryEdit extends JDialog {
             }))
         );
 
-        newbornTable.getColumnModel().getColumn(13).setCellEditor(new DefaultCellEditor(createNeonatalStatusCombo()));
-        newbornTable.getColumnModel().getColumn(14).setCellEditor(new DefaultCellEditor(createHivStatusCombo()));
+        newbornTable.getColumnModel().getColumn(14).setCellEditor(new DefaultCellEditor(createNeonatalStatusCombo()));
+        newbornTable.getColumnModel().getColumn(15).setCellEditor(new DefaultCellEditor(createHivStatusCombo()));
     }
 
     private JComboBox<String> createCryTimeCombo() {
@@ -370,6 +450,9 @@ public class DeliveryEdit extends JDialog {
             delivery.setPlacentaComplete(placentaCompleteCheck.isSelected());
             delivery.setDeliveryMode(DeliveryMode.valueOf((String) deliveryModeCombo.getSelectedItem()));
             delivery.setAttendingClinicianId(clinicianField.getText());
+            delivery.setFeedingMode(feedingModeField.getText());
+            delivery.setLochia(lochiaField.getText());
+            delivery.setNote(noteArea.getText());
 
             // 4. Save/Update Delivery
             boolean isNew = (delivery.getId() == null);
@@ -440,8 +523,9 @@ public class DeliveryEdit extends JDialog {
         String cryTimeStr = getString(row, 10);
         Boolean resuscitation = getBoolean(row, 11);
         String anomalies = getString(row, 12);
-        String statusStr = getString(row, 13);
-        String hivStr = getString(row, 14);
+        String complication = getString(row, 13);
+        String statusStr = getString(row, 14);
+        String hivStr = getString(row, 15);
 
         Patient baby = (existing == null) ? new Patient() : existing.getBabyPatient();
 
@@ -473,6 +557,7 @@ public class DeliveryEdit extends JDialog {
         nb.setCryTime(findCryTimeByDisplayString(cryTimeStr));
         nb.setResuscitationRequired(resuscitation);
         nb.setCongenitalAnomalies(anomalies);
+        nb.setComplication(complication);
         nb.setNeonatalStatus(findNeonatalStatusByDisplayString(statusStr));
         nb.setHivStatus(findHivStatusByDisplayString(hivStr));
         nb.setBirthOrder(birthOrder);
@@ -607,6 +692,9 @@ public class DeliveryEdit extends JDialog {
         placentaCompleteCheck.setSelected(delivery.isPlacentaComplete());
         if (delivery.getDeliveryMode() != null) deliveryModeCombo.setSelectedItem(delivery.getDeliveryMode().name());
         clinicianField.setText(delivery.getAttendingClinicianId());
+        feedingModeField.setText(delivery.getFeedingMode());
+        lochiaField.setText(delivery.getLochia());
+        noteArea.setText(delivery.getNote());
 
         try {
             List<Newborn> newborns = newbornManager.getNewbornsByDelivery(delivery.getId());
@@ -629,6 +717,7 @@ public class DeliveryEdit extends JDialog {
                         nb.getCryTime() != null ? MessageBundle.getMessage(nb.getCryTime().getKey()) : "",
                         nb.getResuscitationRequired() ? MessageBundle.getMessage("angal.common.yes.txt") : MessageBundle.getMessage("angal.common.no.txt"),
                         nb.getCongenitalAnomalies(),
+                        nb.getComplication(),
                         nb.getNeonatalStatus() != null ? MessageBundle.getMessage(nb.getNeonatalStatus().getKey()) : "",
                         nb.getHivStatus() != null ? MessageBundle.getMessage(nb.getHivStatus().getKey()) : ""
                 });

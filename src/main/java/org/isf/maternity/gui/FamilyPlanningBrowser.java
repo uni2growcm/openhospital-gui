@@ -72,6 +72,7 @@ import org.isf.maternity.model.FamilyPlanningVisit;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportFamilyPlanningRegister;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
@@ -80,6 +81,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.*;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -151,7 +153,6 @@ public class FamilyPlanningBrowser extends ModalJFrame {
 
     private FamilyPlanning selectedFP;
     private int selectedVisitRow = -1;
-    private static final Logger LOGGER = LoggerFactory.getLogger(FamilyPlanningBrowser.class);
 
     private List<Typology> methodTypologies = new ArrayList<>();
 
@@ -441,9 +442,40 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         if (MainMenu.checkUserGrants("familyplanning.export")) {
             buttonPanel.add(getExportButton());
         }
+        if (MainMenu.checkUserGrants("familyplanning.report")) {
+            buttonPanel.add(getReportButton());
+        }
         buttonPanel.add(getCloseButton());
 
         return buttonPanel;
+    }
+
+    private JButton getReportButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+        button.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
+        button.setIcon(new ImageIcon("rsc/icons/report_button.png"));
+        button.addActionListener(e -> generateReport());
+        button.setPreferredSize(new Dimension(120, 25));
+        return button;
+    }
+
+    private void generateReport() {
+
+        FamilyPlanningReportDialog dialog = new FamilyPlanningReportDialog(this);
+        dialog.setOnOk(() -> {
+            LocalDate fromDate = dialog.getDateFrom().toLocalDate();
+            LocalDate toDate = dialog.getDateTo().toLocalDate();
+            new GenericReportFamilyPlanningRegister(
+                    fromDate,
+                    toDate,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "FamilyPlanningRegister"
+            );
+        });
+        dialog.showAsModal(this);
     }
 
     private JButton getNewFPButton() {
