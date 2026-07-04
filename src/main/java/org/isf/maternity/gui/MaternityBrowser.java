@@ -1007,7 +1007,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         }
 
         DeliveryEdit edit = new DeliveryEdit(this, selectedPregnancy);
-        edit.setVisible(true);
+        edit.showAsModal(this);
     }
 
     private void admission() {
