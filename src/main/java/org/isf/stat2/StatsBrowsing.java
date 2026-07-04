@@ -269,16 +269,16 @@ public class StatsBrowsing extends ModalJFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (examsData != null) examsData.clear();
-                if (vaccinesData != null) vaccinesData.clear();
-                if (operationsData != null) operationsData.clear();
-                if (diseasesData != null) diseasesData.clear();
+                examsData = null;
+                vaccinesData = null;
+                operationsData = null;
+                diseasesData = null;
 
-                if (patientList != null) patientList.clear();
-                if (vaccinesList != null) vaccinesList.clear();
-                if (examsList != null) examsList.clear();
-                if (diseasesList != null) diseasesList.clear();
-                if (operationsList != null) operationsList.clear();
+                patientList = new ArrayList<>();
+                vaccinesList = new ArrayList<>();
+                examsList = new ArrayList<>();
+                diseasesList = new ArrayList<>();
+                operationsList = new ArrayList<>();
 
                 dispose();
             }
