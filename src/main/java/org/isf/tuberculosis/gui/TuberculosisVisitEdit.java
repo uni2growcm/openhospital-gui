@@ -29,9 +29,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.Serial;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -44,7 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -54,10 +51,8 @@ import org.isf.tuberculosis.manager.TuberculosisVisitManager;
 import org.isf.tuberculosis.model.*;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
-import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
-import org.isf.utils.jobjects.VoLimitedTextField;
 
 public class TuberculosisVisitEdit extends JDialog {
 
@@ -75,19 +70,6 @@ public class TuberculosisVisitEdit extends JDialog {
     private JTextField adherenceField;
     private JComboBox<DotStatus> dotStatusCombo;
     private JTextArea sideEffectsArea;
-    private JComboBox<LabResult> smearResultCombo;
-    private JComboBox<LabResult> geneXpertResultCombo;
-    private JComboBox<ResistanceResult> geneXpertRifResistanceCombo;
-    private JComboBox<LabResult> cultureResultCombo;
-    private JComboBox<DstResult> dstResultCombo;
-    private GoodDateChooser conversionDateField;
-    private JTextField chestXrayField;
-    private JTextField altField;
-    private JTextField astField;
-    private JTextField creatinineField;
-    private JTextField hemoglobinField;
-    private JTextField plateletsField;
-    private GoodDateChooser nextAppointmentField;
     private JTextArea notesArea;
 
     public TuberculosisVisitEdit(JFrame owner, TuberculosisTreatment treatment, boolean inserting) {
@@ -124,8 +106,8 @@ public class TuberculosisVisitEdit extends JDialog {
         } else {
             setTitle(MessageBundle.getMessage("angal.tb.visit.edittitle"));
         }
-        setMinimumSize(new Dimension(650, 500));
-        setPreferredSize(new Dimension(700, 550));
+        setMinimumSize(new Dimension(450, 400));
+        setPreferredSize(new Dimension(500, 450));
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
@@ -145,45 +127,6 @@ public class TuberculosisVisitEdit extends JDialog {
             if (visit.getSideEffects() != null) {
                 sideEffectsArea.setText(visit.getSideEffects());
             }
-            if (visit.getSmearResult() != null) {
-                smearResultCombo.setSelectedItem(visit.getSmearResult());
-            }
-            if (visit.getCultureResult() != null) {
-                cultureResultCombo.setSelectedItem(visit.getCultureResult());
-            }
-            if (visit.getGeneXpertResult() != null) {
-                geneXpertResultCombo.setSelectedItem(visit.getGeneXpertResult());
-            }
-            if (visit.getGeneXpertRifResistance() != null) {
-                geneXpertRifResistanceCombo.setSelectedItem(visit.getGeneXpertRifResistance());
-            }
-            if (visit.getDstResult() != null) {
-                dstResultCombo.setSelectedItem(visit.getDstResult());
-            }
-            if (visit.getConversionDate() != null) {
-                conversionDateField.setDate(visit.getConversionDate());
-            }
-            if (visit.getChestXrayFindings() != null) {
-                chestXrayField.setText(visit.getChestXrayFindings());
-            }
-            if (visit.getAlt() != null) {
-                altField.setText(String.valueOf(visit.getAlt()));
-            }
-            if (visit.getAst() != null) {
-                astField.setText(String.valueOf(visit.getAst()));
-            }
-            if (visit.getCreatinine() != null) {
-                creatinineField.setText(String.valueOf(visit.getCreatinine()));
-            }
-            if (visit.getHemoglobin() != null) {
-                hemoglobinField.setText(String.valueOf(visit.getHemoglobin()));
-            }
-            if (visit.getPlatelets() != null) {
-                plateletsField.setText(String.valueOf(visit.getPlatelets()));
-            }
-            if (visit.getNextAppointmentDate() != null) {
-                nextAppointmentField.setDate(visit.getNextAppointmentDate());
-            }
             if (visit.getNotes() != null) {
                 notesArea.setText(visit.getNotes());
             }
@@ -191,14 +134,8 @@ public class TuberculosisVisitEdit extends JDialog {
     }
 
     private JPanel getMainPanel() {
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.visit.clinicaltab"), getClinicalPanel());
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.visit.labtab"), getLabPanel());
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.visit.livertab"), getLiverPanel());
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.visit.notestab"), getNotesPanel());
-
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        mainPanel.add(getClinicalPanel(), BorderLayout.CENTER);
         return mainPanel;
     }
 
@@ -263,6 +200,7 @@ public class TuberculosisVisitEdit extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.sideeffects") + ":"), gbc);
 
         gbc.gridx = 1;
@@ -279,198 +217,17 @@ public class TuberculosisVisitEdit extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.nextappointment") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        nextAppointmentField = new GoodDateChooser((LocalDate) null);
-        panel.add(nextAppointmentField, gbc);
-
-        return panel;
-    }
-
-    private JPanel getLabPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-
-        int row = 0;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.smearresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        smearResultCombo = new JComboBox<>(LabResult.values());
-        smearResultCombo.setRenderer(new EnumRenderer());
-        panel.add(smearResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.cultureresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        cultureResultCombo = new JComboBox<>(LabResult.values());
-        cultureResultCombo.setRenderer(new EnumRenderer());
-        panel.add(cultureResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.genexpertresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        geneXpertResultCombo = new JComboBox<>(LabResult.values());
-        geneXpertResultCombo.setRenderer(new EnumRenderer());
-        panel.add(geneXpertResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.rifresistance") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        geneXpertRifResistanceCombo = new JComboBox<>(ResistanceResult.values());
-        geneXpertRifResistanceCombo.setRenderer(new EnumRenderer());
-        panel.add(geneXpertRifResistanceCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.dstresult") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        dstResultCombo = new JComboBox<>(DstResult.values());
-        dstResultCombo.setRenderer(new EnumRenderer());
-        panel.add(dstResultCombo, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.conversiondate") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        conversionDateField = new GoodDateChooser((LocalDate) null);
-        panel.add(conversionDateField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.chestxray") + ":"), gbc);
+        panel.add(new JLabel(MessageBundle.getMessage("angal.common.notes.txt") + ":"), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        chestXrayField = new VoLimitedTextField(255, 30);
-        panel.add(chestXrayField, gbc);
-
-        return panel;
-    }
-
-    private JPanel getLiverPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-
-        int row = 0;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel("ALT:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        altField = new JTextField(8);
-        panel.add(altField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel("AST:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        astField = new JTextField(8);
-        panel.add(astField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel("Creatinine:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        creatinineField = new JTextField(8);
-        panel.add(creatinineField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.common.hemoglobin.txt") + ":"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        hemoglobinField = new JTextField(8);
-        panel.add(hemoglobinField, gbc);
-
-        row++;
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel("Platelets:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        plateletsField = new JTextField(8);
-        panel.add(plateletsField, gbc);
-
-        return panel;
-    }
-
-    private JPanel getNotesPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        notesArea = new JTextArea(10, 50);
+        notesArea = new JTextArea(5, 25);
         notesArea.setLineWrap(true);
         notesArea.setWrapStyleWord(true);
-        panel.add(new JScrollPane(notesArea), BorderLayout.CENTER);
+        JScrollPane notesScroll = new JScrollPane(notesArea);
+        notesScroll.setPreferredSize(new Dimension(250, 100));
+        panel.add(notesScroll, gbc);
 
         return panel;
     }
@@ -518,65 +275,6 @@ public class TuberculosisVisitEdit extends JDialog {
 
         visit.setDotStatus((DotStatus) dotStatusCombo.getSelectedItem());
         visit.setSideEffects(sideEffectsArea.getText().trim());
-        visit.setSmearResult((LabResult) smearResultCombo.getSelectedItem());
-        visit.setGeneXpertResult((LabResult) geneXpertResultCombo.getSelectedItem());
-        visit.setGeneXpertRifResistance((ResistanceResult) geneXpertRifResistanceCombo.getSelectedItem());
-        visit.setCultureResult((LabResult) cultureResultCombo.getSelectedItem());
-        visit.setDstResult((DstResult) dstResultCombo.getSelectedItem());
-        visit.setConversionDate(conversionDateField.getDate());
-        visit.setChestXrayFindings(chestXrayField.getText().trim());
-
-        String altText = altField.getText().trim().replace(',', '.');
-        if (!altText.isEmpty()) {
-            try {
-                visit.setAlt(Double.parseDouble(altText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidalt.msg");
-                return;
-            }
-        }
-
-        String astText = astField.getText().trim().replace(',', '.');
-        if (!astText.isEmpty()) {
-            try {
-                visit.setAst(Double.parseDouble(astText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidast.msg");
-                return;
-            }
-        }
-
-        String creatText = creatinineField.getText().trim().replace(',', '.');
-        if (!creatText.isEmpty()) {
-            try {
-                visit.setCreatinine(Double.parseDouble(creatText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidcreatinine.msg");
-                return;
-            }
-        }
-
-        String hgbText = hemoglobinField.getText().trim().replace(',', '.');
-        if (!hgbText.isEmpty()) {
-            try {
-                visit.setHemoglobin(Double.parseDouble(hgbText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidhemoglobin.msg");
-                return;
-            }
-        }
-
-        String pltText = plateletsField.getText().trim();
-        if (!pltText.isEmpty()) {
-            try {
-                visit.setPlatelets(Integer.parseInt(pltText));
-            } catch (NumberFormatException e) {
-                MessageDialog.error(this, "angal.tb.visit.invalidplatelets.msg");
-                return;
-            }
-        }
-
-        visit.setNextAppointmentDate(nextAppointmentField.getDate());
         visit.setNotes(notesArea.getText().trim());
 
         try {

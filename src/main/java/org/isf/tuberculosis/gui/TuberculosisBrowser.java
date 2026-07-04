@@ -58,8 +58,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.examination.gui.PatientExaminationEdit;
+import org.isf.examination.manager.ExaminationBrowserManager;
+import org.isf.examination.model.GenderPatientExamination;
+import org.isf.examination.model.PatientExamination;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.lab.gui.LabNew;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
@@ -101,7 +106,7 @@ public class TuberculosisBrowser extends ModalJFrame {
     private final String[] visitColumns = {
             MessageBundle.getMessage("angal.tb.browser.visitdate.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.dotstatus.col").toUpperCase(),
-            MessageBundle.getMessage("angal.tb.browser.smearresult.col").toUpperCase(),
+            MessageBundle.getMessage("angal.tb.visit.adherence").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.visitnotes.col").toUpperCase()
     };
 
@@ -125,6 +130,7 @@ public class TuberculosisBrowser extends ModalJFrame {
     private TuberculosisTreatmentManager manager;
     private TuberculosisVisitManager visitManager;
     private TuberculosisContactManager contactManager;
+    private ExaminationBrowserManager examinationManager;
 
     private JTable treatmentTable;
     private JTable visitTable;
@@ -180,6 +186,7 @@ public class TuberculosisBrowser extends ModalJFrame {
         manager = Context.getApplicationContext().getBean(TuberculosisTreatmentManager.class);
         visitManager = Context.getApplicationContext().getBean(TuberculosisVisitManager.class);
         contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
+        examinationManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
     }
 
     private void initComponents() {
@@ -441,6 +448,8 @@ public class TuberculosisBrowser extends ModalJFrame {
         if (MainMenu.checkUserGrants("tuberculosis.deletecontact")) {
             buttonPanel.add(getDeleteContactButton());
         }
+        buttonPanel.add(getExaminationButton());
+        buttonPanel.add(getLaboratoryButton());
         buttonPanel.add(getCloseButton());
 
         return buttonPanel;
@@ -497,6 +506,58 @@ public class TuberculosisBrowser extends ModalJFrame {
     private JButton getDeleteContactButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.tb.browser.deletecontact.btn"));
         button.addActionListener(e -> deleteContact());
+        return button;
+    }
+
+    private JButton getExaminationButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.tb.browser.examination.btn"));
+        button.addActionListener(e -> {
+            if (selectedTreatment == null) {
+                MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+                return;
+            }
+            Patient patient = selectedTreatment.getPatient();
+            if (patient == null) {
+                MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+                return;
+            }
+            PatientExamination patex;
+            PatientExamination lastPatex = null;
+            try {
+                lastPatex = examinationManager.getLastByPatID(patient.getCode());
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+            if (lastPatex != null) {
+                patex = examinationManager.getFromLastPatientExamination(lastPatex);
+            } else {
+                patex = examinationManager.getDefaultPatientExamination(patient);
+            }
+            GenderPatientExamination gpatex = new GenderPatientExamination(patex, patient.getSex() == 'M');
+            PatientExaminationEdit dialog = new PatientExaminationEdit(this, gpatex);
+            dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+            dialog.showAsModal(this);
+        });
+        return button;
+    }
+
+    private JButton getLaboratoryButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.tb.browser.laboratory.btn"));
+        button.addActionListener(e -> {
+            if (selectedTreatment == null) {
+                MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+                return;
+            }
+            Patient patient = selectedTreatment.getPatient();
+            if (patient == null) {
+                MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+                return;
+            }
+            LabNew labNew = new LabNew(myFrame, patient);
+            labNew.setVisible(true);
+        });
         return button;
     }
 
@@ -893,7 +954,7 @@ public class TuberculosisBrowser extends ModalJFrame {
             } else if (c == 1) {
                 return visit.getDotStatus() != null ? visit.getDotStatus().toString() : "";
             } else if (c == 2) {
-                return visit.getSmearResult() != null ? visit.getSmearResult().toString() : "";
+                return visit.getAdherence() != null ? visit.getAdherence().toString() : "";
             } else if (c == 3) {
                 String notes = visit.getNotes();
                 if (notes != null && notes.length() > 50) {
