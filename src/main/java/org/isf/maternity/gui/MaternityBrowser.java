@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.JLabel;
@@ -66,6 +67,10 @@ import org.isf.admission.gui.AdmissionBrowser;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.admission.model.AdmittedPatient;
+import org.isf.examination.gui.PatientExaminationEdit;
+import org.isf.examination.manager.ExaminationBrowserManager;
+import org.isf.examination.model.GenderPatientExamination;
+import org.isf.examination.model.PatientExamination;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabNew;
@@ -575,9 +580,57 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
         if (MainMenu.checkUserGrants("maternity.therapy")) {
             buttonPanel.add(getJTherapyButton());
         }
+        if (MainMenu.checkUserGrants("btnadmexamination")) {
+            buttonPanel.add(getJExaminationButton());
+        }
         buttonPanel.add(getJCloseButton());
 
         return buttonPanel;
+    }
+
+    private JButton getJExaminationButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.admission.examination.btn"));
+        button.setMnemonic(MessageBundle.getMnemonic("angal.admission.examination.btn.key"));
+        button.addActionListener(e -> examination());
+        return button;
+    }
+
+    private void examination() {
+        if (selectedPregnancy == null) {
+            MessageDialog.error(this, "angal.maternity.pleaseselectapregnancyfirst.msg");
+            return;
+        }
+
+        Patient patient = selectedPregnancy.getPatient();
+        if (patient == null) {
+            MessageDialog.error(this, "angal.maternity.pregnancy.patient.notfound");
+            return;
+        }
+
+        ExaminationBrowserManager examinationBrowserManager = Context.getApplicationContext()
+                .getBean(ExaminationBrowserManager.class);
+
+        PatientExamination patex;
+        PatientExamination lastPatex = null;
+        try {
+            lastPatex = examinationBrowserManager.getLastByPatID(patient.getCode());
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+        }
+
+        if (lastPatex != null) {
+            patex = examinationBrowserManager.getFromLastPatientExamination(lastPatex);
+        } else {
+            patex = examinationBrowserManager.getDefaultPatientExamination(patient);
+        }
+
+        GenderPatientExamination gpatex = new GenderPatientExamination(patex, patient.getSex() == 'M');
+
+        PatientExaminationEdit dialog = new PatientExaminationEdit(this, gpatex);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.showAsModal(this);
     }
 
     private JButton getJNewPregnancyButton() {
