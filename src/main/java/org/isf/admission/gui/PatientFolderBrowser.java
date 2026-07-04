@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -55,6 +55,8 @@ import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.patvac.manager.PatVacManager;
+import org.isf.patvac.model.PatientVaccine;
 import org.isf.admission.gui.AdmissionBrowser.AdmissionListener;
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
@@ -211,6 +213,15 @@ public class PatientFolderBrowser extends ModalJFrame
 	};
 	private int[] plColumnwidth = { 150, 200, 50, 200 };
 
+	private PatVacManager patVacManager = Context.getApplicationContext().getBean(PatVacManager.class);
+	private List<PatientVaccine> patientVaccineList;
+	private String[] pvColumns = {
+			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.patvac.vaccine.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.patvac.vaccinetype.txt").toUpperCase()
+	};
+	private int[] pvColumnWidth = { 120, 200, 100, 60, 200 };
+
 	private TableSorter sorter;
 	private OhDefaultCellRenderer cellRenderer = new OhDefaultCellRenderer();
 
@@ -360,6 +371,10 @@ public class PatientFolderBrowser extends ModalJFrame
 		JScrollPane scrollPaneLab = new JScrollPane(labTable);
 		tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.exams.title"), null, scrollPaneLab, null);
 
+		JTable vaccineTable = getPatientVaccineTable();
+		JScrollPane scrollPaneVaccine = new JScrollPane(vaccineTable);
+		tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.vaccines.title"), null, scrollPaneVaccine, null);
+
 		OperationList opeList = new OperationList(patient);
 		getOlderDate(opeList.getOprowData(), "opDate");
 		tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.operations.title"), null, opeList, null);
@@ -496,6 +511,58 @@ public class PatientFolderBrowser extends ModalJFrame
 		});
 
 		return tablesPanel;
+	}
+
+	private JTable getPatientVaccineTable() {
+		DefaultTableModel vaccineModel = new PatientVaccineBrowserModel();
+		TableSorter sorterVaccine = new TableSorter(vaccineModel);
+		JTable vaccineTable = new JTable(sorterVaccine);
+
+		vaccineTable.setDefaultRenderer(Object.class, cellRenderer);
+		vaccineTable.setDefaultRenderer(Double.class, cellRenderer);
+		vaccineTable.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				JTable aTable = (JTable) e.getSource();
+				int itsRow = aTable.rowAtPoint(e.getPoint());
+				if (itsRow >= 0) {
+					cellRenderer.setHoveredRow(itsRow);
+				} else {
+					cellRenderer.setHoveredRow(-1);
+				}
+				aTable.repaint();
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+			}
+		});
+		vaccineTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				cellRenderer.setHoveredRow(-1);
+			}
+		});
+
+		sorterVaccine.sortByColumn(0, false);
+
+		for (int i = 0; i < pvColumns.length; i++) {
+			vaccineTable.getColumnModel().getColumn(i).setPreferredWidth(pvColumnWidth[i]);
+			if (i == 0) {
+				vaccineTable.getColumnModel().getColumn(i).setCellRenderer(new DateCellRenderer());
+			}
+		}
+
+		return vaccineTable;
+	}
+
+	private void getOlderDateFromPatientVaccine(List<PatientVaccine> list) {
+		for (PatientVaccine pv : list) {
+			LocalDateTime otherDate = pv.getVaccineDate();
+			if (fromDate == null || fromDate.isAfter(otherDate)) {
+				fromDate = otherDate;
+			}
+		}
 	}
 
 	private JPanel getButtonPanel() {
@@ -665,6 +732,59 @@ public class PatientFolderBrowser extends ModalJFrame
 			LOGGER.error(e.getMessage(), e);
 		}
 		return date;
+	}
+
+	class PatientVaccineBrowserModel extends DefaultTableModel {
+
+		private static final long serialVersionUID = 1L;
+
+		public PatientVaccineBrowserModel() {
+			try {
+				patientVaccineList = patVacManager.getPatientVaccineByPatientId(patient.getCode());
+				getOlderDateFromPatientVaccine(patientVaccineList);
+			} catch (OHServiceException e) {
+				patientVaccineList = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+
+		@Override
+		public int getRowCount() {
+			if (patientVaccineList == null) {
+				return 0;
+			}
+			return patientVaccineList.size();
+		}
+
+		@Override
+		public String getColumnName(int c) {
+			return pvColumns[c];
+		}
+
+		@Override
+		public int getColumnCount() {
+			return pvColumns.length;
+		}
+
+		@Override
+		public Object getValueAt(int row, int column) {
+			PatientVaccine patientVaccine = patientVaccineList.get(row);
+			if (column == -1) {
+				return patientVaccine;
+			} else if (column == 0) {
+				return patientVaccine.getVaccineDate();
+			} else if (column == 1) {
+				return patientVaccine.getVaccine().getDescription();
+			} else if (column == 2) {
+				return patientVaccine.getVaccine().getVaccineType().getDescription();
+			}
+			return null;
+		}
+
+		@Override
+		public boolean isCellEditable(int arg0, int arg1) {
+			return false;
+		}
 	}
 
 	class AdmissionBrowserModel extends DefaultTableModel {
