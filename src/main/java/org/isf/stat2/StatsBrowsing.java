@@ -24,6 +24,8 @@ package org.isf.stat2;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.*;
 import java.awt.event.WindowEvent;
@@ -396,10 +398,31 @@ public class StatsBrowsing extends ModalJFrame {
         ageFromLabel = new JLabel(MessageBundle.getMessage("angal.report.billsreport.from"));
         ageFromField = new JTextField();
         ageFromField.setColumns(3);
+        ageFromField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
+
 
         ageToLabel = new JLabel(MessageBundle.getMessage("angal.report.billsreport.to"));
         ageToField = new JTextField();
         ageToField.setColumns(3);
+        ageToField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
 
         ageAndSexPanel = new JPanel(new FlowLayout());
         ageAndSexPanel.add(sexLabel);
@@ -540,7 +563,7 @@ public class StatsBrowsing extends ModalJFrame {
         examsFlowPanel.add(examsCombo);
 
         JPanel examResultsFlowPanel = new JPanel(new FlowLayout());
-        examResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operationresult"));
+        examResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.examresult"));
         examResultsCombo = new JComboBox<>();
         examResultsFlowPanel.add(examResultsLabel);
         examResultsFlowPanel.add(examResultsCombo);
@@ -1348,6 +1371,12 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private boolean checkVaccinePeriod() {
+
+        if (allVaccinesCheck.isSelected()) {
+            _vaccine_period_from = "";
+            _vaccine_period_to = "";
+            return true;
+        }
         LocalDate vaccineDateFrom = vaccinePeriodFrom.getDate();
         LocalDate vaccineDateTo = vaccinePeriodTo.getDate();
 
@@ -1404,6 +1433,12 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private boolean checkOperationPeriod() {
+
+        if (allOperationsCheck.isSelected()) {
+            _operation_period_from = "";
+            _operation_period_to = "";
+            return true;
+        }
         LocalDate operationDateFrom = operationPeriodFrom.getDate();
         LocalDate operationDateTo = operationPeriodTo.getDate();
 
