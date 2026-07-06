@@ -54,11 +54,13 @@ import org.isf.disctype.model.DischargeType;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
 import org.isf.dlvrtype.manager.DeliveryTypeBrowserManager;
-import org.isf.dlvrtype.model.DeliveryType;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.stat2.manager.StatsDeliveryManager;
 import org.isf.stat2.model.StatsDelivery;
+import org.isf.typology.manager.TypologyBrowserManager;
+import org.isf.typology.model.Family;
+import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -134,8 +136,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private LocalDateTime periodFrom = null;
     private LocalDateTime periodTo = null;
     private String selectedSex = null;
-    private Double weightMin = null;
-    private Double weightMax = null;
     private String selectedDeliveryType = null;
     private String selectedDeliveryResult = null;
     private String selectedDeliveryMode = null;
@@ -144,7 +144,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private String selectedPerinealIntegrity = null;
     private Boolean selectedPlacentaComplete = null;
     private String selectedBloodLoss = null;
-    private String selectedNewbornSex = null;
     private String selectedNeonatalStatus = null;
     private String selectedApgar1 = null;
     private String selectedApgar5 = null;
@@ -155,7 +154,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private String selectedDisease = null;
     private String selectedDischargeType = null;
 
-    // Poids du nouveau-né (déplacé dans Newborn)
     private JTextField newbornWeightMinField;
     private JTextField newbornWeightMaxField;
     private Double newbornWeightMin = null;
@@ -243,9 +241,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return filtersPanel;
     }
 
-    // ============================================================
-    // PANEL GÉNÉRAL
-    // ============================================================
     private JPanel getGeneralPanel() {
         if (generalPanel != null) {
             return generalPanel;
@@ -255,7 +250,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
         generalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Période
         JPanel periodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         periodPanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateFrom") + ": Du"));
         periodFromDateChooser = new GoodDateChooser(null);
@@ -266,7 +260,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         generalPanel.add(periodPanel);
         generalPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // Âge de la mère
         JPanel agePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         agePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.motherage") + ": de "));
         ageMinField = new JTextField(3);
@@ -280,9 +273,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return generalPanel;
     }
 
-    // ============================================================
-    // PANEL TYPES ET RÉSULTATS D'ACCOUCHEMENT
-    // ============================================================
     private JPanel getDeliveryPanel() {
         if (deliveryPanel != null) {
             return deliveryPanel;
@@ -292,14 +282,14 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         deliveryPanel.setLayout(new BoxLayout(deliveryPanel, BoxLayout.Y_AXIS));
         deliveryPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Type d'accouchement
         JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         typePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.deliverytype") + ":"));
         deliveryTypeCombo = new JComboBox<>();
         deliveryTypeCombo.addItem(MessageBundle.getMessage("angal.stat.all"));
         try {
-            List<DeliveryType> types = deliveryTypeManager.getDeliveryType();
-            for (DeliveryType type : types) {
+            TypologyBrowserManager typologyManager = Context.getApplicationContext().getBean(TypologyBrowserManager.class);
+            List<Typology> types = typologyManager.getTypologies(Family.DELIVERYTYPE);
+            for (Typology type : types) {
                 deliveryTypeCombo.addItem(type.getDescription());
             }
         } catch (OHServiceException e) {
@@ -308,7 +298,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         typePanel.add(deliveryTypeCombo);
         deliveryPanel.add(typePanel);
 
-        // Résultat d'accouchement
         JPanel resultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         resultPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.deliveryresult") + ":"));
         deliveryResultCombo = new JComboBox<>(new String[]{
@@ -320,7 +309,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         resultPanel.add(deliveryResultCombo);
         deliveryPanel.add(resultPanel);
 
-        // Mode d'accouchement
         JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         modePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.deliverymode") + ":"));
         deliveryModeCombo = new JComboBox<>(new String[]{
@@ -334,7 +322,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         modePanel.add(deliveryModeCombo);
         deliveryPanel.add(modePanel);
 
-        // Durée du travail
         JPanel laborPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         laborPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.laborduration") + ":"));
         laborDurationCombo = new JComboBox<>(new String[]{
@@ -347,7 +334,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         laborPanel.add(laborDurationCombo);
         deliveryPanel.add(laborPanel);
 
-        // ROM (Rupture des membranes)
         JPanel romPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         romPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.rom") + ":"));
         romCombo = new JComboBox<>(new String[]{
@@ -358,7 +344,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         romPanel.add(romCombo);
         deliveryPanel.add(romPanel);
 
-        // Intégrité périnéale
         JPanel perinealPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         perinealPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.perinealintegrity") + ":"));
         perinealIntegrityCombo = new JComboBox<>(new String[]{
@@ -372,7 +357,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         perinealPanel.add(perinealIntegrityCombo);
         deliveryPanel.add(perinealPanel);
 
-        // Placenta complet
         JPanel placentaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         placentaPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.placentacomplete") + ":"));
         placentaCompleteCombo = new JComboBox<>(new String[]{
@@ -383,7 +367,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         placentaPanel.add(placentaCompleteCombo);
         deliveryPanel.add(placentaPanel);
 
-        // Perte de sang
         JPanel bloodPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bloodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.bloodloss") + ":"));
         bloodLossCombo = new JComboBox<>(new String[]{
@@ -398,9 +381,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return deliveryPanel;
     }
 
-    // ============================================================
-    // PANEL NOUVEAU-NÉ
-    // ============================================================
     private JPanel getNewbornPanel() {
         if (newbornPanel != null) {
             return newbornPanel;
@@ -410,7 +390,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         newbornPanel.setLayout(new BoxLayout(newbornPanel, BoxLayout.Y_AXIS));
         newbornPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Sexe
         JPanel sexPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         sexPanel.add(new JLabel(MessageBundle.getMessage("angal.patient.sex") + ":"));
         newbornSexCombo = new JComboBox<>(new String[]{
@@ -421,7 +400,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         sexPanel.add(newbornSexCombo);
         newbornPanel.add(sexPanel);
 
-        // Poids (min/max)
         JPanel weightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         weightPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.birthweight") + ":"));
         newbornWeightMinField = new JTextField(5);
@@ -432,7 +410,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         weightPanel.add(new JLabel(" kg"));
         newbornPanel.add(weightPanel);
 
-        // Statut néonatal
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.neonatalstatus") + ":"));
         neonatalStatusCombo = new JComboBox<>(new String[]{
@@ -446,7 +423,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         statusPanel.add(neonatalStatusCombo);
         newbornPanel.add(statusPanel);
 
-        // APGAR 1min
         JPanel apgar1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         apgar1Panel.add(new JLabel(MessageBundle.getMessage("angal.stat.apgar1") + ":"));
         apgar1Combo = new JComboBox<>(new String[]{
@@ -458,7 +434,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         apgar1Panel.add(apgar1Combo);
         newbornPanel.add(apgar1Panel);
 
-        // APGAR 5min
         JPanel apgar5Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         apgar5Panel.add(new JLabel(MessageBundle.getMessage("angal.stat.apgar5") + ":"));
         apgar5Combo = new JComboBox<>(new String[]{
@@ -470,7 +445,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         apgar5Panel.add(apgar5Combo);
         newbornPanel.add(apgar5Panel);
 
-        // Réanimation
         JPanel resuscitationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         resuscitationPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.resuscitation") + ":"));
         resuscitationCombo = new JComboBox<>(new String[]{
@@ -481,7 +455,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         resuscitationPanel.add(resuscitationCombo);
         newbornPanel.add(resuscitationPanel);
 
-        // Cri
         JPanel cryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         cryPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.crytime") + ":"));
         cryTimeCombo = new JComboBox<>(new String[]{
@@ -493,7 +466,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         cryPanel.add(cryTimeCombo);
         newbornPanel.add(cryPanel);
 
-        // VIH
         JPanel hivPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         hivPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.hivstatus") + ":"));
         hivStatusCombo = new JComboBox<>(new String[]{
@@ -505,7 +477,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         hivPanel.add(hivStatusCombo);
         newbornPanel.add(hivPanel);
 
-        // Anomalies congénitales
         JPanel anomaliesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         anomaliesPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.congenitalanomalies") + ":"));
         congenitalAnomaliesCombo = new JComboBox<>(new String[]{
@@ -519,9 +490,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return newbornPanel;
     }
 
-    // ============================================================
-    // PANEL MALADIES ET TYPE DE SORTIE
-    // ============================================================
     private JPanel getDiseasesPanel() {
         if (diseasesPanel != null) {
             return diseasesPanel;
@@ -531,7 +499,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         diseasesPanel.setLayout(new BoxLayout(diseasesPanel, BoxLayout.Y_AXIS));
         diseasesPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Maladie
         JPanel diseasePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         diseasePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.disease") + ":"));
         diseasesCombo = new JComboBox<>();
@@ -547,7 +514,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         diseasePanel.add(diseasesCombo);
         diseasesPanel.add(diseasePanel);
 
-        // Type de sortie
         JPanel dischargePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         dischargePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.dischargetype") + ":"));
         dischargeTypesCombo = new JComboBox<>();
@@ -566,9 +532,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return diseasesPanel;
     }
 
-    // ============================================================
-    // FILTRE BOUTONS
-    // ============================================================
     private JPanel getFilterButtonsPanel() {
         JPanel filterButtonPanel = new JPanel(new FlowLayout());
         filterButtonPanel.add(getFilterButton());
@@ -615,9 +578,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return filterResetBtn;
     }
 
-    // ============================================================
-    // MÉTHODES DE FILTRAGE
-    // ============================================================
     private boolean checkPeriod() {
         LocalDate dateFrom = periodFromDateChooser.getDate();
         LocalDate dateTo = periodToDateChooser.getDate();
@@ -675,18 +635,11 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     }
 
     private void collectFilters() {
-        // Âge de la mère
         motherAgeMin = parseInteger(ageMinField.getText());
         motherAgeMax = parseInteger(ageMaxField.getText());
-
-        // Sexe (depuis Nouveau-né)
         selectedSex = getSelectedSex();
-
-        // Poids (depuis Nouveau-né)
         newbornWeightMin = parseDouble(newbornWeightMinField.getText());
         newbornWeightMax = parseDouble(newbornWeightMaxField.getText());
-
-        // ... le reste des filtres
         selectedDeliveryType = getSelectedDeliveryType();
         selectedDeliveryResult = getSelectedDeliveryResult();
         selectedDeliveryMode = getSelectedDeliveryMode();
@@ -695,7 +648,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         selectedPerinealIntegrity = getSelectedPerinealIntegrity();
         selectedPlacentaComplete = getSelectedPlacentaComplete();
         selectedBloodLoss = getSelectedBloodLoss();
-        selectedNewbornSex = getSelectedNewbornSex();
         selectedNeonatalStatus = getSelectedNeonatalStatus();
         selectedApgar1 = getSelectedApgar1();
         selectedApgar5 = getSelectedApgar5();
@@ -729,9 +681,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
     }
 
-    // ============================================================
-    // MÉTHODES DE LECTURE DES COMBOBOX
-    // ============================================================
     private String getSelectedSex() {
         String selected = (String) newbornSexCombo.getSelectedItem();
         if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
@@ -756,7 +705,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
             return null;
         }
-        // Retourner la valeur ENUM anglaise
         if (selected.equals(MessageBundle.getMessage("angal.stat.neonatalstatus.alive"))) {
             return "ALIVE";
         }
@@ -781,21 +729,21 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return null;
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.deliverymode.svd"))) {
-            return "SVD";
+            return "1";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.deliverymode.vacuum"))) {
-            return "VACUUM";
+            return "2";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.deliverymode.forceps"))) {
-            return "FORCEPS";
+            return "3";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.deliverymode.csection.elective"))) {
-            return "C_SECTION_ELECTIVE";
+            return "4";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.deliverymode.csection.emergency"))) {
-            return "C_SECTION_EMERGENCY";
+            return "5";
         }
-        return selected;
+        return null;
     }
 
     private String getSelectedLaborDuration() {
@@ -814,21 +762,21 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return null;
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.perinealintegrity.intact"))) {
-            return "INTACT";
+            return "0";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.perinealintegrity.firstdegree"))) {
-            return "FIRST_DEGREE";
+            return "1";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.perinealintegrity.seconddegree"))) {
-            return "SECOND_DEGREE";
+            return "2";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.perinealintegrity.thirddegree"))) {
-            return "THIRD_DEGREE";
+            return "3";
         }
         if (selected.equals(MessageBundle.getMessage("angal.stat.perinealintegrity.fourthdegree"))) {
-            return "FOURTH_DEGREE";
+            return "4";
         }
-        return selected;
+        return null;
     }
 
     private Boolean getSelectedPlacentaComplete() {
@@ -951,9 +899,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return selected != null ? selected.toString() : null;
     }
 
-    // ============================================================
-    // MÉTHODE DE REQUÊTE
-    // ============================================================
     private void runQuery(int pageIndex) {
         try {
             Page<StatsDelivery> result = statsManager.getDeliveriesStats(
@@ -969,7 +914,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                     selectedPerinealIntegrity,
                     selectedPlacentaComplete,
                     selectedBloodLoss,
-                    selectedNewbornSex,
+                    null,
                     null,
                     selectedNeonatalStatus,
                     selectedApgar1,
@@ -1001,9 +946,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
     }
 
-    // ============================================================
-    // RÉINITIALISATION
-    // ============================================================
     private void resetAllFilters() {
         _start_index = 0;
         periodFrom = null;
@@ -1020,8 +962,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         selectedRom = null;
         selectedPerinealIntegrity = null;
         selectedPlacentaComplete = null;
-        selectedBloodLoss = null;
-        selectedNewbornSex = null;
         selectedNeonatalStatus = null;
         selectedApgar1 = null;
         selectedApgar5 = null;
@@ -1061,9 +1001,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         initializePaginationCombo();
     }
 
-    // ============================================================
-    // DATA PANEL
-    // ============================================================
     private JPanel getDataPanel() {
         if (dataPanel != null) {
             return dataPanel;
@@ -1088,9 +1025,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return tableScrollPane;
     }
 
-    // ============================================================
-    // TABLE MODEL
-    // ============================================================
     private class DeliveryStatsTableModel extends DefaultTableModel {
 
         private static final long serialVersionUID = 1L;
@@ -1122,7 +1056,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             } else if (c == 3) {
                 return stats.getNewbornWeight();
             } else if (c == 4) {
-                // Traduire le statut néonatal
                 String status = stats.getNeonatalStatus();
                 return translateNeonatalStatus(status);
             }
@@ -1155,9 +1088,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
     }
 
-    // ============================================================
-    // PAGINATION
-    // ============================================================
     private JPanel getPaginationPanel() {
         if (paginationPanel != null) {
             return paginationPanel;
@@ -1303,9 +1233,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
     }
 
-    // ============================================================
-    // ACCORDION PANEL (copié depuis EmptyStatisticsBrowser)
-    // ============================================================
     private class AccordionPanel extends JPanel {
 
         private static final long serialVersionUID = 1L;
