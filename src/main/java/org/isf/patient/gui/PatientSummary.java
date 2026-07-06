@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -29,6 +29,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -43,6 +44,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import org.isf.admission.manager.AdmissionBrowserManager;
+import org.isf.admission.model.Admission;
+import org.isf.disctype.model.DischargeType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
@@ -98,6 +102,8 @@ public class PatientSummary {
 		dataPanel.add(getPatientKinAndTelephonePanel());
 		dataPanel.add(getPatientBloodAndEcoPanel());
 		dataPanel.add(getPatientMaritalAndProfession());
+		dataPanel.add(setMyBorder(getDischargeTypePanel(),
+				MessageBundle.getMessage("angal.admission.dischargetype.label")));
 
 		p.add(dataPanel, BorderLayout.CENTER);
 		p.add(setMyBorder(getPatientNotePanel(), MessageBundle.getMessage("angal.admission.patientnotes.label")), BorderLayout.SOUTH);
@@ -312,6 +318,45 @@ public class PatientSummary {
 		} else {
 			l = new JLabel(patientBrowserManager.getProfessionTranslated(patient.getProfession()));
 		}
+		JPanel lP = new JPanel(new FlowLayout(FlowLayout.LEFT, INSETSIZE, INSETSIZE));
+		lP.add(l);
+		return lP;
+	}
+
+	private JPanel getDischargeTypePanel() {
+		JLabel l;
+		String dischargeType = "";
+
+		if (patient != null && patient.getCode() != null) {
+			try {
+				AdmissionBrowserManager admMan = Context.getApplicationContext()
+						.getBean(AdmissionBrowserManager.class);
+				List<Admission> admissions = admMan.getAdmissions(patient);
+
+				Admission lastDischargedAdmission = admissions.stream()
+						.filter(adm -> adm.getDisDate() != null)
+						.reduce((first, second) -> second)
+						.orElse(null);
+
+				if (lastDischargedAdmission != null) {
+					DischargeType dischargeTypeObj = lastDischargedAdmission.getDisType();
+					if (dischargeTypeObj != null && dischargeTypeObj.getDescription() != null
+							&& !dischargeTypeObj.getDescription().isEmpty()) {
+						dischargeType = dischargeTypeObj.getDescription();
+					}
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error getting discharge type: {}", e.getMessage());
+			}
+		}
+
+		if (dischargeType.isEmpty() ||
+				dischargeType.equalsIgnoreCase(MessageBundle.getMessage("angal.common.unknown.txt"))) {
+			l = new JLabel(" ");
+		} else {
+			l = new JLabel(dischargeType);
+		}
+
 		JPanel lP = new JPanel(new FlowLayout(FlowLayout.LEFT, INSETSIZE, INSETSIZE));
 		lP.add(l);
 		return lP;
