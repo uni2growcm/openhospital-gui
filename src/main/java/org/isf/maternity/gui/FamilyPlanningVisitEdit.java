@@ -306,7 +306,7 @@ public class FamilyPlanningVisitEdit extends JDialog {
             okButton.addActionListener(e -> save());
 
             cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-            cancelButton.setPreferredSize(new Dimension(80, 30));
+            cancelButton.setPreferredSize(new Dimension(100, 30));
             cancelButton.addActionListener(e -> dispose());
 
             buttonPanel.add(okButton);
@@ -336,7 +336,7 @@ public class FamilyPlanningVisitEdit extends JDialog {
         String notes = notesArea.getText().trim();
         LocalDate nextAppointment = nextAppointmentDateField.getDate();
 
-        if (nextAppointment != null && !nextAppointment.isAfter(visitDate.toLocalDate())) {
+        if (nextAppointment != null && nextAppointment.isBefore(visitDate.toLocalDate())) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.aftervisit.msg"));
             return;
         }
