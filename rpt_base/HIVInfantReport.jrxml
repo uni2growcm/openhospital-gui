@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="HIVInfantReport" pageWidth="1000" pageHeight="800" columnWidth="940" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="HIVInfantReport" whenResourceMissingType="Key" uuid="b4d5eac9-48e5-4d8d-a3f7-7f3b3d9b8a10">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="oh"/>
+	<import value="java.util.*"/>
+	<style name="TableHeader" fontName="DejaVu Sans" fontSize="8" isBold="true">
+		<box leftPadding="3" bottomPadding="3" rightPadding="3">
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="TableCell" fontName="DejaVu Sans" fontSize="8">
+		<box leftPadding="3" rightPadding="3">
+			<pen lineWidth="0.25" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="num_fiche" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Region" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="District" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="AireSante" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Structure" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="statut" class="java.lang.String"/>
+	<parameter name="feedingType" class="java.lang.String"/>
+	<parameter name="actif" class="java.lang.Boolean"/>
+	<parameter name="sexe" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+    child.PAT_ID AS patient_code,
+    child.PAT_NAME AS infant_name,
+    child.PAT_SEX AS sex,
+    child.PAT_AGE AS age,
+    mother.PAT_NAME AS mother_name,
+
+    DATE_FORMAT(hvi.HVI_REG_DATE, '%d/%m/%Y') AS registration_date,
+    hvi.HVI_REG_DATE AS registration_date_sort,
+
+    DATE_FORMAT(hvi.HVI_FOLLOWUP_START, '%d/%m/%Y') AS followup_start_date,
+
+    hvi.HVI_STATUS AS status,
+    CASE
+        WHEN hvi.HVI_STATUS = 'ACTIVE' THEN 'En suivi'
+        WHEN hvi.HVI_STATUS = 'EXITED' THEN 'Sorti'
+        WHEN hvi.HVI_STATUS = 'DECEASED' THEN 'Décédé'
+        WHEN hvi.HVI_STATUS = 'LOST' THEN 'Perdu de vue'
+        ELSE hvi.HVI_STATUS
+    END AS status_display,
+
+    hvi.HVI_FEEDING_TYPE AS feeding_type,
+    hvi.HVI_BIRTH_WEIGHT AS birth_weight,
+    hvi.HVI_GESTATIONAL_AGE AS gestational_age,
+
+    DATE_FORMAT(
+        (SELECT MAX(v.HVV_VISIT_DATE)
+         FROM OH_HIV_VISIT v
+         WHERE v.HVV_HVI_ID = hvi.HVI_ID
+           AND v.HVV_ACTIVE = 1),
+        '%d/%m/%Y'
+    ) AS last_visit_date,
+
+    (SELECT COUNT(*)
+     FROM OH_HIV_VISIT v
+     WHERE v.HVV_HVI_ID = hvi.HVI_ID
+       AND v.HVV_ACTIVE = 1) AS visit_count,
+
+    hvi.HVI_ACTIVE AS active,
+    CASE
+        WHEN hvi.HVI_ACTIVE = 1 THEN 'Oui'
+        ELSE 'Non'
+    END AS active_display,
+
+    h.HOS_NAME AS structure_name,
+    h.HOS_CITY AS district_name,
+    h.HOS_ADDR AS hos_address,
+    h.HOS_TELE AS hos_telephone,
+    h.HOS_EMAIL AS hos_email
+
+FROM
+    OH_HIV_INFANT hvi
+    INNER JOIN OH_PATIENT child ON hvi.HVI_PAT_ID = child.PAT_ID
+    LEFT JOIN OH_PATIENT mother ON hvi.HVI_MOTHER_PAT_ID = mother.PAT_ID
+    CROSS JOIN OH_HOSPITAL h
+
+WHERE
+    1 = 1
+    AND ($P{fromdate} IS NULL OR DATE(hvi.HVI_REG_DATE) >= DATE($P{fromdate}))
+    AND ($P{todate} IS NULL OR DATE(hvi.HVI_REG_DATE) <= DATE($P{todate}))
+    AND ($P{statut} IS NULL OR $P{statut} = 'ALL' OR hvi.HVI_STATUS = $P{statut})
+    AND ($P{feedingType} IS NULL OR $P{feedingType} = 'ALL' OR hvi.HVI_FEEDING_TYPE = $P{feedingType})
+    AND ($P{actif} IS NULL OR hvi.HVI_ACTIVE = $P{actif})
+    AND ($P{sexe} IS NULL OR $P{sexe} = 'ALL' OR child.PAT_SEX = $P{sexe})
+
+ORDER BY
+    hvi.HVI_REG_DATE DESC,
+    child.PAT_NAME ASC]]>
+	</queryString>
+	<field name="patient_code" class="java.lang.Integer"/>
+	<field name="infant_name" class="java.lang.String"/>
+	<field name="sex" class="java.lang.String"/>
+	<field name="age" class="java.lang.Integer"/>
+	<field name="mother_name" class="java.lang.String"/>
+	<field name="registration_date" class="java.lang.String"/>
+	<field name="registration_date_sort" class="java.sql.Timestamp"/>
+	<field name="followup_start_date" class="java.lang.String"/>
+	<field name="last_visit_date" class="java.lang.String"/>
+	<field name="visit_count" class="java.lang.Long"/>
+	<field name="status" class="java.lang.String"/>
+	<field name="status_display" class="java.lang.String"/>
+	<field name="feeding_type" class="java.lang.String"/>
+	<field name="birth_weight" class="java.lang.Double"/>
+	<field name="gestational_age" class="java.lang.Integer"/>
+	<field name="active" class="java.lang.Boolean"/>
+	<field name="active_display" class="java.lang.String"/>
+	<field name="structure_name" class="java.lang.String"/>
+	<field name="district_name" class="java.lang.String"/>
+	<field name="hos_address" class="java.lang.String"/>
+	<field name="hos_telephone" class="java.lang.String"/>
+	<field name="hos_email" class="java.lang.String"/>
+	<variable name="TOTAL_INFANTS" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{patient_code}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_ACTIVE" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{active} == true ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_INACTIVE" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{active} == false ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_VISITS" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{visit_count}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_IN_FOLLOWUP" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{status} != null && $F{status}.equals("ACTIVE") ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_EXITED" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{status} != null && $F{status}.equals("EXITED") ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_DECEASED" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{status} != null && $F{status}.equals("DECEASED") ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_LOST" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{status} != null && $F{status}.equals("LOST") ? 1 : 0]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="142" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="300" height="15" uuid="4b8fda96-7a99-41c9-b993-41d939ac8b01"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="15" width="300" height="12" uuid="52dc911d-12ec-46e3-8810-32941976712e"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="27" width="300" height="24" uuid="51f1d3f2-898f-4e4c-a936-91dcb3b97984"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="640" y="0" width="300" height="15" uuid="1ec920e8-bd02-44a8-a2a7-6bdb2c5cdbf2"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="610" y="15" width="300" height="12" uuid="1fc75df8-a35c-4f2c-a5f4-c62dbce68d57"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="640" y="27" width="300" height="24" uuid="dfb06f45-fadb-4f08-a5c4-9c0809142638"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="48" width="940" height="24" uuid="55f385a6-6e29-42d0-aa1d-3685fef5f42e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="86" width="400" height="14" uuid="9f061b8c-f4d0-4574-bb85-0f99f4d90ba1"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($F{district_name} != null ? $F{district_name} : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="540" y="86" width="400" height="14" uuid="9b487a89-9b5f-47c4-9a4a-fc24cf11cfe8"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($F{structure_name} != null ? $F{structure_name} : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="104" width="400" height="14" uuid="7312b589-3a45-422a-9fa2-334f4acb3633"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($F{hos_address} != null ? $F{hos_address} : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="540" y="104" width="400" height="14" uuid="6e9aa7e1-3d33-467f-8c3d-995996f53fe3"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($F{hos_telephone} != null ? $F{hos_telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="540" y="122" width="400" height="14" uuid="ded0d748-e337-4c5c-a5c5-17d6ae792bd0"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($F{hos_email} != null ? $F{hos_email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="940" height="1" uuid="875a9b45-51d2-4f35-bde9-f0c519ac4e57"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="8"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="42">
+			<textField>
+				<reportElement style="TableHeader" x="0" y="0" width="45" height="40" uuid="a38f5d4e-28c4-4571-91d0-bc5dba474790"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_code}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="45" y="0" width="95" height="40" uuid="5028d602-f5f2-4c12-941d-730e7c121598"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_infant}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="140" y="0" width="30" height="40" uuid="28fb9445-2ad6-4622-b8f9-c0edb2513e0d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_sex}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="170" y="0" width="35" height="40" uuid="f4b769fd-f790-4132-aa5f-e41f7163c2d5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_age}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="205" y="0" width="95" height="40" uuid="d8a24715-40b7-4683-961e-fcf863f35db2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_mother}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="300" y="0" width="70" height="40" uuid="eb152aa2-6b0f-4abd-8f0d-dd59d3602617"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_registration_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="370" y="0" width="70" height="40" uuid="dfd42534-81fa-4246-9e8d-2896a2e9e0de"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_followup_start}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="440" y="0" width="70" height="40" uuid="ea2ed92f-f8ef-4ad9-b25c-451bf26d45ff"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_last_visit}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="510" y="0" width="50" height="40" uuid="1408bd8a-9dd3-4da7-9f8a-26dbe503a34b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_visit_count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="560" y="0" width="70" height="40" uuid="37de9ed3-3ac8-4b50-b274-39abdf517ff5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_status}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="630" y="0" width="85" height="40" uuid="ec8353dc-e1e7-4d8c-b6f3-9d3515988c41"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_feeding}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="715" y="0" width="70" height="40" uuid="498fd37f-794d-4234-b88e-cb0ea2ca4e81"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_birth_weight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="785" y="0" width="70" height="40" uuid="0b0bd0b5-d38e-4124-b265-b7174f466432"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_gestational_age}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="TableHeader" x="855" y="0" width="45" height="40" uuid="f0e95a36-fad8-4e08-83a0-8f4c9555d03c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{col_active}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18">
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="0" y="0" width="45" height="18" uuid="9900e067-b29c-47b7-98db-882927f31d40"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{patient_code}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="45" y="0" width="95" height="18" uuid="8cd9b30a-4a9c-4e6a-b398-cb84edb27ae6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{infant_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="140" y="0" width="30" height="18" uuid="cb417b67-4c8e-4b6b-87f8-238e03817346"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{sex}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="170" y="0" width="35" height="18" uuid="3705da48-5c2f-46f7-a2a3-60621c93532f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{age}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="205" y="0" width="95" height="18" uuid="3131a35b-0525-4eba-9559-71f8cc30553e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{mother_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="300" y="0" width="70" height="18" uuid="0d6812fb-3cd6-44b7-9e9b-adc499504742"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{registration_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="370" y="0" width="70" height="18" uuid="bd86b58d-b7dc-4129-8844-6f1792ff89ea"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{followup_start_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="440" y="0" width="70" height="18" uuid="9333685e-a22f-4b03-97e7-41e82df1a1d3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{last_visit_date} == null ? "—" : $F{last_visit_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="510" y="0" width="50" height="18" uuid="fd05eddd-fd0e-44dc-acce-f6a04ff63b95"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{visit_count}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="560" y="0" width="70" height="18" uuid="8a7e27e8-8cec-4ab3-ae6f-2820190d8194"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{status_display}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="630" y="0" width="85" height="18" uuid="4f95eda5-4d15-4e68-8248-5e7d5d346e43"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{feeding_type}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="TableCell" x="715" y="0" width="70" height="18" uuid="5fd03cf9-1a28-475b-9562-f8f1cf1317b9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{birth_weight}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="785" y="0" width="70" height="18" uuid="ba559c0c-b0a5-49ea-b826-9239831ab74d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{gestational_age}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="TableCell" x="855" y="0" width="45" height="18" uuid="8786f032-825a-4344-9f91-79dd2bb4e0f5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{active_display}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20">
+			<line>
+				<reportElement x="0" y="0" width="940" height="1" uuid="a39cad35-d0a4-42ff-a8af-3ce161459c83"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="2" width="250" height="18" uuid="cc0c29c0-13c8-45d4-b600-390352a9695f"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="720" y="2" width="170" height="18" uuid="ab8d1516-15bc-4db7-b5e6-f569fbac3ad9"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="895" y="2" width="45" height="18" uuid="b2294c31-6093-4acb-8e15-037fd71587af"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="90">
+			<line>
+				<reportElement x="0" y="5" width="940" height="1" uuid="90522f79-1583-4e17-88f2-bfa94d67b477"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="12" width="250" height="18" uuid="ed253f25-2d8e-42ab-b9ed-56d7ad2d899c"/>
+				<textElement>
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="35" width="200" height="15" uuid="e1d98cd2-362e-47ba-9f58-13289b6dcf9d"/>
+				<textFieldExpression><![CDATA[$R{summary_total_infants} + " " + $V{TOTAL_INFANTS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="35" width="180" height="15" uuid="2f6f3680-0fc0-4825-b7d8-081a41aac5b5"/>
+				<textFieldExpression><![CDATA[$R{summary_active} + " " + $V{TOTAL_ACTIVE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="35" width="180" height="15" uuid="0eb58d3d-1158-4b5b-a102-663bb345506b"/>
+				<textFieldExpression><![CDATA[$R{summary_inactive} + " " + $V{TOTAL_INACTIVE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="620" y="35" width="200" height="15" uuid="201c8c75-bbc0-4e13-a7d1-d9a8a9b41346"/>
+				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + $V{TOTAL_VISITS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="58" width="180" height="15" uuid="66976e5e-6acd-4b89-a153-918805514185"/>
+				<textFieldExpression><![CDATA[$R{summary_in_followup} + " " + $V{TOTAL_IN_FOLLOWUP}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="58" width="180" height="15" uuid="356990ff-c2fa-4ab1-bdc9-447bb56d63d2"/>
+				<textFieldExpression><![CDATA[$R{summary_exited} + " " + $V{TOTAL_EXITED}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="58" width="180" height="15" uuid="5d0d0916-889e-4ba8-9a96-03484d166282"/>
+				<textFieldExpression><![CDATA[$R{summary_deceased} + " " + $V{TOTAL_DECEASED}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="620" y="58" width="200" height="15" uuid="d95ad34d-5574-4cd4-a206-74da5928a066"/>
+				<textFieldExpression><![CDATA[$R{summary_lost} + " " + $V{TOTAL_LOST}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
