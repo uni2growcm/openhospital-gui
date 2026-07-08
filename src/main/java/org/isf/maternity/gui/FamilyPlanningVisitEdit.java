@@ -117,7 +117,7 @@ public class FamilyPlanningVisitEdit extends JDialog {
     private GoodDateTimeSpinnerChooser visitDateField;
     private JComboBox<Typology> visitTypeCombo;
     private JTextArea notesArea;
-    private GoodDateChooser nextAppointmentDateField;
+    private GoodDateTimeSpinnerChooser nextAppointmentDateTimeField;
 
     private List<Typology> visitTypeTypologies;
 
@@ -188,7 +188,7 @@ public class FamilyPlanningVisitEdit extends JDialog {
                 notesArea.setText(visit.getNotes());
             }
             if (visit.getNextAppointmentDate() != null) {
-                nextAppointmentDateField.setDate(visit.getNextAppointmentDate());
+                nextAppointmentDateTimeField.setDateTime(visit.getNextAppointmentDate().atStartOfDay());
             }
         }
     }
@@ -290,9 +290,9 @@ public class FamilyPlanningVisitEdit extends JDialog {
             gbc.gridx = 1;
             gbc.gridwidth = 3;
             gbc.weightx = 1.0;
-            nextAppointmentDateField = new GoodDateChooser(LocalDate.now(), true, true);
-            nextAppointmentDateField.setPreferredSize(new Dimension(180, 28));
-            dataPanel.add(nextAppointmentDateField, gbc);
+            nextAppointmentDateTimeField = new GoodDateTimeSpinnerChooser(TimeTools.getNow());
+            nextAppointmentDateTimeField.setPreferredSize(new Dimension(200, 28));
+            dataPanel.add(nextAppointmentDateTimeField, gbc);
         }
         return dataPanel;
     }
@@ -334,12 +334,22 @@ public class FamilyPlanningVisitEdit extends JDialog {
         }
 
         String notes = notesArea.getText().trim();
-        LocalDate nextAppointment = nextAppointmentDateField.getDate();
+        LocalDateTime nextAppointmentDateTime = nextAppointmentDateTimeField.getLocalDateTime();
 
-        if (nextAppointment != null && nextAppointment.isBefore(visitDate.toLocalDate())) {
+        if (nextAppointmentDateTime != null && nextAppointmentDateTime.isBefore(visitDate)) {
             MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.aftervisit.msg"));
             return;
         }
+
+        if (nextAppointmentDateTime != null) {
+            LocalDateTime minNextAppointment = visitDate.plusHours(1);
+            if (nextAppointmentDateTime.isBefore(minNextAppointment)) {
+                MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.minimumonehour.msg"));
+                return;
+            }
+        }
+
+        LocalDate nextAppointment = nextAppointmentDateTime != null ? nextAppointmentDateTime.toLocalDate() : null;
 
         visit.setFamilyPlanning(fp);
         visit.setVisitDate(visitDate);
