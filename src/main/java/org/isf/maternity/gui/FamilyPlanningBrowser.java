@@ -962,7 +962,6 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                         MessageBundle.formatMessage("angal.common.export.success.msg", exportFile.getAbsolutePath()));
             }
         } catch (IOException ex) {
-            LOGGER.error("Export to Excel error: {}", ex.getMessage());
             MessageDialog.error(this, MessageBundle.getMessage("angal.common.export.error.msg") + ": " + ex.getMessage());
         }
     }
