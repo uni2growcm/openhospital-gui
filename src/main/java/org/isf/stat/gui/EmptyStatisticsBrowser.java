@@ -29,6 +29,7 @@ import java.awt.Font;
 import java.awt.Cursor;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Component;;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
@@ -36,20 +37,27 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JTextField;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JList;
 import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.BoxLayout;
+import javax.swing.JSplitPane;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JFrame;
 import javax.swing.Box;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.typology.manager.TypologyBrowserManager;
@@ -235,17 +243,24 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         initComponents();
 
-        setMinimumSize(new Dimension(900, 600));
+        setSize(new Dimension(1200, 750));
+        setMinimumSize(new Dimension(1200, 750));
         setResizable(true);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     private void initComponents() {
-        getContentPane().add(getFiltersPanel(), BorderLayout.WEST);
-        getContentPane().add(getDataPanel(), BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setLeftComponent(getFiltersPanel());
+        splitPane.setRightComponent(getDataPanel());
+        splitPane.setDividerLocation(760);
+        splitPane.setContinuousLayout(true);
+        splitPane.setResizeWeight(0.0);
+        splitPane.setBorder(null);
+
+        getContentPane().add(splitPane, BorderLayout.CENTER);
         getContentPane().add(getPaginationPanel(), BorderLayout.SOUTH);
     }
 
@@ -504,7 +519,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         filtersPanel = new JPanel(new BorderLayout());
         filtersPanel.add(scrollPane, BorderLayout.CENTER);
 
-        filtersPanel.setPreferredSize(new Dimension(860, 0));
+        filtersPanel.setPreferredSize(new Dimension(760, 0));
+        filtersPanel.setMinimumSize(new Dimension(760, 0));
 
         return filtersPanel;
     }
@@ -533,6 +549,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
         dataPanel = new JPanel(new BorderLayout());
         dataPanel.add(getDataTableScrollPane(), BorderLayout.CENTER);
+        dataPanel.setMinimumSize(new Dimension(200, 0));
         return dataPanel;
     }
 
@@ -582,10 +599,12 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JLabel ageFromLabel = new JLabel(MessageBundle.getMessage("angal.stat.agefrom"));
         ageFromField = new JTextField();
         ageFromField.setColumns(3);
+        restrictToNumeric(ageFromField, false);
 
         JLabel ageToLabel = new JLabel(MessageBundle.getMessage("angal.stat.ageto"));
         ageToField = new JTextField();
         ageToField.setColumns(3);
+        restrictToNumeric(ageToField, false);
 
         periodAndAgePanel = new JPanel(new FlowLayout());
         periodAndAgePanel.add(periodFromLabel);
@@ -767,6 +786,17 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         for (DischargeType dischargeType : dischargeTypesData) {
             dischargeTypesCombo.addItem(dischargeType);
         }
+        dischargeTypesCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                String text = "";
+                if (value instanceof DischargeType) {
+                    text = translateDischargeType(((DischargeType) value).getDescription());
+                }
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
         dischargeTypesPanel.add(dischargeTypesLabel);
         dischargeTypesPanel.add(dischargeTypesCombo);
 
@@ -791,6 +821,24 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return diseasesAndDischargeTypesPanel;
     }
 
+    private String translateDischargeType(String description) {
+        if (description == null) {
+            return "";
+        }
+        switch (description.trim().toUpperCase()) {
+            case "REFERRED":
+                return MessageBundle.getMessage("angal.stat.dischargetype.referred");
+            case "DEAD":
+                return MessageBundle.getMessage("angal.stat.dischargetype.dead");
+            case "NORMAL DISCHARGE":
+                return MessageBundle.getMessage("angal.stat.dischargetype.normaldischarge");
+            case "ESCAPE":
+                return MessageBundle.getMessage("angal.stat.dischargetype.escape");
+            default:
+                return description;
+        }
+    }
+
     private JPanel getParametersPanel() {
         if (parametersPanel != null) {
             return parametersPanel;
@@ -804,7 +852,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel heightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         heightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.height"));
         heightMinField = new JTextField(5);
+        restrictToNumeric(heightMinField, true);
         heightMaxField = new JTextField(5);
+        restrictToNumeric(heightMaxField, true);
         heightPanel.add(heightCheck);
         heightPanel.add(new JLabel("Min (cm):"));
         heightPanel.add(heightMinField);
@@ -826,7 +876,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel weightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         weightCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.weight"));
         weightMinField = new JTextField(5);
+        restrictToNumeric(weightMinField, true);
         weightMaxField = new JTextField(5);
+        restrictToNumeric(weightMaxField, true);
         weightPanel.add(weightCheck);
         weightPanel.add(new JLabel("Min (kg):"));
         weightPanel.add(weightMinField);
@@ -848,9 +900,13 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel pressurePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         arterialPressureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.arterialpressure"));
         systolicMinField = new JTextField(5);
+        restrictToNumeric(systolicMinField, true);
         systolicMaxField = new JTextField(5);
+        restrictToNumeric(systolicMaxField, true);
         diastolicMinField = new JTextField(5);
+        restrictToNumeric(diastolicMinField, true);
         diastolicMaxField = new JTextField(5);
+        restrictToNumeric(diastolicMaxField, true);
         pressurePanel.add(arterialPressureCheck);
         pressurePanel.add(new JLabel("Systolique Min:"));
         pressurePanel.add(systolicMinField);
@@ -882,7 +938,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel cardiacPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         cardiacFrequencyCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.cardiacfrequency"));
         cardiacMinField = new JTextField(5);
+        restrictToNumeric(cardiacMinField, true);
         cardiacMaxField = new JTextField(5);
+        restrictToNumeric(cardiacMaxField, true);
         cardiacPanel.add(cardiacFrequencyCheck);
         cardiacPanel.add(new JLabel("Min (bpm):"));
         cardiacPanel.add(cardiacMinField);
@@ -904,7 +962,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel tempPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         temperatureCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.temperature"));
         tempMinField = new JTextField(5);
+        restrictToNumeric(tempMinField, true);
         tempMaxField = new JTextField(5);
+        restrictToNumeric(tempMaxField, true);
         tempPanel.add(temperatureCheck);
         tempPanel.add(new JLabel("Min (°C):"));
         tempPanel.add(tempMinField);
@@ -926,7 +986,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel satPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         saturationCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.saturation"));
         satMinField = new JTextField(5);
+        restrictToNumeric(satMinField, true);
         satMaxField = new JTextField(5);
+        restrictToNumeric(satMaxField, true);
         satPanel.add(saturationCheck);
         satPanel.add(new JLabel("Min (%):"));
         satPanel.add(satMinField);
@@ -948,7 +1010,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel respPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         respiratoryRateCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.parameters.respiratoryrate"));
         respMinField = new JTextField(5);
+        restrictToNumeric(respMinField, true);
         respMaxField = new JTextField(5);
+        restrictToNumeric(respMaxField, true);
         respPanel.add(respiratoryRateCheck);
         respPanel.add(new JLabel("Min (/min):"));
         respPanel.add(respMinField);
@@ -1766,5 +1830,39 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             top.revalidate();
             top.repaint();
         }
+    }
+
+    private void restrictToNumeric(JTextField field, boolean allowDecimal) {
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+
+            private boolean isValid(FilterBypass fb, String insertedText, int offset, int removeLength) throws BadLocationException {
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String newText = current.substring(0, offset) + insertedText + current.substring(offset + removeLength);
+                if (newText.isEmpty()) {
+                    return true;
+                }
+                String regex = allowDecimal ? "-?\\d*\\.?\\d*" : "-?\\d*";
+                return newText.matches(regex);
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (isValid(fb, string, offset, 0)) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                if (isValid(fb, text, offset, length)) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            @Override
+            public void remove(DocumentFilter.FilterBypass fb, int offset, int length) throws BadLocationException {
+                super.remove(fb, offset, length);
+            }
+        });
     }
 }
