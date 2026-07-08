@@ -209,28 +209,15 @@
 				<textFieldExpression><![CDATA[$R{infaith}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="300" width="120" height="25" uuid="ca12ab1b-b1f7-430f-b69c-0fcf4c698d04"/>
-				<textElement verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{cert_paceanddate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="130" y="300" width="150" height="25" uuid="b604a3d9-8944-4f96-89fd-f9e16cbf8627"/>
-				<textElement verticalAlignment="Middle">
+				<reportElement x="0" y="300" width="535" height="25" uuid="990d1beb-8647-4447-9453-8d86b60631ad"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format(new Date())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{cert_paceanddate} + " " + new SimpleDateFormat("dd/MM/yyyy").format(new Date())]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="375" y="340" width="160" height="1" uuid="bbf8fecd-7397-4328-960a-9988633f8fc5"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
 			<textField>
-				<reportElement x="375" y="345" width="160" height="25" uuid="63a6b93a-7eb4-4bc7-a29a-0f62731a3d45"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<reportElement x="0" y="340" width="535" height="25" uuid="a60e0608-2974-43f1-bdb2-d78f4de4bab2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{mothersignature}]]></textFieldExpression>
