@@ -1,0 +1,614 @@
+[06/juil./2026 15:11:14] [:] INFO - HV000001: Hibernate Validator 8.0.3.Final (org.hibernate.validator.internal.util.Version.<clinit>(Version.java:21))
+[06/juil./2026 15:11:15] [:] INFO - Starting Application using Java 25.0.1 with PID 17848 (C:\Users\aurel\Dev\codelab\oh\oh-web\u2g\openhospital-gui\target\classes started by aurel in C:\Users\aurel\Dev\codelab\oh\oh-web\u2g\openhospital-gui) (org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:53))
+[06/juil./2026 15:11:15] [:] INFO - No active profile set, falling back to 1 default profile: "default" (org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:652))
+[06/juil./2026 15:11:22] [:] INFO - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:145))
+[06/juil./2026 15:11:25] [:] INFO - Finished Spring Data repository scanning in 3075 ms. Found 98 JPA repository interfaces. (org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:213))
+[06/juil./2026 15:11:32] [:] INFO - BeanFactory id=9b7213d8-b9b0-39c4-a336-4aff0a902bdb (org.springframework.cloud.context.scope.GenericScope.setSerializationId(GenericScope.java:282))
+[06/juil./2026 15:11:45] [:] INFO - HHH000204: Processing PersistenceUnitInfo [name: default] (org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation(LogHelper.java:31))
+[06/juil./2026 15:11:45] [:] INFO - HHH000412: Hibernate ORM core version 6.6.29.Final (org.hibernate.Version.logVersion(Version.java:44))
+[06/juil./2026 15:11:45] [:] INFO - HHH000026: Second-level cache disabled (org.hibernate.cache.internal.RegionFactoryInitiator.initiateService(RegionFactoryInitiator.java:50))
+[06/juil./2026 15:11:47] [:] INFO - No LoadTimeWeaver setup: ignoring JPA class transformer (org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo.addTransformer(SpringPersistenceUnitInfo.java:87))
+[06/juil./2026 15:11:47] [:] INFO - HikariPool-1 - Starting... (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:109))
+[06/juil./2026 15:11:47] [:] INFO - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@6148827c (com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:580))
+[06/juil./2026 15:11:47] [:] INFO - HikariPool-1 - Start completed. (com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:122))
+[06/juil./2026 15:11:48] [:] INFO - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 10.4.32
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown (org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.logConnectionInfo(JdbcEnvironmentInitiator.java:163))
+[06/juil./2026 15:12:01] [:] INFO - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService(JtaPlatformInitiator.java:59))
+[06/juil./2026 15:12:01] [:] INFO - Initialized JPA EntityManagerFactory for persistence unit 'default' (org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:447))
+[06/juil./2026 15:12:03] [:] INFO - Hibernate is in classpath; If applicable, HQL parser will be used. (org.springframework.data.jpa.repository.query.QueryEnhancerFactory.<clinit>(QueryEnhancerFactory.java:49))
+[06/juil./2026 15:12:23] [:] INFO - File examination.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:25] [:] ERROR - >> 'orthanc.properties' file not found. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:85))
+[06/juil./2026 15:12:25] [:] WARN - >> orthanc.base-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:25] [:] WARN - >> orthanc.username property not found: default is admin (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:25] [:] WARN - >> orthanc.password property not found: default is adminADMIN!123# (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:25] [:] WARN - >> orthanc.explorer-url property not found: default is  (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:27] [:] INFO - SMS Sender GSM started... (org.isf.sms.providers.gsm.GSMGatewayService.<init>(GSMGatewayService.java:57))
+[06/juil./2026 15:12:27] [:] INFO - File sms.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:30] [:] INFO - Started Application in 77.988 seconds (process running for 81.772) (org.springframework.boot.StartupInfoLogger.logStarted(StartupInfoLogger.java:59))
+[06/juil./2026 15:12:31] [:] INFO - 
+
+=====================
+Starting Open Hospital
+=====================
+ (org.isf.menu.gui.Menu.createAndShowGUI(Menu.java:60))
+[06/juil./2026 15:12:31] [:] INFO - File version.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:31] [:] INFO - Open Hospital version 1.15.0 (org.isf.menu.gui.Menu.checkOHVersion(Menu.java:72))
+[06/juil./2026 15:12:31] [:] INFO - Java version 25.0.1 (org.isf.menu.gui.Menu.checkJavaVersion(Menu.java:77))
+[06/juil./2026 15:12:31] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:31] [:] WARN - PAGINATIONPAGESIZ property not found: default is 100 (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:126))
+[06/juil./2026 15:12:31] [:] WARN - >> PATIENTARCHIVEDBILL property not found: default is PatientArchivedBill (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> BILLSREFUNDREPORT property not found: default is BillsRefundReportUserAllInDate (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> PATIENTARCHIVEBILLSTATEMENT property not found: default is PatientArchiveBillStatement (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> REFERENCE_PREFIX_CHARGE property not found: default is REF+ (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> REFERENCE_PREFIX_DISCHARGE property not found: default is REF- (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> REFERENCE_PREFIX_INVENTORY property not found: default is INV (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - >> REFERENCE_TIMESTAMP_FORMAT property not found: default is yyyyMMdd'T'HHmmss (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:31] [:] WARN - HIV_INFANT_MAX_AGE_MONTHS property not found: default is 24 (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:126))
+[06/juil./2026 15:12:33] [:] ERROR - Failed to fetch configuration URL. HTTP response code: 403 (org.isf.generaldata.configProvider.JsonFileConfigProvider.fetchDataFile(JsonFileConfigProvider.java:82))
+[06/juil./2026 15:12:36] [:] INFO - File settings.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:36] [:] WARN - PAGINATIONPAGESIZ property not found: default is 100 (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:126))
+[06/juil./2026 15:12:36] [:] WARN - >> PATIENTARCHIVEDBILL property not found: default is PatientArchivedBill (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> BILLSREFUNDREPORT property not found: default is BillsRefundReportUserAllInDate (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> PATIENTARCHIVEBILLSTATEMENT property not found: default is PatientArchiveBillStatement (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> REFERENCE_PREFIX_CHARGE property not found: default is REF+ (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> REFERENCE_PREFIX_DISCHARGE property not found: default is REF- (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> REFERENCE_PREFIX_INVENTORY property not found: default is INV (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - >> REFERENCE_TIMESTAMP_FORMAT property not found: default is yyyyMMdd'T'HHmmss (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:178))
+[06/juil./2026 15:12:36] [:] WARN - HIV_INFANT_MAX_AGE_MONTHS property not found: default is 24 (org.isf.generaldata.ConfigurationProperties.myGetProperty(ConfigurationProperties.java:126))
+[06/juil./2026 15:12:36] [:] INFO - Logging: Multi User mode. (org.isf.menu.gui.MainMenu.<init>(MainMenu.java:198))
+[06/juil./2026 15:12:37] [:] DEBUG - 
+    select
+        u1_0.us_id_a,
+        u1_0.us_active,
+        u1_0.us_created_by,
+        u1_0.us_created_date,
+        u1_0.us_deleted,
+        u1_0.us_desc,
+        u1_0.us_failed_attempts,
+        u1_0.us_account_locked,
+        u1_0.us_last_login,
+        u1_0.us_last_modified_by,
+        u1_0.us_last_modified_date,
+        u1_0.us_lock_time,
+        u1_0.us_passwd,
+        u1_0.us_ug_id_a 
+    from
+        oh_user u1_0 
+    order by
+        u1_0.us_id_a (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:39] [:] DEBUG - 
+    select
+        ug1_0.ug_id_a,
+        ug1_0.ug_active,
+        ug1_0.ug_created_by,
+        ug1_0.ug_created_date,
+        ug1_0.ug_deleted,
+        ug1_0.ug_desc,
+        ug1_0.ug_last_modified_by,
+        ug1_0.ug_last_modified_date 
+    from
+        oh_usergroup ug1_0 
+    where
+        ug1_0.ug_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:39] [:] TRACE - binding parameter (1:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:40] [:] DEBUG - 
+    select
+        ug1_0.ug_id_a,
+        ug1_0.ug_active,
+        ug1_0.ug_created_by,
+        ug1_0.ug_created_date,
+        ug1_0.ug_deleted,
+        ug1_0.ug_desc,
+        ug1_0.ug_last_modified_by,
+        ug1_0.ug_last_modified_date 
+    from
+        oh_usergroup ug1_0 
+    where
+        ug1_0.ug_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:40] [:] TRACE - binding parameter (1:VARCHAR) <- [doctor] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:40] [:] DEBUG - 
+    select
+        ug1_0.ug_id_a,
+        ug1_0.ug_active,
+        ug1_0.ug_created_by,
+        ug1_0.ug_created_date,
+        ug1_0.ug_deleted,
+        ug1_0.ug_desc,
+        ug1_0.ug_last_modified_by,
+        ug1_0.ug_last_modified_date 
+    from
+        oh_usergroup ug1_0 
+    where
+        ug1_0.ug_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:40] [:] TRACE - binding parameter (1:VARCHAR) <- [guest] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:40] [:] DEBUG - 
+    select
+        ug1_0.ug_id_a,
+        ug1_0.ug_active,
+        ug1_0.ug_created_by,
+        ug1_0.ug_created_date,
+        ug1_0.ug_deleted,
+        ug1_0.ug_desc,
+        ug1_0.ug_last_modified_by,
+        ug1_0.ug_last_modified_date 
+    from
+        oh_usergroup ug1_0 
+    where
+        ug1_0.ug_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:40] [:] TRACE - binding parameter (1:VARCHAR) <- [laboratorist] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:45] [:] DEBUG - 
+    select
+        u1_0.us_id_a,
+        u1_0.us_active,
+        u1_0.us_created_by,
+        u1_0.us_created_date,
+        u1_0.us_deleted,
+        u1_0.us_desc,
+        u1_0.us_failed_attempts,
+        u1_0.us_account_locked,
+        u1_0.us_last_login,
+        u1_0.us_last_modified_by,
+        u1_0.us_last_modified_date,
+        u1_0.us_lock_time,
+        u1_0.us_passwd,
+        u1_0.us_ug_id_a 
+    from
+        oh_user u1_0 
+    where
+        u1_0.us_id_a=? 
+        and u1_0.us_deleted=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:45] [:] TRACE - binding parameter (1:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:45] [:] TRACE - binding parameter (2:BOOLEAN) <- [false] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:45] [:] DEBUG - 
+    select
+        ug1_0.ug_id_a,
+        ug1_0.ug_active,
+        ug1_0.ug_created_by,
+        ug1_0.ug_created_date,
+        ug1_0.ug_deleted,
+        ug1_0.ug_desc,
+        ug1_0.ug_last_modified_by,
+        ug1_0.ug_last_modified_date 
+    from
+        oh_usergroup ug1_0 
+    where
+        ug1_0.ug_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:45] [:] TRACE - binding parameter (1:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:46] [:] DEBUG - 
+    update
+        oh_user u1_0 
+    set
+        us_last_login=? 
+    where
+        u1_0.us_id_a=? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:46] [:] TRACE - binding parameter (1:TIMESTAMP) <- [2026-07-06T15:12:46] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:46] [:] TRACE - binding parameter (2:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:46] [admin:admin] INFO - Logging: "admin" user has logged into the system. (org.isf.menu.gui.MainMenu.loginInserted(MainMenu.java:108))
+[06/juil./2026 15:12:47] [admin:admin] DEBUG - 
+    select
+        t1_0.tel_dbid,
+        t1_0.tel_hwid,
+        t1_0.tel_osid,
+        t1_0.tel_uuid,
+        t1_0.tel_active,
+        t1_0.tel_consent,
+        t1_0.tel_info,
+        t1_0.tel_optin_date,
+        t1_0.tel_optout_date,
+        t1_0.tel_sent_time 
+    from
+        oh_telemetry t1_0 
+    order by
+        t1_0.tel_uuid 
+    limit
+        ? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (1:INTEGER) <- [1] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] INFO - File telemetry.properties loaded. (org.isf.generaldata.ConfigurationProperties.loadPropertiesFile(ConfigurationProperties.java:93))
+[06/juil./2026 15:12:47] [admin:admin] DEBUG - 
+    insert 
+    into
+        oh_session_audit
+        (sea_active, sea_created_by, sea_created_date, sea_last_modified_by, sea_last_modified_date, sea_login, sea_logout, sea_us_id_a) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?) (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (1:INTEGER) <- [1] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (2:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (3:TIMESTAMP) <- [2026-07-06T15:12:47.579754200] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (4:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (5:TIMESTAMP) <- [2026-07-06T15:12:47.579754200] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (6:TIMESTAMP) <- [2026-07-06T15:12:47.395341600] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (7:TIMESTAMP) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (8:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:47] [admin:admin] DEBUG - 
+    select
+        umi1_0.mni_id_a,
+        umi1_0.mni_btn_label,
+        umi1_0.mni_label,
+        umi1_0.mni_tooltip,
+        umi1_0.mni_shortcut,
+        umi1_0.mni_submenu,
+        umi1_0.mni_class,
+        umi1_0.mni_is_submenu,
+        umi1_0.mni_position,
+        gm1_0.gm_active 
+    from
+        oh_menuitem umi1_0,
+        oh_groupmenu gm1_0,
+        oh_usergroup ug1_0,
+        oh_user u1_0 
+    where
+        (
+            u1_0.us_id_a=?
+        ) 
+        and (
+            u1_0.us_ug_id_a=ug1_0.ug_id_a
+        ) 
+        and (
+            ug1_0.ug_id_a=gm1_0.gm_ug_id_a
+        ) 
+        and (
+            umi1_0.mni_id_a=gm1_0.gm_mni_id_a
+        ) 
+    order by
+        umi1_0.mni_position (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:12:47] [admin:admin] TRACE - binding parameter (1:VARCHAR) <- [admin] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:12:48] [admin:admin] ERROR - >> key not found: angal.menu.btnbillrefund (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:12:48] [admin:admin] ERROR - >> key not found: angal.menu.btnbillrefund (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:12:48] [admin:admin] ERROR - >> key not found: angal.menu.btn.tuberculosis (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:14:17] [admin:admin] DEBUG - 
+    select
+        w1_0.wrd_id_a,
+        w1_0.wrd_active,
+        w1_0.wrd_nbeds,
+        w1_0.wrd_created_by,
+        w1_0.wrd_created_date,
+        w1_0.wrd_name,
+        w1_0.wrd_ndoc,
+        w1_0.wrd_email,
+        w1_0.wrd_fax,
+        w1_0.wrd_is_female,
+        w1_0.wrd_is_male,
+        w1_0.wrd_is_opd,
+        w1_0.wrd_is_pharmacy,
+        w1_0.wrd_last_modified_by,
+        w1_0.wrd_last_modified_date,
+        w1_0.wrd_lock,
+        w1_0.wrd_nqua_nurs,
+        w1_0.wrd_tele,
+        w1_0.wrd_visit_duration 
+    from
+        oh_ward w1_0 
+    where
+        w1_0.wrd_nbeds>0 
+    order by
+        w1_0.wrd_name (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:14:17] [admin:admin] DEBUG - 
+    select
+        c1_0.cnt_id,
+        c1_0.cnt_active,
+        c1_0.cnt_created_by,
+        c1_0.cnt_created_date,
+        c1_0.cnt_iso_code,
+        c1_0.cnt_last_modified_by,
+        c1_0.cnt_last_modified_date,
+        c1_0.cnt_lock,
+        c1_0.cnt_name,
+        c1_0.cnt_phone_code 
+    from
+        oh_country c1_0 
+    where
+        c1_0.cnt_active=? 
+    order by
+        c1_0.cnt_name (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:14:17] [admin:admin] TRACE - binding parameter (1:INTEGER) <- [1] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:14:17] [admin:admin] DEBUG - 
+    select
+        p1_0.prt_id,
+        p1_0.prt_active,
+        p1_0.prt_address,
+        p1_0.prt_contact_person,
+        p1_0.prt_created_by,
+        p1_0.prt_created_date,
+        p1_0.prt_email,
+        p1_0.prt_last_modified_by,
+        p1_0.prt_last_modified_date,
+        p1_0.prt_lock,
+        p1_0.prt_name,
+        p1_0.prt_notes,
+        p1_0.prt_phone,
+        p1_0.prt_type 
+    from
+        oh_partners p1_0 
+    where
+        p1_0.prt_active=1 
+    order by
+        p1_0.prt_name (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:14:17] [admin:admin] DEBUG - 
+    SELECT
+        COUNT(*) 
+    FROM
+        OH_PATIENT as p 
+    LEFT JOIN
+        (SELECT
+            * 
+        FROM
+            OH_ADMISSION 
+        WHERE
+            ADM_IN = 1   
+            AND ((ADM_DELETED='N') 
+            OR (ADM_DELETED IS NULL))) as a   
+            ON p.PAT_ID = a.ADM_PAT_ID 
+    LEFT JOIN
+        OH_COUNTRY as c   
+            ON p.PAT_COUNTRY_ID = c.CNT_ID 
+    WHERE
+        (
+            (
+                p.PAT_DELETED='N'
+            ) 
+            OR (
+                p.PAT_DELETED IS NULL
+            )
+        ) 
+        AND (
+            lower(concat_ws(' ', p.PAT_ID, p.PAT_SNAME, p.PAT_FNAME, p.PAT_NAME, p.PAT_NOTE, p.PAT_TAXCODE, p.PAT_CITY, p.PAT_ADDR, p.PAT_TELE)) LIKE ?
+        ) (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:14:17] [admin:admin] TRACE - binding parameter (1:VARCHAR) <- [%] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:14:17] [admin:admin] DEBUG - 
+    SELECT
+        * 
+    FROM
+        OH_PATIENT as p 
+    LEFT JOIN
+        (SELECT
+            * 
+        FROM
+            OH_ADMISSION 
+        WHERE
+            ADM_IN = 1   
+            AND ((ADM_DELETED='N') 
+            OR (ADM_DELETED IS NULL))) as a   
+            ON p.PAT_ID = a.ADM_PAT_ID 
+    LEFT JOIN
+        OH_COUNTRY as c   
+            ON p.PAT_COUNTRY_ID = c.CNT_ID 
+    WHERE
+        (
+            (
+                p.PAT_DELETED='N'
+            ) 
+            OR (
+                p.PAT_DELETED IS NULL
+            )
+        ) 
+        AND (
+            lower(concat_ws(' ', p.PAT_ID, p.PAT_SNAME, p.PAT_FNAME, p.PAT_NAME, p.PAT_NOTE, p.PAT_TAXCODE, p.PAT_CITY, p.PAT_ADDR, p.PAT_TELE)) LIKE ?
+        ) 
+    ORDER BY
+        p.PAT_ID DESC 
+    limit
+        ? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:14:17] [admin:admin] TRACE - binding parameter (1:VARCHAR) <- [%] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:14:17] [admin:admin] WARN - SQL Error: 0, SQLState: null (org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions(SqlExceptionHelper.java:145))
+[06/juil./2026 15:14:17] [admin:admin] ERROR - Unknown label 'adm_bed_number'. Possible value [a.adm_prg_date_ctrl2, a.adm_prg_date_ctrl1, pat_nbr_children, cnt_phone_code, pat_sex, cnt_last_modified_by, pat_rp_id, adm_lock, a.adm_wrd_id_a, pat_profile_photo_id, p.pat_tele, pat_addr, a.adm_id, p.pat_blama, c.cnt_phone_code, p.pat_country_id, a.adm_date_dis, adm_type, pat_anamnesis, a.adm_fhu, cnt_lock, pat_agetype, pat_affiliated_id, pat_parents_res, p.pat_ledu, adm_prg_weight, pat_note, pat_bdate, p.pat_last_modified_by, a.adm_created_date, p.pat_anamnesis, adm_active, c.cnt_id, p.pat_ptoge, p.pat_parents_res, a.adm_date_adm, adm_prg_date_ctrl1, adm_prg_date_ctrl2, p.pat_note, a.adm_out_dis_id_a_2, cnt_iso_code, p.pat_addr, a.adm_out_dis_id_a_3, a.adm_lock, adm_prg_ptt_id_a, a.adm_usr_id_a, p.pat_last_modified_date, c.cnt_active, adm_trans, pat_btype, a.adm_type, p.pat_rp_id, pat_next_kin, pat_lock, adm_in_dis_id_a, adm_wrd_id_a, a.adm_in_dis_id_a, adm_date_dis, a.adm_last_modified_date, adm_prg_drt_id_a, a.adm_prg_ptt_id_a, p.pat_birth_place, adm_usr_id_a, c.cnt_created_by, pat_birth_place, pat_taxcode, adm_dist_id_a, pat_last_modified_date, a.adm_deleted, pat_geo_pos, p.pat_profession, a.adm_last_modified_by, c.cnt_lock, p.pat_sex, adm_admt_id_a_adm, pat_moth_name, adm_created_date, pat_ptoge, adm_prg_dlt_id_a, adm_out_dis_id_a_2, a.adm_prg_date_del, pat_created_by, p.pat_created_by, cnt_id, pat_name, p.pat_lock, c.cnt_last_modified_date, a.adm_yprog, adm_out_dis_id_a_3, p.pat_btype, pat_last_modified_by, adm_prg_date_abort, pat_moth, pat_mar_stat, p.pat_fname, pat_active, cnt_created_date, pat_fath, c.cnt_last_modified_by, adm_yprog, a.adm_out_dis_id_a, a.adm_note, pat_id, pat_city, p.pat_sname, a.adm_dist_id_a, adm_created_by, a.adm_active, p.pat_moth_name, adm_date_adm, pat_deleted, adm_prg_date_del, a.adm_prg_dlt_id_a, c.cnt_iso_code, pat_esta, p.pat_taxcode, pat_age, pat_pl_id, p.pat_transport, pat_created_date, adm_last_modified_date, adm_prg_date_vis, p.pat_created_date, cnt_created_by, pat_timestamp, p.pat_geo_pos, p.pat_allergies, p.pat_fath, a.adm_admt_id_a_adm, a.adm_prg_drt_id_a, cnt_name, pat_blama, adm_note, pat_transport, p.pat_city, adm_last_modified_by, p.pat_age, adm_fhu, p.pat_next_kin, a.adm_prg_weight, pat_fname, c.cnt_name, p.pat_timestamp, p.pat_mar_stat, adm_out_dis_id_a, pat_sname, p.pat_profile_photo_id, pat_allergies, adm_in, p.pat_deleted, cnt_last_modified_date, pat_country_id, pat_tele, p.pat_agetype, p.pat_active, adm_pat_id, p.pat_name, adm_id, cnt_active, p.pat_nbr_children, p.pat_pl_id, a.adm_pat_id, pat_fath_name, p.pat_affiliated_id, p.pat_fath_name, a.adm_in, p.pat_bdate, adm_deleted, a.adm_prg_date_abort, pat_ledu, p.pat_id, c.cnt_created_date, a.adm_prg_date_vis, p.pat_moth, p.pat_esta, pat_profession, a.adm_trans, a.adm_created_by] (org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions(SqlExceptionHelper.java:150))
+[06/juil./2026 15:14:18] [admin:admin] ERROR - Unable to find column position by name: adm_bed_number [Unknown label 'adm_bed_number'. Possible value [a.adm_prg_date_ctrl2, a.adm_prg_date_ctrl1, pat_nbr_children, cnt_phone_code, pat_sex, cnt_last_modified_by, pat_rp_id, adm_lock, a.adm_wrd_id_a, pat_profile_photo_id, p.pat_tele, pat_addr, a.adm_id, p.pat_blama, c.cnt_phone_code, p.pat_country_id, a.adm_date_dis, adm_type, pat_anamnesis, a.adm_fhu, cnt_lock, pat_agetype, pat_affiliated_id, pat_parents_res, p.pat_ledu, adm_prg_weight, pat_note, pat_bdate, p.pat_last_modified_by, a.adm_created_date, p.pat_anamnesis, adm_active, c.cnt_id, p.pat_ptoge, p.pat_parents_res, a.adm_date_adm, adm_prg_date_ctrl1, adm_prg_date_ctrl2, p.pat_note, a.adm_out_dis_id_a_2, cnt_iso_code, p.pat_addr, a.adm_out_dis_id_a_3, a.adm_lock, adm_prg_ptt_id_a, a.adm_usr_id_a, p.pat_last_modified_date, c.cnt_active, adm_trans, pat_btype, a.adm_type, p.pat_rp_id, pat_next_kin, pat_lock, adm_in_dis_id_a, adm_wrd_id_a, a.adm_in_dis_id_a, adm_date_dis, a.adm_last_modified_date, adm_prg_drt_id_a, a.adm_prg_ptt_id_a, p.pat_birth_place, adm_usr_id_a, c.cnt_created_by, pat_birth_place, pat_taxcode, adm_dist_id_a, pat_last_modified_date, a.adm_deleted, pat_geo_pos, p.pat_profession, a.adm_last_modified_by, c.cnt_lock, p.pat_sex, adm_admt_id_a_adm, pat_moth_name, adm_created_date, pat_ptoge, adm_prg_dlt_id_a, adm_out_dis_id_a_2, a.adm_prg_date_del, pat_created_by, p.pat_created_by, cnt_id, pat_name, p.pat_lock, c.cnt_last_modified_date, a.adm_yprog, adm_out_dis_id_a_3, p.pat_btype, pat_last_modified_by, adm_prg_date_abort, pat_moth, pat_mar_stat, p.pat_fname, pat_active, cnt_created_date, pat_fath, c.cnt_last_modified_by, adm_yprog, a.adm_out_dis_id_a, a.adm_note, pat_id, pat_city, p.pat_sname, a.adm_dist_id_a, adm_created_by, a.adm_active, p.pat_moth_name, adm_date_adm, pat_deleted, adm_prg_date_del, a.adm_prg_dlt_id_a, c.cnt_iso_code, pat_esta, p.pat_taxcode, pat_age, pat_pl_id, p.pat_transport, pat_created_date, adm_last_modified_date, adm_prg_date_vis, p.pat_created_date, cnt_created_by, pat_timestamp, p.pat_geo_pos, p.pat_allergies, p.pat_fath, a.adm_admt_id_a_adm, a.adm_prg_drt_id_a, cnt_name, pat_blama, adm_note, pat_transport, p.pat_city, adm_last_modified_by, p.pat_age, adm_fhu, p.pat_next_kin, a.adm_prg_weight, pat_fname, c.cnt_name, p.pat_timestamp, p.pat_mar_stat, adm_out_dis_id_a, pat_sname, p.pat_profile_photo_id, pat_allergies, adm_in, p.pat_deleted, cnt_last_modified_date, pat_country_id, pat_tele, p.pat_agetype, p.pat_active, adm_pat_id, p.pat_name, adm_id, cnt_active, p.pat_nbr_children, p.pat_pl_id, a.adm_pat_id, pat_fath_name, p.pat_affiliated_id, p.pat_fath_name, a.adm_in, p.pat_bdate, adm_deleted, a.adm_prg_date_abort, pat_ledu, p.pat_id, c.cnt_created_date, a.adm_prg_date_vis, p.pat_moth, p.pat_esta, pat_profession, a.adm_trans, a.adm_created_by]] [n/a] (org.isf.utils.db.OHServiceExceptionTranslator.translateSqlExceptionToOHServiceException(OHServiceExceptionTranslator.java:74))
+org.springframework.orm.jpa.JpaSystemException: Unable to find column position by name: adm_bed_number [Unknown label 'adm_bed_number'. Possible value [a.adm_prg_date_ctrl2, a.adm_prg_date_ctrl1, pat_nbr_children, cnt_phone_code, pat_sex, cnt_last_modified_by, pat_rp_id, adm_lock, a.adm_wrd_id_a, pat_profile_photo_id, p.pat_tele, pat_addr, a.adm_id, p.pat_blama, c.cnt_phone_code, p.pat_country_id, a.adm_date_dis, adm_type, pat_anamnesis, a.adm_fhu, cnt_lock, pat_agetype, pat_affiliated_id, pat_parents_res, p.pat_ledu, adm_prg_weight, pat_note, pat_bdate, p.pat_last_modified_by, a.adm_created_date, p.pat_anamnesis, adm_active, c.cnt_id, p.pat_ptoge, p.pat_parents_res, a.adm_date_adm, adm_prg_date_ctrl1, adm_prg_date_ctrl2, p.pat_note, a.adm_out_dis_id_a_2, cnt_iso_code, p.pat_addr, a.adm_out_dis_id_a_3, a.adm_lock, adm_prg_ptt_id_a, a.adm_usr_id_a, p.pat_last_modified_date, c.cnt_active, adm_trans, pat_btype, a.adm_type, p.pat_rp_id, pat_next_kin, pat_lock, adm_in_dis_id_a, adm_wrd_id_a, a.adm_in_dis_id_a, adm_date_dis, a.adm_last_modified_date, adm_prg_drt_id_a, a.adm_prg_ptt_id_a, p.pat_birth_place, adm_usr_id_a, c.cnt_created_by, pat_birth_place, pat_taxcode, adm_dist_id_a, pat_last_modified_date, a.adm_deleted, pat_geo_pos, p.pat_profession, a.adm_last_modified_by, c.cnt_lock, p.pat_sex, adm_admt_id_a_adm, pat_moth_name, adm_created_date, pat_ptoge, adm_prg_dlt_id_a, adm_out_dis_id_a_2, a.adm_prg_date_del, pat_created_by, p.pat_created_by, cnt_id, pat_name, p.pat_lock, c.cnt_last_modified_date, a.adm_yprog, adm_out_dis_id_a_3, p.pat_btype, pat_last_modified_by, adm_prg_date_abort, pat_moth, pat_mar_stat, p.pat_fname, pat_active, cnt_created_date, pat_fath, c.cnt_last_modified_by, adm_yprog, a.adm_out_dis_id_a, a.adm_note, pat_id, pat_city, p.pat_sname, a.adm_dist_id_a, adm_created_by, a.adm_active, p.pat_moth_name, adm_date_adm, pat_deleted, adm_prg_date_del, a.adm_prg_dlt_id_a, c.cnt_iso_code, pat_esta, p.pat_taxcode, pat_age, pat_pl_id, p.pat_transport, pat_created_date, adm_last_modified_date, adm_prg_date_vis, p.pat_created_date, cnt_created_by, pat_timestamp, p.pat_geo_pos, p.pat_allergies, p.pat_fath, a.adm_admt_id_a_adm, a.adm_prg_drt_id_a, cnt_name, pat_blama, adm_note, pat_transport, p.pat_city, adm_last_modified_by, p.pat_age, adm_fhu, p.pat_next_kin, a.adm_prg_weight, pat_fname, c.cnt_name, p.pat_timestamp, p.pat_mar_stat, adm_out_dis_id_a, pat_sname, p.pat_profile_photo_id, pat_allergies, adm_in, p.pat_deleted, cnt_last_modified_date, pat_country_id, pat_tele, p.pat_agetype, p.pat_active, adm_pat_id, p.pat_name, adm_id, cnt_active, p.pat_nbr_children, p.pat_pl_id, a.adm_pat_id, pat_fath_name, p.pat_affiliated_id, p.pat_fath_name, a.adm_in, p.pat_bdate, adm_deleted, a.adm_prg_date_abort, pat_ledu, p.pat_id, c.cnt_created_date, a.adm_prg_date_vis, p.pat_moth, p.pat_esta, pat_profession, a.adm_trans, a.adm_created_by]] [n/a]
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:560)
+	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
+	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:343)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:160)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at jdk.proxy2/jdk.proxy2.$Proxy190.findPatientAdmissionsByFilters(Unknown Source)
+	at org.isf.admission.service.AdmissionIoOperations.getAdmittedPatientsByFilters(AdmissionIoOperations.java:452)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:89)
+	at org.isf.utils.db.OHServiceExceptionTranslator.translateSqlExceptionToOHServiceException(OHServiceExceptionTranslator.java:56)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:649)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethod(AbstractAspectJAdvice.java:631)
+	at org.springframework.aop.aspectj.AspectJAroundAdvice.invoke(AspectJAroundAdvice.java:71)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:173)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at org.isf.admission.service.AdmissionIoOperations$$SpringCGLIB$$0.getAdmittedPatientsByFilters(<generated>)
+	at org.isf.admission.manager.AdmissionBrowserManager.getAdmittedPatientsPaginated(AdmissionBrowserManager.java:593)
+	at org.isf.admission.gui.AdmittedPatientBrowser.loadPage(AdmittedPatientBrowser.java:1225)
+	at org.isf.admission.gui.AdmittedPatientBrowser.<init>(AdmittedPatientBrowser.java:373)
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at org.isf.menu.gui.MainMenu.launchApp(MainMenu.java:466)
+	at org.isf.menu.gui.MainMenu.actionPerformed(MainMenu.java:442)
+	at java.desktop/javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1972)
+	at java.desktop/javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2314)
+	at java.desktop/javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:407)
+	at java.desktop/javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:262)
+	at java.desktop/javax.swing.plaf.basic.BasicButtonListener.mouseReleased(BasicButtonListener.java:279)
+	at java.desktop/java.awt.Component.processMouseEvent(Component.java:6576)
+	at java.desktop/javax.swing.JComponent.processMouseEvent(JComponent.java:3404)
+	at java.desktop/java.awt.Component.processEvent(Component.java:6341)
+	at java.desktop/java.awt.Container.processEvent(Container.java:2260)
+	at java.desktop/java.awt.Component.dispatchEventImpl(Component.java:4958)
+	at java.desktop/java.awt.Container.dispatchEventImpl(Container.java:2318)
+	at java.desktop/java.awt.Component.dispatchEvent(Component.java:4790)
+	at java.desktop/java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4917)
+	at java.desktop/java.awt.LightweightDispatcher.processMouseEvent(Container.java:4560)
+	at java.desktop/java.awt.LightweightDispatcher.dispatchEvent(Container.java:4501)
+	at java.desktop/java.awt.Container.dispatchEventImpl(Container.java:2304)
+	at java.desktop/java.awt.Window.dispatchEventImpl(Window.java:2671)
+	at java.desktop/java.awt.Component.dispatchEvent(Component.java:4790)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:725)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at org.isf.utils.jobjects.WaitCursorEventQueue.dispatchEvent(WaitCursorEventQueue.java:56)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Caused by: org.hibernate.exception.GenericJDBCException: Unable to find column position by name: adm_bed_number [Unknown label 'adm_bed_number'. Possible value [a.adm_prg_date_ctrl2, a.adm_prg_date_ctrl1, pat_nbr_children, cnt_phone_code, pat_sex, cnt_last_modified_by, pat_rp_id, adm_lock, a.adm_wrd_id_a, pat_profile_photo_id, p.pat_tele, pat_addr, a.adm_id, p.pat_blama, c.cnt_phone_code, p.pat_country_id, a.adm_date_dis, adm_type, pat_anamnesis, a.adm_fhu, cnt_lock, pat_agetype, pat_affiliated_id, pat_parents_res, p.pat_ledu, adm_prg_weight, pat_note, pat_bdate, p.pat_last_modified_by, a.adm_created_date, p.pat_anamnesis, adm_active, c.cnt_id, p.pat_ptoge, p.pat_parents_res, a.adm_date_adm, adm_prg_date_ctrl1, adm_prg_date_ctrl2, p.pat_note, a.adm_out_dis_id_a_2, cnt_iso_code, p.pat_addr, a.adm_out_dis_id_a_3, a.adm_lock, adm_prg_ptt_id_a, a.adm_usr_id_a, p.pat_last_modified_date, c.cnt_active, adm_trans, pat_btype, a.adm_type, p.pat_rp_id, pat_next_kin, pat_lock, adm_in_dis_id_a, adm_wrd_id_a, a.adm_in_dis_id_a, adm_date_dis, a.adm_last_modified_date, adm_prg_drt_id_a, a.adm_prg_ptt_id_a, p.pat_birth_place, adm_usr_id_a, c.cnt_created_by, pat_birth_place, pat_taxcode, adm_dist_id_a, pat_last_modified_date, a.adm_deleted, pat_geo_pos, p.pat_profession, a.adm_last_modified_by, c.cnt_lock, p.pat_sex, adm_admt_id_a_adm, pat_moth_name, adm_created_date, pat_ptoge, adm_prg_dlt_id_a, adm_out_dis_id_a_2, a.adm_prg_date_del, pat_created_by, p.pat_created_by, cnt_id, pat_name, p.pat_lock, c.cnt_last_modified_date, a.adm_yprog, adm_out_dis_id_a_3, p.pat_btype, pat_last_modified_by, adm_prg_date_abort, pat_moth, pat_mar_stat, p.pat_fname, pat_active, cnt_created_date, pat_fath, c.cnt_last_modified_by, adm_yprog, a.adm_out_dis_id_a, a.adm_note, pat_id, pat_city, p.pat_sname, a.adm_dist_id_a, adm_created_by, a.adm_active, p.pat_moth_name, adm_date_adm, pat_deleted, adm_prg_date_del, a.adm_prg_dlt_id_a, c.cnt_iso_code, pat_esta, p.pat_taxcode, pat_age, pat_pl_id, p.pat_transport, pat_created_date, adm_last_modified_date, adm_prg_date_vis, p.pat_created_date, cnt_created_by, pat_timestamp, p.pat_geo_pos, p.pat_allergies, p.pat_fath, a.adm_admt_id_a_adm, a.adm_prg_drt_id_a, cnt_name, pat_blama, adm_note, pat_transport, p.pat_city, adm_last_modified_by, p.pat_age, adm_fhu, p.pat_next_kin, a.adm_prg_weight, pat_fname, c.cnt_name, p.pat_timestamp, p.pat_mar_stat, adm_out_dis_id_a, pat_sname, p.pat_profile_photo_id, pat_allergies, adm_in, p.pat_deleted, cnt_last_modified_date, pat_country_id, pat_tele, p.pat_agetype, p.pat_active, adm_pat_id, p.pat_name, adm_id, cnt_active, p.pat_nbr_children, p.pat_pl_id, a.adm_pat_id, pat_fath_name, p.pat_affiliated_id, p.pat_fath_name, a.adm_in, p.pat_bdate, adm_deleted, a.adm_prg_date_abort, pat_ledu, p.pat_id, c.cnt_created_date, a.adm_prg_date_vis, p.pat_moth, p.pat_esta, pat_profession, a.adm_trans, a.adm_created_by]] [n/a]
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:63)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:94)
+	at org.hibernate.sql.results.jdbc.internal.AbstractResultSetAccess.resolveColumnPosition(AbstractResultSetAccess.java:70)
+	at org.hibernate.query.results.ResultsHelper.lambda$resolveSqlExpression$0(ResultsHelper.java:63)
+	at org.hibernate.query.results.DomainResultCreationStateImpl.resolveSqlExpression(DomainResultCreationStateImpl.java:286)
+	at org.hibernate.query.results.ResultsHelper.resolveSqlExpression(ResultsHelper.java:57)
+	at org.hibernate.query.results.implicit.ImplicitFetchBuilderBasic.buildFetch(ImplicitFetchBuilderBasic.java:95)
+	at org.hibernate.query.results.implicit.ImplicitFetchBuilderBasic.buildFetch(ImplicitFetchBuilderBasic.java:35)
+	at org.hibernate.query.results.DomainResultCreationStateImpl.lambda$createFetchableConsumer$3(DomainResultCreationStateImpl.java:547)
+	at org.hibernate.metamodel.mapping.internal.ImmutableAttributeMappingList.forEach(ImmutableAttributeMappingList.java:44)
+	at org.hibernate.persister.entity.AbstractEntityPersister.visitFetchables(AbstractEntityPersister.java:6372)
+	at org.hibernate.query.results.DomainResultCreationStateImpl.visitFetches(DomainResultCreationStateImpl.java:462)
+	at org.hibernate.query.results.complete.EntityResultImpl.<init>(EntityResultImpl.java:81)
+	at org.hibernate.query.results.complete.CompleteResultBuilderEntityJpa.buildResult(CompleteResultBuilderEntityJpa.java:113)
+	at org.hibernate.query.results.complete.CompleteResultBuilderEntityJpa.buildResult(CompleteResultBuilderEntityJpa.java:38)
+	at org.hibernate.query.results.ResultSetMappingImpl.resolve(ResultSetMappingImpl.java:231)
+	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.resolveJdbcValuesSource(JdbcSelectExecutorStandardImpl.java:340)
+	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.doExecuteQuery(JdbcSelectExecutorStandardImpl.java:137)
+	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.executeQuery(JdbcSelectExecutorStandardImpl.java:102)
+	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.executeQuery(JdbcSelectExecutor.java:91)
+	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.list(JdbcSelectExecutor.java:165)
+	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.list(JdbcSelectExecutor.java:142)
+	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.list(JdbcSelectExecutor.java:132)
+	at org.hibernate.query.sql.internal.NativeSelectQueryPlanImpl.performList(NativeSelectQueryPlanImpl.java:135)
+	at org.hibernate.query.sql.internal.NativeQueryImpl.doList(NativeQueryImpl.java:697)
+	at org.hibernate.query.spi.AbstractSelectionQuery.list(AbstractSelectionQuery.java:143)
+	at org.hibernate.query.Query.getResultList(Query.java:120)
+	at org.isf.admission.service.AdmissionIoOperationRepositoryImpl.findPatientAdmissionsByFilters(AdmissionIoOperationRepositoryImpl.java:271)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at org.isf.admission.service.AdmissionIoOperationRepositoryImpl$$SpringCGLIB$$0.findPatientAdmissionsByFilters(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:277)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
+	at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:515)
+	at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:284)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:734)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:174)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:149)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:69)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	... 61 more
+Caused by: java.sql.SQLException: Unknown label 'adm_bed_number'. Possible value [a.adm_prg_date_ctrl2, a.adm_prg_date_ctrl1, pat_nbr_children, cnt_phone_code, pat_sex, cnt_last_modified_by, pat_rp_id, adm_lock, a.adm_wrd_id_a, pat_profile_photo_id, p.pat_tele, pat_addr, a.adm_id, p.pat_blama, c.cnt_phone_code, p.pat_country_id, a.adm_date_dis, adm_type, pat_anamnesis, a.adm_fhu, cnt_lock, pat_agetype, pat_affiliated_id, pat_parents_res, p.pat_ledu, adm_prg_weight, pat_note, pat_bdate, p.pat_last_modified_by, a.adm_created_date, p.pat_anamnesis, adm_active, c.cnt_id, p.pat_ptoge, p.pat_parents_res, a.adm_date_adm, adm_prg_date_ctrl1, adm_prg_date_ctrl2, p.pat_note, a.adm_out_dis_id_a_2, cnt_iso_code, p.pat_addr, a.adm_out_dis_id_a_3, a.adm_lock, adm_prg_ptt_id_a, a.adm_usr_id_a, p.pat_last_modified_date, c.cnt_active, adm_trans, pat_btype, a.adm_type, p.pat_rp_id, pat_next_kin, pat_lock, adm_in_dis_id_a, adm_wrd_id_a, a.adm_in_dis_id_a, adm_date_dis, a.adm_last_modified_date, adm_prg_drt_id_a, a.adm_prg_ptt_id_a, p.pat_birth_place, adm_usr_id_a, c.cnt_created_by, pat_birth_place, pat_taxcode, adm_dist_id_a, pat_last_modified_date, a.adm_deleted, pat_geo_pos, p.pat_profession, a.adm_last_modified_by, c.cnt_lock, p.pat_sex, adm_admt_id_a_adm, pat_moth_name, adm_created_date, pat_ptoge, adm_prg_dlt_id_a, adm_out_dis_id_a_2, a.adm_prg_date_del, pat_created_by, p.pat_created_by, cnt_id, pat_name, p.pat_lock, c.cnt_last_modified_date, a.adm_yprog, adm_out_dis_id_a_3, p.pat_btype, pat_last_modified_by, adm_prg_date_abort, pat_moth, pat_mar_stat, p.pat_fname, pat_active, cnt_created_date, pat_fath, c.cnt_last_modified_by, adm_yprog, a.adm_out_dis_id_a, a.adm_note, pat_id, pat_city, p.pat_sname, a.adm_dist_id_a, adm_created_by, a.adm_active, p.pat_moth_name, adm_date_adm, pat_deleted, adm_prg_date_del, a.adm_prg_dlt_id_a, c.cnt_iso_code, pat_esta, p.pat_taxcode, pat_age, pat_pl_id, p.pat_transport, pat_created_date, adm_last_modified_date, adm_prg_date_vis, p.pat_created_date, cnt_created_by, pat_timestamp, p.pat_geo_pos, p.pat_allergies, p.pat_fath, a.adm_admt_id_a_adm, a.adm_prg_drt_id_a, cnt_name, pat_blama, adm_note, pat_transport, p.pat_city, adm_last_modified_by, p.pat_age, adm_fhu, p.pat_next_kin, a.adm_prg_weight, pat_fname, c.cnt_name, p.pat_timestamp, p.pat_mar_stat, adm_out_dis_id_a, pat_sname, p.pat_profile_photo_id, pat_allergies, adm_in, p.pat_deleted, cnt_last_modified_date, pat_country_id, pat_tele, p.pat_agetype, p.pat_active, adm_pat_id, p.pat_name, adm_id, cnt_active, p.pat_nbr_children, p.pat_pl_id, a.adm_pat_id, pat_fath_name, p.pat_affiliated_id, p.pat_fath_name, a.adm_in, p.pat_bdate, adm_deleted, a.adm_prg_date_abort, pat_ledu, p.pat_id, c.cnt_created_date, a.adm_prg_date_vis, p.pat_moth, p.pat_esta, pat_profession, a.adm_trans, a.adm_created_by]
+	at org.mariadb.jdbc.client.result.Result.findColumn(Result.java:1760)
+	at com.zaxxer.hikari.pool.HikariProxyResultSet.findColumn(HikariProxyResultSet.java)
+	at org.hibernate.sql.results.jdbc.internal.AbstractResultSetAccess.resolveColumnPosition(AbstractResultSetAccess.java:65)
+	... 115 more
+[06/juil./2026 15:51:17] [admin:admin] DEBUG - 
+    select
+        t1_0.typo_code,
+        t1_0.typo_active,
+        t1_0.typo_created_by,
+        t1_0.typo_created_date,
+        t1_0.typo_description,
+        t1_0.typo_family,
+        t1_0.typo_last_modified_by,
+        t1_0.typo_last_modified_date 
+    from
+        oh_typologies t1_0 
+    where
+        t1_0.typo_family=? 
+    order by
+        t1_0.typo_description (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:51:17] [admin:admin] ERROR - >> key not found: angal.typology.familyplanningmethodtype (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (1:ENUM) <- [angal.typology.familyplanningmethodtype] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] DEBUG - 
+    select
+        fp1_0.fp_id,
+        fp1_0.fp_active,
+        fp1_0.fp_created_by,
+        fp1_0.fp_created_date,
+        fp1_0.fp_current_method_code,
+        fp1_0.fp_last_modified_by,
+        fp1_0.fp_last_modified_date,
+        fp1_0.fp_lock,
+        fp1_0.fp_notes,
+        fp1_0.fp_pat_id,
+        fp1_0.fp_registration_date,
+        fp1_0.fp_status 
+    from
+        oh_familyplanning fp1_0 
+    where
+        (
+            ? is null 
+            or fp1_0.fp_pat_id=?
+        ) 
+        and (
+            ? is null 
+            or fp1_0.fp_current_method_code=?
+        ) 
+        and (
+            ? is null 
+            or fp1_0.fp_status=?
+        ) 
+        and (
+            ? is null 
+            or fp1_0.fp_registration_date>=?
+        ) 
+        and (
+            ? is null 
+            or fp1_0.fp_registration_date<=?
+        ) 
+    order by
+        fp1_0.fp_registration_date desc 
+    limit
+        ? (org.hibernate.engine.jdbc.spi.SqlStatementLogger.logStatement(SqlStatementLogger.java:135))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (1:INTEGER) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (2:INTEGER) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (3:VARCHAR) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (4:VARCHAR) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (5:ENUM) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (6:ENUM) <- [null] (org.hibernate.type.descriptor.JdbcBindingLogging.logNullBinding(JdbcBindingLogging.java:35))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (7:TIMESTAMP) <- [2026-01-06T00:00] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (8:TIMESTAMP) <- [2026-01-06T00:00] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (9:TIMESTAMP) <- [2026-07-06T23:59:59] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (10:TIMESTAMP) <- [2026-07-06T23:59:59] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] TRACE - binding parameter (11:INTEGER) <- [100] (org.hibernate.type.descriptor.JdbcBindingLogging.logBinding(JdbcBindingLogging.java:24))
+[06/juil./2026 15:51:17] [admin:admin] ERROR - >> key not found: angal.maternity.fpstatus.active (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:51:17] [admin:admin] ERROR - >> key not found: angal.maternity.fpstatus.stopped (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:51:17] [admin:admin] ERROR - >> key not found: angal.maternity.fpstatus.changed (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 15:51:17] [admin:admin] ERROR - >> key not found: angal.maternity.fpstatus.lost (org.isf.generaldata.MessageBundle.getMessage(MessageBundle.java:82))
+[06/juil./2026 17:26:20] [:] WARN - HikariPool-1 - Failed to validate connection org.mariadb.jdbc.Connection@6a20cf6c ((conn=1232) Connection.setNetworkTimeout cannot be called on a closed connection). Possibly consider using a shorter maxLifetime value. (com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:185))
+[06/juil./2026 17:26:25] [:] WARN - HikariPool-1 - Failed to validate connection org.mariadb.jdbc.Connection@316cc357 ((conn=1240) Connection.setNetworkTimeout cannot be called on a closed connection). Possibly consider using a shorter maxLifetime value. (com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:185))
+[06/juil./2026 17:28:36] [:] WARN - HikariPool-1 - Failed to validate connection org.mariadb.jdbc.Connection@5302fe59 ((conn=1256) Connection.setNetworkTimeout cannot be called on a closed connection). Possibly consider using a shorter maxLifetime value. (com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:185))
+[06/juil./2026 17:55:11] [:] WARN - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9m12s639ms956µs700ns). (com.zaxxer.hikari.pool.HikariPool$HouseKeeper.run(HikariPool.java:825))
+[06/juil./2026 17:59:05] [:] WARN - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m24s62ms809µs). (com.zaxxer.hikari.pool.HikariPool$HouseKeeper.run(HikariPool.java:825))
+[06/juil./2026 18:07:17] [:] WARN - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m11s999ms560µs400ns). (com.zaxxer.hikari.pool.HikariPool$HouseKeeper.run(HikariPool.java:825))

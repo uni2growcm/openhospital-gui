@@ -82,11 +82,13 @@ import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportAdmission;
 import org.isf.stat.gui.report.GenericReportDischarge;
 import org.isf.stat.gui.report.GenericReportOpd;
+import org.isf.stat.gui.report.GenericReportVisits;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.jobjects.OhDefaultCellRenderer;
+import org.isf.utils.jobjects.VisitsReportDialog;
 import org.isf.utils.table.TableSorter;
 import org.isf.utils.time.Converters;
 import org.isf.utils.time.TimeTools;
@@ -583,6 +585,9 @@ public class PatientFolderBrowser extends ModalJFrame
 		if (GeneralData.DICOMMODULEENABLED && MainMenu.checkUserGrants("btnpatfolddicom")) {
 			buttonPanel.add(getDICOMButton(), null);
 		}
+		if (MainMenu.checkUserGrants("btnpatfoldvisitsrpt")) {
+			buttonPanel.add(getVisitsReportButton(), null);
+		}
 		buttonPanel.add(getCloseButton(), null);
 		return buttonPanel;
 	}
@@ -592,6 +597,7 @@ public class PatientFolderBrowser extends ModalJFrame
 	private JButton disReportButton;
 	private JButton launchReportButton;
 	private JButton dicomButton;
+	private JButton visitsReportButton;
 	private JButton closeButton;
 
 	private JButton getOpdReportButton() {
@@ -697,6 +703,24 @@ public class PatientFolderBrowser extends ModalJFrame
 			});
 		}
 		return dicomButton;
+	}
+
+	private JButton getVisitsReportButton() {
+		if (visitsReportButton == null) {
+			visitsReportButton = new JButton(MessageBundle.getMessage("angal.admission.patientfolder.visitsreport.btn"));
+			visitsReportButton.setMnemonic(MessageBundle.getMnemonic("angal.admission.patientfolder.visitsreport.btn.key"));
+			visitsReportButton.addActionListener(actionEvent -> {
+				VisitsReportDialog dialog = new VisitsReportDialog(this);
+				dialog.setOnOk(() -> {
+					int patID = patient.getCode();
+					LocalDate fromDate = dialog.getDateFrom().toLocalDate();
+					LocalDate toDate = dialog.getDateTo().toLocalDate();
+					new GenericReportVisits(fromDate, toDate, patID, "VisitsReport");
+				});
+				dialog.showAsModal(this);
+			});
+		}
+		return visitsReportButton;
 	}
 
 	private JButton getCloseButton() {

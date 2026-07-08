@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="VisitReport" pageWidth="892" pageHeight="800" columnWidth="832" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="66b2c768-54a2-4700-b487-306031f7a6d2">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT
+  v.VST_ID,
+  v.VST_PAT_ID,
+  p.PAT_ID AS patient_code,
+  p.PAT_NAME AS patient_name,
+  p.PAT_SNAME AS patient_second_name,
+  p.PAT_AGE AS patient_age,
+  p.PAT_SEX AS patient_sex,
+  p.PAT_ADDR AS patient_address,
+  p.PAT_CITY AS patient_city,
+  p.PAT_TELE AS patient_telephone,
+  v.VST_DATE AS visit_date,
+  v.VST_DURATION AS visit_duration,
+  v.VST_SERVICE AS visit_service,
+  v.VST_NOTE AS visit_notes,
+  w.WRD_NAME AS ward_name,
+  h.HOS_NAME AS structure_name,
+  h.HOS_CITY AS district_name,
+  h.HOS_ADDR AS hos_address,
+  h.HOS_TELE AS hos_telephone,
+  h.HOS_EMAIL AS hos_email
+FROM OH_VISITS v
+INNER JOIN OH_PATIENT p ON p.PAT_ID = v.VST_PAT_ID
+LEFT JOIN OH_WARD w ON w.WRD_ID_A = v.VST_WRD_ID_A
+CROSS JOIN OH_HOSPITAL h
+WHERE v.VST_DATE >= $P{fromdate}
+  AND v.VST_DATE <= $P{todate}
+ORDER BY v.VST_DATE ASC, p.PAT_NAME ASC]]>
+	</queryString>
+	<field name="VST_ID" class="java.lang.Integer"/>
+	<field name="VST_PAT_ID" class="java.lang.Integer"/>
+	<field name="patient_code" class="java.lang.Integer"/>
+	<field name="patient_name" class="java.lang.String"/>
+	<field name="patient_second_name" class="java.lang.String"/>
+	<field name="patient_age" class="java.lang.Integer"/>
+	<field name="patient_sex" class="java.lang.String"/>
+	<field name="patient_address" class="java.lang.String"/>
+	<field name="patient_city" class="java.lang.String"/>
+	<field name="patient_telephone" class="java.lang.String"/>
+	<field name="visit_date" class="java.sql.Timestamp"/>
+	<field name="visit_duration" class="java.lang.Integer"/>
+	<field name="visit_service" class="java.lang.String"/>
+	<field name="visit_notes" class="java.lang.String"/>
+	<field name="ward_name" class="java.lang.String"/>
+	<field name="structure_name" class="java.lang.String"/>
+	<field name="district_name" class="java.lang.String"/>
+	<field name="hos_address" class="java.lang.String"/>
+	<field name="hos_telephone" class="java.lang.String"/>
+	<field name="hos_email" class="java.lang.String"/>
+	<variable name="Count" class="java.lang.Integer" calculation="Count"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="155" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="350" height="15" uuid="530d6b26-7794-4e6c-98d0-faa8660a3a0a"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["REPUBLIQUE DU CAMEROUN"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="30" y="15" width="350" height="12" uuid="a231f53f-551e-4559-98bf-ff64a2a35a0b"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["PAIX - TRAVAIL - PATRIE"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="27" width="350" height="20" uuid="4a1262e7-bd23-49fa-b45e-40d55e9978d8"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["MINISTERE DE LA SANTE PUBLIQUE"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="482" y="0" width="350" height="15" uuid="ef638e9a-693d-4c49-8be9-f3e9c36f1ec5"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["REPUBLIC OF CAMEROON"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="482" y="15" width="350" height="12" uuid="d2537501-75df-46d3-a05f-e552b23e4eac"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["PEACE - WORK - FATHERLAND"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="482" y="27" width="350" height="20" uuid="e65a84e4-bfc3-487c-b30f-6f6c2a955361"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["MINISTRY OF PUBLIC HEALTH"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="10" y="52" width="812" height="25" uuid="79678039-36be-4acc-9dc9-3cd043a9cbec"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["RAPPORT DES RENDEZ-VOUS"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="10" y="77" width="812" height="15" uuid="79678039-36be-4acc-9dc9-3cd043a9cbec"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["VISITS REPORT"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="95" width="832" height="1" uuid="3c109ed9-571a-4e10-8f96-b09f7a81e512"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="100" width="400" height="14" uuid="5cdc24aa-2e90-4987-9f93-7176f078f0c7"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["District : " + ($F{district_name} != null ? $F{district_name} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="432" y="100" width="400" height="14" uuid="fab2389b-4837-4d5d-a2c9-3d202a8c4356"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Structure : " + ($F{structure_name} != null ? $F{structure_name} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="116" width="400" height="14" uuid="ecabcac7-7983-42c8-91f0-87c4e7b2a276"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Adresse : " + ($F{hos_address} != null ? $F{hos_address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="432" y="116" width="400" height="14" uuid="77962e8b-8b9a-4a98-84b1-673880822945"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Téléphone : " + ($F{hos_telephone} != null ? $F{hos_telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="132" width="400" height="14" uuid="ecabcac7-7983-42c8-91f0-87c4e7b2a276"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Période : du " + $P{fromdate} + " au " + $P{todate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="432" y="132" width="400" height="14" uuid="8be0c1b3-1fbe-4cd2-8836-b437b08e08a0"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Email : " + ($F{hos_email} != null ? $F{hos_email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="150" width="832" height="1" uuid="3c109ed9-571a-4e10-8f96-b09f7a81e512"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="110" height="20" uuid="adda2dd8-5e13-44db-9ec1-28d32b8d199b"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="110" y="0" width="200" height="20" uuid="b83a1835-b5f8-4e78-92cf-0701c74ff8c9"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Patient"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="310" y="0" width="40" height="20" uuid="f0164be7-fadc-4526-aa7a-f5e4ca84da9a"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Âge"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="350" y="0" width="30" height="20" uuid="f5bdd11b-c744-4cd8-892e-810b0a2a17ab"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Sexe"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="380" y="0" width="80" height="20" uuid="410b448c-7c6b-44b7-93f6-5bae7193cbe1"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Service"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="460" y="0" width="80" height="20" uuid="74151c89-f14e-452e-a504-64f2c25bf14a"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Service hosp."]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="540" y="0" width="50" height="20" uuid="20edd618-3106-42d5-9b92-d911a3ee58e9"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Durée"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="590" y="0" width="100" height="20" uuid="b18ab638-3c8c-4640-b8ca-051f09aa12f3"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ville"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="690" y="0" width="142" height="20" uuid="59914a37-0943-4572-8564-314d686a7d6f"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Notes"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Prevent">
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="110" height="18" uuid="02ea473e-758d-4680-9785-7ab52f11f757"/>
+				<box>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visit_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="110" y="0" width="200" height="18" uuid="c9359621-86b0-4c7f-abca-5e4c898be24b"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{patient_name} != null ? $F{patient_name} : "") + " " + ($F{patient_second_name} != null ? $F{patient_second_name} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="310" y="0" width="40" height="18" uuid="ec73f407-abc3-4e33-a303-90da8191d236"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_age} != null ? $F{patient_age} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="350" y="0" width="30" height="18" uuid="65df9182-21b5-48c2-9243-e0e8bca3cb30"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_sex} != null ? $F{patient_sex} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="380" y="0" width="80" height="18" uuid="8c5ab0ec-7652-4448-a535-b16be6d361ba"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visit_service} != null ? $F{visit_service} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="460" y="0" width="80" height="18" uuid="fcc03cc0-08d6-4a85-8c3b-d38e8c92706f"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ward_name} != null ? $F{ward_name} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="540" y="0" width="50" height="18" uuid="8ce7e05e-2bc5-4629-aebf-94f121af9f0d"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visit_duration} != null ? $F{visit_duration} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="590" y="0" width="100" height="18" uuid="aa6a04ca-ba48-493e-9bc4-6e1d65b59a3d"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_city} != null ? $F{patient_city} : ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="690" y="0" width="142" height="18" uuid="b2c8351a-011c-47c6-b308-327f54fa193b"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visit_notes}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="19" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="832" height="1" uuid="c801b2cc-2505-4f96-984f-22061fc0fca5"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="1" width="416" height="18" uuid="91c6b705-f62e-47e6-bd05-adde36e3ef43"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="416" y="1" width="416" height="18" uuid="c2735343-1209-4c00-8ce8-da4f9b8d47a0"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="20" splitType="Stretch">
+			<textField evaluationTime="Report">
+				<reportElement x="0" y="0" width="250" height="15" uuid="1eed26ad-04cd-4f8a-a932-d997b9af5d93"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Total rendez-vous : " + $V{Count}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
