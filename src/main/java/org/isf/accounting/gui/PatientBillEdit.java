@@ -86,6 +86,8 @@ import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.menu.model.User;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.model.Partner;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.manager.PatientBrowserManager;
@@ -614,7 +616,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         insert = inserting;
         if (insert) {
             thisBill = new Bill();
-			thisBill.setDate(today);
+			thisBill.setDate(today.withSecond(0).withNano(0));
             thisBill.setPriceList(lstArray.get(0));
         } else {
             try {
@@ -1987,6 +1989,36 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jButtonSave.addActionListener(actionEvent -> {
 				loadDataset();
 				checkBill();
+				boolean isFullyPaid = balance.doubleValue() == 0;
+				if (!isFullyPaid) {
+					Patient currentPatient = thisBill.getBillPatient();
+					if (currentPatient == null || currentPatient.getCode() == 0) {
+						MessageDialog.error(this, "angal.newbill.pleaseselectapatient.msg");
+						return;
+					}
+
+					boolean hasPartner = false;
+					boolean hasGuarantor = false;
+
+					try {
+						PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+						hasPartner = partnerBrowserManager.patientHasPartners(currentPatient.getCode());
+					} catch (OHServiceException e) {
+						LOGGER.error("Error checking patient partners for bill save", e);
+					}
+
+					if (hasBillGuarantor()) {
+						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
+						hasGuarantor = guarantor != null;
+					}
+
+					if (hasPartner) {
+					} else if (!hasGuarantor) {
+						MessageDialog.error(this, "angal.newbill.cannot.save.without.partner.or.guarantor.msg");
+						return;
+					}
+				}
+
 				if (Objects.equals(wardComboBox.getSelectedItem(), "")) {
 					MessageDialog.error(this, "angal.newbill.selectward.msg");
 					return;
@@ -2015,13 +2047,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                         (Ward) wardComboBox.getSelectedItem()
 					);
 
-					// Gestion du guarantor pour une nouvelle facture
 					if (hasBillGuarantor()) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
-						if (balance.doubleValue() != 0) {
-							if (guarantor != null) {
-								newBill.setGuarantor(guarantor);
-							} else {
+						if (balance.doubleValue() != 0 && guarantor == null) {
+							boolean hasPartnerForNewBill = false;
+							try {
+								PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+								hasPartnerForNewBill = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
+							} catch (OHServiceException e) {
+								LOGGER.error("Error checking patient partners", e);
+							}
+
+							if (!hasPartnerForNewBill) {
 								MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 								return;
 							}
@@ -2065,20 +2102,24 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
                    if (hasBillGuarantor()) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
-						if (balance.doubleValue() != 0) {
-							if (guarantor != null) {
-								updateBill.setGuarantor(guarantor);
-							} else {
+						if (balance.doubleValue() != 0 && guarantor == null) {
+							boolean hasPartnerForUpdate = false;
+							try {
+								PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+								hasPartnerForUpdate = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
+							} catch (OHServiceException e) {
+								LOGGER.error("Error checking patient partners", e);
+							}
+
+							if (!hasPartnerForUpdate) {
 								MessageDialog.error(this, "angal.newbill.selectguarantor.msg");
 								return;
 							}
 						} else if (guarantor != null) {
 							updateBill.setGuarantor(guarantor);
 						}
-					} else if (hasBillGuarantor()) {
-						int result = MessageDialog.yesNo(this, "angal.newbill.billsave.msg");
-						updateBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : "O");
 					}
+
 					try {
 						billBrowserManager.updateBill(updateBill, billItems, payItems);
 					} catch (OHServiceException ex) {
@@ -2274,20 +2315,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	}
 
 	private boolean isValidPaymentDate(LocalDateTime datePay) {
-		LocalDateTime now = TimeTools.getNow();
-		LocalDateTime lastPay;
-		if (!payItems.isEmpty()) {
-			lastPay = payItems.get(payItems.size() - 1).getDate();
-		} else {
-			lastPay = thisBill.getDate();
-		}
-		if (datePay.isBefore(thisBill.getDate())) {
+		LocalDateTime now = TimeTools.getNow().withSecond(0).withNano(0);
+
+		LocalDateTime billDate = thisBill.getDate().withSecond(0).withNano(0);
+		LocalDateTime paymentDate = datePay.withSecond(0).withNano(0);
+
+		LocalDateTime lastPay = payItems.isEmpty()
+				? billDate
+				: payItems.get(payItems.size() - 1).getDate().withSecond(0).withNano(0);
+
+		if (paymentDate.isBefore(billDate)) {
 			MessageDialog.error(this, "angal.newbill.paymentmadebeforebilldate.msg");
 			return false;
-		} else if (datePay.isBefore(lastPay)) {
+		} else if (paymentDate.isBefore(lastPay)) {
 			MessageDialog.error(this, "angal.newbill.thedateisbeforethelastpayment.msg");
 			return false;
-		} else if (datePay.isAfter(now)) {
+		} else if (paymentDate.isAfter(now)) {
 			MessageDialog.error(this, "angal.newbill.payementsinthefuturearenotallowed.msg");
 			return false;
 		}
