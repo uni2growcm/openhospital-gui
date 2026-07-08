@@ -622,7 +622,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     updatePrescriptionButtonVisibility();
                 }
                 try {
-                    billItems = billBrowserManager.getItems(thisBill.getId());
+                    billItems = billBrowserManager.bundleBillItems(thisBill.getId());
                     payItems = billBrowserManager.getPayments(thisBill.getId());
                     applyReductionToBillItems();
                 } catch (OHServiceException e) {
