@@ -1145,8 +1145,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             patientList = new ArrayList<>(result.getContent());
 
             if (patientList.isEmpty() && resultCount == 0) {
+                JLabel centeredMsg = new JLabel(MessageBundle.getMessage("angal.stat.nomatchfound"), JLabel.CENTER);
                 JOptionPane.showMessageDialog(EmptyStatisticsBrowser.this,
-                        MessageBundle.getMessage("angal.stat.nomatchfound"),
+                        centeredMsg,
                         MessageBundle.getMessage("angal.stat.operationresult"), JOptionPane.PLAIN_MESSAGE);
             }
 
@@ -1265,6 +1266,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             fetalPresentationCombo.setSelectedIndex(0);
             systolicBpCombo.setSelectedIndex(0);
             diastolicBpCombo.setSelectedIndex(0);
+
+            runQuery(0);
+            initializePaginationCombo();
         });
 
         return filterResetBtn;
