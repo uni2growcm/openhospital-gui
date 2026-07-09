@@ -22,6 +22,7 @@
 package org.isf.stat.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -35,19 +36,27 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import  javax.swing.Scrollable;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
+import javax.swing.JSplitPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.disctype.model.DischargeType;
@@ -175,7 +184,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         initComponents();
 
-        setMinimumSize(new Dimension(900, 600));
+        setMinimumSize(new Dimension(1250, 700));
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
@@ -183,9 +192,81 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     }
 
     private void initComponents() {
-        getContentPane().add(getFiltersPanel(), BorderLayout.WEST);
-        getContentPane().add(getDataPanel(), BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setLeftComponent(getFiltersPanel());
+        splitPane.setRightComponent(getDataPanel());
+        splitPane.setDividerLocation(500);
+        splitPane.setContinuousLayout(true);
+        splitPane.setResizeWeight(0.0);
+        splitPane.setBorder(null);
+
+        getContentPane().add(splitPane, BorderLayout.CENTER);
         getContentPane().add(getPaginationPanel(), BorderLayout.SOUTH);
+    }
+
+    private static class ScrollableBoxPanel extends JPanel implements Scrollable {
+        ScrollableBoxPanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(java.awt.Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(java.awt.Rectangle visibleRect, int orientation, int direction) {
+            return 100;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
+    }
+
+    private void restrictToNumeric(JTextField field, boolean allowDecimal) {
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+
+            private boolean isValid(DocumentFilter.FilterBypass fb, String insertedText, int offset, int removeLength) throws BadLocationException {
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String newText = current.substring(0, offset) + insertedText + current.substring(offset + removeLength);
+                if (newText.isEmpty()) {
+                    return true;
+                }
+                String regex = allowDecimal ? "-?\\d*\\.?\\d*" : "-?\\d*";
+                return newText.matches(regex);
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (isValid(fb, string, offset, 0)) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                if (isValid(fb, text, offset, length)) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            @Override
+            public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                super.remove(fb, offset, length);
+            }
+        });
     }
 
     private JPanel getFiltersPanel() {
@@ -193,8 +274,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return filtersPanel;
         }
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        JPanel mainPanel = new ScrollableBoxPanel();
 
         AccordionPanel general = new AccordionPanel(
                 MessageBundle.getMessage("angal.stat.title.general"),
@@ -236,7 +316,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         filtersPanel = new JPanel(new BorderLayout());
         filtersPanel.add(scrollPane, BorderLayout.CENTER);
-        filtersPanel.setPreferredSize(new Dimension(860, 0));
+        filtersPanel.setPreferredSize(new Dimension(500, 0));
+        filtersPanel.setMinimumSize(new Dimension(500, 0));
 
         return filtersPanel;
     }
@@ -263,7 +344,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel agePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         agePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.motherage") + ": de "));
         ageMinField = new JTextField(3);
+        restrictToNumeric(ageMinField, false);
         ageMaxField = new JTextField(3);
+        restrictToNumeric(ageMaxField, false);
         agePanel.add(ageMinField);
         agePanel.add(new JLabel(" " + MessageBundle.getMessage("angal.stat.to") + " "));
         agePanel.add(ageMaxField);
@@ -361,8 +444,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         placentaPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.placentacomplete") + ":"));
         placentaCompleteCombo = new JComboBox<>(new String[]{
                 MessageBundle.getMessage("angal.stat.all"),
-                MessageBundle.getMessage("angal.common.yes"),
-                MessageBundle.getMessage("angal.common.no")
+                MessageBundle.getMessage("angal.common.yes.label"),
+                MessageBundle.getMessage("angal.common.no.label")
         });
         placentaPanel.add(placentaCompleteCombo);
         deliveryPanel.add(placentaPanel);
@@ -403,7 +486,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         JPanel weightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         weightPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.birthweight") + ":"));
         newbornWeightMinField = new JTextField(5);
+        restrictToNumeric(newbornWeightMinField, true);
         newbornWeightMaxField = new JTextField(5);
+        restrictToNumeric(newbornWeightMaxField, true);
         weightPanel.add(newbornWeightMinField);
         weightPanel.add(new JLabel(" " + MessageBundle.getMessage("angal.stat.to") + " "));
         weightPanel.add(newbornWeightMaxField);
@@ -511,6 +596,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         } catch (OHServiceException e) {
             MessageDialog.showExceptions(e);
         }
+        diseasesCombo.setPreferredSize(new Dimension(280, diseasesCombo.getPreferredSize().height));
+        diseasesCombo.setMaximumSize(new Dimension(280, diseasesCombo.getPreferredSize().height));
         diseasePanel.add(diseasesCombo);
         diseasesPanel.add(diseasePanel);
 
@@ -526,6 +613,19 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         } catch (OHServiceException e) {
             MessageDialog.showExceptions(e);
         }
+        dischargeTypesCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                String text = "";
+                if (value instanceof DischargeType dt) {
+                    text = translateDischargeType(dt.getDescription());
+                }
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
+        dischargeTypesCombo.setPreferredSize(new Dimension(220, dischargeTypesCombo.getPreferredSize().height));
+        dischargeTypesCombo.setMaximumSize(new Dimension(220, dischargeTypesCombo.getPreferredSize().height));
         dischargePanel.add(dischargeTypesCombo);
         diseasesPanel.add(dischargePanel);
 
@@ -899,6 +999,24 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return selected != null ? selected.toString() : null;
     }
 
+    private String translateDischargeType(String description) {
+        if (description == null) {
+            return "";
+        }
+        switch (description.trim().toUpperCase()) {
+            case "REFERRED":
+                return MessageBundle.getMessage("angal.stat.dischargetype.referred");
+            case "DEAD":
+                return MessageBundle.getMessage("angal.stat.dischargetype.dead");
+            case "NORMAL DISCHARGE":
+                return MessageBundle.getMessage("angal.stat.dischargetype.normaldischarge");
+            case "ESCAPE":
+                return MessageBundle.getMessage("angal.stat.dischargetype.escape");
+            default:
+                return description;
+        }
+    }
+
     private void runQuery(int pageIndex) {
         try {
             Page<StatsDelivery> result = statsManager.getDeliveriesStats(
@@ -1007,6 +1125,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
         dataPanel = new JPanel(new BorderLayout());
         dataPanel.add(getDataTableScrollPane(), BorderLayout.CENTER);
+        dataPanel.setMinimumSize(new Dimension(650, 0));
         return dataPanel;
     }
 
