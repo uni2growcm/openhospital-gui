@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -42,6 +42,7 @@ import org.isf.malnutrition.gui.InsertMalnutrition.MalnutritionListener;
 import org.isf.malnutrition.manager.MalnutritionManager;
 import org.isf.malnutrition.model.Malnutrition;
 import org.isf.menu.manager.Context;
+import org.isf.opd.model.Opd;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
@@ -50,29 +51,46 @@ import org.isf.utils.time.TimeTools;
 public class MalnutritionBrowser extends JDialog implements MalnutritionListener {
 	
 	private static final long serialVersionUID = 1L;
-	
+
 	@Override
 	public void malnutritionInserted() {
-		pMaln.add(pMaln.size(), malnutrition);
-		((MalnBrowsingModel) table.getModel()).fireTableDataChanged();
-		if (table.getRowCount() > 0) {
-			table.setRowSelectionInterval(0, 0);
+		if (pMaln != null && malnutrition != null) {
+			pMaln.add(malnutrition);
+
+			if (table.getModel() instanceof DefaultTableModel) {
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+				model.fireTableDataChanged();
+				table.updateUI();
+
+				if (table.getRowCount() > 0) {
+					table.setRowSelectionInterval(0, 0);
+				}
+			}
 		}
 	}
 
 	@Override
 	public void malnutritionUpdated(Malnutrition maln) {
-		pMaln.set(selectedrow, maln);
-		((MalnBrowsingModel) table.getModel()).fireTableDataChanged();
-		table.updateUI();
-		if (table.getRowCount() > 0 && selectedrow > -1) {
-			table.setRowSelectionInterval(selectedrow, selectedrow);
+		if (pMaln != null && selectedrow >= 0 && selectedrow < pMaln.size()) {
+			pMaln.set(selectedrow, maln);
+
+			if (table.getModel() instanceof DefaultTableModel) {
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+				model.fireTableDataChanged();
+				table.updateUI();
+
+				if (table.getRowCount() > 0 && selectedrow < table.getRowCount()) {
+					table.setRowSelectionInterval(selectedrow, selectedrow);
+				}
+			}
 		}
 	}
 
 	private Malnutrition malnutrition;
 
 	private String admId;
+	private Opd opd;
+	private int opdId;
 
 	private JTable table;
 
@@ -96,14 +114,25 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 	private MalnutritionManager malnutritionManager = Context.getApplicationContext().getBean(MalnutritionManager.class);
 
 	public MalnutritionBrowser(JFrame owner, Admission aAdm) {
-		super(owner, true);
+		super(owner);
+		setModal(true);
 		adm = aAdm;
 		admId = String.valueOf(adm.getId());
 		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
 		add(getJContentPane());
 		pack();
 		setLocationRelativeTo(null);
-		setVisible(true);
+	}
+
+	public MalnutritionBrowser(JFrame owner, Opd opd) {
+		super(owner);
+		setModal(true);
+		this.opd = opd;
+		this.opdId = Integer.parseInt(String.valueOf(opd.getCode()));
+		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
+		add(getJContentPane());
+		pack();
+		setLocationRelativeTo(null);
 	}
 
 	private JPanel getJContentPane() {
@@ -128,7 +157,13 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 		JButton newButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		newButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		newButton.addActionListener(actionEvent -> {
-			malnutrition = new Malnutrition(0, null, null, adm, 0, 0);
+			if (adm != null) {
+				malnutrition = new Malnutrition(0, null, null, adm, 0, 0);
+			} else if (opd != null) {
+				malnutrition = new Malnutrition();
+				malnutrition.setAdmission(null);
+				malnutrition.setOpd(opd);
+			}
 			InsertMalnutrition newRecord = new InsertMalnutrition(this, malnutrition, true);
 			newRecord.addMalnutritionListener(this);
 			newRecord.setVisible(true);
@@ -191,7 +226,14 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 	}
 
 	private JTable getTable() {
-		model = new MalnBrowsingModel(admId);
+		if (adm != null) {
+			model = new MalnBrowsingModel(admId);
+		} else if (opd != null) {
+			model = new MalnBrowsingModelByOpd(opdId);
+		} else {
+			model = new DefaultTableModel();
+		}
+
 		table = new JTable(model);
 		table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
 		table.getColumnModel().getColumn(1).setMaxWidth(pColumnWidth[1]);
@@ -265,5 +307,65 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 			return MessageBundle.getMessage("angal.malnutrition.nodate.msg");
 		}
 		return TimeTools.formatDateTime(time, DATE_FORMAT_DD_MM_YYYY);
+	}
+
+	class MalnBrowsingModelByOpd extends DefaultTableModel {
+
+		private static final long serialVersionUID = 1L;
+
+		public MalnBrowsingModelByOpd(int opdId) {
+			pMaln = null;
+			try {
+				pMaln = malnutritionManager.getMalnutritionByOpd(String.valueOf(opdId));
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			if (pMaln == null) {
+				MessageDialog.error(MalnutritionBrowser.this, "angal.malnutrition.nonameselected");
+			}
+		}
+
+		@Override
+		public int getRowCount() {
+			if (pMaln == null) {
+				return 0;
+			}
+			return pMaln.size();
+		}
+
+		@Override
+		public String getColumnName(int c) {
+			return pColumns[c];
+		}
+
+		@Override
+		public int getColumnCount() {
+			return pColumns.length;
+		}
+
+		@Override
+		public Object getValueAt(int r, int c) {
+			if (pMaln == null || r >= pMaln.size()) {
+				return null;
+			}
+			Malnutrition malnutrition = pMaln.get(r);
+			if (c == -1) {
+				return malnutrition;
+			} else if (c == 0) {
+				return getConvertedString(malnutrition.getDateSupp());
+			} else if (c == 1) {
+				return getConvertedString(malnutrition.getDateConf());
+			} else if (c == 2) {
+				return malnutrition.getHeight();
+			} else if (c == 3) {
+				return malnutrition.getWeight();
+			}
+			return null;
+		}
+
+		@Override
+		public boolean isCellEditable(int arg0, int arg1) {
+			return false;
+		}
 	}
 }
