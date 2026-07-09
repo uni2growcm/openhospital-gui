@@ -100,10 +100,8 @@ import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.jobjects.ShadowBorder;
-import org.isf.utils.jobjects.VisitReportDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.time.RememberDates;
-import org.isf.stat.gui.report.GenericReportVisitRendezVous;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
@@ -1569,7 +1567,6 @@ public class AdmissionBrowser extends ModalJFrame {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
 			buttonPanel.add(getSaveButton());
-			buttonPanel.add(getReportButton());
 			if (MainMenu.checkUserGrants("btnadmadmexamination")) {
 				buttonPanel.add(getJButtonExamination());
 				buttonPanel.add(getJAnamnesisButton());
@@ -1661,25 +1658,6 @@ public class AdmissionBrowser extends ModalJFrame {
 			closeButton.addActionListener(actionEvent -> dispose());
 		}
 		return closeButton;
-	}
-
-	private JButton getReportButton() {
-		JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
-		button.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
-		button.setIcon(new ImageIcon("rsc/icons/report_button.png"));
-		button.addActionListener(e -> generateVisitReport());
-		button.setPreferredSize(new Dimension(120, 25));
-		return button;
-	}
-
-	private void generateVisitReport() {
-		VisitReportDialog dialog = new VisitReportDialog(this);
-		dialog.setOnOk(() -> {
-			java.time.LocalDate fromDate = dialog.getDateFrom().toLocalDate();
-			java.time.LocalDate toDate = dialog.getDateTo().toLocalDate();
-			new GenericReportVisitRendezVous(fromDate, toDate, "VisitReport");
-		});
-		dialog.showAsModal(this);
 	}
 
 	private JButton getSaveButton() {

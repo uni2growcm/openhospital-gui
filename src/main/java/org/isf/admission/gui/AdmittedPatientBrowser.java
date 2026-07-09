@@ -112,6 +112,8 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.VisitReportDialog;
+import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
@@ -759,6 +761,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		if (MainMenu.checkUserGrants("btnadmtherapy")) {
 			buttonPanel.add(getButtonTherapy());
 		}
+		if (MainMenu.checkUserGrants("btnadmadmvisitsrpt")) {
+			buttonPanel.add(getButtonReport());
+		}
 		if (GeneralData.MERGEFUNCTION && MainMenu.checkUserGrants("btnadmmer")) {
 			buttonPanel.add(getButtonMerge());
 		}
@@ -1062,6 +1067,23 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		});
 		return buttonTherapy;
+	}
+
+	private JButton getButtonReport() {
+		JButton buttonReport = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+		buttonReport.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
+		buttonReport.addActionListener(actionEvent -> generateVisitReport());
+		return buttonReport;
+	}
+
+	private void generateVisitReport() {
+		VisitReportDialog dialog = new VisitReportDialog(this);
+		dialog.setOnOk(() -> {
+			java.time.LocalDate fromDate = dialog.getDateFrom().toLocalDate();
+			java.time.LocalDate toDate = dialog.getDateTo().toLocalDate();
+			new GenericReportFromDateToDate(fromDate, toDate, "rpt_base", "VisitReport", "VisitReport", false);
+		});
+		dialog.showAsModal(this);
 	}
 
 	private JButton getButtonMerge() {
