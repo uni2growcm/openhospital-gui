@@ -52,10 +52,12 @@ import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportHIVInfantRegisterPdf;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.HIVInfantRegisterReportDialog;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.VoLimitedTextField;
 
@@ -958,7 +960,13 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
 
     private void report() {
-        // To be implemented
+
+        HIVInfantRegisterReportDialog dialog = new HIVInfantRegisterReportDialog(this);
+        dialog.setOnOk(() -> {
+            new GenericReportHIVInfantRegisterPdf( dialog.getDateFrom().toLocalDate(), dialog.getDateTo().toLocalDate(), null,
+                    null, null, null, "HIVInfantReport" );
+        });
+        dialog.setVisible(true);
     }
 
     @Override
