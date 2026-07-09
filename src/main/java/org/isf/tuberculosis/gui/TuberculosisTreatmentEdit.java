@@ -139,7 +139,6 @@ public class TuberculosisTreatmentEdit extends JDialog
     private JComboBox<HivStatus> hivStatusCombo;
     private GoodDateChooser hivTestDateField;
     private JCheckBox diabetesCheck;
-    private JCheckBox knownContactCheck;
     private JComboBox<TreatmentStatus> statusCombo;
     private JComboBox<TreatmentOutcome> outcomeCombo;
     private GoodDateChooser outcomeDateField;
@@ -261,7 +260,6 @@ public class TuberculosisTreatmentEdit extends JDialog
                 hivTestDateField.setDate(treatment.getHivTestDate());
             }
             diabetesCheck.setSelected(treatment.getDiabetes() != null && treatment.getDiabetes());
-            knownContactCheck.setSelected(treatment.getKnownContact() != null && treatment.getKnownContact());
             if (treatment.getStatus() != null) {
                 statusCombo.setSelectedItem(treatment.getStatus());
             }
@@ -517,13 +515,8 @@ public class TuberculosisTreatmentEdit extends JDialog
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0.0;
-        diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabetes"));
-        panel.add(diabetesCheck, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        knownContactCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.knowncontact"));
-        panel.add(knownContactCheck, gbc);
+diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabetes"));
+            panel.add(diabetesCheck, gbc);
 
         return panel;
     }
@@ -699,7 +692,7 @@ public class TuberculosisTreatmentEdit extends JDialog
         treatment.setHivStatus((HivStatus) hivStatusCombo.getSelectedItem());
         treatment.setHivTestDate(hivTestDateField.getDate());
         treatment.setDiabetes(diabetesCheck.isSelected() ? true : null);
-        treatment.setKnownContact(knownContactCheck.isSelected() ? true : null);
+        
 
         treatment.setStatus(status);
         treatment.setOutcome((TreatmentOutcome) outcomeCombo.getSelectedItem());

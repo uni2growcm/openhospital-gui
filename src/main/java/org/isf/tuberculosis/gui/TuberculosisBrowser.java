@@ -37,6 +37,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -71,6 +72,9 @@ import org.isf.patient.model.Patient;
 import org.isf.tuberculosis.manager.TuberculosisContactManager;
 import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
 import org.isf.tuberculosis.manager.TuberculosisVisitManager;
+import org.isf.tuberculosis.model.Classification;
+import org.isf.tuberculosis.model.DiseaseLocation;
+import org.isf.tuberculosis.model.DotStatus;
 import org.isf.tuberculosis.model.TuberculosisContact;
 import org.isf.tuberculosis.model.TuberculosisTreatment;
 import org.isf.tuberculosis.model.TreatmentStatus;
@@ -151,8 +155,20 @@ public class TuberculosisBrowser extends ModalJFrame {
     private GoodDateChooser startDateFrom;
     private GoodDateChooser startDateTo;
     private JComboBox<Object> statusFilterCombo;
+    private JComboBox<Object> classificationFilterCombo;
+    private JComboBox<Object> diseaseLocationFilterCombo;
     private JButton searchButton;
     private JButton resetButton;
+
+    private GoodDateChooser visitDateFrom;
+    private GoodDateChooser visitDateTo;
+    private JComboBox<Object> visitDotStatusCombo;
+    private JTextField visitAdherenceMinField;
+
+    private JTextField contactNameField;
+    private JTextField contactAgeFromField;
+    private JTextField contactAgeToField;
+    private JComboBox<String> contactScreenedCombo;
 
     private TuberculosisTreatment selectedTreatment;
     private int selectedVisitRow = -1;
@@ -265,6 +281,30 @@ public class TuberculosisBrowser extends ModalJFrame {
         });
         statusPanel.add(statusFilterCombo);
         filterPanel.add(statusPanel);
+
+        JPanel classificationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        classificationPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.tb.treatment.classification")));
+        classificationFilterCombo = new JComboBox<>();
+        classificationFilterCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
+        for (Classification cl : Classification.values()) {
+            classificationFilterCombo.addItem(cl);
+        }
+        classificationFilterCombo.setRenderer(new EnumRenderer());
+        classificationPanel.add(classificationFilterCombo);
+        filterPanel.add(classificationPanel);
+
+        JPanel diseaseLocationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        diseaseLocationPanel.setBorder(BorderFactory.createTitledBorder(
+                MessageBundle.getMessage("angal.tb.treatment.diseaselocation")));
+        diseaseLocationFilterCombo = new JComboBox<>();
+        diseaseLocationFilterCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
+        for (DiseaseLocation dl : DiseaseLocation.values()) {
+            diseaseLocationFilterCombo.addItem(dl);
+        }
+        diseaseLocationFilterCombo.setRenderer(new EnumRenderer());
+        diseaseLocationPanel.add(diseaseLocationFilterCombo);
+        filterPanel.add(diseaseLocationPanel);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
@@ -379,7 +419,42 @@ public class TuberculosisBrowser extends ModalJFrame {
         return bottomPanel;
     }
 
-    private JScrollPane getVisitListPanel() {
+    private JPanel getVisitListPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+        visitDateFrom = new GoodDateChooser((LocalDate) null);
+        filterPanel.add(visitDateFrom);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+        visitDateTo = new GoodDateChooser((LocalDate) null);
+        filterPanel.add(visitDateTo);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.dotstatus.col")));
+        visitDotStatusCombo = new JComboBox<>();
+        visitDotStatusCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
+        for (DotStatus ds : DotStatus.values()) {
+            visitDotStatusCombo.addItem(ds);
+        }
+        visitDotStatusCombo.setRenderer(new EnumRenderer());
+        filterPanel.add(visitDotStatusCombo);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.adherence")));
+        visitAdherenceMinField = new JTextField(5);
+        filterPanel.add(visitAdherenceMinField);
+        JButton visitFilterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
+        visitFilterButton.addActionListener(e -> loadVisits());
+        filterPanel.add(visitFilterButton);
+        JButton visitResetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+        visitResetButton.addActionListener(e -> {
+            visitDateFrom.setDate((LocalDate) null);
+            visitDateTo.setDate((LocalDate) null);
+            visitDotStatusCombo.setSelectedIndex(0);
+            visitAdherenceMinField.setText("");
+            loadVisits();
+        });
+        filterPanel.add(visitResetButton);
+
+        panel.add(filterPanel, BorderLayout.NORTH);
+
         visitTable = new JTable(new VisitTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -395,10 +470,45 @@ public class TuberculosisBrowser extends ModalJFrame {
 
         JScrollPane visitScrollPane = new JScrollPane(visitTable);
         visitScrollPane.setPreferredSize(new Dimension(600, 200));
-        return visitScrollPane;
+        panel.add(visitScrollPane, BorderLayout.CENTER);
+        return panel;
     }
 
-    private JScrollPane getContactListPanel() {
+    private JPanel getContactListPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactname.col")));
+        contactNameField = new JTextField(10);
+        filterPanel.add(contactNameField);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactage.col") + " " + MessageBundle.getMessage("angal.common.from.label")));
+        contactAgeFromField = new JTextField(5);
+        filterPanel.add(contactAgeFromField);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.to.label")));
+        contactAgeToField = new JTextField(5);
+        filterPanel.add(contactAgeToField);
+        filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactscreened.col")));
+        contactScreenedCombo = new JComboBox<>(new String[]{
+                MessageBundle.getMessage("angal.common.all.label"),
+                MessageBundle.getMessage("angal.common.yes"),
+                MessageBundle.getMessage("angal.common.no")
+        });
+        filterPanel.add(contactScreenedCombo);
+        JButton contactFilterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
+        contactFilterButton.addActionListener(e -> loadContacts());
+        filterPanel.add(contactFilterButton);
+        JButton contactResetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+        contactResetButton.addActionListener(e -> {
+            contactNameField.setText("");
+            contactAgeFromField.setText("");
+            contactAgeToField.setText("");
+            contactScreenedCombo.setSelectedIndex(0);
+            loadContacts();
+        });
+        filterPanel.add(contactResetButton);
+
+        panel.add(filterPanel, BorderLayout.NORTH);
+
         contactTable = new JTable(new ContactTableModel());
         contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -414,7 +524,8 @@ public class TuberculosisBrowser extends ModalJFrame {
 
         JScrollPane contactScrollPane = new JScrollPane(contactTable);
         contactScrollPane.setPreferredSize(new Dimension(600, 200));
-        return contactScrollPane;
+        panel.add(contactScrollPane, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel getButtonPanel() {
@@ -587,10 +698,22 @@ public class TuberculosisBrowser extends ModalJFrame {
             }
 
             Object selectedStatus = statusFilterCombo.getSelectedItem();
+            Object selectedClassification = classificationFilterCombo.getSelectedItem();
+            Object selectedLocation = diseaseLocationFilterCombo.getSelectedItem();
 
             TreatmentStatus status = null;
             if (selectedStatus != null && !selectedStatus.equals(MessageBundle.getMessage("angal.common.all.label"))) {
                 status = (TreatmentStatus) selectedStatus;
+            }
+
+            Classification classification = null;
+            if (selectedClassification != null && !selectedClassification.equals(MessageBundle.getMessage("angal.common.all.label"))) {
+                classification = (Classification) selectedClassification;
+            }
+
+            DiseaseLocation diseaseLocation = null;
+            if (selectedLocation != null && !selectedLocation.equals(MessageBundle.getMessage("angal.common.all.label"))) {
+                diseaseLocation = (DiseaseLocation) selectedLocation;
             }
 
             Integer patientCodeInt = null;
@@ -604,8 +727,8 @@ public class TuberculosisBrowser extends ModalJFrame {
             }
 
             Page<TuberculosisTreatment> pagedResult = manager.getTreatmentsByFilters(
-                    patientCodeInt, status, dateBegin, dateEnd,
-                    startBegin, startEnd,
+                    patientCodeInt, status, classification, diseaseLocation,
+                    dateBegin, dateEnd, startBegin, startEnd,
                     PageRequest.of(CURRENT_PAGE - 1, GeneralData.PAGINATIONPAGESIZE));
 
             treatmentList = pagedResult.getContent();
@@ -659,6 +782,8 @@ public class TuberculosisBrowser extends ModalJFrame {
         startDateFrom.setDate((LocalDate) null);
         startDateTo.setDate((LocalDate) null);
         statusFilterCombo.setSelectedIndex(0);
+        classificationFilterCombo.setSelectedIndex(0);
+        diseaseLocationFilterCombo.setSelectedIndex(0);
         CURRENT_PAGE = 1;
         performSearch();
     }
@@ -672,7 +797,44 @@ public class TuberculosisBrowser extends ModalJFrame {
 
         try {
             List<TuberculosisVisit> visits = visitManager.getVisitsByTreatmentId(selectedTreatment.getId());
-            visitList = visits != null ? visits : new ArrayList<>();
+            List<TuberculosisVisit> filtered = visits != null ? visits : new ArrayList<>();
+
+            LocalDate filterDateFrom = visitDateFrom.getDate();
+            LocalDate filterDateTo = visitDateTo.getDate();
+            Object selectedDot = visitDotStatusCombo.getSelectedItem();
+            DotStatus filterDotStatus = null;
+            if (selectedDot != null && !selectedDot.equals(MessageBundle.getMessage("angal.common.all.label"))) {
+                filterDotStatus = (DotStatus) selectedDot;
+            }
+            String adherenceText = visitAdherenceMinField.getText().trim();
+            Integer minAdherence = null;
+            if (!adherenceText.isEmpty()) {
+                try {
+                    minAdherence = Integer.parseInt(adherenceText);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            if (filterDateFrom != null || filterDateTo != null || filterDotStatus != null || minAdherence != null) {
+                Integer finalMinAdherence = minAdherence;
+                DotStatus finalFilterDotStatus = filterDotStatus;
+                LocalDate finalFilterDateFrom = filterDateFrom;
+                LocalDate finalFilterDateTo = filterDateTo;
+                filtered = filtered.stream().filter(v -> {
+                    LocalDate visitDate = v.getVisitDate() != null ? v.getVisitDate().toLocalDate() : null;
+                    if (finalFilterDateFrom != null && visitDate != null && visitDate.isBefore(finalFilterDateFrom))
+                        return false;
+                    if (finalFilterDateTo != null && visitDate != null && visitDate.isAfter(finalFilterDateTo))
+                        return false;
+                    if (finalFilterDotStatus != null && v.getDotStatus() != finalFilterDotStatus)
+                        return false;
+                    if (finalMinAdherence != null && v.getAdherence() != null && v.getAdherence() < finalMinAdherence)
+                        return false;
+                    return true;
+                }).collect(Collectors.toList());
+            }
+
+            visitList = filtered;
             ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
             selectedVisitRow = -1;
         } catch (OHServiceException ex) {
@@ -691,7 +853,53 @@ public class TuberculosisBrowser extends ModalJFrame {
 
         try {
             List<TuberculosisContact> contacts = contactManager.getContactsByTreatmentId(selectedTreatment.getId());
-            contactList = contacts != null ? contacts : new ArrayList<>();
+            List<TuberculosisContact> filtered = contacts != null ? contacts : new ArrayList<>();
+
+            String filterName = contactNameField.getText().trim().toLowerCase();
+            String ageFromText = contactAgeFromField.getText().trim();
+            String ageToText = contactAgeToField.getText().trim();
+            Integer filterAgeFrom = null;
+            Integer filterAgeTo = null;
+            if (!ageFromText.isEmpty()) {
+                try {
+                    filterAgeFrom = Integer.parseInt(ageFromText);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            if (!ageToText.isEmpty()) {
+                try {
+                    filterAgeTo = Integer.parseInt(ageToText);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            Object selectedScreened = contactScreenedCombo.getSelectedItem();
+            String screenedLabel = selectedScreened != null ? selectedScreened.toString() : "";
+            Boolean filterScreened = null;
+            if (screenedLabel.equals(MessageBundle.getMessage("angal.common.yes"))) {
+                filterScreened = true;
+            } else if (screenedLabel.equals(MessageBundle.getMessage("angal.common.no"))) {
+                filterScreened = false;
+            }
+
+            if (!filterName.isEmpty() || filterAgeFrom != null || filterAgeTo != null || filterScreened != null) {
+                String finalFilterName = filterName;
+                Integer finalFilterAgeFrom = filterAgeFrom;
+                Integer finalFilterAgeTo = filterAgeTo;
+                Boolean finalFilterScreened = filterScreened;
+                filtered = filtered.stream().filter(c -> {
+                    if (!finalFilterName.isEmpty() && (c.getName() == null || !c.getName().toLowerCase().contains(finalFilterName)))
+                        return false;
+                    if (finalFilterAgeFrom != null && c.getAge() != null && c.getAge() < finalFilterAgeFrom)
+                        return false;
+                    if (finalFilterAgeTo != null && c.getAge() != null && c.getAge() > finalFilterAgeTo)
+                        return false;
+                    if (finalFilterScreened != null && c.getScreened() != finalFilterScreened)
+                        return false;
+                    return true;
+                }).collect(Collectors.toList());
+            }
+
+            contactList = filtered;
             ((ContactTableModel) contactTable.getModel()).fireTableDataChanged();
             selectedContactRow = -1;
         } catch (OHServiceException ex) {
@@ -1019,6 +1227,21 @@ public class TuberculosisBrowser extends ModalJFrame {
         @Override
         public boolean isCellEditable(int arg0, int arg1) {
             return false;
+        }
+    }
+
+    private static class EnumRenderer extends DefaultListCellRenderer {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                       boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof Enum<?> enumValue) {
+                return super.getListCellRendererComponent(list,
+                        enumValue.toString(), index, isSelected, cellHasFocus);
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
 
