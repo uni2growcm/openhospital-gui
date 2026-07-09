@@ -57,10 +57,12 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.FamilyPlanningBrowserManager;
@@ -71,6 +73,7 @@ import org.isf.maternity.model.FamilyPlanningVisit;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportFamilyPlanningRegister;
 import org.isf.typology.manager.TypologyBrowserManager;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
@@ -79,7 +82,20 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.*;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Page;
 
@@ -493,9 +509,43 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         if (MainMenu.checkUserGrants("familyplanning.deletevisit")) {
             buttonPanel.add(getDeleteVisitButton());
         }
+        if (MainMenu.checkUserGrants("familyplanning.export")) {
+            buttonPanel.add(getExportButton());
+        }
+        if (MainMenu.checkUserGrants("familyplanning.report")) {
+            buttonPanel.add(getReportButton());
+        }
         buttonPanel.add(getCloseButton());
 
         return buttonPanel;
+    }
+
+    private JButton getReportButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+        button.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
+        button.setIcon(new ImageIcon("rsc/icons/report_button.png"));
+        button.addActionListener(e -> generateReport());
+        button.setPreferredSize(new Dimension(120, 25));
+        return button;
+    }
+
+    private void generateReport() {
+
+        FamilyPlanningReportDialog dialog = new FamilyPlanningReportDialog(this);
+        dialog.setOnOk(() -> {
+            LocalDate fromDate = dialog.getDateFrom().toLocalDate();
+            LocalDate toDate = dialog.getDateTo().toLocalDate();
+            new GenericReportFamilyPlanningRegister(
+                    fromDate,
+                    toDate,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "FamilyPlanningRegister"
+            );
+        });
+        dialog.showAsModal(this);
     }
 
     private JButton getNewFPButton() {
@@ -970,6 +1020,96 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e);
             visitTypologies = new ArrayList<>();
+        }
+    }
+
+    private JButton getExportButton() {
+        JButton button = new JButton(MessageBundle.getMessage("angal.common.export.btn"));
+        button.setMnemonic(MessageBundle.getMnemonic("angal.common.export.btn.key"));
+        button.setIcon(new ImageIcon("rsc/icons/excel_button.png"));
+        button.addActionListener(e -> exportToExcel());
+        button.setPreferredSize(new Dimension(130, 25));
+        return button;
+    }
+
+    private void exportToExcel() {
+        if (fpList == null || fpList.isEmpty()) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.export.nodata.msg"));
+            return;
+        }
+
+        try {
+            String fileName = "FamilyPlanning_" +
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setSelectedFile(new File(fileName));
+            fileChooser.setFileFilter(new FileNameExtensionFilter(
+                    MessageBundle.getMessage("angal.common.excel.files"), "xlsx", "xls"));
+
+            int result = fileChooser.showSaveDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File exportFile = fileChooser.getSelectedFile();
+                if (!exportFile.getName().endsWith(".xlsx") && !exportFile.getName().endsWith(".xls")) {
+                    exportFile = new File(exportFile.getAbsolutePath() + ".xlsx");
+                }
+                exportFamilyPlanningToExcel(exportFile);
+                MessageDialog.info(this, MessageBundle.formatMessage("angal.common.export.success.msg", exportFile.getAbsolutePath()));
+            }
+        } catch (IOException ex) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.common.export.error.msg"));
+        }
+    }
+
+    private void exportFamilyPlanningToExcel(File file) throws IOException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet(MessageBundle.getMessage("angal.familyplanning.browser.title"));
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                    MessageBundle.getMessage("angal.familyplanning.id.col"),
+                    MessageBundle.getMessage("angal.common.code.txt.col"),
+                    MessageBundle.getMessage("angal.common.name.txt"),
+                    MessageBundle.getMessage("angal.familyplanning.method.col"),
+                    MessageBundle.getMessage("angal.familyplanning.status.col"),
+                    MessageBundle.getMessage("angal.maternity.lmp.col")
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            int rowNum = 1;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            for (FamilyPlanning fp : fpList) {
+                Row row = sheet.createRow(rowNum++);
+                Patient patient = fp.getPatient();
+
+                row.createCell(0).setCellValue(fp.getId());
+                row.createCell(1).setCellValue(patient != null ? String.valueOf(patient.getCode()) : "");
+                row.createCell(2).setCellValue(patient != null ? patient.getSecondName() + " " + patient.getFirstName() : "");
+                row.createCell(3).setCellValue(fp.getCurrentMethod() != null ? fp.getCurrentMethod().getDescription() : "");
+                row.createCell(4).setCellValue(fp.getStatus() != null ? getEnumDisplayName(fp.getStatus()) : "");
+                row.createCell(5).setCellValue(fp.getRegistrationDate() != null ? fp.getRegistrationDate().format(formatter) : "");
+            }
+            try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                workbook.write(fileOut);
+            }
         }
     }
 }
