@@ -958,11 +958,10 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                     exportFile = new File(exportFile.getAbsolutePath() + ".xlsx");
                 }
                 exportFamilyPlanningToExcel(exportFile);
-                MessageDialog.info(this,
-                        MessageBundle.formatMessage("angal.common.export.success.msg", exportFile.getAbsolutePath()));
+                MessageDialog.info(this, MessageBundle.formatMessage("angal.common.export.success.msg", exportFile.getAbsolutePath()));
             }
         } catch (IOException ex) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.export.error.msg") + ": " + ex.getMessage());
+            MessageDialog.error(this, MessageBundle.getMessage("angal.common.export.error.msg"));
         }
     }
 
