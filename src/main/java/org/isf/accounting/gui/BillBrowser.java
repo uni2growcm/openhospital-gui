@@ -22,7 +22,6 @@
  */
 package org.isf.accounting.gui;
 
-import static org.isf.utils.Constants.DATE_FORMAT_DD_MM_YYYY;
 import static org.isf.utils.Constants.DATE_FORMAT_DD_MM_YYYY_HH_MM;
 import static org.isf.utils.Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
@@ -43,7 +42,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +52,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.model.Partner;
 import org.isf.accounting.manager.ArchiveManager;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
@@ -70,13 +70,13 @@ import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
+import org.isf.stat.manager.JasperReportsManager;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportPatient;
 import org.isf.stat.gui.report.GenericReportUserInDate;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
-import org.isf.utils.exception.model.OHExceptionMessage;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.JMonthChooser;
 import org.isf.utils.jobjects.JYearChooser;
@@ -185,6 +185,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 	private List<Bill> billPeriod;
 	private List<BillPayments> paymentsPeriod;
 	private List<Bill> billFromPayments;
@@ -193,6 +194,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private String user = UserBrowsingManager.getCurrentUser();
 	private List<String> users;
 	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+	private JComboBox<Partner> jComboBoxPartner;
+	private JLabel jLabelPartner;
+	private PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
 
 	private int currentPage = 0;
 	private long totalRows = 0;
@@ -208,6 +212,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	public boolean hasBillGuarantor() {
 		return GeneralData.ALLOWBILLGUARANTOR;
+	}
+
+	public boolean hasBillPartner(){
+		return GeneralData.ALLOWBILLPARTNER;
 	}
 
 	public BillBrowser() {
@@ -278,6 +286,40 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				}
 			}
 		}
+	}
+
+	private JLabel getJLabelPartner() {
+		if (jLabelPartner == null) {
+			jLabelPartner = new JLabel(MessageBundle.getMessage("angal.billbrowser.selectpartner.label"));
+		}
+		return jLabelPartner;
+	}
+
+	private JComboBox<Partner> getJComboBoxPartner() {
+		if (jComboBoxPartner == null) {
+			jComboBoxPartner = new JComboBox<>();
+			try {
+				jComboBoxPartner.addItem(null);
+				List<Partner> partners = partnerBrowserManager.getPartners();
+				for (Partner partner : partners) {
+					jComboBoxPartner.addItem(partner);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			jComboBoxPartner.setPreferredSize(new Dimension(150, 25));
+			jComboBoxPartner.setFont(new Font("Arial", Font.PLAIN, 14));
+			jComboBoxPartner.addActionListener(actionEvent -> {
+				try {
+					loadCurrentPage();
+					loadClosedBillsPage();
+					loadPendingBillsPage();
+					updateTotals();
+				} catch (Exception e) {
+				}
+			});
+		}
+		return jComboBoxPartner;
 	}
 
 	private void updateDataSet() {}
@@ -492,8 +534,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private void loadCurrentPage() {
 		try {
 			User guarantor = getSelectedGuarantor();
-			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					null, dateFrom, dateTo, patientParent, guarantor, currentPage, GeneralData.PAGINATIONPAGESIZE);
+			Partner partner = getSelectedPartner();
+			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(null, dateFrom, dateTo, patientParent, guarantor, partner, currentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			totalRows = billPage.getTotalElements();
@@ -517,8 +559,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private void loadClosedBillsPage() {
 		try {
 			User guarantor = getSelectedGuarantor();
+			Partner partner = getSelectedPartner();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"C", dateFrom, dateTo, patientParent, guarantor, closedCurrentPage, GeneralData.PAGINATIONPAGESIZE);
+					"C", dateFrom, dateTo, patientParent, guarantor, partner, closedCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			closedTotalRows = billPage.getTotalElements();
@@ -541,8 +584,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private void loadPendingBillsPage() {
 		try {
 			User guarantor = getSelectedGuarantor();
+			Partner partner = getSelectedPartner();
 			Page<Bill> billPage = billBrowserManager.getBillsWithFilters(
-					"O", dateFrom, dateTo, patientParent, guarantor, pendingCurrentPage, GeneralData.PAGINATIONPAGESIZE);
+					"O", dateFrom, dateTo, patientParent, guarantor, partner, pendingCurrentPage, GeneralData.PAGINATIONPAGESIZE);
 
 			List<Bill> bills = billPage.getContent();
 			pendingTotalRows = billPage.getTotalElements();
@@ -630,23 +674,41 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JPanel getPanelSupRange() {
 		if (panelSupRange == null) {
 			panelSupRange = new JPanel();
+			panelSupRange.setLayout(new BoxLayout(panelSupRange, BoxLayout.Y_AXIS));
+
+			JPanel firstRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 			if (!isSingleUser && MainMenu.checkUserGrants("cashiersfilter")) {
-				panelSupRange.add(getJComboUsers());
+				firstRow.add(getJComboUsers());
 			}
-			panelSupRange.add(getJButtonToday());
-			panelSupRange.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
-			panelSupRange.add(getJCalendarFrom());
-			panelSupRange.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
-			panelSupRange.add(getJCalendarTo());
-			panelSupRange.add(getJComboMonths());
-			panelSupRange.add(getJComboYears());
-			panelSupRange.add(getPanelChoosePatient());
+			firstRow.add(getJButtonToday());
+			firstRow.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+			firstRow.add(getJCalendarFrom());
+			firstRow.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+			firstRow.add(getJCalendarTo());
+			firstRow.add(getJComboMonths());
+			firstRow.add(getJComboYears());
+			firstRow.add(getPanelChoosePatient());
+
+			JPanel secondRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 			if (hasBillGuarantor()) {
-				panelSupRange.add(getJLabelGuarantor());
-				panelSupRange.add(getJComboBoxGuarantor());
+				secondRow.add(getJLabelGuarantor());
+				secondRow.add(getJComboBoxGuarantor());
 			}
+			if (hasBillPartner()){
+				secondRow.add(getJLabelPartner());
+				secondRow.add(getJComboBoxPartner());
+			}
+			panelSupRange.add(firstRow);
+			panelSupRange.add(secondRow);
 		}
 		return panelSupRange;
+	}
+
+	private Partner getSelectedPartner() {
+		if (jComboBoxPartner != null) {
+			return (Partner) jComboBoxPartner.getSelectedItem();
+		}
+		return null;
 	}
 
 	private JPanel getPanelChoosePatient() {
@@ -1335,6 +1397,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.billbrowser.refundreport"));
 				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.reportgroupbyreduction.txt"));
+				options.add(MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.title"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1399,6 +1462,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 					String reduc_code = option.trim().split("-")[0];
 					new GenericReportFromDateToDate(from, to, reduc_code, "rpt_base", "BillsReportGroupByReduction", MessageBundle.getMessage("angal.billbrowser.fullreportbillsreductionplanperuser.txt"),
 							false);
+				}
+				if (options.indexOf(option) == 8) {
+						new GenericReportFromDateToDate(from, to, "rpt_base", "GlobalConsumptionReportByService",
+								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), true);
 				}
 			});
 		}
