@@ -534,8 +534,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         resuscitationPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.resuscitation") + ":"));
         resuscitationCombo = new JComboBox<>(new String[]{
                 MessageBundle.getMessage("angal.stat.all"),
-                MessageBundle.getMessage("angal.common.yes"),
-                MessageBundle.getMessage("angal.common.no")
+                MessageBundle.getMessage("angal.common.yes.label"),
+                MessageBundle.getMessage("angal.common.no.label")
         });
         resuscitationPanel.add(resuscitationCombo);
         newbornPanel.add(resuscitationPanel);
@@ -566,8 +566,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         anomaliesPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.congenitalanomalies") + ":"));
         congenitalAnomaliesCombo = new JComboBox<>(new String[]{
                 MessageBundle.getMessage("angal.stat.all"),
-                MessageBundle.getMessage("angal.common.yes"),
-                MessageBundle.getMessage("angal.common.no")
+                MessageBundle.getMessage("angal.common.yes.label"),
+                MessageBundle.getMessage("angal.common.no.label")
         });
         anomaliesPanel.add(congenitalAnomaliesCombo);
         newbornPanel.add(anomaliesPanel);
@@ -884,7 +884,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
             return null;
         }
-        return selected.equals(MessageBundle.getMessage("angal.common.yes"));
+        return selected.equals(MessageBundle.getMessage("angal.common.yes.label"));
     }
 
     private String getSelectedBloodLoss() {
@@ -944,7 +944,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
             return null;
         }
-        return selected.equals(MessageBundle.getMessage("angal.common.yes"));
+        return selected.equals(MessageBundle.getMessage("angal.common.yes.label"));
     }
 
     private String getSelectedCryTime() {
@@ -986,7 +986,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         if (selected == null || selected.equals(MessageBundle.getMessage("angal.stat.all"))) {
             return null;
         }
-        return selected.equals(MessageBundle.getMessage("angal.common.yes"));
+        return selected.equals(MessageBundle.getMessage("angal.common.yes.label"));
     }
 
     private String getSelectedDisease() {
