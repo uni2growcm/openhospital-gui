@@ -599,13 +599,11 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 xlsExport.exportHIVInfantsToExcel(infantList, exportFile);
 
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.hiv.export.success.msg") + " " + exportFile.getAbsolutePath());
+                        MessageBundle.formatMessage("angal.hiv.export.success.msg", exportFile.getAbsolutePath()));
 
                 Desktop.getDesktop().open(exportFile);
             } catch (IOException exc) {
-                logger.error("Export to excel error : " + exc.getMessage());
-                MessageDialog.error(this,
-                        MessageBundle.getMessage("angal.hiv.export.error.msg") + ": " + exc.getMessage());
+                MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.export.error.msg"));
             }
         }
     }
