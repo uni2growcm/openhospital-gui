@@ -418,7 +418,9 @@ public class PatientInsertExtended extends JDialog {
 
 		if (!insert) {
 			initializePhoneFields();
-			loadPatientPartners();
+			if (GeneralData.PARTNERSMODULEENABLED) {
+				loadPatientPartners();
+			}
 		}
 	}
 
@@ -2703,7 +2705,9 @@ public class PatientInsertExtended extends JDialog {
 			JPanel verticalPanel = new JPanel();
 			verticalPanel.setLayout(new BoxLayout(verticalPanel, BoxLayout.Y_AXIS));
 
-			verticalPanel.add(getJPartnerPanel());
+			if (GeneralData.PARTNERSMODULEENABLED) {
+				verticalPanel.add(getJPartnerPanel());
+			}
 
 			verticalPanel.add(getJNoteScrollPane());
 
