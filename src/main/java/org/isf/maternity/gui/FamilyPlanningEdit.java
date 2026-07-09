@@ -197,8 +197,8 @@ public class FamilyPlanningEdit extends JDialog
         } else {
             setTitle(MessageBundle.getMessage("angal.familyplanning.edit.title"));
         }
-        setMinimumSize(new Dimension(550, 480));
-        setPreferredSize(new Dimension(600, 520));
+        setMinimumSize(new Dimension(700, 600));
+        setPreferredSize(new Dimension(750, 650));
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
@@ -316,7 +316,7 @@ public class FamilyPlanningEdit extends JDialog
             gbc.gridx = 1;
             gbc.gridwidth = 2;
             patientSearchField = new JTextField(40);
-            patientSearchField.setPreferredSize(new Dimension(250, 20));
+            patientSearchField.setPreferredSize(new Dimension(300, 30));
             patientSearchField.setMinimumSize(new Dimension(250, 20));
             patientSearchField.setToolTipText(MessageBundle.getMessage("angal.labnew.tooltip.associateapatientwiththisexam"));
             patientSearchField.addKeyListener(new KeyAdapter() {
@@ -470,7 +470,8 @@ public class FamilyPlanningEdit extends JDialog
             okButton.addActionListener(e -> save());
 
             cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-            cancelButton.setPreferredSize(new Dimension(80, 30));
+            cancelButton.setPreferredSize(new Dimension(120, 30));
+            cancelButton.setMinimumSize(new Dimension(120, 30));
             cancelButton.addActionListener(e -> dispose());
 
             buttonPanel.add(okButton);
