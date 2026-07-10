@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final utlizzo versione della libreria JasperReports6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="BillsReport" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="BillsReport" whenResourceMissingType="Key" uuid="9bc54c63-148c-4c34-819b-f350ea69835e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -550,21 +550,21 @@ new SimpleDateFormat("(dd/MM/yy)").format($F{BLL_DATE}))]]></textFieldExpression
 				<textFieldExpression><![CDATA[$R{Receivables}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-23" x="0" y="75" width="117" height="19" uuid="ccdca2b9-c6d9-4f85-a771-1cd801378d75"/>
+				<reportElement key="staticText-23" x="-22" y="75" width="160" height="19" uuid="ccdca2b9-c6d9-4f85-a771-1cd801378d75"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Accrued.In.Period}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-24" x="209" y="75" width="117" height="19" uuid="93ab1ca5-63a8-48a7-b5bf-5dc4910635cf"/>
+				<reportElement key="staticText-24" x="193" y="75" width="149" height="19" uuid="93ab1ca5-63a8-48a7-b5bf-5dc4910635cf"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Accrued.In.Period}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-25" x="418" y="75" width="117" height="19" uuid="515b1adb-f2fb-4f25-8660-5c4ef84e8c0d"/>
+				<reportElement key="staticText-25" x="390" y="75" width="165" height="19" uuid="515b1adb-f2fb-4f25-8660-5c4ef84e8c0d"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
