@@ -31,25 +31,10 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.JTextArea;
-import javax.swing.WindowConstants;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
@@ -83,6 +68,9 @@ public class DeliveryEdit extends ModalJFrame {
     private final NewBornBrowserManager newbornManager = Context.getApplicationContext().getBean(NewBornBrowserManager.class);
     private final PatientBrowserManager patientManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
+    private GoodDateTimeSpinnerChooser laborOnsetField;
+    private GoodDateTimeSpinnerChooser romField;
+    private JTextField bloodLossField;
     private JComboBox deliveryTypeCombo;
     private GoodDateTimeSpinnerChooser deliveryDateField;
     private JTextField anesthesiaField;
@@ -271,10 +259,12 @@ public class DeliveryEdit extends ModalJFrame {
         placentaCompleteCheck = new JCheckBox();
         clinicianField = new JTextField(50);
         JTextField indicationField = new JTextField(50);
-        JTextField laborOnsetField = new JTextField(50);
-        JTextField romField = new JTextField(50);
+        laborOnsetField = new GoodDateTimeSpinnerChooser(null);
+        laborOnsetField.setMaxDate(LocalDate.now());
+        romField = new GoodDateTimeSpinnerChooser(null);
+        romField.setMaxDate(LocalDate.now());
         JTextField placentaWeightField = new JTextField(50);
-        JTextField bloodLossField = new JTextField(50);
+        bloodLossField = new JTextField(50);
 
         feedingModeField = new JTextField(50);
         lochiaField = new JTextField(50);
@@ -430,9 +420,24 @@ public class DeliveryEdit extends ModalJFrame {
                 if (!validateNewbornRow(i)) return;
             }
 
+            if (!validateDeliveryDates()) return;
+
+            if (!validateBloodLoss()) return;
+
             delivery.setDeliveryDate(deliveryDateField.getLocalDateTime());
             delivery.setDeliveryType((Typology) deliveryTypeCombo.getSelectedItem());
             delivery.setFatherName(fatherName.getText());
+
+            delivery.setLaborOnsetDateTime(laborOnsetField.getLocalDateTime());
+            delivery.setRuptureMembranesDateTime(romField.getLocalDateTime());
+            String bloodLossText = bloodLossField.getText().trim();
+            if (!bloodLossText.isEmpty()) {
+                try {
+                    delivery.setEstimatedBloodLoss(Integer.parseInt(bloodLossText));
+                } catch (NumberFormatException e) {
+                    MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.invalidbloodloss.msg"));                    return;
+                }
+            }
             
             if (!fatherAge.getText().isEmpty()) {
                 try {
@@ -695,6 +700,15 @@ public class DeliveryEdit extends ModalJFrame {
         feedingModeField.setText(delivery.getFeedingMode());
         lochiaField.setText(delivery.getLochia());
         noteArea.setText(delivery.getNote());
+        if (delivery.getLaborOnsetDateTime() != null) {
+            laborOnsetField.setDateTime(delivery.getLaborOnsetDateTime());
+        }
+        if (delivery.getRuptureMembranesDateTime() != null) {
+            romField.setDateTime(delivery.getRuptureMembranesDateTime());
+        }
+        if (delivery.getEstimatedBloodLoss() != null) {
+            bloodLossField.setText(String.valueOf(delivery.getEstimatedBloodLoss()));
+        }
 
         try {
             List<Newborn> newborns = newbornManager.getNewbornsByDelivery(delivery.getId());
@@ -744,5 +758,93 @@ public class DeliveryEdit extends ModalJFrame {
     private HivStatus findHivStatusByDisplayString(String s) {
         for (HivStatus v : HivStatus.values()) if (MessageBundle.getMessage(v.getKey()).equals(s)) return v;
         return HivStatus.UNKNOWN;
+    }
+
+    private boolean validateDeliveryDates() {
+        LocalDateTime deliveryDate = deliveryDateField.getLocalDateTime();
+        LocalDateTime laborOnset = laborOnsetField.getLocalDateTime();
+        LocalDateTime rom = romField.getLocalDateTime();
+
+        if (laborOnset != null && deliveryDate != null && laborOnset.isAfter(deliveryDate)) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.laboronset.beforedelivery.msg"));
+            return false;
+        }
+
+        if (rom != null && deliveryDate != null && rom.isAfter(deliveryDate)) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.rom.beforedelivery.msg"));
+            return false;
+        }
+
+        if (laborOnset != null && rom != null && rom.isBefore(laborOnset)) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.rom.afterlaboronset.msg"));
+            return false;
+        }
+
+        if (laborOnset != null && deliveryDate != null) {
+            long hoursBetween = ChronoUnit.HOURS.between(laborOnset, deliveryDate);
+            if (hoursBetween > 72) {
+                MessageDialog.error(this,
+                        MessageBundle.formatMessage("angal.maternity.delivery.laboronset.toofar.error.msg", hoursBetween));
+                return false;
+            }
+        }
+
+        if (rom != null && deliveryDate != null) {
+            long hoursBetween = ChronoUnit.HOURS.between(rom, deliveryDate);
+            if (hoursBetween > 72) {
+                MessageDialog.error(this,
+                        MessageBundle.formatMessage("angal.maternity.delivery.rom.toofar.error.msg", hoursBetween));
+                return false;
+            }
+        }
+
+        if (laborOnset != null && deliveryDate != null) {
+            long hoursBetween = ChronoUnit.HOURS.between(laborOnset, deliveryDate);
+            if (hoursBetween > 24) {
+                int response = MessageDialog.yesNo(this,
+                        MessageBundle.formatMessage("angal.maternity.delivery.laboronset.warning.msg", hoursBetween));
+                if (response != JOptionPane.YES_OPTION) {
+                    return false;
+                }
+            }
+        }
+
+        if (rom != null && deliveryDate != null) {
+            long hoursBetween = ChronoUnit.HOURS.between(rom, deliveryDate);
+            if (hoursBetween > 24) {
+                int response = MessageDialog.yesNo(this,
+                        MessageBundle.formatMessage("angal.maternity.delivery.rom.warning.msg", hoursBetween));
+                if (response != JOptionPane.YES_OPTION) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean validateBloodLoss() {
+        String bloodLossText = bloodLossField.getText().trim();
+        if (bloodLossText.isEmpty()) {
+            return true;
+        }
+        try {
+            int bloodLoss = Integer.parseInt(bloodLossText);
+            if (bloodLoss < 0) {
+                MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.bloodloss.positive.msg"));
+                return false;
+            }
+            if (bloodLoss > 5000) {
+                int response = MessageDialog.yesNo(this,
+                        MessageBundle.formatMessage("angal.maternity.delivery.bloodloss.max.warning.msg", bloodLoss));
+                if (response != JOptionPane.YES_OPTION) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.invalidbloodloss.msg"));
+            return false;
+        }
     }
 }
