@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -422,13 +423,17 @@ public class TuberculosisBrowser extends ModalJFrame {
     private JPanel getVisitListPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
         visitDateFrom = new GoodDateChooser((LocalDate) null);
         filterPanel.add(visitDateFrom);
+        filterPanel.add(Box.createVerticalStrut(5));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
         visitDateTo = new GoodDateChooser((LocalDate) null);
         filterPanel.add(visitDateTo);
+        filterPanel.add(Box.createVerticalStrut(5));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.dotstatus.col")));
         visitDotStatusCombo = new JComboBox<>();
         visitDotStatusCombo.addItem(MessageBundle.getMessage("angal.common.all.label"));
@@ -437,12 +442,15 @@ public class TuberculosisBrowser extends ModalJFrame {
         }
         visitDotStatusCombo.setRenderer(new EnumRenderer());
         filterPanel.add(visitDotStatusCombo);
+        filterPanel.add(Box.createVerticalStrut(5));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.visit.adherence")));
         visitAdherenceMinField = new JTextField(5);
         filterPanel.add(visitAdherenceMinField);
+        filterPanel.add(Box.createVerticalStrut(10));
         JButton visitFilterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
         visitFilterButton.addActionListener(e -> loadVisits());
         filterPanel.add(visitFilterButton);
+        filterPanel.add(Box.createVerticalStrut(5));
         JButton visitResetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
         visitResetButton.addActionListener(e -> {
             visitDateFrom.setDate((LocalDate) null);
@@ -453,7 +461,7 @@ public class TuberculosisBrowser extends ModalJFrame {
         });
         filterPanel.add(visitResetButton);
 
-        panel.add(filterPanel, BorderLayout.NORTH);
+        panel.add(filterPanel, BorderLayout.WEST);
 
         visitTable = new JTable(new VisitTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -477,16 +485,20 @@ public class TuberculosisBrowser extends ModalJFrame {
     private JPanel getContactListPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactname.col")));
         contactNameField = new JTextField(10);
         filterPanel.add(contactNameField);
+        filterPanel.add(Box.createVerticalStrut(5));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactage.col") + " " + MessageBundle.getMessage("angal.common.from.label")));
         contactAgeFromField = new JTextField(5);
         filterPanel.add(contactAgeFromField);
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.to.label")));
         contactAgeToField = new JTextField(5);
         filterPanel.add(contactAgeToField);
+        filterPanel.add(Box.createVerticalStrut(5));
         filterPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactscreened.col")));
         contactScreenedCombo = new JComboBox<>(new String[]{
                 MessageBundle.getMessage("angal.common.all.label"),
@@ -494,9 +506,11 @@ public class TuberculosisBrowser extends ModalJFrame {
                 MessageBundle.getMessage("angal.common.no")
         });
         filterPanel.add(contactScreenedCombo);
+        filterPanel.add(Box.createVerticalStrut(10));
         JButton contactFilterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
         contactFilterButton.addActionListener(e -> loadContacts());
         filterPanel.add(contactFilterButton);
+        filterPanel.add(Box.createVerticalStrut(5));
         JButton contactResetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
         contactResetButton.addActionListener(e -> {
             contactNameField.setText("");
@@ -507,7 +521,7 @@ public class TuberculosisBrowser extends ModalJFrame {
         });
         filterPanel.add(contactResetButton);
 
-        panel.add(filterPanel, BorderLayout.NORTH);
+        panel.add(filterPanel, BorderLayout.WEST);
 
         contactTable = new JTable(new ContactTableModel());
         contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
