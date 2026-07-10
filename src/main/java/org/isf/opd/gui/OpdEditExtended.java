@@ -84,6 +84,7 @@ import org.isf.opd.manager.OpdBrowserManager;
 import org.isf.opd.model.Opd;
 import org.isf.operation.gui.OperationRowOpd;
 import org.isf.patient.gui.PatientInsert;
+import org.isf.tuberculosis.gui.TuberculosisMiniPanel;
 import org.isf.patient.gui.PatientInsert.PatientListener;
 import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.manager.PatientBrowserManager;
@@ -133,6 +134,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		jComboPatResult.addItem(opdPatient);
 		jComboPatResult.setSelectedItem(opdPatient);
 		jPatientEditButton.setEnabled(true);
+		updateTuberculosisTab();
 	}
 
 	@Override
@@ -263,6 +265,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 
 	private JTabbedPane jTabbedPaneOpd;
 	private JPanel jPanelOperation;
+	private JPanel jPanelTuberculosis;
 	private JCheckBox malnutritionCheckBox;
 	private JTextField reasonField;
 
@@ -381,6 +384,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		opdNextVisitDate.setEnabled(true);
 		nextVisitWardBox.setEnabled(true);
+		updateTuberculosisTab();
 	}
 
 	private void resetPatient() {
@@ -1226,6 +1230,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		if (jTabbedPaneOpd == null) {
 			jTabbedPaneOpd = new JTabbedPane();
 			jTabbedPaneOpd.addTab(MessageBundle.getMessage("angal.common.patient.txt"), getJPanelPatient());
+
+			jTabbedPaneOpd.addTab(MessageBundle.getMessage("angal.opd.tuberculosis.btn"), getTuberculosisTab());
 			if (insert && MainMenu.checkUserGrants("btnopdnewoperation")
 					|| !insert && MainMenu.checkUserGrants("btnopdeditoperation")) {
 				jTabbedPaneOpd.addTab(MessageBundle.getMessage("angal.admission.operation"), getMultiOperationTab());
@@ -1244,6 +1250,27 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			jPanelOperation.add(operationop);
 		}
 		return jPanelOperation;
+	}
+
+	private JPanel getTuberculosisTab() {
+		if (jPanelTuberculosis == null) {
+			jPanelTuberculosis = new JPanel();
+			jPanelTuberculosis.setLayout(new BorderLayout(0, 0));
+			jPanelTuberculosis.add(new TuberculosisMiniPanel(opdPatient));
+		}
+		return jPanelTuberculosis;
+	}
+
+	private void updateTuberculosisTab() {
+		if (jPanelTuberculosis != null) {
+			java.awt.Component[] comps = jPanelTuberculosis.getComponents();
+			for (java.awt.Component c : comps) {
+				if (c instanceof TuberculosisMiniPanel) {
+					((TuberculosisMiniPanel) c).setPatient(opdPatient);
+					break;
+				}
+			}
+		}
 	}
 
 	private JPanel getJPanelPatient() {
