@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="HomeVisitActivityReport" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="HomeVisitActivityReport" whenResourceMissingType="Key" uuid="c0000001-0000-0000-0000-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["./rpt_base/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PeriodLabel" class="java.lang.String"/>
+	<parameter name="PeriodStart" class="java.sql.Timestamp"/>
+	<parameter name="PeriodEnd" class="java.sql.Timestamp"/>
+	<parameter name="TopN" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[10]]></defaultValueExpression>
+	</parameter>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<summary>
+		<band height="802" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="280" height="16" uuid="c0000001-0000-0000-0000-000000000010"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="16" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000011"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="280" height="16" uuid="c0000001-0000-0000-0000-000000000012"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="0" width="255" height="16" uuid="c0000001-0000-0000-0000-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="16" width="255" height="14" uuid="c0000001-0000-0000-0000-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="30" width="255" height="16" uuid="c0000001-0000-0000-0000-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="55" width="535" height="20" uuid="c0000001-0000-0000-0000-000000000016"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="75" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + $P{PeriodLabel}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="95" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000018"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="109" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000019"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + $P{Address}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="95" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000001"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + $P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="109" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000002"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + $P{Telephone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="123" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000003"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + $P{Email}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="535" height="1" uuid="c000000a-0000-0000-0000-000000000004"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="150" width="300" height="18" uuid="c000000b-0000-0000-0000-000000000001"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_statistiques_globales}]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement x="0" y="170" width="535" height="130" uuid="c000000b-0000-0000-0000-000000000002"/>
+				<subreportParameter name="PeriodStart">
+					<subreportParameterExpression><![CDATA[$P{PeriodStart}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PeriodEnd">
+					<subreportParameterExpression><![CDATA[$P{PeriodEnd}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "HomeVisitStats.jasper"]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement x="0" y="310" width="300" height="18" uuid="c000000b-0000-0000-0000-000000000003"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_detail_visiteur}]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement x="0" y="330" width="535" height="160" uuid="c000000b-0000-0000-0000-000000000004"/>
+				<subreportParameter name="PeriodStart">
+					<subreportParameterExpression><![CDATA[$P{PeriodStart}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PeriodEnd">
+					<subreportParameterExpression><![CDATA[$P{PeriodEnd}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "HomeVisitByStaff.jasper"]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement x="0" y="495" width="300" height="18" uuid="c000000b-0000-0000-0000-000000000005"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_patients_plus_visites}]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement x="0" y="515" width="535" height="275" uuid="c000000b-0000-0000-0000-000000000006"/>
+				<subreportParameter name="PeriodStart">
+					<subreportParameterExpression><![CDATA[$P{PeriodStart}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PeriodEnd">
+					<subreportParameterExpression><![CDATA[$P{PeriodEnd}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="TopN">
+					<subreportParameterExpression><![CDATA[$P{TopN}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "HomeVisitTopPatients.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>
