@@ -3282,6 +3282,14 @@ public class PatientInsertExtended extends JDialog {
 					MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.iso.exists.msg"));
 					return;
 				}
+				if (countryIoOperations.getCountryByPhoneCode(phoneCodeStr).isPresent()) {
+					MessageDialog.error(dialog, MessageBundle.formatMessage("angal.country.phonecode.exists.msg", phoneCodeStr));
+					return;
+				}
+				if (countryIoOperations.getCountryByName(name).isPresent()) {
+					MessageDialog.error(dialog, MessageBundle.formatMessage("angal.country.name.exists.msg", name));
+					return;
+				}
 
 				Country newCountry = new Country(isoCode, phoneCodeStr, name);
 				Country savedCountry = countryIoOperations.saveCountry(newCountry);
@@ -3291,8 +3299,11 @@ public class PatientInsertExtended extends JDialog {
 
 				dialog.dispose();
 
+			} catch (OHServiceException ex) {
+				OHServiceExceptionUtil.showMessages(ex, dialog);
 			} catch (Exception ex) {
-				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.save.error.msg") + ex.getMessage());
+				LOGGER.error(ex.getMessage(), ex);
+				MessageDialog.error(dialog, MessageBundle.getMessage("angal.patient.country.save.error.msg"));
 			}
 		});
 
