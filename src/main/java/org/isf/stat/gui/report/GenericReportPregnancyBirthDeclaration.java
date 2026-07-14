@@ -21,6 +21,7 @@
  */
 package org.isf.stat.gui.report;
 
+import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.stat.dto.JasperReportResultDto;
 import org.isf.stat.manager.JasperReportsManager;
@@ -37,7 +38,8 @@ public class GenericReportPregnancyBirthDeclaration extends DisplayReport {
 
     public GenericReportPregnancyBirthDeclaration(Long nbnId) {
         try {
-            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getBirthDeclarationPdf(nbnId);
+            String author = MainMenu.getUser() != null ? MainMenu.getUser().getUserName() : "";
+            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getBirthDeclarationPdf(nbnId, author);
             showReport(jasperReportResultDto);
         } catch (Exception e) {
             LOGGER.error("", e);
