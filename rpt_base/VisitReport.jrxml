@@ -409,24 +409,49 @@ ORDER BY v.VST_DATE ASC, p.PAT_NAME ASC]]>
 	<pageFooter>
 		<band height="19" splitType="Stretch">
 			<line>
-				<reportElement x="0" y="0" width="832" height="1" uuid="c801b2cc-2505-4f96-984f-22061fc0fca5"/>
+				<reportElement x="0" y="0" width="782" height="1" uuid="c809b478-7bb0-4443-a43b-e0dbd3cb0315"/>
 				<graphicElement>
-					<pen lineWidth="1.0"/>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="1" width="416" height="18" uuid="91c6b705-f62e-47e6-bd05-adde36e3ef43"/>
+				<reportElement x="0" y="0" width="209" height="19" uuid="80b74932-260c-423b-864d-0a4e81343496"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="8"/>
+					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="416" y="1" width="416" height="18" uuid="c2735343-1209-4c00-8ce8-da4f9b8d47a0"/>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement x="572" y="0" width="170" height="19" uuid="f0e894c9-9d29-45f2-b1a9-0ad001df41b4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="8"/>
+					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement x="746" y="0" width="36" height="19" uuid="d5634d77-1149-4544-9483-930ce553c05b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
