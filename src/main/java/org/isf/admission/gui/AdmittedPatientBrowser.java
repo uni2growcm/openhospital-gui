@@ -764,9 +764,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		if (MainMenu.checkUserGrants("btnadmtherapy")) {
 			buttonPanel.add(getButtonTherapy());
 		}
-
+		if (MainMenu.checkUserGrants("btnadmadmvisitsrpt")) {
 			buttonPanel.add(getButtonReport());
-
+		}
 		if (GeneralData.MERGEFUNCTION && MainMenu.checkUserGrants("btnadmmer")) {
 			buttonPanel.add(getButtonMerge());
 		}
