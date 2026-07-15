@@ -90,15 +90,10 @@ class PrivilegeTree extends JDialog {
 
 		// a supporting structure
 		List<UserMenuItem> junkMenu = new ArrayList<>();
-		List<UserMenuItem> skipMenu = new ArrayList<>();
 
 		// cycle to process the whole rootMenu
 		while (!rootMenu.isEmpty()) {
 			for (UserMenuItem umi : rootMenu) {
-				// Skip items already determined to have no parent in the tree
-				if (skipMenu.contains(umi)) {
-					continue;
-				}
 				// The only difference between groups and Admin Menus is that groups have some items set inactive (Admin
 				// always active for all of them)
 				//
@@ -106,28 +101,23 @@ class PrivilegeTree extends JDialog {
 				if (myMenu.contains(umi)) {
 					if (addMenuItem(myMenu.get(myMenu.indexOf(umi))) != null) {
 						junkMenu.add(umi);
-					} else {
-						skipMenu.add(umi);
 					}
 				} else {
 					umi.setActive(false);
 					if (addMenuItem(umi) != null) {
 						junkMenu.add(umi);
-					} else {
-						skipMenu.add(umi);
 					}
 				}
+			}
+			// No progress in this iteration → remaining items are orphaned, stop
+			if (junkMenu.isEmpty()) {
+				break;
 			}
 			// Cycle to remove already processed rootMenu items
 			for (UserMenuItem umi : junkMenu) {
 				rootMenu.remove(umi);
 			}
 			junkMenu = new ArrayList<>();
-			// Remove items that can't find a parent (prevent infinite loop)
-			for (UserMenuItem umi : skipMenu) {
-				rootMenu.remove(umi);
-			}
-			skipMenu = new ArrayList<>();
 		}
 
 		MouseListener mouseListener = new MouseAdapter() {
