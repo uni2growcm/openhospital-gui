@@ -85,6 +85,8 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.stat.gui.report.GenericReportTuberculosis;
+import org.isf.utils.jobjects.TuberculosisReportDialog;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -542,6 +544,17 @@ public class TuberculosisBrowser extends ModalJFrame {
         return panel;
     }
 
+    private JButton getReportButton() {
+        JButton button = new JButton( MessageBundle.getMessage("angal.common.report.btn"));
+        button.addActionListener(e -> report());
+        return button;
+    }
+
+    private void report() { TuberculosisReportDialog dialog = new TuberculosisReportDialog(this);
+        dialog.setOnOk(() -> new GenericReportTuberculosis(dialog.getDateFrom().toLocalDate(), dialog.getDateTo().toLocalDate(), "TuberculosisReport"));
+
+        dialog.setVisible(true);
+    }
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new WrapLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.actions.label")));
@@ -572,6 +585,9 @@ public class TuberculosisBrowser extends ModalJFrame {
         }
         if (MainMenu.checkUserGrants("tuberculosis.deletecontact")) {
             buttonPanel.add(getDeleteContactButton());
+        }
+        if (MainMenu.checkUserGrants("tuberculosis.report")) {
+            buttonPanel.add(getReportButton());
         }
         buttonPanel.add(getExaminationButton());
         buttonPanel.add(getLaboratoryButton());
