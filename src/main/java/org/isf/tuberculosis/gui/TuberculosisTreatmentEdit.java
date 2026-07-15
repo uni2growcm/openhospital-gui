@@ -634,7 +634,7 @@ diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabe
         okButton.addActionListener(e -> save());
 
         JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-        cancelButton.setPreferredSize(new Dimension(80, 30));
+        cancelButton.setPreferredSize(new Dimension(90, 30));
         cancelButton.addActionListener(e -> dispose());
 
         buttonPanel.add(okButton);

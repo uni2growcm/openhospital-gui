@@ -21,28 +21,39 @@
  */
 package org.isf.stat.gui.report;
 
-import org.isf.menu.gui.MainMenu;
+import java.time.LocalDate;
+
 import org.isf.menu.manager.Context;
 import org.isf.stat.dto.JasperReportResultDto;
 import org.isf.stat.manager.JasperReportsManager;
 import org.isf.utils.jobjects.MessageDialog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
+public class GenericReportTuberculosis extends DisplayReport {
 
-public class GenericReportPregnancyBirthDeclaration extends DisplayReport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenericReportPregnancyCertificateOfDeclaration.class);
-    private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
+    private final JasperReportsManager jasperReportsManager =
+            Context.getApplicationContext().getBean(JasperReportsManager.class);
 
-    public GenericReportPregnancyBirthDeclaration(Long nbnId) {
+    public GenericReportTuberculosis(
+            LocalDate fromDate,
+            LocalDate toDate,
+            String jasperFileName) {
+
+        if (fromDate == null || toDate == null) {
+            return;
+        }
+
         try {
-            String author = MainMenu.getUser() != null ? MainMenu.getUser().getUserName() : "";
-            JasperReportResultDto jasperReportResultDto = jasperReportsManager.getBirthDeclarationPdf(nbnId, author);
+            JasperReportResultDto jasperReportResultDto =
+                    jasperReportsManager.getGenericReportTuberculosisPdf(
+                            fromDate,
+                            toDate,
+                            jasperFileName
+                    );
+
             showReport(jasperReportResultDto);
+
         } catch (Exception e) {
-            LOGGER.error("", e);
+            e.printStackTrace();
             MessageDialog.error(null, "angal.stat.reporterror.msg");
         }
     }
