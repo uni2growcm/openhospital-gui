@@ -5,7 +5,7 @@
 	<parameter name="PeriodStart" class="java.util.Date"/>
 	<parameter name="PeriodEnd" class="java.util.Date"/>
 	<parameter name="TopN" class="java.lang.Integer">
-		<defaultValueExpression><![CDATA[10]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[500]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[WITH visit_purpose_freq AS (
