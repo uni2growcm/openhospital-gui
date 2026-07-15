@@ -26,10 +26,9 @@ import org.isf.homevisit.model.HomeVisit;
 import org.isf.homevisit.model.HomeVisitStatus;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.stat.gui.report.GenericReportHomeVisitActivity;
 import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
-import org.isf.utils.jobjects.MessageDialog;
-import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -52,7 +51,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
-import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.layout.SpringUtilities;
 
 import javax.swing.table.DefaultTableModel;
@@ -251,6 +249,7 @@ public class HomeVisitBrowser extends ModalJFrame {
         postponeBtn.setEnabled(false);
         reactivateBtn.setEnabled(false);
 
+        printBtn.addActionListener(e->generateReport());
         newBtn.addActionListener(e -> openEditor(null));
         editBtn.addActionListener(e -> {
             if (table.getSelectedRow() < 0) {
@@ -668,4 +667,15 @@ public class HomeVisitBrowser extends ModalJFrame {
         }
         jTotalLabel.setText(MessageBundle.formatMessage("angal.common.total.label", totalElements));
     }
+
+    private void generateReport() {
+        HomeVisitReportDialog dialog = new HomeVisitReportDialog(this);
+        dialog.setOnOk(() -> {
+            LocalDate fromDate = dialog.getDateFromValue();
+            LocalDate toDate = dialog.getDateToValue();
+            new GenericReportHomeVisitActivity(fromDate, toDate, "HomeVisitActivityReport");
+        });
+        dialog.showAsModal(this);
+    }
+
 }

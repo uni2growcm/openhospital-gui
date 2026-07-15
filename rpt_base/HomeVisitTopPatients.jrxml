@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="HomeVisitTopPatients" pageWidth="535" pageHeight="400" whenNoDataType="NoDataSection" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="HomeVisitTopPatients" whenResourceMissingType="Key" uuid="c3000001-0003-0003-0003-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<parameter name="PeriodStart" class="java.util.Date"/>
+	<parameter name="PeriodEnd" class="java.util.Date"/>
+	<parameter name="TopN" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[500]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[WITH visit_purpose_freq AS (
+	SELECT
+		HV.HV_PAT_ID,
+		HV.HV_PURPOSE,
+		COUNT(*) AS PURPOSE_FREQ
+	FROM OH_HOME_VISIT HV
+	WHERE HV.HV_DELETE = 1
+		AND HV.HV_VISIT_START_DATE >= $P{PeriodStart}
+		AND HV.HV_VISIT_START_DATE <  $P{PeriodEnd}
+	GROUP BY HV.HV_PAT_ID, HV.HV_PURPOSE
+),
+purpose_ranked AS (
+	SELECT
+		HV_PAT_ID,
+		HV_PURPOSE,
+		ROW_NUMBER() OVER (PARTITION BY HV_PAT_ID ORDER BY PURPOSE_FREQ DESC, HV_PURPOSE) AS RN
+	FROM visit_purpose_freq
+),
+patient_status_counts AS (
+	SELECT
+		HV.HV_PAT_ID,
+		P.PAT_NAME,
+		COUNT(*) AS TOTAL_COUNT,
+		SUM(CASE WHEN HV.HV_STATUS = 'PLANNED'   THEN 1 ELSE 0 END) AS PLANNED_COUNT,
+		SUM(CASE WHEN HV.HV_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) AS COMPLETED_COUNT,
+		SUM(CASE WHEN HV.HV_STATUS = 'CANCELLED' THEN 1 ELSE 0 END) AS CANCELLED_COUNT,
+		SUM(CASE WHEN HV.HV_STATUS = 'POSTPONED' THEN 1 ELSE 0 END) AS POSTPONED_COUNT,
+		COALESCE(SUM(TIMESTAMPDIFF(MINUTE, HV.HV_VISIT_START_DATE, HV.HV_VISIT_END_DATE)), 0) AS TOTAL_MINUTES
+	FROM OH_HOME_VISIT HV
+	JOIN OH_PATIENT P ON HV.HV_PAT_ID = P.PAT_ID
+	WHERE HV.HV_DELETE = 1
+		AND HV.HV_VISIT_START_DATE >= $P{PeriodStart}
+		AND HV.HV_VISIT_START_DATE <  $P{PeriodEnd}
+	GROUP BY HV.HV_PAT_ID, P.PAT_NAME
+)
+SELECT
+	C.PAT_NAME,
+	C.TOTAL_COUNT,
+	C.PLANNED_COUNT,
+	C.COMPLETED_COUNT,
+	C.CANCELLED_COUNT,
+	C.POSTPONED_COUNT,
+	C.TOTAL_MINUTES,
+	R.HV_PURPOSE AS PURPOSE
+FROM patient_status_counts C
+JOIN purpose_ranked R ON R.HV_PAT_ID = C.HV_PAT_ID AND R.RN = 1
+ORDER BY C.TOTAL_COUNT DESC
+LIMIT $P{TopN}]]>
+	</queryString>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="TOTAL_COUNT" class="java.lang.Long"/>
+	<field name="PLANNED_COUNT" class="java.lang.Long"/>
+	<field name="COMPLETED_COUNT" class="java.lang.Long"/>
+	<field name="CANCELLED_COUNT" class="java.lang.Long"/>
+	<field name="POSTPONED_COUNT" class="java.lang.Long"/>
+	<field name="TOTAL_MINUTES" class="java.lang.Long"/>
+	<field name="PURPOSE" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="120" height="30" uuid="c3000001-0003-0003-0003-000000000002"/>
+				<box topPadding="2" leftPadding="6">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_patient}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="0" width="40" height="30" uuid="c3000001-0003-0003-0003-000000000003"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_total_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="160" y="0" width="50" height="30" uuid="c3000001-0003-0003-0003-000000000009"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_planifiees_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="0" width="50" height="30" uuid="c3000001-0003-0003-0003-00000000000a"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_realisees_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="260" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000b"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_annulees_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="315" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000c"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_reportees_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="370" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000d"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_duree_court}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="425" y="0" width="110" height="30" uuid="c3000001-0003-0003-0003-000000000004"/>
+				<box topPadding="2" leftPadding="4">
+					<pen lineWidth="0.75"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{col_motif_principal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="120" height="20" uuid="c3000001-0003-0003-0003-000000000005"/>
+				<box topPadding="2" leftPadding="6">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="120" y="0" width="40" height="20" uuid="c3000001-0003-0003-0003-000000000006"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TOTAL_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="160" y="0" width="50" height="20" uuid="c3000001-0003-0003-0003-00000000000e"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PLANNED_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="210" y="0" width="50" height="20" uuid="c3000001-0003-0003-0003-00000000000f"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000010"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="315" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000011"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="370" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000012"/>
+				<box topPadding="2" leftPadding="3">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{TOTAL_MINUTES} / 60) + "h" + String.format("%02d", $F{TOTAL_MINUTES} % 60)]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="425" y="0" width="110" height="20" uuid="c3000001-0003-0003-0003-000000000007"/>
+				<box topPadding="2" leftPadding="4">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PURPOSE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<noData>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="535" height="20" uuid="c3000001-0003-0003-0003-000000000008"/>
+				<textElement>
+					<font size="11" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{msg_aucune_visite}]]></textFieldExpression>
+			</textField>
+		</band>
+	</noData>
+</jasperReport>
