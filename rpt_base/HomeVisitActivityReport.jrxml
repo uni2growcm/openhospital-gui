@@ -36,7 +36,7 @@
 				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="16" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000011"/>
+				<reportElement x="15" y="16" width="265" height="14" uuid="c0000001-0000-0000-0000-000000000011"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -57,7 +57,7 @@
 				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="280" y="16" width="255" height="14" uuid="c0000001-0000-0000-0000-000000000014"/>
+				<reportElement x="280" y="16" width="240" height="14" uuid="c0000001-0000-0000-0000-000000000014"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
