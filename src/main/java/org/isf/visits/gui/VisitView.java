@@ -280,18 +280,50 @@ public class VisitView extends ModalJFrame {
 	}
 
 	private JPanel getTodayPanel() {
-		JPanel firstPanel = new JPanel();
-		firstPanel.add(getAddVisitFirstButton());
-		firstPanel.add(getDeleteFirstVisitButton());
-		firstPanel.add(getPrintTodayButton());
+		JPanel firstPanel = new JPanel(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(3, 3, 3, 3);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 0.5;
+		firstPanel.add(getAddVisitFirstButton(), gbc);
+
+		gbc.gridx = 1;
+		firstPanel.add(getDeleteFirstVisitButton(), gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		firstPanel.add(getPrintTodayButton(), gbc);
+
 		return firstPanel;
 	}
 
 	private JPanel getTomorrowPanel() {
-		JPanel secondPanel = new JPanel();
-		secondPanel.add(getAddVisitSecondButton());
-		secondPanel.add(getDeleteSecondVisitButton());
-		secondPanel.add(getPrintTomorrowButton());
+		JPanel secondPanel = new JPanel(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(3, 3, 3, 3);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 0.5;
+		secondPanel.add(getAddVisitSecondButton(), gbc);
+
+		gbc.gridx = 1;
+		secondPanel.add(getDeleteSecondVisitButton(), gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		secondPanel.add(getPrintTomorrowButton(), gbc);
+
 		return secondPanel;
 	}
 

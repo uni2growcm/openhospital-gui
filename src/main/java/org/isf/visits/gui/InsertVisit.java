@@ -32,18 +32,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SpringLayout;
+import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.hospital.manager.HospitalBrowsingManager;
@@ -216,22 +206,77 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private JComboBox<Ward> getWardBox() {
 		JComboBox<Ward> newWardBox = new JComboBox<>();
 		newWardBox.addItem(null);
+
 		for (Ward aWard : wardList) {
+			if (!isVisitWard(aWard)) {
+				continue;
+			}
+
 			newWardBox.addItem(aWard);
-			if (this.ward != null && this.ward.getCode().equalsIgnoreCase(aWard.getCode())) {
+
+			if (this.ward != null
+					&& this.ward.getCode() != null
+					&& aWard.getCode() != null
+					&& this.ward.getCode().equalsIgnoreCase(aWard.getCode())) {
 				newWardBox.setSelectedItem(aWard);
 			}
 		}
+
 		newWardBox.addActionListener(actionEvent -> {
-			ward = getSelectedWard();
-			if (ward != null) {
-				jSpinnerDur.setModel(new SpinnerNumberModel(getDuration(), SPINNER_MIN_QTY, null, SPINNER_STEP_QTY));
+			Object selectedItem = newWardBox.getSelectedItem();
+
+			ward = selectedItem instanceof Ward
+					? (Ward) selectedItem
+					: null;
+
+			if (ward == null) {
+				return;
+			}
+
+			int duration = getDuration();
+
+			if (duration < SPINNER_STEP_QTY) {
+				duration = DEFAULT_DURATION;
+			}
+
+			jSpinnerDur.setModel(new SpinnerNumberModel(
+					duration,
+					SPINNER_STEP_QTY,
+					null,
+					SPINNER_STEP_QTY
+			));
+
+			configureDurationSpinnerEditor();
+
+			if (dateViPanel != null && visitDateChooser != null) {
 				dateViPanel.remove(visitDateChooser);
-				visitDateChooser = new GoodDateTimeVisitChooser(visitDate, getDuration());
+
+				visitDateChooser = new GoodDateTimeVisitChooser(
+						visitDate,
+						duration
+				);
+
 				dateViPanel.add(visitDateChooser);
+				dateViPanel.revalidate();
+				dateViPanel.repaint();
+				pack();
 			}
 		});
+
 		return newWardBox;
+	}
+
+	private void configureDurationSpinnerEditor() {
+		JSpinner.NumberEditor editor = new JSpinner.NumberEditor(jSpinnerDur, "#");
+		JFormattedTextField textField = editor.getTextField();
+
+		NumberFormatter formatter = (NumberFormatter) textField.getFormatter();
+		formatter.setAllowsInvalid(false);
+		formatter.setCommitsOnValidEdit(true);
+		formatter.setMinimum(SPINNER_STEP_QTY);
+
+		textField.setHorizontalAlignment(JTextField.RIGHT);
+		jSpinnerDur.setEditor(editor);
 	}
 
 	private JPanel getServicePanel() {
@@ -268,11 +313,27 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	}
 
 	private JSpinner getSpinnerQty() {
-		jSpinnerDur = new JSpinner(new SpinnerNumberModel(getDuration(), SPINNER_STEP_QTY, null, SPINNER_STEP_QTY));
+		int duration = getDuration();
+
+		if (duration < SPINNER_STEP_QTY) {
+			duration = DEFAULT_DURATION;
+		}
+
+		jSpinnerDur = new JSpinner(
+				new SpinnerNumberModel(
+						duration,
+						SPINNER_STEP_QTY,
+						null,
+						SPINNER_STEP_QTY
+				)
+		);
+
+		configureDurationSpinnerEditor();
+
 		jSpinnerDur.setFont(new Font("Dialog", Font.BOLD, 14));
 		jSpinnerDur.setAlignmentX(Component.LEFT_ALIGNMENT);
 		jSpinnerDur.setPreferredSize(new Dimension(PREFERRED_SPINNER_WIDTH, ONE_LINE_COMPONENTS_HEIGHT));
-		jSpinnerDur.setMaximumSize(new Dimension(Short.MAX_VALUE, ONE_LINE_COMPONENTS_HEIGHT));
+
 		return jSpinnerDur;
 	}
 
@@ -420,6 +481,24 @@ public class InsertVisit extends JDialog implements SelectionListener {
 
 	public Visit getVisit() {
 		return visit;
+	}
+
+	private boolean isVisitWard(Ward ward) {
+		if (ward == null) {
+			return false;
+		}
+
+		String code = ward.getCode() != null
+				? ward.getCode().trim().toLowerCase()
+				: "";
+
+		String description = ward.getDescription() != null
+				? ward.getDescription().trim().toLowerCase()
+				: "";
+
+		return !code.contains("inventory")
+				&& !description.contains("inventory")
+				&& !code.equals("inv");
 	}
 
 }
