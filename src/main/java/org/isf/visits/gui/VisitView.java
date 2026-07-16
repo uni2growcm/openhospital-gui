@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -143,7 +143,9 @@ public class VisitView extends ModalJFrame {
 	private JPanel todayPanel;
 	private JComboBox<Ward> wardBox;
 	private SpringLayout slVisitParamsPanel;
-	
+	private JButton updateFirstVisitButton;
+	private JButton updateSecondVisitButton;
+
 	private String[] visColumns = { MessageBundle.getMessage("angal.visit.visits") };
 
 	/*
@@ -288,16 +290,18 @@ public class VisitView extends ModalJFrame {
 
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.weightx = 0.5;
+		gbc.weightx = 1.0;
 		firstPanel.add(getAddVisitFirstButton(), gbc);
 
 		gbc.gridx = 1;
+		firstPanel.add(getUpdateFirstVisitButton(), gbc);
+
+		gbc.gridx = 2;
 		firstPanel.add(getDeleteFirstVisitButton(), gbc);
 
 		gbc.gridx = 0;
 		gbc.gridy = 1;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
+		gbc.gridwidth = 3;
 		firstPanel.add(getPrintTodayButton(), gbc);
 
 		return firstPanel;
@@ -312,16 +316,18 @@ public class VisitView extends ModalJFrame {
 
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.weightx = 0.5;
+		gbc.weightx = 1.0;
 		secondPanel.add(getAddVisitSecondButton(), gbc);
 
 		gbc.gridx = 1;
+		secondPanel.add(getUpdateSecondVisitButton(), gbc);
+
+		gbc.gridx = 2;
 		secondPanel.add(getDeleteSecondVisitButton(), gbc);
 
 		gbc.gridx = 0;
 		gbc.gridy = 1;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
+		gbc.gridwidth = 3;
 		secondPanel.add(getPrintTomorrowButton(), gbc);
 
 		return secondPanel;
@@ -865,6 +871,8 @@ public class VisitView extends ModalJFrame {
 		getDeleteFirstVisitButton().setVisible(show);
 		getVisitDateChooserPanel().setVisible(show);
 		getTodayVisit().setVisible(show);
+		getUpdateFirstVisitButton().setVisible(show);
+		getUpdateSecondVisitButton().setVisible(show);
 
 		revalidate();
 		repaint();
@@ -874,4 +882,59 @@ public class VisitView extends ModalJFrame {
 		return (Ward) wardBox.getSelectedItem();
 	}
 
+	private JButton getUpdateFirstVisitButton() {
+		if (updateFirstVisitButton == null) {
+			updateFirstVisitButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
+
+			updateFirstVisitButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
+			updateFirstVisitButton.addActionListener(actionEvent -> {
+				int row = jTableFirst.getSelectedRow();
+
+				if (row < 0) {
+					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+
+				Visit selectedVisit = (Visit) jTableFirst.getModel().getValueAt(row, -1);
+				editVisit(selectedVisit);
+			});
+		}
+		return updateFirstVisitButton;
+	}
+
+	private JButton getUpdateSecondVisitButton() {
+		if (updateSecondVisitButton == null) {
+			updateSecondVisitButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
+			updateSecondVisitButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
+			updateSecondVisitButton.addActionListener(actionEvent -> {
+				int row = jTableSecond.getSelectedRow();
+
+				if (row < 0) {
+					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+
+				Visit selectedVisit = (Visit) jTableSecond.getModel().getValueAt(row, -1);
+				editVisit(selectedVisit);
+			});
+		}
+
+		return updateSecondVisitButton;
+	}
+
+	private void editVisit(Visit selectedVisit) {
+		if (selectedVisit == null) {
+			return;
+		}
+
+		Ward currentWard = ward;
+		InsertVisit editDialog = new InsertVisit(this, selectedVisit, false);
+		editDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		editDialog.setVisible(true);
+		if (editDialog.isSaved()) {
+			loadDataForWard(currentWard);
+			updatePanels();
+		}
+		editDialog.dispose();
+	}
 }

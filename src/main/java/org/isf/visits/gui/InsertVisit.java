@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -21,13 +21,7 @@
  */
 package org.isf.visits.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +87,8 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private Ward ward;
 	private Visit visit;
 	private boolean insert;
-	
+	private boolean saved = false;
+
 	/*
 	 * Managers
 	 */
@@ -101,22 +96,70 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private HospitalBrowsingManager hospitalBrowsingManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
 	private VisitManager visitManager = Context.getApplicationContext().getBean(VisitManager.class);
 	private List<Ward> wardList = new ArrayList<>();
-	
-	public InsertVisit(JFrame owner, Ward ward, Patient patient, boolean insert) {
-		super(owner, true);
+
+	public InsertVisit(Window owner, Ward ward, Patient patient, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		this.patientSelected = patient;
 		this.ward = ward;
 		this.insert = insert;
 		initComponents();
 	}
 
-	public InsertVisit(JFrame owner, LocalDateTime date, Ward ward, Patient patient, boolean insert) {
-		super(owner, true);
+	public InsertVisit(Window owner, LocalDateTime date, Ward ward, Patient patient, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		this.patientSelected = patient;
 		this.visitDate = date;
 		this.ward = ward;
 		this.insert = insert;
 		initComponents();
+	}
+
+	public InsertVisit(Window owner, Visit visit, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
+
+		this.visit = visit;
+		this.insert = insert;
+
+		if (visit != null) {
+			this.patientSelected = visit.getPatient();
+			this.ward = visit.getWard();
+			this.visitDate = visit.getDate();
+		}
+
+		initComponents();
+		if (!insert && visit != null) {
+			loadExistingVisit();
+		}
+	}
+
+	private void loadExistingVisit() {
+		if (visit == null) {
+			return;
+		}
+
+		if (visit.getWard() != null) {
+			selectWardByCode(visit.getWard());
+		}
+
+		serviceField.setText(visit.getService() != null ? visit.getService() : "");
+		if (visit.getDuration() > 0) {
+			jSpinnerDur.setValue(visit.getDuration());
+		}
+	}
+
+	private void selectWardByCode(Ward visitWard) {
+		if (visitWard == null || visitWard.getCode() == null) {
+			return;
+		}
+
+		for (int i = 0; i < wardBox.getItemCount(); i++) {
+			Ward item = wardBox.getItemAt(i);
+
+			if (item != null && item.getCode() != null && item.getCode().equalsIgnoreCase(visitWard.getCode())) {
+				wardBox.setSelectedIndex(i);
+				return;
+			}
+		}
 	}
 
 	private void initComponents() {
@@ -184,6 +227,10 @@ public class InsertVisit extends JDialog implements SelectionListener {
 		patientParamsPanel.add(getVisitDateChooser(), date);
 
 		return patientParamsPanel;
+	}
+
+	public boolean isSaved() {
+		return saved;
 	}
 
 	private JPanel getWardPanel() {
@@ -393,8 +440,7 @@ public class InsertVisit extends JDialog implements SelectionListener {
 					MessageDialog.error(this, "angal.visit.pleasechooseaward.msg");
 					return;
 				}
-
-				Visit thisVisit = new Visit();
+				Visit thisVisit = insert ? new Visit() : visit;
 				thisVisit.setPatient(patientSelected);
 				thisVisit.setWard(selectedWard);
 				thisVisit.setDate(date);
@@ -404,13 +450,13 @@ public class InsertVisit extends JDialog implements SelectionListener {
 					if (insert) {
 						visit = visitManager.newVisit(thisVisit);
 					} else {
-						visitManager.validateVisit(thisVisit);
-						visit = thisVisit;
+						visit = visitManager.updateVisit(thisVisit);
 					}
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e, this);
 					return;
 				}
+				saved = true;
 				dispose();
 			});
 		}
