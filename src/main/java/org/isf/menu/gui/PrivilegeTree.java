@@ -90,9 +90,12 @@ class PrivilegeTree extends JDialog {
 
 		// a supporting structure
 		List<UserMenuItem> junkMenu = new ArrayList<>();
+		int iteration = 0;
 
 		// cycle to process the whole rootMenu
 		while (!rootMenu.isEmpty()) {
+			iteration++;
+			System.out.println("=== PrivilegeTree iteration " + iteration + " (" + rootMenu.size() + " items remaining) ===");
 			for (UserMenuItem umi : rootMenu) {
 				// The only difference between groups and Admin Menus is that groups have some items set inactive (Admin
 				// always active for all of them)
@@ -101,16 +104,23 @@ class PrivilegeTree extends JDialog {
 				if (myMenu.contains(umi)) {
 					if (addMenuItem(myMenu.get(myMenu.indexOf(umi))) != null) {
 						junkMenu.add(umi);
+						System.out.println("  ADDED: " + umi.getCode() + " (submenu=" + umi.getMySubmenu() + ")");
+					} else {
+						System.out.println("  FAILED: " + umi.getCode() + " (submenu=" + umi.getMySubmenu() + ")");
 					}
 				} else {
 					umi.setActive(false);
 					if (addMenuItem(umi) != null) {
 						junkMenu.add(umi);
+						System.out.println("  ADDED(inactive): " + umi.getCode() + " (submenu=" + umi.getMySubmenu() + ")");
+					} else {
+						System.out.println("  FAILED(inactive): " + umi.getCode() + " (submenu=" + umi.getMySubmenu() + ")");
 					}
 				}
 			}
 			// No progress in this iteration → remaining items are orphaned, stop
 			if (junkMenu.isEmpty()) {
+				System.out.println("=== No progress, stopping ===");
 				break;
 			}
 			// Cycle to remove already processed rootMenu items
