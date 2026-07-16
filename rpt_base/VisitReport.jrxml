@@ -274,12 +274,6 @@ ORDER BY doctor_name ASC, v.VST_DATE ASC, p.PAT_NAME ASC]]>
                     + " "
                     + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="0" y="95" width="832" height="1" uuid="3c109ed9-571a-4e10-8f96-b09f7a81e512"/>
-				<graphicElement>
-					<pen lineWidth="1.0"/>
-				</graphicElement>
-			</line>
 			<textField isBlankWhenNull="false">
 				<reportElement x="0" y="100" width="400" height="14" uuid="5cdc24aa-2e90-4987-9f93-7176f078f0c7"/>
 				<textElement>
