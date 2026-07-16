@@ -212,6 +212,8 @@ public class VisitView extends ModalJFrame {
 		setMinimumSize(new Dimension(1000, 600));
 		setResizable(true);
 		pack();
+		Dimension size = getSize();
+		setSize(size.width + 250, size.height);
 		Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		int width = Math.min(getWidth(), screenSize.width - 40);
 		int height = Math.min(getHeight(), screenSize.height - 80);
