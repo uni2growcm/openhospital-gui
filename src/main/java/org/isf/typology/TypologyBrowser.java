@@ -95,8 +95,13 @@ public class TypologyBrowser extends ModalJFrame implements TypologyEdit.Typolog
     private JPanel getFilterPanel() {
         JPanel panel = new JPanel();
 
-        familyFilter = new JComboBox<>(Family.values());
-        familyFilter.insertItemAt(null, 0);
+        familyFilter = new JComboBox<>();
+        familyFilter.addItem(null);
+        for (Family family : Family.values()) {
+            if (manager.isFamilyEnabled(family)) {
+                familyFilter.addItem(family);
+            }
+        }
         familyFilter.setSelectedIndex(0);
 
         searchField = new JTextField(20);
