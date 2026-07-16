@@ -239,7 +239,7 @@ ORDER BY doctor_name ASC, v.VST_DATE ASC, p.PAT_NAME ASC]]>
 				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="482" y="15" width="350" height="12" uuid="d2537501-75df-46d3-a05f-e552b23e4eac"/>
+				<reportElement x="460" y="15" width="350" height="12" uuid="d2537501-75df-46d3-a05f-e552b23e4eac"/>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
