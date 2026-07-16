@@ -400,6 +400,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 				put("maternity.hiv", Boolean.valueOf(GeneralData.HIVMODULEENABLED));
 				put("maternity.familyplanning", Boolean.valueOf(GeneralData.FAMILYPLANNINGMODULEENABLED));
 				put("homevisit", Boolean.valueOf(GeneralData.HOMEVISITMODULEENABLED));
+				put("staff", Boolean.valueOf(GeneralData.HOMEVISITMODULEENABLED));
 				put("partners", Boolean.valueOf(GeneralData.PARTNERSMODULEENABLED));
 				put("command", Boolean.valueOf(GeneralData.COMMANDMODULEENABLED));
 				put("maternity", Boolean.valueOf(GeneralData.MATERNITYMODULEENABLED));

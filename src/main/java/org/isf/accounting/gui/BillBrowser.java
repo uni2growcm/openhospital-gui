@@ -214,8 +214,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return GeneralData.ALLOWBILLGUARANTOR;
 	}
 
-	public boolean hasBillPartner(){
-		return GeneralData.ALLOWBILLPARTNER;
+	public boolean hasBillPartner() {
+		return GeneralData.ALLOWBILLPARTNER && GeneralData.PARTNERSMODULEENABLED;
 	}
 
 	public BillBrowser() {

@@ -123,12 +123,19 @@ public class TypologyEdit extends JDialog {
 
     private JComboBox<Family> getFamilyCombo() {
         if (familyCombo == null) {
-            familyCombo = new JComboBox<>(Family.values());
+            familyCombo = new JComboBox<>();
+
+            for (Family family : Family.values()) {
+                if (manager.isFamilyEnabled(family)) {
+                    familyCombo.addItem(family);
+                }
+            }
 
             if (!insert && typology.getFamily() != null) {
                 familyCombo.setSelectedItem(typology.getFamily());
-            } else {
-                familyCombo.setSelectedItem(Family.DELIVERYTYPE);
+                familyCombo.setEnabled(false);
+            } else if (familyCombo.getItemCount() > 0) {
+                familyCombo.setSelectedIndex(0);
             }
         }
         return familyCombo;
