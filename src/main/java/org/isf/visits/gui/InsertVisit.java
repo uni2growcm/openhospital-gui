@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -28,6 +28,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.*;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -44,6 +46,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
+import javax.swing.text.NumberFormatter;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.hospital.manager.HospitalBrowsingManager;
@@ -103,7 +106,8 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private Ward ward;
 	private Visit visit;
 	private boolean insert;
-	
+	private boolean saved = false;
+
 	/*
 	 * Managers
 	 */
@@ -111,22 +115,70 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private HospitalBrowsingManager hospitalBrowsingManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
 	private VisitManager visitManager = Context.getApplicationContext().getBean(VisitManager.class);
 	private List<Ward> wardList = new ArrayList<>();
-	
-	public InsertVisit(JFrame owner, Ward ward, Patient patient, boolean insert) {
-		super(owner, true);
+
+	public InsertVisit(Window owner, Ward ward, Patient patient, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		this.patientSelected = patient;
 		this.ward = ward;
 		this.insert = insert;
 		initComponents();
 	}
 
-	public InsertVisit(JFrame owner, LocalDateTime date, Ward ward, Patient patient, boolean insert) {
-		super(owner, true);
+	public InsertVisit(Window owner, LocalDateTime date, Ward ward, Patient patient, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		this.patientSelected = patient;
 		this.visitDate = date;
 		this.ward = ward;
 		this.insert = insert;
 		initComponents();
+	}
+
+	public InsertVisit(Window owner, Visit visit, boolean insert) {
+		super(owner, ModalityType.APPLICATION_MODAL);
+
+		this.visit = visit;
+		this.insert = insert;
+
+		if (visit != null) {
+			this.patientSelected = visit.getPatient();
+			this.ward = visit.getWard();
+			this.visitDate = visit.getDate();
+		}
+
+		initComponents();
+		if (!insert && visit != null) {
+			loadExistingVisit();
+		}
+	}
+
+	private void loadExistingVisit() {
+		if (visit == null) {
+			return;
+		}
+
+		if (visit.getWard() != null) {
+			selectWardByCode(visit.getWard());
+		}
+
+		serviceField.setText(visit.getService() != null ? visit.getService() : "");
+		if (visit.getDuration() > 0) {
+			jSpinnerDur.setValue(visit.getDuration());
+		}
+	}
+
+	private void selectWardByCode(Ward visitWard) {
+		if (visitWard == null || visitWard.getCode() == null) {
+			return;
+		}
+
+		for (int i = 0; i < wardBox.getItemCount(); i++) {
+			Ward item = wardBox.getItemAt(i);
+
+			if (item != null && item.getCode() != null && item.getCode().equalsIgnoreCase(visitWard.getCode())) {
+				wardBox.setSelectedIndex(i);
+				return;
+			}
+		}
 	}
 
 	private void initComponents() {
@@ -196,6 +248,10 @@ public class InsertVisit extends JDialog implements SelectionListener {
 		return patientParamsPanel;
 	}
 
+	public boolean isSaved() {
+		return saved;
+	}
+
 	private JPanel getWardPanel() {
 		if (wardPanel == null) {
 			wardPanel = new JPanel();
@@ -216,22 +272,77 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	private JComboBox<Ward> getWardBox() {
 		JComboBox<Ward> newWardBox = new JComboBox<>();
 		newWardBox.addItem(null);
+
 		for (Ward aWard : wardList) {
+			if (!isVisitWard(aWard)) {
+				continue;
+			}
+
 			newWardBox.addItem(aWard);
-			if (this.ward != null && this.ward.getCode().equalsIgnoreCase(aWard.getCode())) {
+
+			if (this.ward != null
+					&& this.ward.getCode() != null
+					&& aWard.getCode() != null
+					&& this.ward.getCode().equalsIgnoreCase(aWard.getCode())) {
 				newWardBox.setSelectedItem(aWard);
 			}
 		}
+
 		newWardBox.addActionListener(actionEvent -> {
-			ward = getSelectedWard();
-			if (ward != null) {
-				jSpinnerDur.setModel(new SpinnerNumberModel(getDuration(), SPINNER_MIN_QTY, null, SPINNER_STEP_QTY));
+			Object selectedItem = newWardBox.getSelectedItem();
+
+			ward = selectedItem instanceof Ward
+					? (Ward) selectedItem
+					: null;
+
+			if (ward == null) {
+				return;
+			}
+
+			int duration = getDuration();
+
+			if (duration < SPINNER_STEP_QTY) {
+				duration = DEFAULT_DURATION;
+			}
+
+			jSpinnerDur.setModel(new SpinnerNumberModel(
+					duration,
+					SPINNER_STEP_QTY,
+					null,
+					SPINNER_STEP_QTY
+			));
+
+			configureDurationSpinnerEditor();
+
+			if (dateViPanel != null && visitDateChooser != null) {
 				dateViPanel.remove(visitDateChooser);
-				visitDateChooser = new GoodDateTimeVisitChooser(visitDate, getDuration());
+
+				visitDateChooser = new GoodDateTimeVisitChooser(
+						visitDate,
+						duration
+				);
+
 				dateViPanel.add(visitDateChooser);
+				dateViPanel.revalidate();
+				dateViPanel.repaint();
+				pack();
 			}
 		});
+
 		return newWardBox;
+	}
+
+	private void configureDurationSpinnerEditor() {
+		JSpinner.NumberEditor editor = new JSpinner.NumberEditor(jSpinnerDur, "#");
+		JFormattedTextField textField = editor.getTextField();
+
+		NumberFormatter formatter = (NumberFormatter) textField.getFormatter();
+		formatter.setAllowsInvalid(false);
+		formatter.setCommitsOnValidEdit(true);
+		formatter.setMinimum(SPINNER_STEP_QTY);
+
+		textField.setHorizontalAlignment(JTextField.RIGHT);
+		jSpinnerDur.setEditor(editor);
 	}
 
 	private JPanel getServicePanel() {
@@ -268,11 +379,27 @@ public class InsertVisit extends JDialog implements SelectionListener {
 	}
 
 	private JSpinner getSpinnerQty() {
-		jSpinnerDur = new JSpinner(new SpinnerNumberModel(getDuration(), SPINNER_STEP_QTY, null, SPINNER_STEP_QTY));
+		int duration = getDuration();
+
+		if (duration < SPINNER_STEP_QTY) {
+			duration = DEFAULT_DURATION;
+		}
+
+		jSpinnerDur = new JSpinner(
+				new SpinnerNumberModel(
+						duration,
+						SPINNER_STEP_QTY,
+						null,
+						SPINNER_STEP_QTY
+				)
+		);
+
+		configureDurationSpinnerEditor();
+
 		jSpinnerDur.setFont(new Font("Dialog", Font.BOLD, 14));
 		jSpinnerDur.setAlignmentX(Component.LEFT_ALIGNMENT);
 		jSpinnerDur.setPreferredSize(new Dimension(PREFERRED_SPINNER_WIDTH, ONE_LINE_COMPONENTS_HEIGHT));
-		jSpinnerDur.setMaximumSize(new Dimension(Short.MAX_VALUE, ONE_LINE_COMPONENTS_HEIGHT));
+
 		return jSpinnerDur;
 	}
 
@@ -332,8 +459,7 @@ public class InsertVisit extends JDialog implements SelectionListener {
 					MessageDialog.error(this, "angal.visit.pleasechooseaward.msg");
 					return;
 				}
-
-				Visit thisVisit = new Visit();
+				Visit thisVisit = insert ? new Visit() : visit;
 				thisVisit.setPatient(patientSelected);
 				thisVisit.setWard(selectedWard);
 				thisVisit.setDate(date);
@@ -343,13 +469,13 @@ public class InsertVisit extends JDialog implements SelectionListener {
 					if (insert) {
 						visit = visitManager.newVisit(thisVisit);
 					} else {
-						visitManager.validateVisit(thisVisit);
-						visit = thisVisit;
+						visit = visitManager.updateVisit(thisVisit);
 					}
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e, this);
 					return;
 				}
+				saved = true;
 				dispose();
 			});
 		}
@@ -420,6 +546,24 @@ public class InsertVisit extends JDialog implements SelectionListener {
 
 	public Visit getVisit() {
 		return visit;
+	}
+
+	private boolean isVisitWard(Ward ward) {
+		if (ward == null) {
+			return false;
+		}
+
+		String code = ward.getCode() != null
+				? ward.getCode().trim().toLowerCase()
+				: "";
+
+		String description = ward.getDescription() != null
+				? ward.getDescription().trim().toLowerCase()
+				: "";
+
+		return !code.contains("inventory")
+				&& !description.contains("inventory")
+				&& !code.equals("inv");
 	}
 
 }
