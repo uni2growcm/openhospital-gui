@@ -45,6 +45,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
@@ -77,6 +78,9 @@ class PrivilegeTree extends JDialog {
 		List<UserMenuItem> rootMenu = null;
 		try {
 			rootMenu = userBrowsingManager.getGroupMenu(new UserGroup("admin", ""));
+			if (rootMenu != null) {
+				rootMenu.removeIf(item -> !isMenuVisible(item));
+			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -174,6 +178,67 @@ class PrivilegeTree extends JDialog {
 
 		umi.setActive(!umi.isActive());
 		tree.expandPath(selPath);
+	}
+
+	private boolean isMenuVisible(UserMenuItem item) {
+		if (item == null || item.getCode() == null) {
+			return true;
+		}
+
+		String code = item.getCode().toLowerCase();
+
+		if (code.equals("maternity.hiv")
+				|| code.startsWith("hiv.")) {
+
+			return GeneralData.MATERNITYMODULEENABLED
+					&& GeneralData.HIVMODULEENABLED;
+		}
+
+		if (code.equals("maternity.familyplanning")
+				|| code.startsWith("familyplanning.")) {
+
+			return GeneralData.MATERNITYMODULEENABLED
+					&& GeneralData.FAMILYPLANNINGMODULEENABLED;
+		}
+
+		if (code.equals("maternity")
+				|| code.equals("maternity.cpn")
+				|| code.startsWith("maternity.")) {
+
+			return GeneralData.MATERNITYMODULEENABLED;
+		}
+
+		if (code.equals("tuberculosis")
+				|| code.startsWith("tuberculosis.")) {
+
+			return GeneralData.TUBERCULOSISMODULEENABLED;
+		}
+
+		if (code.equals("partner")
+				|| code.equals("partners")
+				|| code.startsWith("partner.")
+				|| code.startsWith("partners.")) {
+
+			return GeneralData.PARTNERSMODULEENABLED;
+		}
+
+		if (code.equals("command")
+				|| code.equals("commands")
+				|| code.startsWith("command.")
+				|| code.startsWith("commands.")) {
+
+			return GeneralData.COMMANDMODULEENABLED;
+		}
+
+		if (code.equals("homevisit")
+				|| code.startsWith("homevisit.")
+				|| code.equals("staff")
+				|| code.startsWith("staff.")) {
+
+			return GeneralData.HOMEVISITMODULEENABLED;
+		}
+
+		return true;
 	}
 
 	public void addButton() {
