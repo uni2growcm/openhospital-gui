@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -143,7 +143,9 @@ public class VisitView extends ModalJFrame {
 	private JPanel todayPanel;
 	private JComboBox<Ward> wardBox;
 	private SpringLayout slVisitParamsPanel;
-	
+	private JButton updateFirstVisitButton;
+	private JButton updateSecondVisitButton;
+
 	private String[] visColumns = { MessageBundle.getMessage("angal.visit.visits") };
 
 	/*
@@ -158,6 +160,7 @@ public class VisitView extends ModalJFrame {
 	private Ward ward;
 	private LocalDateTime dateFirst;
 	private LocalDateTime dateSecond;
+	private JPanel southPanel;
 
 
 	private void initialize() {
@@ -185,9 +188,7 @@ public class VisitView extends ModalJFrame {
 		initialize();
 		initComponents();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setLocationRelativeTo(null);
 		addWindowListener(new FreeMemoryAdapter());
-		this.pack();
 	}
 
 	public VisitView() {
@@ -202,107 +203,135 @@ public class VisitView extends ModalJFrame {
 	private void initComponents() {
 
 		setTitle(MessageBundle.getMessage("angal.visit.worksheet.title"));
-		getContentPane().setLayout(new BorderLayout());
+		getContentPane().setLayout(new BorderLayout(10, 10));
 		getContentPane().add(getNorthPanel(), BorderLayout.NORTH);
 		getContentPane().add(dayCalendar(), BorderLayout.CENTER);
+		getContentPane().add(getSouthPanel(), BorderLayout.SOUTH);
 		showGui(ward != null);
 
-		setPreferredSize(new Dimension(1350, 600));
-		setSize(1350, 600);
-		setResizable(false);
+		setMinimumSize(new Dimension(1000, 600));
+		setResizable(true);
+		pack();
+		Dimension size = getSize();
+		setSize(size.width + 250, size.height);
+		Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+		int width = Math.min(getWidth(), screenSize.width - 40);
+		int height = Math.min(getHeight(), screenSize.height - 80);
+		setSize(Math.max(width, 1000), Math.max(height, 600));
+		setLocationRelativeTo(null);
+	}
+
+	private JPanel getSouthPanel() {
+		if (southPanel == null) {
+			southPanel = new JPanel(new java.awt.FlowLayout( java.awt.FlowLayout.RIGHT, 10, 10));
+			southPanel.add(getCloseButton());
+		}
+
+		return southPanel;
 	}
 
 	private JPanel dayCalendar() {
-		slVisitParamsPanel = new SpringLayout();
-		JPanel visitParamPanel = new JPanel(slVisitParamsPanel);
+		JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		JPanel daysPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+		daysPanel.add(getFirstDayPanel());
+		daysPanel.add(getSecondDayPanel());
 
-		GridBagLayout gbcPanelData = new GridBagLayout();
-		gbcPanelData.columnWidths = new int[] { 20, 20, 20, 0, 0, 0 };
-		gbcPanelData.rowHeights = new int[] { 20, 20, 20, 0, 0, 0, 0, 0 };
-		gbcPanelData.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		gbcPanelData.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		visitParamPanel.setLayout(gbcPanelData);
+		JPanel previousPanel = new JPanel(new GridBagLayout());
+		previousPanel.add(getButtonBack());
 
-		GridBagConstraints gbcButtonBack = new GridBagConstraints();
-		gbcButtonBack.fill = GridBagConstraints.VERTICAL;
-		gbcButtonBack.anchor = GridBagConstraints.WEST;
-		gbcButtonBack.gridy = 1;
-		gbcButtonBack.gridx = 0;
-		visitParamPanel.add(getButtonBack(), gbcButtonBack);
+		JPanel nextPanel = new JPanel(new GridBagLayout());
+		nextPanel.add(getButtonNext());
 
-		GridBagConstraints gbcDatelabel = new GridBagConstraints();
-		gbcDatelabel.fill = GridBagConstraints.VERTICAL;
-		gbcDatelabel.anchor = GridBagConstraints.WEST;
-		gbcDatelabel.gridy = 0;
-		gbcDatelabel.gridx = 1;
-		visitParamPanel.add(getDateFirstDay(), gbcDatelabel);
+		mainPanel.add(previousPanel, BorderLayout.WEST);
+		mainPanel.add(daysPanel, BorderLayout.CENTER);
+		mainPanel.add(nextPanel, BorderLayout.EAST);
 
-		GridBagConstraints gbcDuration = new GridBagConstraints();
-		gbcDuration.fill = GridBagConstraints.VERTICAL;
-		gbcDuration.anchor = GridBagConstraints.WEST;
-		gbcDuration.gridy = 1;
-		gbcDuration.gridx = 1;
-		visitParamPanel.add(getVisitFirstday(), gbcDuration);
+		return mainPanel;
+	}
 
-		GridBagConstraints gbcDateSecond = new GridBagConstraints();
-		gbcDateSecond.fill = GridBagConstraints.VERTICAL;
-		gbcDateSecond.anchor = GridBagConstraints.WEST;
-		gbcDateSecond.gridy = 0;
-		gbcDateSecond.gridx = 2;
-		visitParamPanel.add(getDateSecondDay(), gbcDateSecond);
+	private JPanel getSecondDayPanel() {
+		JPanel panel = new JPanel(new BorderLayout(5, 5));
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
-		GridBagConstraints gbcButtonNext = new GridBagConstraints();
-		gbcButtonNext.fill = GridBagConstraints.VERTICAL;
-		gbcButtonNext.anchor = GridBagConstraints.WEST;
-		gbcButtonNext.gridy = 1;
-		gbcButtonNext.gridx = 3;
-		visitParamPanel.add(getButtonNext(), gbcButtonNext);
+		panel.add(getDateSecondDay(), BorderLayout.NORTH);
+		panel.add(getVisitSecondDay(), BorderLayout.CENTER);
+		panel.add(getTomorrowPanel(), BorderLayout.SOUTH);
 
-		GridBagConstraints gbcSecondDay = new GridBagConstraints();
-		gbcSecondDay.fill = GridBagConstraints.VERTICAL;
-		gbcSecondDay.anchor = GridBagConstraints.WEST;
-		gbcSecondDay.gridy = 1;
-		gbcSecondDay.gridx = 2;
-		visitParamPanel.add(getVisitSecondDay(), gbcSecondDay);
+		return panel;
+	}
 
-		GridBagConstraints gbcToday = new GridBagConstraints();
-		gbcToday.fill = GridBagConstraints.CENTER;
-		gbcToday.anchor = GridBagConstraints.CENTER;
-		gbcToday.gridy = 2;
-		gbcToday.gridx = 1;
-		visitParamPanel.add(getTodayPanel(), gbcToday);
+	private JPanel getFirstDayPanel() {
+		JPanel panel = new JPanel(new BorderLayout(5, 5));
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
-		GridBagConstraints gbcTomorrow = new GridBagConstraints();
-		gbcTomorrow.fill = GridBagConstraints.CENTER;
-		gbcTomorrow.anchor = GridBagConstraints.CENTER;
-		gbcTomorrow.gridy = 2;
-		gbcTomorrow.gridx = 2;
-		visitParamPanel.add(getTomorrowPanel(), gbcTomorrow);
+		panel.add(getDateFirstDay(), BorderLayout.NORTH);
+		panel.add(getVisitFirstday(), BorderLayout.CENTER);
+		panel.add(getTodayPanel(), BorderLayout.SOUTH);
 
-		GridBagConstraints gbcCloseButton = new GridBagConstraints();
-		gbcCloseButton.fill = GridBagConstraints.WEST;
-		gbcToday.anchor = GridBagConstraints.WEST;
-		gbcCloseButton.gridy = 3;
-		gbcCloseButton.gridx = 3;
-		visitParamPanel.add(getCloseButton(), gbcCloseButton);
+		return panel;
+	}
 
-		return visitParamPanel;
-
+	private JScrollPane getVisitSecondDay() {
+		if (jScrollPaneSecondtday == null) {
+			jScrollPaneSecondtday = new JScrollPane();
+			jScrollPaneSecondtday.setViewportView(visitSecondDayPanel());
+			jScrollPaneSecondtday.getViewport().setBackground(Color.WHITE);
+			jScrollPaneSecondtday.setPreferredSize(new Dimension(450, 300));
+			jScrollPaneSecondtday.setMinimumSize(new Dimension(250, 200));
+		}
+		return jScrollPaneSecondtday;
 	}
 
 	private JPanel getTodayPanel() {
-		JPanel firstPanel = new JPanel();
-		firstPanel.add(getAddVisitFirstButton());
-		firstPanel.add(getDeleteFirstVisitButton());
-		firstPanel.add(getPrintTodayButton());
+		JPanel firstPanel = new JPanel(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(3, 3, 3, 3);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		firstPanel.add(getAddVisitFirstButton(), gbc);
+
+		gbc.gridx = 1;
+		firstPanel.add(getUpdateFirstVisitButton(), gbc);
+
+		gbc.gridx = 2;
+		firstPanel.add(getDeleteFirstVisitButton(), gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 3;
+		firstPanel.add(getPrintTodayButton(), gbc);
+
 		return firstPanel;
 	}
 
 	private JPanel getTomorrowPanel() {
-		JPanel secondPanel = new JPanel();
-		secondPanel.add(getAddVisitSecondButton());
-		secondPanel.add(getDeleteSecondVisitButton());
-		secondPanel.add(getPrintTomorrowButton());
+		JPanel secondPanel = new JPanel(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(3, 3, 3, 3);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		secondPanel.add(getAddVisitSecondButton(), gbc);
+
+		gbc.gridx = 1;
+		secondPanel.add(getUpdateSecondVisitButton(), gbc);
+
+		gbc.gridx = 2;
+		secondPanel.add(getDeleteSecondVisitButton(), gbc);
+
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 3;
+		secondPanel.add(getPrintTomorrowButton(), gbc);
+
 		return secondPanel;
 	}
 
@@ -443,7 +472,8 @@ public class VisitView extends ModalJFrame {
 			jScrollPaneFirstday.setAlignmentY(Component.TOP_ALIGNMENT);
 			jScrollPaneFirstday.getViewport().setBackground(Color.WHITE);
 
-			jScrollPaneFirstday.setMinimumSize(new Dimension(500, 400));
+			jScrollPaneFirstday.setPreferredSize(new Dimension(450, 350));
+			jScrollPaneFirstday.setMinimumSize(new Dimension(300, 250));
 		}
 		return jScrollPaneFirstday;
 	}
@@ -462,17 +492,14 @@ public class VisitView extends ModalJFrame {
 		return jTableFirst;
 	}
 
-	private JScrollPane getVisitSecondDay() {
-		if (jScrollPaneSecondtday == null) {
-			jScrollPaneSecondtday = new JScrollPane();
-			jScrollPaneSecondtday.getViewport().setBackground(Color.WHITE);
-			slVisitParamsPanel.putConstraint(SpringLayout.NORTH, jScrollPaneSecondtday, 0, SpringLayout.NORTH, getVisitFirstday());
-			slVisitParamsPanel.putConstraint(SpringLayout.EAST, jScrollPaneSecondtday, -104, SpringLayout.WEST, getVisitFirstday());
-			jScrollPaneSecondtday.setViewportView(visitSecondDayPanel());
-			jScrollPaneSecondtday.setAlignmentY(Component.TOP_ALIGNMENT);
-			jScrollPaneSecondtday.setMinimumSize(new Dimension(500, 400));
+	private boolean isVisitWard(Ward ward) {
+		if (ward == null) {
+			return false;
 		}
-		return jScrollPaneSecondtday;
+		String code = ward.getCode() != null ? ward.getCode().trim().toLowerCase() : "";
+		String description = ward.getDescription() != null ? ward.getDescription().trim().toLowerCase() : "";
+
+		return !code.contains("inventory") && !description.contains("inventory") && !code.equals("inv");
 	}
 
 	private JTable visitSecondDayPanel() {
@@ -798,11 +825,12 @@ public class VisitView extends ModalJFrame {
 			Ward selectAWard = new Ward("", SELECT_A_WARD, "", "", "", -1, -1, -1, false, false);
 			wardBox.addItem(selectAWard);
 			for (Ward aWard : wardList) {
+				if (!isVisitWard(aWard)) {
+					continue;
+				}
 				wardBox.addItem(aWard);
-				if (ward != null) {
-					if (ward.getCode().equalsIgnoreCase(aWard.getCode())) {
-						wardBox.setSelectedItem(aWard);
-					}
+				if (ward != null && ward.getCode() != null && ward.getCode().equalsIgnoreCase(aWard.getCode())) {
+					wardBox.setSelectedItem(aWard);
 				}
 			}
 
@@ -845,14 +873,70 @@ public class VisitView extends ModalJFrame {
 		getDeleteFirstVisitButton().setVisible(show);
 		getVisitDateChooserPanel().setVisible(show);
 		getTodayVisit().setVisible(show);
+		getUpdateFirstVisitButton().setVisible(show);
+		getUpdateSecondVisitButton().setVisible(show);
 
-		// call repack, as we are showing more components
-		this.pack();
-		this.setLocationRelativeTo(null);
+		revalidate();
+		repaint();
 	}
 
 	public Ward getWard() {
 		return (Ward) wardBox.getSelectedItem();
 	}
 
+	private JButton getUpdateFirstVisitButton() {
+		if (updateFirstVisitButton == null) {
+			updateFirstVisitButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
+
+			updateFirstVisitButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
+			updateFirstVisitButton.addActionListener(actionEvent -> {
+				int row = jTableFirst.getSelectedRow();
+
+				if (row < 0) {
+					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+
+				Visit selectedVisit = (Visit) jTableFirst.getModel().getValueAt(row, -1);
+				editVisit(selectedVisit);
+			});
+		}
+		return updateFirstVisitButton;
+	}
+
+	private JButton getUpdateSecondVisitButton() {
+		if (updateSecondVisitButton == null) {
+			updateSecondVisitButton = new JButton(MessageBundle.getMessage("angal.common.edit.btn"));
+			updateSecondVisitButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
+			updateSecondVisitButton.addActionListener(actionEvent -> {
+				int row = jTableSecond.getSelectedRow();
+
+				if (row < 0) {
+					MessageDialog.info(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+
+				Visit selectedVisit = (Visit) jTableSecond.getModel().getValueAt(row, -1);
+				editVisit(selectedVisit);
+			});
+		}
+
+		return updateSecondVisitButton;
+	}
+
+	private void editVisit(Visit selectedVisit) {
+		if (selectedVisit == null) {
+			return;
+		}
+
+		Ward currentWard = ward;
+		InsertVisit editDialog = new InsertVisit(this, selectedVisit, false);
+		editDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		editDialog.setVisible(true);
+		if (editDialog.isSaved()) {
+			loadDataForWard(currentWard);
+			updatePanels();
+		}
+		editDialog.dispose();
+	}
 }
