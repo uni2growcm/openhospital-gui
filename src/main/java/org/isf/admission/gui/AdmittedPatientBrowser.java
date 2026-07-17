@@ -37,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,7 @@ import org.isf.lab.gui.LabNew;
 import org.isf.lab.model.Laboratory;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.opd.gui.OpdEditExtended;
 import org.isf.opd.model.Opd;
 import org.isf.partner.manager.PartnerBrowserManager;
@@ -106,12 +108,15 @@ import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportVisit;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.VisitReportDialog;
+import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
@@ -759,6 +764,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		if (MainMenu.checkUserGrants("btnadmtherapy")) {
 			buttonPanel.add(getButtonTherapy());
 		}
+		if (MainMenu.checkUserGrants("btnadmadmvisitsrpt")) {
+			buttonPanel.add(getButtonReport());
+		}
 		if (GeneralData.MERGEFUNCTION && MainMenu.checkUserGrants("btnadmmer")) {
 			buttonPanel.add(getButtonMerge());
 		}
@@ -1062,6 +1070,37 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		});
 		return buttonTherapy;
+	}
+
+	private JButton getButtonReport() {
+		JButton buttonReport =
+				new JButton(MessageBundle.getMessage("angal.common.visit.report.btn"));
+
+		buttonReport.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
+		buttonReport.addActionListener(actionEvent -> generateVisitReport());
+
+		return buttonReport;
+	}
+
+	private void generateVisitReport() {
+		String currentUser = UserBrowsingManager.getCurrentUser();
+
+		boolean administrator = currentUser != null && currentUser.equalsIgnoreCase("admin");
+
+		VisitReportDialog dialog = new VisitReportDialog(this, administrator);
+
+		dialog.setOnOk(() -> {
+			LocalDate fromDate = dialog.getDateFrom().toLocalDate();
+
+			LocalDate toDate = dialog.getDateTo().toLocalDate();
+
+			boolean allUsers = dialog.isAllUsersSelected();
+
+			List<String> selectedUserIds = dialog.getSelectedUserIds();
+
+			new GenericReportVisit(fromDate, toDate, allUsers, selectedUserIds, "VisitReport");
+		});
+		dialog.showAsModal(this);
 	}
 
 	private JButton getButtonMerge() {
