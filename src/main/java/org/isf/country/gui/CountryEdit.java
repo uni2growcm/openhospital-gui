@@ -24,6 +24,7 @@ package org.isf.country.gui;
 import org.isf.country.manager.CountryBrowserManager;
 import org.isf.country.model.Country;
 import org.isf.generaldata.MessageBundle;
+import org.isf.utils.exception.OHDataIntegrityViolationException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -200,7 +201,7 @@ public class CountryEdit extends ModalJFrame {
                     throws BadLocationException {
                 if (string == null) return;
 
-                if (string.matches("[0-9()]*")) {
+                if (string.matches("[0-9()+]*")) {
                     super.insertString(fb, offset, string, attr);
                 }
             }
@@ -210,7 +211,7 @@ public class CountryEdit extends ModalJFrame {
                     throws BadLocationException {
                 if (text == null) return;
 
-                if (text.matches("[0-9()]*")) {
+                if (text.matches("[0-9()+]*")) {
                     super.replace(fb, offset, length, text, attrs);
                 }
             }
@@ -242,12 +243,28 @@ public class CountryEdit extends ModalJFrame {
 
         try {
 
-            if (country == null || country.getId() == 0) {
+            Integer currentCountryId = country == null ? null : country.getId();
 
-                Optional<Country> existingCountry = manager.getCountryByIsoCode(code);
-                if (existingCountry.isPresent()) {
-                    MessageDialog.error(this, MessageBundle.formatMessage("angal.country.isocode.exists.msg", code));
-                    codeField.requestFocus();
+            Optional<Country> existingIsoCode = manager.getCountryByIsoCode(code);
+            if (existingIsoCode.isPresent()
+                    && (currentCountryId == null || existingIsoCode.get().getId() != currentCountryId)) {
+                MessageDialog.error(this, MessageBundle.formatMessage("angal.country.isocode.exists.msg", code));
+                codeField.requestFocus();
+                return;
+            }
+            Optional<Country> existingName = manager.getCountryByName(name);
+            if (existingName.isPresent()
+                    && (currentCountryId == null || existingName.get().getId() != currentCountryId)) {
+                MessageDialog.error(this, MessageBundle.formatMessage("angal.country.name.exists.msg", name));
+                nameField.requestFocus();
+                return;
+            }
+            if (!phoneCode.isEmpty()) {
+                Optional<Country> existingPhoneCode = manager.getCountryByPhoneCode(phoneCode);
+                if (existingPhoneCode.isPresent()
+                        && (currentCountryId == null || existingPhoneCode.get().getId() != currentCountryId)) {
+                    MessageDialog.error(this, MessageBundle.formatMessage("angal.country.phonecode.exists.msg", phoneCode));
+                    phoneCodeField.requestFocus();
                     return;
                 }
                 country = new Country();
@@ -266,12 +283,61 @@ public class CountryEdit extends ModalJFrame {
             country.setPhoneCode(phoneCode);
             manager.saveCountry(country);
 
-            if (onSaveCallback != null) {
-                onSaveCallback.accept(country);
+            try {
+                manager.saveCountry(country);
+            } catch (OHDataIntegrityViolationException e) {
+                showDuplicateCountryError(e, code, name, phoneCode);
+                return;
+            } catch (RuntimeException e) {
+                showDuplicateCountryError(e, code, name, phoneCode);
+                return;
             }
-            dispose();
         } catch (OHServiceException e) {
+            MessageDialog.showExceptions(e);
+            return;
+        }
+        if (onSaveCallback!=null){
+            onSaveCallback.accept(country);
+        }
+        dispose();
+    }
+    private void showDuplicateCountryError(Throwable throwable, String code, String name, String phoneCode) {
+        String message = getRootMessage(throwable);
+
+        if (containsConstraint(message, "uk_country_phone_code")) {
+            MessageDialog.error(this, MessageBundle.formatMessage("angal.country.phonecode.exists.msg", phoneCode));
+            phoneCodeField.requestFocus();
+            return;
+        }
+        if (containsConstraint(message, "uk_country_name")) {
+            MessageDialog.error(this, MessageBundle.formatMessage("angal.country.name.exists.msg", name));
+            nameField.requestFocus();
+            return;
+        }
+        if (containsConstraint(message, "uk_country_iso_code")) {
+            MessageDialog.error(this, MessageBundle.formatMessage("angal.country.isocode.exists.msg", code));
+            codeField.requestFocus();
+            return;
+        }
+        if (throwable instanceof OHServiceException ohServiceException) {
+            MessageDialog.showExceptions(ohServiceException);
+        } else {
             MessageDialog.error(this, MessageBundle.getMessage("angal.country.save.error.msg"));
         }
+    }
+    private boolean containsConstraint(String message, String constraintName) {
+        return message != null && message.contains(constraintName);
+    }
+
+    private String getRootMessage(Throwable throwable) {
+        Throwable current = throwable;
+        String message = null;
+        while (current != null) {
+            if (current.getMessage() != null && !current.getMessage().isBlank()) {
+                message = current.getMessage();
+            }
+            current = current.getCause();
+        }
+        return message;
     }
 }
