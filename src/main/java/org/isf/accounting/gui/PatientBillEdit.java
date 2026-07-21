@@ -3735,7 +3735,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 				return payItems.get(r);
 			}
 			if (c == 0) {
-				return formatDateTime(payItems.get(r).getDate());
+				BillPayments payment = payItems.get(r);
+
+				String paymentUser = payment.getUser();
+
+				return formatDateTime(payment.getDate())
+						+ (paymentUser != null && !paymentUser.isBlank()
+						? " [" + paymentUser + "]"
+						: "");
 			}
 			if (c == 1) {
 				return payItems.get(r).getAmount();
