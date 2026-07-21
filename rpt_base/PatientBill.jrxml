@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PatientBill" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="PatientBill" whenResourceMissingType="Key" uuid="357797de-bc7b-4785-bebc-f9faf3a06ad3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="oh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="rpt_base/DataAdapter.jrdax"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -408,6 +408,12 @@ WHERE BLL_ID = $P{billID}]]>
 		</band>
 	</detail>
 	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
 		<band height="345" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField-11" x="460" y="0" width="75" height="25" uuid="f14a0375-8ced-48b0-bb28-07f9da8caeca"/>
@@ -436,7 +442,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textFieldExpression><![CDATA[$R{Total}+":"]]></textFieldExpression>
 			</textField>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-1" x="0" y="63" width="535" height="120" uuid="8528524f-1368-4760-b161-da2a1b763eca"/>
+				<reportElement key="subreport-1" positionType="Float" stretchType="ContainerHeight" x="0" y="63" width="535" height="120" isRemoveLineWhenBlank="true" uuid="8528524f-1368-4760-b161-da2a1b763eca"/>
 				<subreportParameter name="billID">
 					<subreportParameterExpression><![CDATA[$P{billID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -444,7 +450,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "PatientBillPayments.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement x="0" y="185" width="535" height="30" uuid="32f4dc01-383f-4c7b-a96c-f2e02cc5d129"/>
+				<reportElement positionType="Float" x="0" y="185" width="535" height="30" isRemoveLineWhenBlank="true" uuid="32f4dc01-383f-4c7b-a96c-f2e02cc5d129"/>
 				<subreportParameter name="billID">
 					<subreportParameterExpression><![CDATA[$P{billID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -452,11 +458,5 @@ WHERE BLL_ID = $P{billID}]]>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "PatientBillBalance.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-	</columnFooter>
-	<pageFooter>
-		<band splitType="Stretch"/>
-	</pageFooter>
-	<summary>
-		<band splitType="Stretch"/>
 	</summary>
 </jasperReport>

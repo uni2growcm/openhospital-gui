@@ -522,6 +522,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+    private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -3381,8 +3382,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 continue;
             }
             String desc = medicalWard.getMedical().getDescription();
-            if (desc.equals(price.getDesc()) && medicalWard.getQty() >= qty) {
-                return true;
+            try {
+                if (desc.equals(price.getDesc()) && movWardBrowserManager.getTotalWardQuantity(medicalWard.getId().getWard().getCode(), medicalWard.getId().getMedical().getCode()) >= qty) {
+                    return true;
+                }
+            } catch (OHServiceException e) {
+                throw new RuntimeException(e);
             }
         }
         return false;
@@ -3735,7 +3740,14 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 				return payItems.get(r);
 			}
 			if (c == 0) {
-				return formatDateTime(payItems.get(r).getDate());
+				BillPayments payment = payItems.get(r);
+
+				String paymentUser = payment.getUser();
+
+				return formatDateTime(payment.getDate())
+						+ (paymentUser != null && !paymentUser.isBlank()
+						? " [" + paymentUser + "]"
+						: "");
 			}
 			if (c == 1) {
 				return payItems.get(r).getAmount();
