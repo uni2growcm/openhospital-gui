@@ -3375,17 +3375,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
     private boolean containPrice(Price price, double qty) {
         if (price == null || medWardList == null || medWardList.isEmpty()) return false;
-
+		Double totalQty = 0.0;
         for (MedicalWard medicalWard : medWardList) {
             if (medicalWard == null || medicalWard.getMedical() == null || medicalWard.getMedical().getDescription() == null) {
                 continue;
             }
             String desc = medicalWard.getMedical().getDescription();
-            if (desc.equals(price.getDesc()) && medicalWard.getQty() >= qty) {
-                return true;
+            if (desc.equals(price.getDesc())) {
+                totalQty = totalQty + medicalWard.getQty();
             }
         }
-        return false;
+
+        return totalQty >= qty;
     }
 
     private void searchItem() {
