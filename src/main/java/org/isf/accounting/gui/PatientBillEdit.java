@@ -522,6 +522,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+    private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -3375,18 +3376,21 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
     private boolean containPrice(Price price, double qty) {
         if (price == null || medWardList == null || medWardList.isEmpty()) return false;
-		Double totalQty = 0.0;
+
         for (MedicalWard medicalWard : medWardList) {
             if (medicalWard == null || medicalWard.getMedical() == null || medicalWard.getMedical().getDescription() == null) {
                 continue;
             }
             String desc = medicalWard.getMedical().getDescription();
-            if (desc.equals(price.getDesc())) {
-                totalQty = totalQty + medicalWard.getQty();
+            try {
+                if (desc.equals(price.getDesc()) && movWardBrowserManager.getTotalWardQuantity(medicalWard.getId().getWard().getCode(), medicalWard.getId().getMedical().getCode()) > qty) {
+                    return true;
+                }
+            } catch (OHServiceException e) {
+                throw new RuntimeException(e);
             }
         }
-
-        return totalQty >= qty;
+        return false;
     }
 
     private void searchItem() {
