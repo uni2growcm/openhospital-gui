@@ -634,17 +634,27 @@ function download_file ($download_url,$download_file) {
 function create_desktop_shortcut {
 	Write-Host "Creating/updating OH shortcut on Desktop..."
 	
+	$choice = Read-Host "Hide Windows console? (y/n) [y]"
+
 	$WshShell = New-Object -comObject WScript.Shell
 
 	#$Shortcut = $WshShell.CreateShortcut("$env:ProgramData\Microsoft\Windows\Start Menu\Programs\OpenHospital.lnk")
 
 	$Shortcut = $WshShell.CreateShortcut("$Home\Desktop\OpenHospital.lnk")
-	$Shortcut.TargetPath = "$POWERSHELL_EXE" # $SCRIPT_DIR\$SCRIPT_NAME"
-	$Shortcut.Arguments = "-ExecutionPolicy Bypass $SCRIPT_DIR\$SCRIPT_NAME -interactive off -mode $OH_MODE -lang $OH_LANGUAGE"
 	$Shortcut.WorkingDirectory = "$OH_PATH"
 	$ShortCut.IconLocation = "$OH_PATH\oh.ico"
+
+	if ( "$choice" -eq "" -or "$choice" -eq "y" ) {
+		$Shortcut.TargetPath = "$POWERSHELL_EXE"
+		$Shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass `"$SCRIPT_DIR\oh_start.ps1`" -mode $OH_MODE -lang $OH_LANGUAGE"
+		Write-Host "Done! (hidden console - output logged to startup.log)"
+	}
+	else {
+		$Shortcut.TargetPath = "$POWERSHELL_EXE"
+		$Shortcut.Arguments = "-ExecutionPolicy Bypass $SCRIPT_DIR\$SCRIPT_NAME -interactive off -mode $OH_MODE -lang $OH_LANGUAGE"
+		Write-Host "Done!"
+	}
 	$Shortcut.Save()
-	Write-Host "Done!"
 }
 
 ###################################################################
@@ -2020,5 +2030,5 @@ else {
 
 # Final exit
 Write-Host "Done!"
-Read-Host
+if ( $INTERACTIVE_MODE -eq "on" ) { Read-Host }
 exit 0

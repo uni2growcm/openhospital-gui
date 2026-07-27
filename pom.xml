@@ -176,8 +176,9 @@
 								<resource>
 									<directory>${project.basedir}</directory>
 									<include>ohmac.*</include>
-									<include>oh.*</include>
-									<include>README.md</include>
+								<include>oh.*</include>
+								<include>oh_start.*</include>
+								<include>README.md</include>
 								</resource>
 								<resource>
 									<directory>../openhospital-core</directory>

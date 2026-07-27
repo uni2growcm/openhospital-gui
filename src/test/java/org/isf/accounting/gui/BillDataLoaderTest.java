@@ -59,6 +59,9 @@ class BillDataLoaderTest {
     @Mock
     private PriceListManager priceListManager;
 
+	@Mock
+	private MovWardBrowserManager movWardBrowserManager;
+
     @Mock
     private MovWardBrowserManager mvtManager;
 
@@ -90,7 +93,8 @@ class BillDataLoaderTest {
 				movStockInsertingManager,
 				therapyManager,
 				labManager,
-				operationRowManager) {
+				operationRowManager,
+				movWardBrowserManager) {
 			@Override
 			public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
 				return new ArrayList<>(Arrays.asList(
@@ -125,7 +129,7 @@ class BillDataLoaderTest {
 						new BillBrowserManager(
 							accountingIoOperations, mvtManager, priceListManager,
 							medicalBrowsingManager, movStockInsertingManager,
-							therapyManager, labManager, operationRowManager
+							therapyManager, labManager, operationRowManager, movWardBrowserManager
 						));
 
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
@@ -143,7 +147,7 @@ class BillDataLoaderTest {
 				movStockInsertingManager,
 				therapyManager,
 				labManager,
-				operationRowManager);
+				operationRowManager, movWardBrowserManager);
 
 		BillDataLoader billDataLoader = new BillDataLoader(
 				Arrays.asList(
@@ -170,7 +174,7 @@ class BillDataLoaderTest {
 				movStockInsertingManager,
 				therapyManager,
 				labManager,
-				operationRowManager);
+				operationRowManager, movWardBrowserManager);
 
 		BillDataLoader billDataLoader = new BillDataLoader(
 				Arrays.asList(
