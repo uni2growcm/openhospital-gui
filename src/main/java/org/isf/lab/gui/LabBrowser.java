@@ -24,6 +24,7 @@ package org.isf.lab.gui;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -86,6 +88,9 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	@Override
 	public void labInserted() {
 		jTable.setModel(new LabBrowsingModel());
+		if (withPaid) {
+			updateTotals();
+		}
 	}
 
 	@Override
@@ -120,14 +125,39 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			MessageBundle.getMessage("angal.lab.prescriber.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.result.txt").toUpperCase()
 	};
+	private String[] pColumnsWithPaid = {
+			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.patient.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.exam.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.lab.prescriber.col").toUpperCase(),
+			MessageBundle.getMessage("angal.common.result.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.lab.paid").toUpperCase()
+	};
 	private JComboBox<String> comboResultFilter;
 	private static final String FILTER_ALL = MessageBundle.getMessage("angal.lab.result.filter.all");
 	private static final String FILTER_NON_EMPTY = MessageBundle.getMessage("angal.lab.result.filter.nonempty");
 	private static final String FILTER_EMPTY = MessageBundle.getMessage("angal.lab.result.filter.empty");
+	private static final String FILTER_PAID_SELECT = MessageBundle.getMessage("angal.laboratory.selectpaidstatus");
+	private static final String FILTER_PAID = MessageBundle.getMessage("angal.laboratory.paid");
+	private static final String FILTER_NOT_PAID = MessageBundle.getMessage("angal.laboratory.notpaid");
+	private static final String FILTER_NOT_FACTURED = MessageBundle.getMessage("angal.lab.notfactured");
 	private boolean[] columnsResizable = {false, true, true, true, false};
+	private boolean[] columnsResizableWithPaid = {false, true, true, true, false, false};
 	private int[] pColumnWidth = {150, 200, 200, 150, 200};
+	private int[] pColumnWidthWithPaid = {150, 200, 200, 150, 200, 90};
 	private int[] maxWidth = {150, 200, 200, 150, 200};
+	private int[] maxWidthWithPaid = {150, 200, 200, 150, 200, 90};
 	private boolean[] columnsVisible = { true, GeneralData.LABEXTENDED, true, true, true};
+	private boolean[] columnsVisibleWithPaid = { true, GeneralData.LABEXTENDED, true, true, true, true};
+	private JComboBox<String> paidComboBox;
+	private JPanel panelTotal;
+	private JLabel totalPaidLabel;
+	private JLabel totalPaidValueLabel;
+	private JLabel totalNotPaidLabel;
+	private JLabel totalNotPaidValueLabel;
+	private JLabel totalNotFacturedLabel;
+	private JLabel totalNotFacturedValueLabel;
+	private boolean withPaid = GeneralData.CREATELABORATORYAUTO;
 	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 	private PatientBrowserManager patManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private PrintManager printManager = Context.getApplicationContext().getBean(PrintManager.class);
@@ -182,19 +212,24 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
 			jButtonPanel = new JPanel();
+			jButtonPanel.setLayout(new BorderLayout());
+			if (withPaid) {
+				jButtonPanel.add(getPanelTotal(), BorderLayout.NORTH);
+			}
+			JPanel buttonPanel = new JPanel();
 			if (MainMenu.checkUserGrants("btnlaboratorynew")) {
-				jButtonPanel.add(getButtonNew(), null);
+				buttonPanel.add(getButtonNew(), null);
 			}
 			if (MainMenu.checkUserGrants("btnlaboratoryedit")) {
-				jButtonPanel.add(getButtonEdit(), null);
+				buttonPanel.add(getButtonEdit(), null);
 			}
 			if (MainMenu.checkUserGrants("btnlaboratorydel")) {
-				jButtonPanel.add(getButtonDelete(), null);
+				buttonPanel.add(getButtonDelete(), null);
 			}
-			jButtonPanel.add(getPrintTableButton(), null);
-			jButtonPanel.add(getPrintLabelButton(), null);
-			jButtonPanel.add(getCloseButton(), null);
-
+			buttonPanel.add(getPrintTableButton(), null);
+			buttonPanel.add(getPrintLabelButton(), null);
+			buttonPanel.add(getCloseButton(), null);
+			jButtonPanel.add(buttonPanel, BorderLayout.SOUTH);
 		}
 		return jButtonPanel;
 	}
@@ -300,6 +335,11 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					return;
 				}
 				laboratory = (Laboratory) model.getValueAt(selectedrow, -1);
+				if (withPaid && !GeneralData.CREATELABORATORYAUTOWITHOPENEDBILL
+						&& (laboratory.getPaidStatus() == null || !laboratory.getPaidStatus().equals("C"))) {
+					MessageDialog.error(null, "angal.common.notallowedtomodifies.msg");
+					return;
+				}
 				if (GeneralData.LABEXTENDED) {
 					LabEditExtended editrecord = new LabEditExtended(myFrame, laboratory, false);
 					editrecord.addLabEditExtendedListener(this);
@@ -414,6 +454,9 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			jSelectionPanel.add(getComboResultFilter());
 			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.prescriber.filter")));
 			jSelectionPanel.add(getComboPrescriber());
+			if (withPaid) {
+				jSelectionPanel.add(getPaidComboBox());
+			}
 			jSelectionPanel.add(getDateFilterPanel());
 			jSelectionPanel.add(getFilterButton());
 		}
@@ -429,14 +472,21 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JTable getJTable() {
 		if (jTable == null) {
 			model = new LabBrowsingModel();
+			if (withPaid) {
+				updateTotals();
+			}
 			jTable = new JTable(model);
+			boolean[] resizable = withPaid ? columnsResizableWithPaid : columnsResizable;
+			int[] widths = withPaid ? pColumnWidthWithPaid : pColumnWidth;
+			int[] maxWidths = withPaid ? maxWidthWithPaid : maxWidth;
+			boolean[] visible = withPaid ? columnsVisibleWithPaid : columnsVisible;
 			TableColumnModel columnModel = jTable.getColumnModel();
 			for (int i = 0; i < model.getColumnCount(); i++) {
-				jTable.getColumnModel().getColumn(i).setMinWidth(pColumnWidth[i]);
-				if (!columnsResizable[i]) {
-					columnModel.getColumn(i).setMaxWidth(maxWidth[i]);
+				jTable.getColumnModel().getColumn(i).setMinWidth(widths[i]);
+				if (!resizable[i]) {
+					columnModel.getColumn(i).setMaxWidth(maxWidths[i]);
 				}
-				if (!columnsVisible[i]) {
+				if (!visible[i]) {
 					columnModel.getColumn(i).setMaxWidth(0);
 					columnModel.getColumn(i).setMinWidth(0);
 					columnModel.getColumn(i).setPreferredWidth(0);
@@ -553,7 +603,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					typeSelected = "";
 				}
 
-				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
+				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText(),
+						getSelectedPaidStatus());
 				String resultFilter = (String) comboResultFilter.getSelectedItem();
 				if (FILTER_NON_EMPTY.equals(resultFilter)) {
 					pLabs.removeIf(lab -> lab.getResult() == null || lab.getResult().isBlank());
@@ -568,11 +619,140 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 							|| !lab.getPrescriber().equalsIgnoreCase(prescriberSelected));
 				}
 
+				if (withPaid) {
+					updateTotals();
+				}
 				model.fireTableDataChanged();
 				jTable.updateUI();
 			});
 		}
 		return filterButton;
+	}
+
+	/**
+	 * Maps the selected item of the paid status combo box to the {@code paidCode} used by the queries:
+	 * {@code "C"} paid, {@code "O"} not paid (open), {@code "0"} not billed, {@code null} no filter.
+	 *
+	 * @return the paid code, or {@code null} when no filter is selected
+	 */
+	private String getSelectedPaidStatus() {
+		Object selected = paidComboBox.getSelectedItem();
+		if (selected == null) {
+			return null;
+		}
+		String paidStatus = selected.toString();
+		if (FILTER_PAID.equals(paidStatus)) {
+			return "C";
+		}
+		if (FILTER_NOT_PAID.equals(paidStatus)) {
+			return "O";
+		}
+		if (FILTER_NOT_FACTURED.equals(paidStatus)) {
+			return "0";
+		}
+		return null;
+	}
+
+	private JComboBox<String> getPaidComboBox() {
+		if (paidComboBox == null) {
+			paidComboBox = new JComboBox<>();
+			paidComboBox.setPreferredSize(new Dimension(225, 30));
+			paidComboBox.addItem(FILTER_PAID_SELECT);
+			paidComboBox.addItem(FILTER_PAID);
+			paidComboBox.addItem(FILTER_NOT_PAID);
+			paidComboBox.addItem(FILTER_NOT_FACTURED);
+		}
+		return paidComboBox;
+	}
+
+	private JPanel getPanelTotal() {
+		if (panelTotal == null) {
+			panelTotal = new JPanel();
+			panelTotal.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			panelTotal.add(getTotalPaidLabel());
+			panelTotal.add(getTotalPaidValueLabel());
+			panelTotal.add(getTotalNotPaidLabel());
+			panelTotal.add(getTotalNotPaidValueLabel());
+			panelTotal.add(getTotalNotFacturedLabel());
+			panelTotal.add(getTotalNotFacturedValueLabel());
+		}
+		return panelTotal;
+	}
+
+	private JLabel getTotalPaidLabel() {
+		if (totalPaidLabel == null) {
+			totalPaidLabel = new JLabel(MessageBundle.getMessage("angal.lobaratory.totalPaidLabel") + ": ");
+			totalPaidLabel.setFont(totalPaidLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		}
+		return totalPaidLabel;
+	}
+
+	private JLabel getTotalPaidValueLabel() {
+		if (totalPaidValueLabel == null) {
+			totalPaidValueLabel = new JLabel("");
+		}
+		return totalPaidValueLabel;
+	}
+
+	private JLabel getTotalNotPaidLabel() {
+		if (totalNotPaidLabel == null) {
+			totalNotPaidLabel = new JLabel("  " + MessageBundle.getMessage("angal.lobaratory.totalNotPaidLabel") + ": ");
+			totalNotPaidLabel.setFont(totalNotPaidLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		}
+		return totalNotPaidLabel;
+	}
+
+	private JLabel getTotalNotPaidValueLabel() {
+		if (totalNotPaidValueLabel == null) {
+			totalNotPaidValueLabel = new JLabel("");
+		}
+		return totalNotPaidValueLabel;
+	}
+
+	private JLabel getTotalNotFacturedLabel() {
+		if (totalNotFacturedLabel == null) {
+			totalNotFacturedLabel = new JLabel("  " + MessageBundle.getMessage("angal.lobaratory.totalNotFacturedLabel") + ": ");
+			totalNotFacturedLabel.setFont(totalNotFacturedLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		}
+		return totalNotFacturedLabel;
+	}
+
+	private JLabel getTotalNotFacturedValueLabel() {
+		if (totalNotFacturedValueLabel == null) {
+			totalNotFacturedValueLabel = new JLabel("");
+		}
+		return totalNotFacturedValueLabel;
+	}
+
+	private void updateTotals() {
+		String type = comboExams.getSelectedItem().toString();
+		if (type.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
+			type = "";
+		}
+		Patient patient = null;
+		String patid = patientCodeField.getText();
+		if (patid != null && !patid.isEmpty()) {
+			try {
+				patient = patManager.getPatientById(Integer.parseInt(patid));
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			} catch (NumberFormatException e) {
+				patient = null;
+			}
+		}
+		try {
+			long totalPaid = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
+					patient, "C");
+			long totalNotPaid = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
+					patient, "O");
+			long totalNotFactured = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
+					patient, "0");
+			totalPaidValueLabel.setText(totalPaid + "");
+			totalNotPaidValueLabel.setText(totalNotPaid + "");
+			totalNotFacturedValueLabel.setText(totalNotFactured + "");
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
 	}
 
 	/**
@@ -585,17 +765,17 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 
 		private static final long serialVersionUID = 1L;
 
-        public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo, String patid) {
+        public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo, String patid, String paidStatus) {
             try {
 				if (!patid.isEmpty()) {
 					Patient pat = patManager.getPatientById(Integer.parseInt(patid));
 					if (pat == null) {
 						pLabs = new ArrayList<>();
 					} else {
-						pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), pat);
+						pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), pat, paidStatus);
 					}
 				} else {
-					pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), null);
+					pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), null, paidStatus);
 				}
             } catch (OHServiceException e) {
                 pLabs = new ArrayList<>();
@@ -646,12 +826,12 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 
 		@Override
 		public String getColumnName(int c) {
-			return pColumns[c];
+			return (withPaid ? pColumnsWithPaid : pColumns)[c];
 		}
 
 		@Override
 		public int getColumnCount() {
-			return pColumns.length;
+			return withPaid ? pColumnsWithPaid.length : pColumns.length;
 		}
 
 		/**
@@ -674,6 +854,13 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				return lab.getPrescriber() != null ? lab.getPrescriber() : "";
 			} else if (c == 4) {
 				return lab.getResult();
+			} else if (c == 5) {
+				String paidStatus = lab.getPaidStatus();
+				if (paidStatus == null) {
+					return FILTER_NOT_FACTURED;
+				}
+				return "C".equals(paidStatus) ? MessageBundle.getMessage("angal.lab.alreadypaid")
+						: MessageBundle.getMessage("angal.lab.notalreadypaid");
 			}
 			return null;
 		}
