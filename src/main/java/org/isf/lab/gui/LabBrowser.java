@@ -66,6 +66,7 @@ import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.serviceprinting.manager.PrintLabels;
 import org.isf.serviceprinting.manager.PrintManager;
+import org.isf.stat.gui.report.GenericReportPrescriberListExam;
 import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -171,6 +172,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private GoodDateChooser dateTo;
 	private final JFrame myFrame;
 	private JButton printLabelButton;
+	private JButton doctorPrescriptionButton;
 
 	/**
 	 * This is the default constructor
@@ -228,6 +230,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			}
 			buttonPanel.add(getPrintTableButton(), null);
 			buttonPanel.add(getPrintLabelButton(), null);
+			buttonPanel.add(getDoctorPrescriptionButton(), null);
 			buttonPanel.add(getCloseButton(), null);
 			jButtonPanel.add(buttonPanel, BorderLayout.SOUTH);
 		}
@@ -322,6 +325,64 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			});
 		}
 		return printLabelButton;
+	}
+
+	private JButton getDoctorPrescriptionButton() {
+		if (doctorPrescriptionButton == null) {
+			doctorPrescriptionButton = new JButton(MessageBundle.getMessage("angal.laboratory.printexamlist"));
+			doctorPrescriptionButton.setMnemonic(MessageBundle.getMnemonic("angal.laboratory.printexamlist.btn.key"));
+			doctorPrescriptionButton.addActionListener(actionEvent -> {
+				int withResult = -1;
+				String resultFilter = (String) comboResultFilter.getSelectedItem();
+				if (FILTER_NON_EMPTY.equals(resultFilter)) {
+					withResult = 1;
+				} else if (FILTER_EMPTY.equals(resultFilter)) {
+					withResult = 0;
+				}
+
+				String patientCode = "all";
+				String patientName = "";
+				String patientField = patientCodeField.getText();
+				if (patientField != null && !patientField.isEmpty()) {
+					try {
+						Patient patient = patManager.getPatientById(Integer.parseInt(patientField));
+						if (patient != null) {
+							patientCode = "" + patient.getCode();
+							patientName = patient.getName();
+						}
+					} catch (NumberFormatException e) {
+						patientCode = "all";
+						patientName = "";
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+					}
+				}
+
+				String userCode = "all";
+				String prescriberName = "";
+				String prescriberSelected = (String) comboPrescriber.getSelectedItem();
+				if (prescriberSelected != null && !prescriberSelected.equals(
+						MessageBundle.getMessage("angal.lab.prescriber.all"))) {
+					userCode = prescriberSelected;
+					prescriberName = prescriberSelected;
+				}
+
+				String exam = "all";
+				String examSelected = comboExams.getSelectedItem().toString();
+				if (examSelected != null && !examSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
+					exam = examSelected;
+				}
+
+				String paidStatus = "all";
+				if (withPaid) {
+					paidStatus = getSelectedPaidStatus();
+				}
+
+				new GenericReportPrescriberListExam(dateFrom.getDate(), dateTo.getDate(), exam, withResult,
+						patientCode, userCode, prescriberName, patientName, paidStatus);
+			});
+		}
+		return doctorPrescriptionButton;
 	}
 
 	private JButton getButtonEdit() {
