@@ -604,7 +604,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				}
 
 				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText(),
-						getSelectedPaidStatus());
+						withPaid ? getSelectedPaidStatus() : null);
 				String resultFilter = (String) comboResultFilter.getSelectedItem();
 				if (FILTER_NON_EMPTY.equals(resultFilter)) {
 					pLabs.removeIf(lab -> lab.getResult() == null || lab.getResult().isBlank());
