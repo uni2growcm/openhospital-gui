@@ -88,9 +88,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	@Override
 	public void labInserted() {
 		jTable.setModel(new LabBrowsingModel());
-		if (withPaid) {
+		if (withPaid)
 			updateTotals();
-		}
 	}
 
 	@Override
