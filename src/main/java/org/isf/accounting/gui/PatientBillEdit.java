@@ -558,6 +558,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		return GeneralData.ALLOWBILLGUARANTOR;
 	}
 
+	public boolean hasPartner() {
+		return GeneralData.PARTNERSMODULEENABLED;
+	}
+
 	public PatientBillEdit() {
 		thisBill = new Bill();
 		PatientBillEdit pbe = new PatientBillEdit(null, thisBill, true);
@@ -1999,7 +2003,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 					boolean hasPartner = false;
 					boolean hasGuarantor = false;
-					boolean partnersEnabled = GeneralData.PARTNERSMODULEENABLED;
+					boolean partnersEnabled = hasPartner();
 					boolean guarantorEnabled = hasBillGuarantor();
 
 					if (partnersEnabled) {
@@ -2066,7 +2070,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (balance.doubleValue() != 0 && guarantor == null) {
 							boolean hasPartnerForNewBill = false;
-							if (GeneralData.PARTNERSMODULEENABLED) {
+							if (hasPartner()) {
 								try {
 									PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
 									hasPartnerForNewBill = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
@@ -2121,7 +2125,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (balance.doubleValue() != 0 && guarantor == null) {
 							boolean hasPartnerForUpdate = false;
-							if (GeneralData.PARTNERSMODULEENABLED) {
+							if (hasPartner()) {
 								try {
 									PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
 									hasPartnerForUpdate = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
