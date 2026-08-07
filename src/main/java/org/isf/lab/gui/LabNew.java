@@ -55,6 +55,7 @@ import org.isf.lab.manager.LabManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryRow;
 import org.isf.lab.model.LaboratoryStatus;
+import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
@@ -753,6 +754,9 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 
 		jTextFieldPrescriber = new JTextField();
 		jTextFieldPrescriber.setPreferredSize(PATIENT_DIMENSION);
+		if (MainMenu.getUser() != null) {
+			jTextFieldPrescriber.setText(MainMenu.getUser().getUserName());
+		}
 		panel.add(jTextFieldPrescriber);
 
 		jComboBoxPrescriber = new JComboBox<>();
