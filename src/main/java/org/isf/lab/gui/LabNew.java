@@ -43,8 +43,11 @@ import javax.swing.table.DefaultTableModel;
 
 import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
+import org.isf.exa.gui.ExamBloc;
+import org.isf.exa.manager.BlockBrowsingManager;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.manager.ExamRowBrowsingManager;
+import org.isf.exa.model.Block;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
 import org.isf.generaldata.MessageBundle;
@@ -52,6 +55,7 @@ import org.isf.lab.manager.LabManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryRow;
 import org.isf.lab.model.LaboratoryStatus;
+import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
@@ -62,6 +66,7 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.OhTableModelBlockExam;
 import org.isf.utils.jobjects.OhTableModelExam;
 import org.isf.utils.time.RememberDates;
 import org.isf.utils.time.TimeTools;
@@ -130,6 +135,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	private JPanel jPanelNorth;
 	private JButton jButtonRemoveItem;
 	private JButton jButtonAddExam;
+	private JButton jButtonAddBlockExam;
+	private JButton jButtonBloc;
 	private JPanel jPanelExamButtons;
 	private JPanel jPanelEast;
 	private JPanel jPanelSouth;
@@ -182,6 +189,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 
 	// Exams (ALL)
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private BlockBrowsingManager blockBrowsingManager = Context.getApplicationContext().getBean(BlockBrowsingManager.class);
 	private List<Exam> exaArray;
 
 	// Results (ALL)
@@ -329,9 +337,22 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		if (jPanelButtons == null) {
 			jPanelButtons = new JPanel();
 			jPanelButtons.add(getJButtonOK());
+			jPanelButtons.add(getJButtonBloc());
 			jPanelButtons.add(getJButtonCancel());
 		}
 		return jPanelButtons;
+	}
+
+	private JButton getJButtonBloc() {
+		if (jButtonBloc == null) {
+			jButtonBloc = new JButton(MessageBundle.getMessage("angal.common.bloc"));
+			jButtonBloc.setMnemonic(KeyEvent.VK_D);
+			jButtonBloc.addActionListener(actionEvent -> {
+				ExamBloc examBloc = new ExamBloc();
+				examBloc.setVisible(true);
+			});
+		}
+		return jButtonBloc;
 	}
 
 	private JPanel getJPanelNote() {
@@ -733,6 +754,9 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 
 		jTextFieldPrescriber = new JTextField();
 		jTextFieldPrescriber.setPreferredSize(PATIENT_DIMENSION);
+		if (MainMenu.getUser() != null) {
+			jTextFieldPrescriber.setText(MainMenu.getUser().getUserName());
+		}
 		panel.add(jTextFieldPrescriber);
 
 		jComboBoxPrescriber = new JComboBox<>();
@@ -809,6 +833,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		if (jPanelExamButtons == null) {
 			jPanelExamButtons = new JPanel();
 			jPanelExamButtons.setLayout(new BoxLayout(jPanelExamButtons, BoxLayout.X_AXIS));
+			jPanelExamButtons.add(getJButtonAddBlockExam());
 			jPanelExamButtons.add(getJButtonAddExam());
 			jPanelExamButtons.add(getJButtonRemoveItem());
 		}
@@ -888,6 +913,81 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		int index = examItems.size() - 1;
 		jTableExams.setRowSelectionInterval(index, index);
 
+	}
+
+	private JButton getJButtonAddBlockExam() {
+
+		if (jButtonAddBlockExam == null) {
+			jButtonAddBlockExam = new JButton(MessageBundle.getMessage("angal.common.bloc"));
+			jButtonAddBlockExam.setMnemonic(KeyEvent.VK_B);
+			jButtonAddBlockExam.setIcon(new ImageIcon("rsc/icons/plus_button.png")); //$NON-NLS-1$
+			jButtonAddBlockExam.addActionListener(actionEvent -> {
+				List<Block> blockExams;
+				try {
+					blockExams = blockBrowsingManager.getBlocks();
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+					return;
+				}
+
+				OhTableModelBlockExam<Price> modelOh = new OhTableModelBlockExam<>(blockExams);
+
+				BlockExamPicker blockExamPicker = new BlockExamPicker(modelOh);
+
+				blockExamPicker.setSize(300, 400);
+
+				JDialog dialog = new JDialog();
+				dialog.setTitle(MessageBundle.getMessage("angal.common.bloc"));
+				dialog.setLocationRelativeTo(null);
+				dialog.setSize(600, 350);
+				dialog.setLocationRelativeTo(null);
+				dialog.setModal(true);
+
+				blockExamPicker.setParentFrame(dialog);
+				dialog.setContentPane(blockExamPicker);
+				dialog.setVisible(true);
+				dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				List<Block> selectedBlocks = blockExamPicker.getAllSelectedObject();
+
+				if (selectedBlocks.isEmpty()) {
+					return;
+				}
+
+				for (Block block : selectedBlocks) {
+					List<Exam> blockExamsList;
+					try {
+						blockExamsList = blockBrowsingManager.getExamWithBlock(block.getCode());
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+						continue;
+					}
+					for (Exam exa : blockExamsList) {
+						boolean alreadyIn = false;
+						for (Laboratory labItem : examItems) {
+							if (labItem.getExam().getCode().equals(exa.getCode())) {
+								MessageDialog.error(this, "angal.labnew.thisexamisalreadypresent");
+								alreadyIn = true;
+							}
+						}
+						if (alreadyIn) {
+							continue;
+						}
+
+						Laboratory lab = new Laboratory();
+						if (exa.getProcedure() == 1 || exa.getProcedure() == 3) {
+							// The exam may not have a default value
+							lab.setResult(exa.getDefaultResult());
+						} else { // exa.getProcedure() == 2
+							lab.setResult(MessageBundle.getMessage("angal.labnew.multipleresults"));
+						}
+						lab.setExam(exa);
+						lab.setMaterial(labManager.getMaterialKey(""));
+						addItem(lab);
+					}
+				}
+			});
+		}
+		return jButtonAddBlockExam;
 	}
 
 	private JButton getJButtonRemoveItem() {
