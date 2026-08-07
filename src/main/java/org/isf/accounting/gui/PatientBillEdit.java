@@ -2776,7 +2776,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
         Ward ward;
 
         try {
-            ward = thisBill.getAdmission() != null ? thisBill.getAdmission().getWard() : wardBrowserManager.findWard("OPD");
+            ward = thisBill.getAdmission() != null ? thisBill.getAdmission().getWard() : findDefaultWardInNewBill();
         } catch (OHServiceException e) {
             throw new RuntimeException(e);
         }
@@ -2790,7 +2790,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 throw new RuntimeException(e);
             }
             try {
-              ward = thisBill.getAdmission() != null ? thisBill.getAdmission().getWard() : wardBrowserManager.findWard("OPD");
+              ward = thisBill.getAdmission() != null ? thisBill.getAdmission().getWard() : findDefaultWardInNewBill();
             } catch (OHServiceException e) {
                 throw new RuntimeException(e);
             }
@@ -2846,6 +2846,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		}
         return wardComboBox;
     }
+
+	private Ward findDefaultWardInNewBill() throws OHServiceException {
+		WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+		String defaultCode = GeneralData.DEFAULTWARDINNEWBILL;
+		if (defaultCode != null && !defaultCode.trim().isEmpty()) {
+			Ward defaultWard = wardBrowserManager.findWard(defaultCode.trim());
+			if (defaultWard != null && defaultWard.isPharmacy()) {
+				return defaultWard;
+			}
+		}
+		return wardBrowserManager.findWard("OPD");
+	}
 
 	private JButton getJButtonAddCustom() {
 		if (jButtonCustom == null) {
