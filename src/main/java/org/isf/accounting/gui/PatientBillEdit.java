@@ -3180,7 +3180,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 									if (price == null) {
 										MessageDialog.warning(PatientBillEdit.this,
-												MessageBundle.formatMessage("angal.newbill.pricenotfoundforitem.fmt.msg",
+												MessageBundle.formatMessage("angal.newbill.pricenotfoundforitem",
 														item.getItemDescription()));
 										continue;
 									}
