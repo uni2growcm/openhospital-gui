@@ -558,6 +558,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		return GeneralData.ALLOWBILLGUARANTOR;
 	}
 
+	public boolean hasPartner() {
+		return GeneralData.PARTNERSMODULEENABLED;
+	}
+
 	public PatientBillEdit() {
 		thisBill = new Bill();
 		PatientBillEdit pbe = new PatientBillEdit(null, thisBill, true);
@@ -1999,23 +2003,38 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 					boolean hasPartner = false;
 					boolean hasGuarantor = false;
+					boolean partnersEnabled = hasPartner();
+					boolean guarantorEnabled = hasBillGuarantor();
 
-					try {
-						PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
-						hasPartner = partnerBrowserManager.patientHasPartners(currentPatient.getCode());
-					} catch (OHServiceException e) {
-						LOGGER.error("Error checking patient partners for bill save", e);
+					if (partnersEnabled) {
+						try {
+							PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+							hasPartner = partnerBrowserManager.patientHasPartners(currentPatient.getCode());
+						} catch (OHServiceException e) {
+							LOGGER.error("Error checking patient partners for bill save", e);
+						}
 					}
 
-					if (hasBillGuarantor()) {
+					if (guarantorEnabled) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						hasGuarantor = guarantor != null;
 					}
 
-					if (hasPartner) {
-					} else if (!hasGuarantor) {
-						MessageDialog.error(this, "angal.newbill.cannot.save.without.partner.or.guarantor.msg");
-						return;
+					if (partnersEnabled && guarantorEnabled) {
+						if (!hasPartner && !hasGuarantor) {
+							MessageDialog.error(this, "angal.newbill.cannot.save.without.partner.or.guarantor.msg");
+							return;
+						}
+					} else if (partnersEnabled) {
+						if (!hasPartner) {
+							MessageDialog.error(this, "angal.newbill.cannot.save.without.partner.msg");
+							return;
+						}
+					} else if (guarantorEnabled) {
+						if (!hasGuarantor) {
+							MessageDialog.error(this, "angal.newbill.cannot.save.without.guarantor.msg");
+							return;
+						}
 					}
 				}
 
@@ -2051,11 +2070,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (balance.doubleValue() != 0 && guarantor == null) {
 							boolean hasPartnerForNewBill = false;
-							try {
-								PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
-								hasPartnerForNewBill = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
-							} catch (OHServiceException e) {
-								LOGGER.error("Error checking patient partners", e);
+							if (hasPartner()) {
+								try {
+									PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+									hasPartnerForNewBill = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
+								} catch (OHServiceException e) {
+									LOGGER.error("Error checking patient partners", e);
+								}
 							}
 
 							if (!hasPartnerForNewBill) {
@@ -2104,11 +2125,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();
 						if (balance.doubleValue() != 0 && guarantor == null) {
 							boolean hasPartnerForUpdate = false;
-							try {
-								PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
-								hasPartnerForUpdate = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
-							} catch (OHServiceException e) {
-								LOGGER.error("Error checking patient partners", e);
+							if (hasPartner()) {
+								try {
+									PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+									hasPartnerForUpdate = partnerBrowserManager.patientHasPartners(thisBill.getBillPatient().getCode());
+								} catch (OHServiceException e) {
+									LOGGER.error("Error checking patient partners", e);
+								}
 							}
 
 							if (!hasPartnerForUpdate) {
@@ -3157,7 +3180,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 									if (price == null) {
 										MessageDialog.warning(PatientBillEdit.this,
-												MessageBundle.formatMessage("angal.newbill.pricenotfoundforitem.fmt.msg",
+												MessageBundle.formatMessage("angal.newbill.pricenotfoundforitem",
 														item.getItemDescription()));
 										continue;
 									}
