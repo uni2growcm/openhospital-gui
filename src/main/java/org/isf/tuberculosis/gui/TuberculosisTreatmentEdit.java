@@ -553,6 +553,7 @@ diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabe
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         hivTestDateField = new GoodDateChooser((LocalDate) null);
+        hivTestDateField.setMaxDate(LocalDate.now());
         panel.add(hivTestDateField, gbc);
 
         return panel;
