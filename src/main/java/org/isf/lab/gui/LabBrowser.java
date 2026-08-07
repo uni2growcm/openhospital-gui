@@ -357,7 +357,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				}
 				laboratory = (Laboratory) model.getValueAt(selectedrow, -1);
 				if (withPaid && !GeneralData.CREATELABORATORYAUTOWITHOPENEDBILL
-						&& (laboratory.getPaidStatus() == null || !laboratory.getPaidStatus().equals("C"))) {
+						&& laboratory.getPaidStatus() != null && !laboratory.getPaidStatus().equals("C")) {
 					MessageDialog.error(null, "angal.common.notallowedtomodifies.msg");
 					return;
 				}

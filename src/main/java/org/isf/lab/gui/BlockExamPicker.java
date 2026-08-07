@@ -1,0 +1,307 @@
+/*
+ * Open Hospital (www.open-hospital.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ *
+ * Open Hospital is a free and open source software for healthcare data management.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+package org.isf.lab.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableModel;
+
+import org.isf.exa.model.Block;
+import org.isf.generaldata.MessageBundle;
+import org.isf.utils.jobjects.OhDefaultCellRenderer;
+import org.isf.utils.jobjects.OhTableModelBlockExam;
+
+/**
+ * Picker for exam blocks (multi-selection), modeled after {@link ExamPicker}.
+ */
+public class BlockExamPicker extends JPanel {
+
+	private static final long serialVersionUID = 1L;
+
+	private JTable jTableData;
+	private JTextField jTextFieldFind;
+
+	private final OhDefaultCellRenderer cellRenderer = new OhDefaultCellRenderer();
+
+	public BlockExamPicker(TableModel model) {
+		initComponents(model);
+	}
+
+	private void initComponents(TableModel model) {
+
+		JPanel jPanel3 = new JPanel();
+		JPanel jPanel1 = new JPanel();
+
+		jPanel3.setBackground(new Color(240, 240, 240));
+		jPanel1.setBackground(new Color(240, 240, 240));
+
+		setLayout(new BorderLayout(10, 10));
+		add(jPanel1, BorderLayout.CENTER);
+		GridBagLayout gblPanel1 = new GridBagLayout();
+		gblPanel1.columnWidths = new int[] { 575, 0 };
+		gblPanel1.rowHeights = new int[] { 268, 0 };
+		gblPanel1.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gblPanel1.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		jPanel1.setLayout(gblPanel1);
+		JScrollPane jScrollPane1 = new JScrollPane();
+		jTableData = new JTable();
+
+		jTableData.setSelectionModel(new DefaultListSelectionModel() {
+
+			@Override
+			public void setSelectionInterval(int index0, int index1) {
+				if (super.isSelectedIndex(index0)) {
+					super.removeSelectionInterval(index0, index1);
+				} else {
+					super.addSelectionInterval(index0, index1);
+				}
+			}
+		});
+
+		jTableData.setDefaultRenderer(Object.class, cellRenderer);
+		jTableData.setDefaultRenderer(Double.class, cellRenderer);
+		jTableData.addMouseMotionListener(new MouseMotionListener() {
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				JTable aTable = (JTable) e.getSource();
+				int itsRow = aTable.rowAtPoint(e.getPoint());
+				if (itsRow >= 0) {
+					cellRenderer.setHoveredRow(itsRow);
+				} else {
+					cellRenderer.setHoveredRow(-1);
+				}
+				aTable.repaint();
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+			}
+		});
+		jTableData.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				cellRenderer.setHoveredRow(-1);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent mouseEvent) {
+				if (mouseEvent.getClickCount() == 2) {
+					int row = jTableData.rowAtPoint(mouseEvent.getPoint());
+					if (row >= 0) {
+						if (jTableData.isRowSelected(row)) {
+							jTableData.removeRowSelectionInterval(row, row);
+						} else {
+							jTableData.addRowSelectionInterval(row, row);
+						}
+						validateSelection();
+					}
+				}
+			}
+		});
+
+		jTableData.setModel(model);
+		jTableData.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		jTableData.setShowVerticalLines(false);
+
+		jTableData.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					validateSelection();
+				}
+				super.keyPressed(e);
+			}
+		});
+
+		jScrollPane1.setViewportView(jTableData);
+		GridBagConstraints gbcScrollPane1 = new GridBagConstraints();
+		gbcScrollPane1.insets = new Insets(0, 15, 0, 15);
+		gbcScrollPane1.fill = GridBagConstraints.BOTH;
+		gbcScrollPane1.gridx = 0;
+		gbcScrollPane1.gridy = 0;
+		jPanel1.add(jScrollPane1, gbcScrollPane1);
+		add(jPanel3, BorderLayout.NORTH);
+		GridBagLayout gblPanel3 = new GridBagLayout();
+		gblPanel3.columnWidths = new int[] { 90, 237, 0 };
+		gblPanel3.rowHeights = new int[] { 50, 0 };
+		gblPanel3.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gblPanel3.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		jPanel3.setLayout(gblPanel3);
+
+		JLabel jLabelImage = new JLabel(MessageBundle.getMessage("angal.exams.findbloc"));
+		jLabelImage.setIcon(new ImageIcon("rsc/icons/operation_dialog.png"));
+		GridBagConstraints gbcLabelImage = new GridBagConstraints();
+		gbcLabelImage.anchor = GridBagConstraints.WEST;
+		gbcLabelImage.insets = new Insets(0, 15, 0, 5);
+		gbcLabelImage.gridx = 0;
+		gbcLabelImage.gridy = 0;
+		jPanel3.add(jLabelImage, gbcLabelImage);
+		jTextFieldFind = new JTextField();
+
+		jTextFieldFind.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				jTableData.clearSelection();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				jTableData.clearSelection();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				jTableData.clearSelection();
+			}
+		});
+
+		jTextFieldFind.setName("textRecherche");
+		GridBagConstraints gbcTextFieldFind = new GridBagConstraints();
+		gbcTextFieldFind.insets = new Insets(0, 0, 0, 15);
+		gbcTextFieldFind.fill = GridBagConstraints.HORIZONTAL;
+		gbcTextFieldFind.gridx = 1;
+		gbcTextFieldFind.gridy = 0;
+		jPanel3.add(jTextFieldFind, gbcTextFieldFind);
+
+		jTextFieldFind.getDocument().addDocumentListener(new DocumentListener() {
+
+			private void filter() {
+				String text = jTextFieldFind.getText();
+				OhTableModelBlockExam<Block> model = (OhTableModelBlockExam<Block>) jTableData.getModel();
+				model.filter(text);
+				if (jTableData.getRowCount() > 0) {
+					jTableData.setRowSelectionInterval(0, 0);
+				}
+				jTableData.repaint();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				filter();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				filter();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				filter();
+			}
+		});
+
+		jTextFieldFind.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					validateSelection();
+				}
+				super.keyPressed(e);
+			}
+		});
+
+		JPanel jPanel2 = new JPanel();
+		jPanel2.setBackground(new Color(240, 240, 240));
+
+		JButton jButtonSelect = new JButton(MessageBundle.getMessage("angal.common.select.btn"));
+		jButtonSelect.setMnemonic(MessageBundle.getMnemonic("angal.common.select.btn.key"));
+		jButtonSelect.addActionListener(actionEvent -> jButtonSelectActionPerformed());
+
+		JButton jButtonCancel = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+		jButtonCancel.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
+		jButtonCancel.addActionListener(actionEvent -> jButtonQuitActionPerformed());
+
+		add(jPanel2, BorderLayout.SOUTH);
+		jPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		jPanel2.add(jButtonSelect);
+		jPanel2.add(jButtonCancel);
+	}
+
+	private void validateSelection() {
+		this.setVisible(false);
+		if (this.getParentFrame() != null) {
+			this.getParentFrame().dispose();
+		}
+	}
+
+	private void jButtonSelectActionPerformed() {
+		validateSelection();
+	}
+
+	private void jButtonQuitActionPerformed() {
+		validateSelection();
+	}
+
+	/**
+	 * Returns the selected {@link Block}s.
+	 * @return the list of selected {@link Block}s
+	 */
+	public List<Block> getAllSelectedObject() {
+		OhTableModelBlockExam<?> model = (OhTableModelBlockExam<?>) jTableData.getModel();
+		List<Block> blocks = new ArrayList<>();
+		int[] selectedRows = this.jTableData.getSelectedRows();
+		for (int row : selectedRows) {
+			blocks.add(model.getObjectAt(row));
+		}
+		return blocks;
+	}
+
+	private JDialog parentFrame;
+
+	public JDialog getParentFrame() {
+		return parentFrame;
+	}
+
+	public void setParentFrame(JDialog parentFrame) {
+		this.parentFrame = parentFrame;
+	}
+}
