@@ -241,6 +241,7 @@ public class PricesBrowser extends ModalJFrame {
 						priceListManager.updatePrices(listSelected, updateList);
 						MessageDialog.info(null, "angal.priceslist.listsaved");
 						updateFromDB();
+						getTreeContent();
 
 						String currentSearch = searchField.getText();
 						filterPrices(currentSearch);
@@ -258,13 +259,34 @@ public class PricesBrowser extends ModalJFrame {
 	}
 
 	private List<Price> convertTreeToArray() {
+		PriceNode root = new PriceNode(new Price(null, "", "", listSelected.getName(), null));
+		root.addItem(examNodes);
+		root.addItem(opeNodes);
+		root.addItem(medNodes);
+		root.addItem(othNodes);
+		return buildPriceUpdateList(priceArray, listSelected, root);
+	}
+
+	/**
+	 * Builds the list of {@link Price}s to persist for the given list by walking the price tree.
+	 * Only prices belonging to the selected list are considered, so other lists' prices are
+	 * never overwritten. Every row shown in the tree is included, creating a new {@link Price}
+	 * when an item has no price yet.
+	 *
+	 * @param priceArray the prices of all lists as loaded from the DB
+	 * @param listSelected the price list being edited
+	 * @param treeRoot the root {@link PriceNode} of the tree currently displayed
+	 * @return the complete set of prices to persist for the selected list
+	 */
+	static List<Price> buildPriceUpdateList(List<Price> priceArray, PriceList listSelected, Object treeRoot) {
 		Map<String, Price> allPrices = new HashMap<>();
 		for (Price price : priceArray) {
-			String key = price.getGroup() + "|" + price.getItem();
-			allPrices.put(key, price);
+			if (price.getList() != null && price.getList().getId() == listSelected.getId()) {
+				allPrices.put(price.getGroup() + "|" + price.getItem(), price);
+			}
 		}
 
-		PriceNode currentRoot = (PriceNode) jTreeTable.getTree().getModel().getRoot();
+		PriceNode currentRoot = (PriceNode) treeRoot;
 		for (int cat = 0; cat < currentRoot.getItems().length; cat++) {
 			PriceNode categoryNode = (PriceNode) currentRoot.getItems()[cat];
 			for (int i = 0; i < categoryNode.getItems().length; i++) {
@@ -275,6 +297,9 @@ public class PricesBrowser extends ModalJFrame {
 				Price original = allPrices.get(key);
 				if (original != null) {
 					original.setPrice(modifiedPrice.getPrice());
+				} else {
+					allPrices.put(key, new Price(listSelected, modifiedPrice.getGroup(), modifiedPrice.getItem(),
+							modifiedPrice.getDesc(), modifiedPrice.getPrice(), modifiedPrice.isEditable()));
 				}
 			}
 		}
@@ -403,6 +428,7 @@ public class PricesBrowser extends ModalJFrame {
 					listSelected = (PriceList) jComboBoxLists.getSelectedItem();
 
 					updateFromDB();
+					getTreeContent();
 
 					String currentSearch = searchField.getText();
 					filterPrices(currentSearch);
@@ -465,74 +491,32 @@ public class PricesBrowser extends ModalJFrame {
 	private void filterPrices(String searchText) {
 		String searchLower = searchText.toLowerCase().trim();
 
-		if (searchLower.isEmpty()) {
-			updateFromDB();
-			PriceNode root = getTreeContent();
-			jTreeTable.setModel(new PriceModel(root));
-			jTreeTable.getTree().expandRow(3);
-			jTreeTable.getTree().expandRow(2);
-			jTreeTable.getTree().expandRow(1);
-			jTreeTable.updateUI();
-			return;
-		}
-
-		Map<String, Price> priceHashTable = new HashMap<>();
-		for (Price price : priceArray) {
-			priceHashTable.put(price.getList().getId() +
-					price.getGroup() +
-					price.getItem(), price);
-		}
-
-		PriceNode filteredExamNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[0], null));
-		for (Exam exa : examArray) {
-			if (exa.getCode().toLowerCase().contains(searchLower) ||
-					exa.getDescription().toLowerCase().contains(searchLower)) {
-				Price p = priceHashTable.get(listSelected.getId() + cCategories[0] + exa.getCode());
-				double priceValue = p != null ? p.getPrice() : 0.;
-				filteredExamNodes.addItem(new PriceNode(new Price(null, cCategories[0], exa.getCode(), exa.getDescription(), priceValue)));
-			}
-		}
-
-		PriceNode filteredOpeNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[1], null));
-		for (Operation ope : operArray) {
-			if (ope.getCode().toLowerCase().contains(searchLower) ||
-					ope.getDescription().toLowerCase().contains(searchLower)) {
-				Price p = priceHashTable.get(listSelected.getId() + cCategories[1] + ope.getCode());
-				double priceValue = p != null ? p.getPrice() : 0.;
-				filteredOpeNodes.addItem(new PriceNode(new Price(null, cCategories[1], ope.getCode(), ope.getDescription(), priceValue)));
-			}
-		}
-
-		PriceNode filteredMedNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[2], null));
-		for (Medical med : mediArray) {
-			if (med.getCode().toString().toLowerCase().contains(searchLower) ||
-					med.getDescription().toLowerCase().contains(searchLower)) {
-				Price p = priceHashTable.get(listSelected.getId() + cCategories[2] + med.getCode().toString());
-				double priceValue = p != null ? p.getPrice() : 0.;
-				filteredMedNodes.addItem(new PriceNode(new Price(null, cCategories[2], med.getCode().toString(), med.getDescription(), priceValue)));
-			}
-		}
-
-		PriceNode filteredOthNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[3], null));
-		for (PricesOthers oth : othArray) {
-			if (oth.getDescription().toLowerCase().contains(searchLower)) {
-				Price p = priceHashTable.get(listSelected.getId() + cCategories[3] + oth.getId());
-				double priceValue = p != null ? p.getPrice() : 0.;
-				filteredOthNodes.addItem(
-						new PriceNode(new Price(null, cCategories[3], Integer.toString(oth.getId()), oth.getDescription(), priceValue, !oth.isUndefined())));
-			}
-		}
-
 		PriceNode root = new PriceNode(new Price(null, "", "", listSelected.getName(), null));
-		root.addItem(filteredExamNodes);
-		root.addItem(filteredOpeNodes);
-		root.addItem(filteredMedNodes);
-		root.addItem(filteredOthNodes);
+		root.addItem(filterPriceCategory(examNodes, searchLower));
+		root.addItem(filterPriceCategory(opeNodes, searchLower));
+		root.addItem(filterPriceCategory(medNodes, searchLower));
+		root.addItem(filterPriceCategory(othNodes, searchLower));
 
 		jTreeTable.setModel(new PriceModel(root));
 		jTreeTable.getTree().expandRow(3);
 		jTreeTable.getTree().expandRow(2);
 		jTreeTable.getTree().expandRow(1);
 		jTreeTable.updateUI();
+	}
+
+	private PriceNode filterPriceCategory(PriceNode categoryNode, String searchLower) {
+		PriceNode filteredCategory = new PriceNode(new Price(null, "", "", categoryNode.getPrice().getDesc(), null));
+		for (int i = 0; i < categoryNode.getItems().length; i++) {
+			PriceNode itemNode = (PriceNode) categoryNode.getItems()[i];
+			if (searchLower.isEmpty()) {
+				filteredCategory.addItem(itemNode);
+			} else {
+				Price price = itemNode.getPrice();
+				if (price.getItem().toLowerCase().contains(searchLower) || price.getDesc().toLowerCase().contains(searchLower)) {
+					filteredCategory.addItem(itemNode);
+				}
+			}
+		}
+		return filteredCategory;
 	}
 }
