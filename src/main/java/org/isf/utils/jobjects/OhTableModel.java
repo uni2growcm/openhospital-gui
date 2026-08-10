@@ -21,6 +21,7 @@
  */
 package org.isf.utils.jobjects;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +77,9 @@ public class OhTableModel<T> implements TableModel {
 					return resPbj;
 				}
 				strItem = strItem.toLowerCase();
+				String normalizedStrItem = normalize(strItem);
 				searchQuery = searchQuery.toLowerCase();
-				if (strItem.contains(searchQuery)) {
+				if (normalizedStrItem.contains(searchQuery)) {
 					filteredList.add((T) object);
 				}
 			}
@@ -93,8 +95,9 @@ public class OhTableModel<T> implements TableModel {
 				}
 
 				strItem = strItem.toLowerCase();
+				String normalizedStrItem = normalize(strItem);
 				searchQuery = searchQuery.toLowerCase();
-				if (strItem.contains(searchQuery)) {
+				if (normalizedStrItem.contains(searchQuery)) {
 					filteredList.add((T) object);
 				}
 			}
@@ -110,8 +113,9 @@ public class OhTableModel<T> implements TableModel {
 				}
 
 				strItem = strItem.toLowerCase();
+				String normalizedStrItem = normalize(strItem);
 				searchQuery = searchQuery.toLowerCase();
-				if (strItem.contains(searchQuery)) {
+				if (normalizedStrItem.contains(searchQuery)) {
 					filteredList.add((T) object);
 				}
 			}
@@ -127,8 +131,9 @@ public class OhTableModel<T> implements TableModel {
 				}
 
 				strItem = strItem.toLowerCase();
+				String normalizedStrItem = normalize(strItem);
 				searchQuery = searchQuery.toLowerCase();
-				if (strItem.contains(searchQuery)) {
+				if (normalizedStrItem.contains(searchQuery)) {
 					filteredList.add((T) object);
 				}
 			}
@@ -138,6 +143,17 @@ public class OhTableModel<T> implements TableModel {
 			return filteredList.get(0);
 		}
 		return null;
+	}
+
+	private static String normalize(String value) {
+		if (value == null) {
+			return "";
+		}
+
+		return Normalizer.normalize(value, Normalizer.Form.NFD)
+				.replaceAll("\\p{M}", "")
+				.toLowerCase()
+				.trim();
 	}
 
 	@Override
