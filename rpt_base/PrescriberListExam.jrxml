@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PrescriberlistExam" pageWidth="950" pageHeight="800" orientation="Landscape" whenNoDataType="NoPages" columnWidth="890" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="PrescriberListExam" whenResourceMissingType="Key" uuid="ee8a5f2b-0d3c-4c1e-b7c2-9f3a12d9c4a7">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="net.sf.jasperreports.export.page.count" value="true"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="fromdate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="todate" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="exam" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="resultFilter" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="patientCode" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="userCode" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="name" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="patientname" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="paidCode" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="lab_auto_enabled" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="LOGO_PATH" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT DATE_FORMAT(LAB_DATE, "%d/%m/%Y") AS DATE, LAB_PAT_NAME,
+LAB_PRESCRIBER, LAB_NOTE, EXA_PROC, EXA_DESC,
+IF(EXA_PROC IN (1,3), LAB_RES, (
+	SELECT GROUP_CONCAT(CONCAT(LABR_DESC, " - ", LABR_RES_VALUE) SEPARATOR ", ")
+	  FROM OH_LABORATORYROW WHERE LABR_LAB_ID=LAB_ID
+    )
+) AS RES_VALUE
+FROM OH_LABORATORY lab
+INNER JOIN OH_EXAM E ON E.EXA_ID_A=LAB_EXA_ID_A
+WHERE DATE(LAB_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+AND ((LAB_PRESCRIBER = $P{userCode} ) or ($P{userCode}="all"))
+	 AND ((LAB_PAT_ID = $P{patientCode} and $P{patientCode} <> "all") or ( $P{patientCode} = "all" ))
+	 AND ((EXA_DESC = $P{exam} and $P{exam} <> "all") or ( $P{exam} = "all" ))
+	 AND ((LAB_RES <> "" and $P{resultFilter}=1) or (LAB_RES = "" and $P{resultFilter} = 0 ) or ($P{resultFilter}=-1))
+ ORDER BY DATE(LAB_DATE), LAB_PAT_NAME;]]>
+	</queryString>
+	<field name="DATE" class="java.lang.String"/>
+	<field name="LAB_PAT_NAME" class="java.lang.String"/>
+	<field name="LAB_PRESCRIBER" class="java.lang.String"/>
+	<field name="LAB_NOTE" class="java.lang.String"/>
+	<field name="EXA_PROC" class="java.lang.Integer"/>
+	<field name="EXA_DESC" class="java.lang.String"/>
+	<field name="RES_VALUE" class="java.lang.String"/>
+	<group name="DoctorGroup" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{LAB_PRESCRIBER}]]></groupExpression>
+		<groupHeader>
+			<band height="48" splitType="Stretch">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+					<reportElement x="0" y="2" width="832" height="22" isPrintWhenDetailOverflows="true" uuid="35862a99-1c96-407c-b9d7-3f4ff7a613ed"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{doctor_label} + " " + ($F{LAB_PRESCRIBER} != null ? $F{LAB_PRESCRIBER} : "")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement x="0" y="28" width="80" height="20" isPrintWhenDetailOverflows="true" uuid="bfbdcfa2-bb47-4e30-8980-38a1cbeeb5fd"/>
+					<box>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_date}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+					<reportElement x="80" y="28" width="180" height="20" isPrintWhenDetailOverflows="true" uuid="b83a1835-b5f8-4e78-92cf-0701c74ff8c9"/>
+					<box>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_patient}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+					<reportElement x="260" y="28" width="140" height="20" isPrintWhenDetailOverflows="true" uuid="f0164be7-fadc-4526-aa7a-f5e4ca84da9a"/>
+					<box>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_exam}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+					<reportElement x="400" y="28" width="250" height="20" isPrintWhenDetailOverflows="true" uuid="f5bdd11b-c744-4cd8-892e-810b0a2a17ab"/>
+					<box>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_result}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+					<reportElement x="650" y="28" width="200" height="20" isPrintWhenDetailOverflows="true" uuid="adda2dd8-5e13-44db-9ec1-28d32b8d199b"/>
+					<box>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_note}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="195" splitType="Stretch">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="430" height="15" isPrintWhenDetailOverflows="true" uuid="530d6b26-7794-4e6c-98d0-faa8660a3a0a"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="15" width="430" height="12" isPrintWhenDetailOverflows="true" uuid="a231f53f-551e-4559-98bf-ff64a2a35a0b"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="27" width="430" height="20" isPrintWhenDetailOverflows="true" uuid="4a1262e7-bd23-49fa-b45e-40d55e9978d8"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="462" y="0" width="430" height="15" isPrintWhenDetailOverflows="true" uuid="ef638e9a-693d-4c49-8be9-f3e9c36f1ec5"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="462" y="15" width="430" height="12" isPrintWhenDetailOverflows="true" uuid="d2537501-75df-46d3-a05f-e552b23e4eac"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="462" y="27" width="430" height="20" isPrintWhenDetailOverflows="true" uuid="e65a84e4-bfc3-487c-b30f-6f6c2a955361"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="10" y="52" width="830" height="25" isPrintWhenDetailOverflows="true" uuid="79678039-36be-4acc-9dc9-3cd043a9cbec"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="10" y="77" width="830" height="15" isPrintWhenDetailOverflows="true" uuid="222d79b5-c428-4fc4-84ac-42c073aa10b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{period} + " " + $R{from} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{to} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="100" width="430" height="14" isPrintWhenDetailOverflows="true" uuid="5cdc24aa-2e90-4987-9f93-7176f078f0c7"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="432" y="100" width="460" height="14" isPrintWhenDetailOverflows="true" uuid="fab2389b-4837-4d5d-a2c9-3d202a8c4356"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="116" width="430" height="14" isPrintWhenDetailOverflows="true" uuid="ecabcac7-7983-42c8-91f0-87c4e7b2a276"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="432" y="116" width="460" height="14" isPrintWhenDetailOverflows="true" uuid="77962e8b-8b9a-4a98-84b1-673880822945"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="132" width="430" height="14" isPrintWhenDetailOverflows="true" uuid="8be0c1b3-1fbe-4cd2-8836-b437b08e08a0"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_prescriber} + " " + ($P{name} != null ? $P{name} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="432" y="132" width="460" height="14" isPrintWhenDetailOverflows="true" uuid="dfa63c7d-2f4a-4d9b-8b1e-3c9d2f4a6b7c"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_exam} + " " + ($P{exam} != null && !$P{exam}.equals("all") ? $P{exam} : $R{all})]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="146" width="430" height="14" isPrintWhenDetailOverflows="true" uuid="a3b5c7d9-1e3f-4a5b-8c7d-9e1f2a3b4c5d"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_patient} + " " + ($P{patientname} != null ? $P{patientname} : "")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="432" y="146" width="460" height="14" isPrintWhenDetailOverflows="true" uuid="c1d3e5f7-9a2b-4c3d-8e5f-6a7b8c9d0e1f"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_resultstate} + " " + ($P{resultFilter} != null ? ($P{resultFilter}.intValue() == -1 ? $R{all} : $P{resultFilter}.intValue() == 1 ? $R{with_results} : $R{without_results}) : $R{all})]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="160" width="430" height="14" isPrintWhenDetailOverflows="true" uuid="e2f4a6c8-0b1d-4e3f-9a5b-7c8d9e0f1a2b"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{lab_auto_enabled} != null && $P{lab_auto_enabled}.equals("yes") ? $R{label_paid} + " " + ($P{paidCode} != null && $P{paidCode}.equals("C") ? $R{paid} : $P{paidCode} != null && $P{paidCode}.equals("O") ? $R{not_paid} : $R{not_charged}) : ""]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="178" width="832" height="1" uuid="e11510fe-7c1f-4e3a-9816-c97672feb0a3"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Prevent">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="80" height="20" uuid="7e8d9c5b-4f3a-4b2c-9d1e-0a5f8b7c6d4e"/>
+				<box>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DATE} != null ? $F{DATE} : ""]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="80" y="0" width="180" height="20" isPrintWhenDetailOverflows="true" uuid="c9359621-86b0-4c7f-abca-5e4c898be24b"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LAB_PAT_NAME} != null ? $F{LAB_PAT_NAME} : ""]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="260" y="0" width="140" height="20" isPrintWhenDetailOverflows="true" uuid="ec73f407-abc3-4e33-a303-90da8191d236"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{EXA_DESC} != null ? $F{EXA_DESC} : ""]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="400" y="0" width="250" height="20" isPrintWhenDetailOverflows="true" uuid="65df9182-21b5-48c2-9243-e0e8bca3cb30"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{RES_VALUE} != null ? $F{RES_VALUE} : ""]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="650" y="0" width="200" height="20" isPrintWhenDetailOverflows="true" uuid="02ea473e-758d-4680-9785-7ab52f11f757"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LAB_NOTE} != null ? $F{LAB_NOTE} : ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="19" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="832" height="1" uuid="c809b478-7bb0-4443-a43b-e0dbd3cb0315"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="250" height="19" isPrintWhenDetailOverflows="true" uuid="80b74932-260c-423b-864d-0a4e81343496"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+				<reportElement x="580" y="0" width="170" height="19" isPrintWhenDetailOverflows="true" uuid="f0e894c9-9d29-45f2-b1a9-0ad001df41b4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement x="754" y="0" width="36" height="19" isPrintWhenDetailOverflows="true" uuid="d5634d77-1149-4544-9483-930ce553c05b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="20" splitType="Stretch">
+			<textField textAdjust="StretchHeight" evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="300" height="15" isPrintWhenDetailOverflows="true" uuid="1eed26ad-04cd-4f8a-a932-d997b9af5d93"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_total_exams} + " " + $V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
