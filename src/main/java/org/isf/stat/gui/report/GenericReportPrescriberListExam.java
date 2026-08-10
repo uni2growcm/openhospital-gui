@@ -34,7 +34,7 @@ import org.isf.utils.jobjects.MessageDialog;
  */
 public class GenericReportPrescriberListExam extends DisplayReport {
 
-	private static final String JASPER_FILE_NAME = "Prescriber_list_exam";
+	private static final String JASPER_FILE_NAME = "PrescriberListExam";
 
 	private final JasperReportsManager jasperReportsManager =
 			Context.getApplicationContext().getBean(JasperReportsManager.class);
