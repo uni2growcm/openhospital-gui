@@ -297,9 +297,10 @@ public class PricesBrowser extends ModalJFrame {
 				Price original = allPrices.get(key);
 				if (original != null) {
 					original.setPrice(modifiedPrice.getPrice());
+					original.setVariable(modifiedPrice.isVariable());
 				} else {
 					allPrices.put(key, new Price(listSelected, modifiedPrice.getGroup(), modifiedPrice.getItem(),
-							modifiedPrice.getDesc(), modifiedPrice.getPrice(), modifiedPrice.isEditable()));
+							modifiedPrice.getDesc(), modifiedPrice.getPrice(), modifiedPrice.isEditable(), modifiedPrice.isVariable()));
 				}
 			}
 		}
@@ -369,21 +370,21 @@ public class PricesBrowser extends ModalJFrame {
 		for (Exam exa : examArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[0] + exa.getCode());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			examNodes.addItem(new PriceNode(new Price(null, cCategories[0], exa.getCode(), exa.getDescription(), priceValue)));
+			examNodes.addItem(new PriceNode(new Price(null, cCategories[0], exa.getCode(), exa.getDescription(), priceValue, true, p != null && p.isVariable())));
 		}
 
 		opeNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[1], null)); //$NON-NLS-1$ //$NON-NLS-2$
 		for (Operation ope : operArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[1] + ope.getCode());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			opeNodes.addItem(new PriceNode(new Price(null, cCategories[1], ope.getCode(), ope.getDescription(), priceValue)));
+			opeNodes.addItem(new PriceNode(new Price(null, cCategories[1], ope.getCode(), ope.getDescription(), priceValue, true, p != null && p.isVariable())));
 		}
 
 		medNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[2], null)); //$NON-NLS-1$ //$NON-NLS-2$
 		for (Medical med : mediArray) {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[2] + med.getCode().toString());
 			double priceValue = p != null ? p.getPrice() : 0.;
-			medNodes.addItem(new PriceNode(new Price(null, cCategories[2], med.getCode().toString(), med.getDescription(), priceValue)));
+			medNodes.addItem(new PriceNode(new Price(null, cCategories[2], med.getCode().toString(), med.getDescription(), priceValue, true, p != null && p.isVariable())));
 		}
 
 		othNodes = new PriceNode(new Price(null, "", "", cCategoriesNames[3], null)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -391,7 +392,7 @@ public class PricesBrowser extends ModalJFrame {
 			Price p = priceHashTable.get(listSelected.getId() + cCategories[3] + oth.getId());
 			double priceValue = p != null ? p.getPrice() : 0.;
 			othNodes.addItem(
-					new PriceNode(new Price(null, cCategories[3], Integer.toString(oth.getId()), oth.getDescription(), priceValue, !oth.isUndefined())));
+					new PriceNode(new Price(null, cCategories[3], Integer.toString(oth.getId()), oth.getDescription(), priceValue, !oth.isUndefined(), p != null && p.isVariable())));
 		}
 
 		PriceNode root = new PriceNode(new Price(null, "", "", listSelected.getName(), null)); //$NON-NLS-1$ //$NON-NLS-2$

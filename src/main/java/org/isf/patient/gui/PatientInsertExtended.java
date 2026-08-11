@@ -3295,6 +3295,15 @@ public class PatientInsertExtended extends JDialog {
 					return;
 				}
 
+				if (countryIoOperations.getCountryByPhoneCode(phoneCodeStr).isPresent()) {
+					MessageDialog.error(dialog, MessageBundle.formatMessage("angal.country.phonecode.exists.msg", phoneCodeStr));
+					return;
+				}
+				if (countryIoOperations.getCountryByName(name).isPresent()) {
+					MessageDialog.error(dialog, MessageBundle.formatMessage("angal.country.name.exists.msg", name));
+					return;
+				}
+
 				Country newCountry = new Country(isoCode, phoneCodeStr, name);
 				Country savedCountry = countryIoOperations.saveCountry(newCountry);
 

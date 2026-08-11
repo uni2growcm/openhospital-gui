@@ -104,6 +104,52 @@ class PriceUpdateListTest {
 	}
 
 	@Test
+	void shouldPersistVariableFlagForExistingPriceWhenChecked() {
+		List<Price> dbPrices = new ArrayList<>();
+		dbPrices.add(price(listA, "EXA", "E01", 100));
+		PriceNode treeItem = item("EXA", "E01", 150);
+		treeItem.getPrice().setVariable(true);
+		PriceNode tree = treeRoot(category("Exams", treeItem));
+
+		List<Price> result = PricesBrowser.buildPriceUpdateList(dbPrices, listA, tree);
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).isVariable()).isTrue();
+	}
+
+	@Test
+	void shouldPersistVariableFlagForExistingPriceWhenUnchecked() {
+		List<Price> dbPrices = new ArrayList<>();
+		Price dbPrice = price(listA, "EXA", "E01", 100);
+		dbPrice.setVariable(true);
+		dbPrices.add(dbPrice);
+		PriceNode tree = treeRoot(category("Exams", item("EXA", "E01", 150)));
+
+		List<Price> result = PricesBrowser.buildPriceUpdateList(dbPrices, listA, tree);
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).isVariable()).isFalse();
+	}
+
+	@Test
+	void shouldCreateNewPriceRowWithVariableFlagWhenItemHadNoPrice() {
+		List<Price> dbPrices = new ArrayList<>();
+		dbPrices.add(price(listA, "MED", "M01", 50));
+		PriceNode treeItem = item("MED", "M02", 75);
+		treeItem.getPrice().setVariable(true);
+		PriceNode tree = treeRoot(category("Medicals", treeItem));
+
+		List<Price> result = PricesBrowser.buildPriceUpdateList(dbPrices, listA, tree);
+
+		assertThat(result).hasSize(2);
+		Price newPrice = result.stream().filter(p -> "M02".equals(p.getItem())).findFirst().orElseThrow();
+		assertThat(newPrice.getList()).isSameAs(listA);
+		assertThat(newPrice.getGroup()).isEqualTo("MED");
+		assertThat(newPrice.getPrice()).isEqualTo(75.0);
+		assertThat(newPrice.isVariable()).isTrue();
+	}
+
+	@Test
 	void shouldKeepStoredValuesForItemsHiddenBySearchFilter() {
 		List<Price> dbPrices = new ArrayList<>();
 		dbPrices.add(price(listA, "EXA", "E01", 100));
