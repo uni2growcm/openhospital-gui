@@ -1917,7 +1917,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			jPanelButtonsBill.add(getJButtonAddExam());
 			jPanelButtonsBill.add(getJButtonAddOther());
 			jPanelButtonsBill.add(getJButtonAddCustom());
-            jPanelButtonsBill.add(getJButtonAddGroup());
+            if (GeneralData.ENABLEBILLITEMGROUP)
+				jPanelButtonsBill.add(getJButtonAddGroup());
 			jPanelButtonsBill.add(getJButtonRemoveItem());
             jPanelButtonsBill.add(getJButtonRemoveAllItem());
 			Dimension size = new Dimension(BUTTON_WIDTH, BILL_HEIGHT + TOTAL_HEIGHT);
