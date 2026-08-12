@@ -102,7 +102,7 @@
 				<textFieldExpression><![CDATA[$P{ospedaleCitta} != null ? $P{ospedaleCitta} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-12" x="0" y="108" width="260" height="14" isPrintWhenDetailOverflows="true" uuid="77962e8b-8b9a-4a98-84b1-673880822945"/>
+				<reportElement key="textField-12" x="0" y="108" width="260" height="14" isPrintWhenDetailOverflows="true" uuid="77962e8b-8b9a-4a84-9b1f-673880822945"/>
 				<textElement>
 					<font fontName="DejaVu Sans" size="10"/>
 				</textElement>
@@ -216,11 +216,11 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Prevent">
+		<band height="18" splitType="Stretch">
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField" x="0" y="0" width="85" height="18" isPrintWhenDetailOverflows="true" uuid="25f1c334-389e-47f8-97a3-5ae948b2b0f8"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="85" height="18" isPrintWhenDetailOverflows="true" uuid="25f1c334-389e-47f8-97a3-5ae948b2b0f8"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -231,9 +231,9 @@
 				<textFieldExpression><![CDATA[$F{date} != null ? $F{date}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField" x="85" y="0" width="120" height="18" isPrintWhenDetailOverflows="true" uuid="1422069f-b8bf-4c0c-90ff-c25f63e05d7c"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="85" y="0" width="120" height="18" isPrintWhenDetailOverflows="true" uuid="1422069f-b8bf-4c0c-90ff-c25f63e05d7c"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -244,9 +244,9 @@
 				<textFieldExpression><![CDATA[$F{patName} != null ? $F{patName} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField" x="205" y="0" width="100" height="18" isPrintWhenDetailOverflows="true" uuid="09da5319-3f04-42d5-8027-d1de436685a2"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="205" y="0" width="100" height="18" isPrintWhenDetailOverflows="true" uuid="09da5319-3f04-42d5-8027-d1de436685a2"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -257,9 +257,9 @@
 				<textFieldExpression><![CDATA[$F{exam} != null ? $F{exam} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField" x="305" y="0" width="90" height="18" isPrintWhenDetailOverflows="true" uuid="6c5d4b2f-9e1a-4c3b-8f7d-0a2b4c6e8f10"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="305" y="0" width="90" height="18" isPrintWhenDetailOverflows="true" uuid="6c5d4b2f-9e1a-4c3b-8f7d-0a2b4c6e8f10"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -270,22 +270,22 @@
 				<textFieldExpression><![CDATA[$F{prescriber} != null ? $F{prescriber} : ""]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField" x="395" y="0" width="80" height="18" isPrintWhenDetailOverflows="true" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="395" y="0" width="80" height="18" isPrintWhenDetailOverflows="true" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{result} != null ? $F{result} : ""]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="475" y="0" width="60" height="18" isPrintWhenDetailOverflows="true" uuid="8b7a5e31-2c9f-4a1d-b6e4-0f3c8a2d5b19"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="475" y="0" width="60" height="18" isPrintWhenDetailOverflows="true" uuid="8b7a5e31-2c9f-4a1d-b6e4-0f3c8a2d5b19"/>
 				<box>
-					<topPen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>

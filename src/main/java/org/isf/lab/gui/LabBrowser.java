@@ -48,8 +48,6 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-import net.sf.jasperreports.engine.JRException;
-
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exatype.model.ExamType;
@@ -67,13 +65,10 @@ import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
-import org.isf.serviceprinting.manager.PrintLabels;
 import org.isf.serviceprinting.manager.PrintManager;
 import org.isf.stat.gui.report.GenericReportPrescriberListExam;
-import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
-import org.isf.utils.exception.model.OHExceptionMessage;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -188,7 +183,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private GoodDateChooser dateFrom;
 	private GoodDateChooser dateTo;
 	private final JFrame myFrame;
-	private JButton printLabelButton;
 	private JButton doctorPrescriptionButton;
 
 	/**
@@ -250,7 +244,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				buttonPanel.add(getButtonDelete(), null);
 			}
 			buttonPanel.add(getPrintTableButton(), null);
-			buttonPanel.add(getPrintLabelButton(), null);
 			buttonPanel.add(getDoctorPrescriptionButton(), null);
 			buttonPanel.add(getCloseButton(), null);
 			jButtonPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -306,46 +299,6 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			}
 		}
 		return comboPrescriber;
-	}
-
-	private JButton getPrintLabelButton() {
-		if (printLabelButton == null) {
-			printLabelButton = new JButton(MessageBundle.getMessage("angal.labnew.printlabel.btn"));
-			printLabelButton.setMnemonic(MessageBundle.getMnemonic("angal.labnew.printlabel.btn.key"));
-			printLabelButton.addActionListener(actionEvent -> {
-				Integer patId = null;
-				if (GeneralData.LABEXTENDED) {
-					selectedrow = jTable.getSelectedRow();
-					if (selectedrow < 0) {
-						int ok = MessageDialog.yesNoCancel(this, "angal.lab.nopatientselectedprintempylabel.msg");
-						if (ok == JOptionPane.NO_OPTION) {
-							SelectPatient selectPatient = new SelectPatient(this, (Patient) null);
-							selectPatient.setVisible(true);
-							Patient patient = selectPatient.getPatient();
-							if (patient != null) {
-								patId = selectPatient.getPatient().getCode();
-							} else {
-								return;
-							}
-						}
-						if (ok == JOptionPane.CANCEL_OPTION) {
-							return;
-						}
-					} else {
-						laboratory = (Laboratory) model.getValueAt(selectedrow, -1);
-						patId = laboratory.getPatient().getCode();
-					}
-				}
-				try {
-					new PrintLabels("LabelForSamples", patId);
-				} catch (OHException e) {
-					OHServiceExceptionUtil.showMessages(new OHServiceException(new OHExceptionMessage(e.getMessage())));
-				} catch (JRException e) {
-					OHServiceExceptionUtil.showMessages(new OHServiceException(new OHExceptionMessage(MessageBundle.getMessage("angal.lab.noprinter.msg"))));
-				}
-			});
-		}
-		return printLabelButton;
 	}
 
 	private JButton getDoctorPrescriptionButton() {
