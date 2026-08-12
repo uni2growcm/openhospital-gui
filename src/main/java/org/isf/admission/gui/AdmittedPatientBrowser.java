@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -103,7 +104,10 @@ import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.PaginationPanel;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
@@ -141,18 +145,23 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JCheckBox[] wardCheck;
 	private JTextField searchString;
 	private JButton jSearchButton;
+	private PaginationPanel paginationPanel;
 	private JButton jButtonExamination;
 	private String lastKey = "";
 	private List<Ward> wardList;
 	private JLabel rowCounter;
 	private List<AdmittedPatient> pPatient = new ArrayList<>();
+	private int currentPage;
+	private PageInfo lastPageInfo;
 	private String[] pColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(), MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
-			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase() };
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false };
+			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.admission.bed.border").toUpperCase(),
+			MessageBundle.getMessage("angal.admission.room.border").toUpperCase() };
+	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 80, 80 };
+	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, false };
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
@@ -162,8 +171,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private ExaminationBrowserManager examinationBrowserManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
 
-	protected boolean altKeyReleased = true;
-	protected Timer ageTimer = new Timer(1000, e -> filterPatient(null));
+	protected Timer ageTimer = new Timer(1000, e -> searchPatientPage(0));
 
 	public void fireMyDeletedPatient(Patient p) {
 
@@ -336,22 +344,14 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		setTitle(MessageBundle.getMessage("angal.admission.patientbrowser.title"));
 		myFrame = this;
 
-		if (!GeneralData.ENHANCEDSEARCH) {
-			// Load the whole list of patients
-			try {
-				pPatient = admissionBrowserManager.getAdmittedPatients(null);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-		}
-
 		initComponents();
 		setMinimumSize(new Dimension(1270, 570));
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
 
-		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", pPatient.size()));
+		// Load the first page of admitted patients (always paginated, regardless of ENHANCEDSEARCH).
+		searchPatientPage(0);
 		searchString.requestFocus();
 
 		myFrame.addWindowListener(new WindowAdapter() {
@@ -386,15 +386,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	 * Panel with filtering controls
 	 */
 	private JPanel getControlPanel() {
-		ActionListener listener = actionEvent -> SwingUtilities.invokeLater(() -> {
-			lastKey = "";
-			filterPatient(null);
-		});
+		ActionListener listener = actionEvent -> SwingUtilities.invokeLater(() -> searchPatientPage(0));
 
 		patientClassBox = new JComboBox(patientClassItems);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			patientClassBox.addActionListener(listener);
-		}
+		patientClassBox.addActionListener(listener);
 
 		JPanel classPanel = new JPanel();
 		classPanel.setLayout(new BoxLayout(classPanel, BoxLayout.Y_AXIS));
@@ -424,9 +419,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			checkPanel[i] = new JPanel(new BorderLayout());
 			wardCheck[i] = new JCheckBox();
 			wardCheck[i].setSelected(true);
-			if (!GeneralData.ENHANCEDSEARCH) {
-				wardCheck[i].addActionListener(listener);
-			}
+			wardCheck[i].addActionListener(listener);
 			checkPanel[i].add(wardCheck[i], BorderLayout.WEST);
 			checkPanel[i].add(new JLabel(wardList.get(i).getDescription()), BorderLayout.CENTER);
 			wardPanel.add(checkPanel[i], null);
@@ -452,15 +445,11 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		JLabel ageFrom = new JLabel(MessageBundle.getMessage("angal.common.from.txt") + ':');
 		patientAgeFromTextField = new VoLimitedTextField(3, 3);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			patientAgeFromTextField.addKeyListener(ageKeyListener);
-		}
+		patientAgeFromTextField.addKeyListener(ageKeyListener);
 
 		JLabel ageTo = new JLabel(MessageBundle.getMessage("angal.common.to.txt") + ':');
 		patientAgeToTextField = new VoLimitedTextField(3, 3);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			patientAgeToTextField.addKeyListener(ageKeyListener);
-		}
+		patientAgeToTextField.addKeyListener(ageKeyListener);
 
 		JPanel agePanel = new JPanel();
 		agePanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
@@ -472,9 +461,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		patientSexBox = new JComboBox(patientSexItems);
 		patientSexBox.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
-		if (!GeneralData.ENHANCEDSEARCH) {
-			patientSexBox.addActionListener(listener);
-		}
+		patientSexBox.addActionListener(listener);
 
 		JPanel sexPanel = new JPanel();
 		sexPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
@@ -486,51 +473,28 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		searchPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
 		searchString = new JTextField();
 		searchString.setColumns(15);
-		if (GeneralData.ENHANCEDSEARCH) {
-			searchString.addKeyListener(new KeyAdapter() {
+		searchString.addKeyListener(new KeyAdapter() {
 
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						jSearchButton.doClick();
-					}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					searchPatientPage(0);
+				} else {
+					ageTimer.setRepeats(false);
+					ageTimer.start();
 				}
-			});
-		} else {
-			searchString.addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if (altKeyReleased) {
-						lastKey = "";
-						String s = String.valueOf(e.getKeyChar());
-						if (Character.isLetterOrDigit(e.getKeyChar())) {
-							lastKey = s;
-						}
-						filterPatient(searchString.getText());
-					}
-				}
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ALT) {
-						altKeyReleased = false;
-					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-					altKeyReleased = true;
-				}
-			});
-		}
+			}
+		});
 		searchPanel.add(searchString, BorderLayout.CENTER);
-		if (GeneralData.ENHANCEDSEARCH) {
-			searchPanel.add(getButtonSearch(), BorderLayout.EAST);
-		}
+		JPanel searchEastPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+		searchEastPanel.add(getButtonSearch());
+		searchPanel.add(searchEastPanel, BorderLayout.EAST);
 		searchPanel = setMyBorder(searchPanel, MessageBundle.getMessage("angal.admission.searchkey.border"));
+
+		JPanel paginationBorderPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		paginationBorderPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 30));
+		paginationBorderPanel.add(getPaginationPanel());
+		paginationBorderPanel = setMyBorder(paginationBorderPanel, null);
 
 		JPanel mainPanel = new JPanel();
 		GroupLayout layout = new GroupLayout(mainPanel);
@@ -543,7 +507,8 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 										.addComponent(calendarPanel, width, width, width) //
 										.addComponent(agePanel, width, width, width) //
 										.addComponent(sexPanel, width, width, width) //
-										.addComponent(searchPanel, width, width, width)));
+										.addComponent(searchPanel, width, width, width)
+										.addComponent(paginationBorderPanel, width, width, width)));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
 						.addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(classPanel, GroupLayout.DEFAULT_SIZE,
@@ -559,7 +524,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 										GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)) //
 						.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
-										.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
+										.addComponent(searchPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.BASELINE) //
+								.addComponent(paginationBorderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)));
 
 		mainPanel.setLayout(layout);
 		return mainPanel;
@@ -1094,20 +1062,28 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	}
 
 	private void searchPatient() {
-		boolean isFilteredList = patientClassBox.getSelectedIndex() > 0 || //
-				dateChoosers[0].getDate() != null && dateChoosers[1].getDate() != null || //
-				dateChoosers[2].getDate() != null && dateChoosers[3].getDate() != null || //
-				!patientAgeFromTextField.getText().isEmpty() || //
-				!patientAgeToTextField.getText().isEmpty() || //
-				patientSexBox.getSelectedIndex() > 0 || //
-				!searchString.getText().isEmpty();
-		if (!isFilteredList) {
-			int ok = MessageDialog.okCancel(this, "angal.common.thiscouldretrievealargeamountofdataproceed.msg");
-			if (ok != JOptionPane.OK_OPTION) {
-				return;
-			}
-		}
+		// Data is always fetched paginated now, regardless of filters, so the "large data set" warning
+		// that used to gate an unfiltered search no longer applies.
+		searchPatientPage(0);
+	}
 
+	/**
+	 * Triggered by a filter-changing action (search text/widget change, window open). Always forces a
+	 * fresh total-count query, since the total may have changed for the new filter.
+	 */
+	private void searchPatientPage(int page) {
+		searchPatientPage(page, null);
+	}
+
+	/**
+	 * Triggered by {@link PaginationPanel} navigation on an unchanged filter. Skips the total-count query
+	 * by reusing the total already known from the last fetch.
+	 */
+	private void navigateToPage(int page) {
+		searchPatientPage(page, lastPageInfo == null ? null : lastPageInfo.getTotalNbOfElements());
+	}
+
+	private void searchPatientPage(int page, Long knownTotalElements) {
 		LocalDateTime[] admissionRange = new LocalDateTime[2];
 		LocalDateTime[] dischargeRange = new LocalDateTime[2];
 		for (int i = 0; i <= dateChoosers.length - 1; i++) {
@@ -1127,11 +1103,44 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			}
 		}
 
+		Boolean admitted = switch (patientClassBox.getSelectedIndex()) {
+			case 1 -> Boolean.TRUE;
+			case 2 -> Boolean.FALSE;
+			default -> null;
+		};
+
+		List<String> wardCodes = null;
+		if (wardCheck != null) {
+			List<String> selected = new ArrayList<>();
+			for (int i = 0; i < wardCheck.length; i++) {
+				if (wardCheck[i].isSelected()) {
+					selected.add(wardList.get(i).getCode());
+				}
+			}
+			if (selected.size() < wardList.size()) {
+				wardCodes = selected;
+			}
+		}
+
+		Integer ageFrom = DIGIT_PATTERN.matcher(patientAgeFromTextField.getText()).matches() ? Integer.valueOf(patientAgeFromTextField.getText()) : null;
+		Integer ageTo = DIGIT_PATTERN.matcher(patientAgeToTextField.getText()).matches() ? Integer.valueOf(patientAgeToTextField.getText()) : null;
+		Character sex = switch (patientSexBox.getSelectedIndex()) {
+			case 1 -> 'M';
+			case 2 -> 'F';
+			default -> null;
+		};
+
 		try {
-			pPatient = admissionBrowserManager.getAdmittedPatients(admissionRange, dischargeRange, searchString.getText());
+			PagedResponse<AdmittedPatient> response = admissionBrowserManager.getAdmittedPatients(admissionRange, dischargeRange, searchString.getText(),
+							admitted, wardCodes, ageFrom, ageTo, sex, page, knownTotalElements);
+			pPatient = new ArrayList<>(response.getData());
+			lastPageInfo = response.getPageInfo();
+			currentPage = page;
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
+			lastPageInfo = null;
 		}
+		getPaginationPanel().update(lastPageInfo);
 		filterPatient(null);
 	}
 
@@ -1143,6 +1152,13 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			jSearchButton.addActionListener(actionEvent -> searchPatient());
 		}
 		return jSearchButton;
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::navigateToPage);
+		}
+		return paginationPanel;
 	}
 
 	private JPanel setMyBorder(JPanel c, String title) {
@@ -1288,6 +1304,10 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 					}
 					return "?";
 				}
+			} else if (c == 6) {
+				return admission == null ? "" : admission.getBed();
+			} else if (c == 7) {
+				return admission == null ? "" : admission.getRoom();
 			}
 
 			return null;

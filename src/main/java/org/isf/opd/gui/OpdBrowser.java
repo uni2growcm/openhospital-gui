@@ -83,8 +83,11 @@ import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.PaginationPanel;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
 import org.isf.ward.manager.WardBrowserManager;
 import org.isf.ward.model.Ward;
@@ -152,8 +155,21 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private boolean[] columnsBold = { true, true, false, false, true, false, false, false, false, false, false, false };
 	private int selectedrow;
 	private JButton filterButton;
+	private PaginationPanel paginationPanel;
 	private String rowCounterText = MessageBundle.getMessage("angal.common.count.label") + ' ';
 	private JLabel rowCounter;
+	private int currentPage;
+	private PageInfo lastPageInfo;
+	private Ward lastFilterWard;
+	private String lastFilterDiseaseType;
+	private String lastFilterDisease;
+	private LocalDate lastFilterDateFrom;
+	private LocalDate lastFilterDateTo;
+	private int lastFilterAgeFrom;
+	private int lastFilterAgeTo;
+	private char lastFilterSex;
+	private char lastFilterNewPatient;
+	private String lastFilterUser;
 	private JRadioButton radioNewAttendance;
 	private JRadioButton radioAllPatiens;
 	private final JFrame myFrame;
@@ -172,7 +188,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 
 	private JTable getJTable() {
 		if (jTable == null) {
-			model = new OpdBrowsingModel();
+			initDefaultFilter();
+			model = new OpdBrowsingModel(lastFilterWard, lastFilterDiseaseType, lastFilterDisease, lastFilterDateFrom, lastFilterDateTo, lastFilterAgeFrom,
+					lastFilterAgeTo, lastFilterSex, lastFilterNewPatient, lastFilterUser, 0);
 			jTable = new JTable(model);
 			jTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			TableColumnModel columnModel = jTable.getColumnModel();
@@ -196,6 +214,33 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	
 	private int getJTableWidth() {
 	    return Arrays.stream(pColumnWidth).sum();
+	}
+
+	private void initDefaultFilter() {
+		String diseasetype = ((DiseaseType) jDiseaseTypeBox.getSelectedItem()).getCode();
+		if (diseasetype.equals(allDiseaseType.getCode())) {
+			diseasetype = null;
+		}
+		String disease = ((Disease) jDiseaseBox.getSelectedItem()).getCode();
+		if (disease.equals(allDisease.getCode())) {
+			disease = null;
+		}
+		Ward ward = null;
+		try {
+			ward = (Ward) jWardBox.getSelectedItem();
+		} catch (ClassCastException e) {
+			// AllWards selected
+		}
+		lastFilterWard = ward;
+		lastFilterDiseaseType = diseasetype;
+		lastFilterDisease = disease;
+		lastFilterDateFrom = dateFrom.getDate();
+		lastFilterDateTo = dateTo.getDate();
+		lastFilterAgeFrom = ageFrom;
+		lastFilterAgeTo = ageTo;
+		lastFilterSex = getGender();
+		lastFilterNewPatient = getPatientAttendance();
+		lastFilterUser = getUser();
 	}
 
 	class AlignmentCellRenderer extends DefaultTableCellRenderer {
@@ -443,8 +488,41 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		filterButtonPanel.add(getResetButton());
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
 		buttonsPanel.add(filterButtonPanel);
+		buttonsPanel.add(getPaginationPanel());
 		buttonsPanel.add(getRowCounter());
 		return buttonsPanel;
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::navigateToPage);
+		}
+		return paginationPanel;
+	}
+
+	/**
+	 * Triggered by {@link PaginationPanel} navigation on an unchanged filter. Skips the total-count query
+	 * by reusing the total already known from the last fetch.
+	 */
+	private void navigateToPage(int page) {
+		loadOpdPage(page, lastPageInfo == null ? null : lastPageInfo.getTotalNbOfElements());
+	}
+
+	/**
+	 * Triggered by a filter-changing action (Filter button). Always forces a fresh total-count query,
+	 * since the total may have changed for the new filter.
+	 */
+	private void loadOpdPage(int page) {
+		loadOpdPage(page, null);
+	}
+
+	private void loadOpdPage(int page, Long knownTotalElements) {
+		model = new OpdBrowsingModel(lastFilterWard, lastFilterDiseaseType, lastFilterDisease, lastFilterDateFrom, lastFilterDateTo, lastFilterAgeFrom,
+				lastFilterAgeTo, lastFilterSex, lastFilterNewPatient, lastFilterUser, page, knownTotalElements);
+		model.fireTableDataChanged();
+		jTable.updateUI();
+		rowCounter.setText(rowCounterText + (lastPageInfo == null ? 0 : lastPageInfo.getTotalNbOfElements()));
+		getPaginationPanel().update(lastPageInfo);
 	}
 
 	private JPanel getOtherFiltersPanel() {
@@ -931,19 +1009,21 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		private static final long serialVersionUID = -9129145534999353730L;
 
 		public OpdBrowsingModel(Ward ward, String diseaseTypeCode, String diseaseCode, LocalDate dateFrom, LocalDate dateTo, int ageFrom, int ageTo,
-				char sex, char newPatient, String user) {
-			try {
-				pSur = opdBrowserManager.getOpd(ward, diseaseTypeCode, diseaseCode, dateFrom, dateTo, ageFrom, ageTo, sex, newPatient, user);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-			}
+				char sex, char newPatient, String user, int page) {
+			this(ward, diseaseTypeCode, diseaseCode, dateFrom, dateTo, ageFrom, ageTo, sex, newPatient, user, page, null);
 		}
 
-		public OpdBrowsingModel() {
+		public OpdBrowsingModel(Ward ward, String diseaseTypeCode, String diseaseCode, LocalDate dateFrom, LocalDate dateTo, int ageFrom, int ageTo,
+				char sex, char newPatient, String user, int page, Long knownTotalElements) {
 			try {
-				pSur = opdBrowserManager.getOpd(!GeneralData.ENHANCEDSEARCH);
+				PagedResponse<Opd> response = opdBrowserManager.getOpdPageable(ward, diseaseTypeCode, diseaseCode, dateFrom, dateTo, ageFrom, ageTo, sex,
+						newPatient, user, page, knownTotalElements);
+				pSur = new ArrayList<>(response.getData());
+				lastPageInfo = response.getPageInfo();
+				currentPage = page;
 			} catch (OHServiceException ohServiceException) {
 				MessageDialog.showExceptions(ohServiceException);
+				lastPageInfo = null;
 			}
 		}
 
@@ -1091,10 +1171,17 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 				opdCodeFilter.setText("");
 				progYearFilter.setText("");
 				patientCodeFilter.setText("");
-				model = new OpdBrowsingModel(ward, diseasetype, disease, dateFrom.getDate(), dateTo.getDate(), ageFrom, ageTo, sex, newPatient, user);
-				model.fireTableDataChanged();
-				jTable.updateUI();
-				rowCounter.setText(rowCounterText + pSur.size());
+				lastFilterWard = ward;
+				lastFilterDiseaseType = diseasetype;
+				lastFilterDisease = disease;
+				lastFilterDateFrom = dateFrom.getDate();
+				lastFilterDateTo = dateTo.getDate();
+				lastFilterAgeFrom = ageFrom;
+				lastFilterAgeTo = ageTo;
+				lastFilterSex = sex;
+				lastFilterNewPatient = newPatient;
+				lastFilterUser = user;
+				loadOpdPage(0);
 			});
 		}
 		return filterButton;
