@@ -74,6 +74,7 @@ import org.isf.anamnesis.gui.PatientHistoryEdit;
 import org.isf.anamnesis.manager.PatientHistoryManager;
 import org.isf.anamnesis.model.PatientHistory;
 import org.isf.anamnesis.model.PatientPatientHistory;
+import org.isf.disease.gui.DiseaseEdit;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
 import org.isf.distype.manager.DiseaseTypeBrowserManager;
@@ -115,7 +116,8 @@ import org.slf4j.LoggerFactory;
 /**
  * OpdEditExtended - add/edit an OPD registration
  */
-public class OpdEditExtended extends ModalJFrame implements PatientInsertExtended.PatientListener, PatientListener, ActionListener {
+public class OpdEditExtended extends ModalJFrame implements PatientInsertExtended.PatientListener, PatientListener, ActionListener,
+				DiseaseEdit.DiseaseListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -140,6 +142,21 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	@Override
 	public void patientUpdated(AWTEvent e) {
 		setPatient(opdPatient);
+	}
+
+	@Override
+	public void diseaseInserted(AWTEvent e) {
+		try {
+			diseasesOPD = diseaseBrowserManager.getDiseaseOpd();
+			diseasesAll = diseaseBrowserManager.getDiseaseAll();
+		} catch (OHServiceException ohServiceException) {
+			OHServiceExceptionUtil.showMessages(ohServiceException);
+		}
+	}
+
+	@Override
+	public void diseaseUpdated(AWTEvent e) {
+		// the "New Diagnosis" button only ever inserts, never edits, an existing disease
 	}
 
 	private EventListenerList surgeryListeners = new EventListenerList();
@@ -281,6 +298,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JLabel nextVisitLabel;
 	private JLabel isMalnutriLabel;
 	private JCheckBox isMalnutriCheckBox;
+	private JButton jButtonNewDiagnosis;
 	private GoodDateTimeVisitChooser opdNextVisitDate;
 
 	private GridBagConstraints gbcOpdNextVisitDate; //needed to update the component
@@ -907,17 +925,40 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			GridBagConstraints gbcIsMalnutriLabel = new GridBagConstraints();
 			gbcIsMalnutriLabel.insets = new Insets(0, 0, 0, 5);
 			gbcIsMalnutriLabel.anchor = GridBagConstraints.WEST;
-			gbcIsMalnutriLabel.gridx = 0;
+			gbcIsMalnutriLabel.gridx = 2;
 			gbcIsMalnutriLabel.gridy = 6;
 			jPanelData.add(getIsMalnutriLabel(), gbcIsMalnutriLabel);
 			GridBagConstraints gbcIsMalnutriCheckBox = new GridBagConstraints();
 			gbcIsMalnutriCheckBox.insets = new Insets(0, 0, 0, 5);
 			gbcIsMalnutriCheckBox.anchor = GridBagConstraints.WEST;
-			gbcIsMalnutriCheckBox.gridx = 1;
+			gbcIsMalnutriCheckBox.gridx = 3;
 			gbcIsMalnutriCheckBox.gridy = 6;
 			jPanelData.add(getIsMalnutriCheckBox(), gbcIsMalnutriCheckBox);
+
+			GridBagConstraints gbcNewDiagnosisButton = new GridBagConstraints();
+			gbcNewDiagnosisButton.insets = new Insets(5, 0, 0, 5);
+			gbcNewDiagnosisButton.anchor = GridBagConstraints.WEST;
+			gbcNewDiagnosisButton.gridx = 1;
+			gbcNewDiagnosisButton.gridy = 6;
+			jPanelData.add(getJButtonNewDiagnosis(), gbcNewDiagnosisButton);
 		}
 		return jPanelData;
+	}
+
+	private JButton getJButtonNewDiagnosis() {
+		if (jButtonNewDiagnosis == null) {
+			jButtonNewDiagnosis = new JButton(MessageBundle.getMessage("angal.disease.newdiagnosis"));
+			jButtonNewDiagnosis.addActionListener(actionEvent -> {
+				Disease disease = new Disease(null, "", new DiseaseType("", ""));
+				disease.setIpdInInclude(true);
+				disease.setIpdOutInclude(true);
+				disease.setOpdInclude(true);
+				DiseaseEdit newrecord = new DiseaseEdit(this, disease, true);
+				newrecord.addDiseaseListener(this);
+				newrecord.setVisible(true);
+			});
+		}
+		return jButtonNewDiagnosis;
 	}
 
 	private JLabel getIsMalnutriLabel() {
