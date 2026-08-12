@@ -145,6 +145,34 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	}
 
 	/**
+	 * Opens the browser pre-filtered to a single patient's lab exams. The patient filter is locked
+	 * (pre-filled and disabled) so the window stays scoped to that patient; the exam-type and
+	 * date-range filters remain usable.
+	 */
+	public LabBrowser(Patient patient) {
+		super();
+		myFrame = this;
+		this.setTitle(MessageBundle.getMessage("angal.lab.laboratorybrowser.title"));
+		this.setContentPane(getJContentPane());
+		setSize(new Dimension(1345, 650));
+		setResizable(false);
+		setLocationRelativeTo(null);
+
+		patientCodeField.setText(String.valueOf(patient.getCode()));
+		patientCodeField.setEnabled(false);
+
+		typeSelected = comboExams.getSelectedItem().toString();
+		if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
+			typeSelected = "";
+		}
+		model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
+		model.fireTableDataChanged();
+		jTable.updateUI();
+
+		setVisible(true);
+	}
+
+	/**
 	 * This method initializes jContentPane, adds the main parts of the frame
 	 *
 	 * @return jContentPanel (JPanel)

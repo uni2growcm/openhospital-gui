@@ -73,6 +73,7 @@ import org.isf.distype.manager.DiseaseTypeBrowserManager;
 import org.isf.distype.model.DiseaseType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.lab.gui.LabBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -105,6 +106,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jEditButton;
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
+	private JButton manageExamsButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
 	private JPanel jAgeFromPanel;
@@ -297,6 +299,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			if (MainMenu.checkUserGrants("btnopddel")) {
 				jButtonPanel.add(getJDeleteButton(), null);
 			}
+			if (MainMenu.checkUserGrants("opdexam")) {
+				jButtonPanel.add(getManageExamsButton(), null);
+			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
 		return jButtonPanel;
@@ -458,6 +463,27 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return jDeleteButton;
+	}
+
+	/**
+	 * This method initializes manageExamsButton, which opens the selected visit's patient's lab exams
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getManageExamsButton() {
+		if (manageExamsButton == null) {
+			manageExamsButton = new JButton(MessageBundle.getMessage("angal.opd.manageexams.btn"));
+			manageExamsButton.setMnemonic(MessageBundle.getMnemonic("angal.opd.manageexams.btn.key"));
+			manageExamsButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				new LabBrowser(opd.getPatient());
+			});
+		}
+		return manageExamsButton;
 	}
 
 	/**
