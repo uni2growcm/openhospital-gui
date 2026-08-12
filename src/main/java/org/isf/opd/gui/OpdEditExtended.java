@@ -279,6 +279,8 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	 * Opd next visit fields
 	 */
 	private JLabel nextVisitLabel;
+	private JLabel isMalnutriLabel;
+	private JCheckBox isMalnutriCheckBox;
 	private GoodDateTimeVisitChooser opdNextVisitDate;
 
 	private GridBagConstraints gbcOpdNextVisitDate; //needed to update the component
@@ -901,8 +903,36 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcLabelNextVisitWard.gridx = 2;
 			gbcLabelNextVisitWard.gridy = 8;
 			jPanelData.add(getJNextVisitWardPanel(), gbcLabelNextVisitWard);
+
+			GridBagConstraints gbcIsMalnutriLabel = new GridBagConstraints();
+			gbcIsMalnutriLabel.insets = new Insets(0, 0, 0, 5);
+			gbcIsMalnutriLabel.anchor = GridBagConstraints.WEST;
+			gbcIsMalnutriLabel.gridx = 0;
+			gbcIsMalnutriLabel.gridy = 6;
+			jPanelData.add(getIsMalnutriLabel(), gbcIsMalnutriLabel);
+			GridBagConstraints gbcIsMalnutriCheckBox = new GridBagConstraints();
+			gbcIsMalnutriCheckBox.insets = new Insets(0, 0, 0, 5);
+			gbcIsMalnutriCheckBox.anchor = GridBagConstraints.WEST;
+			gbcIsMalnutriCheckBox.gridx = 1;
+			gbcIsMalnutriCheckBox.gridy = 6;
+			jPanelData.add(getIsMalnutriCheckBox(), gbcIsMalnutriCheckBox);
 		}
 		return jPanelData;
+	}
+
+	private JLabel getIsMalnutriLabel() {
+		if (isMalnutriLabel == null) {
+			isMalnutriLabel = new JLabel(MessageBundle.getMessage("angal.admission.malnutrition.txt"));
+		}
+		return isMalnutriLabel;
+	}
+
+	private JCheckBox getIsMalnutriCheckBox() {
+		if (isMalnutriCheckBox == null) {
+			isMalnutriCheckBox = new JCheckBox("");
+			isMalnutriCheckBox.setSelected(opd.isMalnutri());
+		}
+		return isMalnutriCheckBox;
 	}
 
 	private GoodDateTimeSpinnerChooser getOpdDateFieldCal() {
@@ -1821,6 +1851,7 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setDisease3(disease3);
 				opd.setUserID(UserBrowsingManager.getCurrentUser());
 				opd.setWard(opdWard);
+				opd.setMalnutri(isMalnutriCheckBox.isSelected());
 
 				try {
 					if (insert) { // Insert

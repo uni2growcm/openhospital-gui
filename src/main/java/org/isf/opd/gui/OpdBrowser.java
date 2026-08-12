@@ -76,6 +76,7 @@ import org.isf.distype.model.DiseaseType;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabBrowser;
+import org.isf.malnutrition.gui.MalnutritionBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
@@ -113,6 +114,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton manageExamsButton;
 	private JButton therapyButton;
 	private JButton operationButton;
+	private JButton malnutritionButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
 	private JPanel jAgeFromPanel;
@@ -314,6 +316,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 			if (MainMenu.checkUserGrants("opdeope")) {
 				jButtonPanel.add(getOperationButton(), null);
+			}
+			if (MainMenu.checkUserGrants("opdmalnutri")) {
+				jButtonPanel.add(getMalnutritionButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
@@ -550,6 +555,31 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return operationButton;
+	}
+
+	/**
+	 * This method initializes malnutritionButton, which opens malnutrition tracking for the selected visit
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getMalnutritionButton() {
+		if (malnutritionButton == null) {
+			malnutritionButton = new JButton(MessageBundle.getMessage("angal.admission.malnutritioncontrol.btn"));
+			malnutritionButton.setMnemonic(MessageBundle.getMnemonic("angal.admission.malnutritioncontrol.btn.key"));
+			malnutritionButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				if (!opd.isMalnutri()) {
+					MessageDialog.error(this, "angal.opd.pleaseselectapatientmalnutri.msg");
+					return;
+				}
+				new MalnutritionBrowser(myFrame, opd);
+			});
+		}
+		return malnutritionButton;
 	}
 
 	/**
