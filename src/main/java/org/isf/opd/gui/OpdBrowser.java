@@ -48,6 +48,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -80,6 +81,7 @@ import org.isf.menu.manager.Context;
 import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
 import org.isf.opd.manager.OpdBrowserManager;
 import org.isf.opd.model.Opd;
+import org.isf.operation.gui.OperationOpdExtended;
 import org.isf.patient.model.Patient;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
@@ -110,6 +112,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jDeleteButton;
 	private JButton manageExamsButton;
 	private JButton therapyButton;
+	private JButton operationButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
 	private JPanel jAgeFromPanel;
@@ -308,6 +311,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 			if (MainMenu.checkUserGrants("btnopdnewtherapy")) {
 				jButtonPanel.add(getTherapyButton(), null);
+			}
+			if (MainMenu.checkUserGrants("opdeope")) {
+				jButtonPanel.add(getOperationButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
@@ -516,6 +522,34 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return therapyButton;
+	}
+
+	/**
+	 * This method initializes operationButton, which opens operation management for the selected visit
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getOperationButton() {
+		if (operationButton == null) {
+			operationButton = new JButton(MessageBundle.getMessage("angal.opd.operation"));
+			operationButton.setMnemonic(KeyEvent.VK_O);
+			operationButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				JDialog dialog = new JDialog();
+				dialog.setTitle(MessageBundle.getMessage("angal.opd.operation"));
+				dialog.setModal(true);
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setContentPane(new OperationOpdExtended(opd));
+				dialog.pack();
+				dialog.setLocationRelativeTo(null);
+				dialog.setVisible(true);
+			});
+		}
+		return operationButton;
 	}
 
 	/**
