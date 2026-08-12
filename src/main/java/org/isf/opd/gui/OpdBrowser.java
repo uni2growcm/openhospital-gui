@@ -67,6 +67,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 
+import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.disease.manager.DiseaseBrowserManager;
 import org.isf.disease.model.Disease;
 import org.isf.distype.manager.DiseaseTypeBrowserManager;
@@ -80,6 +81,7 @@ import org.isf.opd.gui.OpdEditExtended.SurgeryListener;
 import org.isf.opd.manager.OpdBrowserManager;
 import org.isf.opd.model.Opd;
 import org.isf.patient.model.Patient;
+import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
@@ -107,6 +109,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JButton jCloseButton;
 	private JButton jDeleteButton;
 	private JButton manageExamsButton;
+	private JButton therapyButton;
 	private JPanel dateFilterPanel;
 	private JPanel jSelectionDiseasePanel;
 	private JPanel jAgeFromPanel;
@@ -145,6 +148,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private DiseaseTypeBrowserManager diseaseTypeBrowserManager = Context.getApplicationContext().getBean(DiseaseTypeBrowserManager.class);
 	private OpdBrowserManager opdBrowserManager = Context.getApplicationContext().getBean(OpdBrowserManager.class);
 	private DiseaseBrowserManager diseaseBrowserManager = Context.getApplicationContext().getBean(DiseaseBrowserManager.class);
+	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 
 	private boolean isSingleUser = GeneralData.getGeneralData().getSINGLEUSER();
 	private List<Opd> pSur;
@@ -301,6 +305,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			}
 			if (MainMenu.checkUserGrants("opdexam")) {
 				jButtonPanel.add(getManageExamsButton(), null);
+			}
+			if (MainMenu.checkUserGrants("btnopdnewtherapy")) {
+				jButtonPanel.add(getTherapyButton(), null);
 			}
 			jButtonPanel.add(getJCloseButton(), null);
 		}
@@ -484,6 +491,31 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			});
 		}
 		return manageExamsButton;
+	}
+
+	/**
+	 * This method initializes therapyButton, which opens therapy management for the selected visit's patient
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getTherapyButton() {
+		if (therapyButton == null) {
+			therapyButton = new JButton(MessageBundle.getMessage("angal.admission.therapy.btn"));
+			therapyButton.setMnemonic(MessageBundle.getMnemonic("angal.admission.therapy.btn.key"));
+			therapyButton.addActionListener(actionEvent -> {
+				if (jTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				Opd opd = (Opd) model.getValueAt(jTable.getSelectedRow(), -1);
+				Patient patient = opd.getPatient();
+				boolean admitted = admissionBrowserManager.getCurrentAdmission(patient) != null;
+				TherapyEdit therapy = new TherapyEdit(myFrame, patient, admitted);
+				therapy.setLocationRelativeTo(null);
+				therapy.setVisible(true);
+			});
+		}
+		return therapyButton;
 	}
 
 	/**
