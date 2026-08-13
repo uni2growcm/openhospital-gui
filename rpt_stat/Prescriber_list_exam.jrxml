@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="Prescriber_list_exam"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+
+	<parameter name="fromdate" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="todate" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Hospital" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="title" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="exam" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="resultFilter" isForPrompting="false" class="java.lang.Integer"/>
+	<parameter name="patientCode" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="userCode" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="name" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="patientname" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="paidCode" isForPrompting="false" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT DATE_FORMAT(LAB_DATE, "%d/%m/%Y") AS DATE, LAB_PAT_NAME,
+LAB_PRESCRIBER, LAB_NOTE, EXA_PROC, EXA_DESC, LAB_RES,
+BLL_STATUS
+FROM OH_LABORATORY
+INNER JOIN OH_EXAM E ON E.EXA_ID_A = LAB_EXA_ID_A
+LEFT JOIN OH_BILLS B ON B.BLL_ID = LAB_BLL_ID
+WHERE DATE(LAB_DATE) BETWEEN STR_TO_DATE($P{fromdate},'%d/%m/%Y') AND STR_TO_DATE($P{todate},'%d/%m/%Y')
+AND ((LAB_PRESCRIBER = $P{userCode}) OR ($P{userCode}="all"))
+AND ((LAB_PAT_ID = $P{patientCode} AND $P{patientCode} <> "all") OR ($P{patientCode} = "all"))
+AND ((EXA_DESC = $P{exam} AND $P{exam} <> "all") OR ($P{exam} = "all"))
+AND ((LAB_RES <> "" AND $P{resultFilter}=1) OR (LAB_RES = "" AND $P{resultFilter} = 0) OR ($P{resultFilter}=-1))
+AND (($P{paidCode}="all") OR ($P{paidCode}<>"all" AND BLL_STATUS = $P{paidCode}) OR ($P{paidCode}="0" AND LAB_BLL_ID IS NULL))
+ORDER BY LAB_DATE DESC
+;]]></queryString>
+
+	<field name="DATE" class="java.lang.String"/>
+	<field name="LAB_PAT_NAME" class="java.lang.String"/>
+	<field name="LAB_PRESCRIBER" class="java.lang.String"/>
+	<field name="LAB_NOTE" class="java.lang.String"/>
+	<field name="EXA_PROC" class="java.lang.Integer"/>
+	<field name="EXA_DESC" class="java.lang.String"/>
+	<field name="LAB_RES" class="java.lang.String"/>
+	<field name="BLL_STATUS" class="java.lang.String"/>
+
+	<background>
+		<band height="0"  isSplitAllowed="true" >
+		</band>
+	</background>
+	<title>
+		<band height="128"  isSplitAllowed="true" >
+			<rectangle radius="0" >
+				<reportElement
+					mode="Opaque"
+					x="0"
+					y="1"
+					width="535"
+					height="126"
+					forecolor="#000000"
+					backcolor="#FFFFFF"/>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="535" height="30" />
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="30" width="535" height="20" />
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="50" width="535" height="20" />
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{Telephone} + " - " + $P{Email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="80" width="535" height="28" />
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{title}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="108" width="535" height="20" />
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{fromdate} + " - " + $P{todate} + "   Prescriber: " + $P{name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="20" isSplitAllowed="true">
+			<rectangle radius="0">
+				<reportElement mode="Opaque" x="0" y="0" width="535" height="20" backcolor="#CCCCCC"/>
+			</rectangle>
+			<textField>
+				<reportElement x="0" y="0" width="70" height="20"/>
+				<textElement textAlignment="Center"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Date"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="70" y="0" width="120" height="20"/>
+				<textElement><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Patient"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="190" y="0" width="140" height="20"/>
+				<textElement><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Exam"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="0" width="120" height="20"/>
+				<textElement><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Result"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="0" width="85" height="20"/>
+				<textElement><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Paid"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" isSplitAllowed="true">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="70" height="20"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="70" y="0" width="120" height="20"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAB_PAT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="190" y="0" width="140" height="20"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{EXA_DESC}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="330" y="0" width="120" height="20"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{LAB_RES}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="0" width="85" height="20"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{BLL_STATUS} == null ? "N/F" : ($F{BLL_STATUS}.equals("C") ? "Yes" : "No")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
