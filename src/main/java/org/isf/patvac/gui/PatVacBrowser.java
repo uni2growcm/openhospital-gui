@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -62,6 +63,8 @@ import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.jobjects.VoLimitedTextField;
 import org.isf.utils.layout.SpringUtilities;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
 import org.isf.vaccine.manager.VaccineBrowserManager;
 import org.isf.vaccine.model.Vaccine;
@@ -99,7 +102,17 @@ public class PatVacBrowser extends ModalJFrame {
 	private JRadioButton radiof;
 	private JLabel rowCounter;
 	private String rowCounterText = MessageBundle.getMessage("angal.patvac.count") + ": ";
-	
+
+	private JPanel paginationPanel;
+	private JButton previousPageButton;
+	private JButton nextPageButton;
+	private JComboBox<Integer> pagesComboBox = new JComboBox<>();
+	private JLabel ofPagesLabel = new JLabel(MessageBundle.formatMessage("angal.common.pages.fmt.txt", 1));
+	private int currentPage;
+	private boolean filterApplied;
+	private boolean updatingPagesComboProgrammatically;
+	private PageInfo lastPageInfo;
+
 	private JTable jTable;
 	private JComboBox vaccineComboBox;
 	private JComboBox vaccineTypeComboBox;
@@ -141,12 +154,13 @@ public class PatVacBrowser extends ModalJFrame {
 		setMinimumSize(new Dimension(880, 510));
 		pack();
 		updateRowCounter();
+		updatePaginationControls();
 		this.setLocationRelativeTo(null);
 	}
-	
+
 	/**
 	 * This method initializes jContentPane, adds the main parts of the frame
-	 * 
+	 *
 	 * @return jContentPanel (JPanel)
 	 */
 	private JPanel getJContentPane() {
@@ -204,9 +218,8 @@ public class PatVacBrowser extends ModalJFrame {
 				new PatVacEdit(myFrame, patientVaccine, true);
 
 				if (!last.equals(patientVaccine)) {
-					lPatVac.add(0, patientVaccine);
-					((PatVacBrowsingModel) jTable.getModel()).fireTableDataChanged();
-					updateRowCounter();
+					currentPage = 0;
+					refreshCurrentPage();
 					if (jTable.getRowCount() > 0) {
 						jTable.setRowSelectionInterval(0, 0);
 					}
@@ -244,8 +257,7 @@ public class PatVacBrowser extends ModalJFrame {
 				new PatVacEdit(myFrame, patientVaccine, false);
 
 				if (!last.equals(patientVaccine)) {
-					((PatVacBrowsingModel) jTable.getModel()).fireTableDataChanged();
-					updateRowCounter();
+					refreshCurrentPage();
 					if (jTable.getRowCount() > 0 && selectedrow > -1) {
 						jTable.setRowSelectionInterval(selectedrow, selectedrow);
 					}
@@ -279,9 +291,7 @@ public class PatVacBrowser extends ModalJFrame {
 				if (answer == JOptionPane.YES_OPTION) {
 					try {
 						patVacManager.deletePatientVaccine(patientVaccine);
-						lPatVac.remove(jTable.getSelectedRow());
-						model.fireTableDataChanged();
-						jTable.updateUI();
+						refreshCurrentPage();
 					} catch (OHServiceException e) {
 						OHServiceExceptionUtil.showMessages(e);
 					}
@@ -324,6 +334,7 @@ public class PatVacBrowser extends ModalJFrame {
 			jSelectionPanel.add(getSexPanel());
 			jSelectionPanel.add(getFilterPanel());
 			jSelectionPanel.add(getRowCounterPanel());
+			jSelectionPanel.add(getPaginationPanel());
 		}
 		return jSelectionPanel;
 	}
@@ -457,6 +468,171 @@ public class PatVacBrowser extends ModalJFrame {
 		label1Panel.add(rowCounter, null);
 		rowCounterPanel.add(label1Panel);
 		return rowCounterPanel;
+	}
+
+	/**
+	 * This method initializes the pagination control panel: Previous/Next buttons, an editable
+	 * page-number combo box, and a "/ N Pages" label — the same shape already used by
+	 * {@code InventoryBrowser}, unlike that screen's combo box this one is cleared before every
+	 * repopulation to avoid accumulating stale/duplicate page numbers across filter changes.
+	 *
+	 * @return paginationPanel (JPanel)
+	 */
+	private JPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new JPanel();
+			paginationPanel.setLayout(new BoxLayout(paginationPanel, BoxLayout.Y_AXIS));
+
+			previousPageButton = new JButton(MessageBundle.getMessage("angal.common.previouspage.btn"));
+			previousPageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+			previousPageButton.addActionListener(actionEvent -> {
+				if (currentPage > 0) {
+					currentPage--;
+					refreshCurrentPage();
+				}
+			});
+
+			nextPageButton = new JButton(MessageBundle.getMessage("angal.common.nextpage.btn"));
+			nextPageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+			nextPageButton.addActionListener(actionEvent -> {
+				currentPage++;
+				refreshCurrentPage();
+			});
+
+			pagesComboBox.setEditable(true);
+			pagesComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+			pagesComboBox.addItemListener(itemEvent -> {
+				if (updatingPagesComboProgrammatically || itemEvent.getStateChange() != ItemEvent.SELECTED) {
+					return;
+				}
+				Object selected = pagesComboBox.getSelectedItem();
+				if (selected instanceof Integer pageNumber) {
+					currentPage = pageNumber - 1;
+					refreshCurrentPage();
+				}
+			});
+
+			ofPagesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+			JPanel navRow = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			navRow.add(previousPageButton);
+			navRow.add(nextPageButton);
+			navRow.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+			JPanel comboRow = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			comboRow.add(pagesComboBox);
+			comboRow.add(ofPagesLabel);
+			comboRow.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+			paginationPanel.add(navRow);
+			paginationPanel.add(comboRow);
+		}
+		return paginationPanel;
+	}
+	/*private JPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+			previousPageButton = new JButton(MessageBundle.getMessage("angal.common.previouspage.btn"));
+			previousPageButton.addActionListener(actionEvent -> {
+				if (currentPage > 0) {
+					currentPage--;
+					refreshCurrentPage();
+				}
+			});
+
+			nextPageButton = new JButton(MessageBundle.getMessage("angal.common.nextpage.btn"));
+			nextPageButton.addActionListener(actionEvent -> {
+				currentPage++;
+				refreshCurrentPage();
+			});
+
+			pagesComboBox.setEditable(true);
+			pagesComboBox.addItemListener(itemEvent -> {
+				if (updatingPagesComboProgrammatically || itemEvent.getStateChange() != ItemEvent.SELECTED) {
+					return;
+				}
+				Object selected = pagesComboBox.getSelectedItem();
+				if (selected instanceof Integer pageNumber) {
+					currentPage = pageNumber - 1;
+					refreshCurrentPage();
+				}
+			});
+
+			paginationPanel.add(previousPageButton);
+			paginationPanel.add(pagesComboBox);
+			paginationPanel.add(ofPagesLabel);
+			paginationPanel.add(nextPageButton);
+		}
+		return paginationPanel;
+	}*/
+
+	/**
+	 * Builds the table model for {@link #currentPage}: the default (no-filter) view before any search,
+	 * or the active filter criteria once {@link #filterApplied} is set by {@link #getFilterButton()}.
+	 */
+	private PatVacBrowsingModel buildModelForCurrentPage() {
+		if (!filterApplied) {
+			return new PatVacBrowsingModel();
+		}
+
+		String vaccineTypeCode = ((VaccineType) vaccineTypeComboBox.getSelectedItem()).getCode();
+		String vaccineCode = ((Vaccine) vaccineComboBox.getSelectedItem()).getCode();
+
+		if (vaccineTypeComboBox.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.patvac.allvaccinetype"))) {
+			vaccineTypeCode = null;
+		}
+		if (vaccineComboBox.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.patvac.allvaccine"))) {
+			vaccineCode = null;
+		}
+		char sex;
+		if (radiof.isSelected()) {
+			sex = 'F';
+		} else if (radiom.isSelected()) {
+			sex = 'M';
+		} else {
+			sex = 'A';
+		}
+
+		return new PatVacBrowsingModel(vaccineTypeCode, vaccineCode, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(), sex, ageFrom, ageTo);
+	}
+
+	/**
+	 * Re-fetches {@link #currentPage} from the server (rather than patching the in-memory list) so the
+	 * displayed rows and the true total always stay correct under pagination — used after a search, a
+	 * page-navigation action, and after insert/edit/delete.
+	 */
+	private void refreshCurrentPage() {
+		model = buildModelForCurrentPage();
+		if (lastPageInfo != null && currentPage > 0 && currentPage >= lastPageInfo.getTotalPages()) {
+			// the page we asked for no longer exists (e.g. deleted the last row on the last page) - step back
+			currentPage = Math.max(0, lastPageInfo.getTotalPages() - 1);
+			model = buildModelForCurrentPage();
+		}
+		jTable.setModel(model);
+		updateRowCounter();
+		updatePaginationControls();
+	}
+
+	/**
+	 * Refreshes the page-number combo box and the Previous/Next buttons' enabled state from
+	 * {@link #lastPageInfo}.
+	 */
+	private void updatePaginationControls() {
+		updatingPagesComboProgrammatically = true;
+		try {
+			pagesComboBox.removeAllItems();
+			int totalPages = lastPageInfo != null ? Math.max(1, lastPageInfo.getTotalPages()) : 1;
+			for (int i = 1; i <= totalPages; i++) {
+				pagesComboBox.addItem(i);
+			}
+			pagesComboBox.setSelectedItem(currentPage + 1);
+			ofPagesLabel.setText(MessageBundle.formatMessage("angal.common.pages.fmt.txt", totalPages));
+			previousPageButton.setEnabled(lastPageInfo != null && lastPageInfo.isHasPreviousPage());
+			nextPageButton.setEnabled(lastPageInfo != null && lastPageInfo.isHasNextPage());
+		} finally {
+			updatingPagesComboProgrammatically = false;
+		}
 	}
 
 	/**
@@ -630,26 +806,6 @@ public class PatVacBrowser extends ModalJFrame {
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.search.btn.key"));
 			filterButton.addActionListener(actionEvent -> {
 
-				String vaccineTypeCode = ((VaccineType) vaccineTypeComboBox.getSelectedItem()).getCode();
-				String vaccineCode = ((Vaccine) vaccineComboBox.getSelectedItem()).getCode();
-
-				if (vaccineTypeComboBox.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.patvac.allvaccinetype"))) {
-					vaccineTypeCode = null;
-				}
-				if (vaccineComboBox.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.patvac.allvaccine"))) {
-					vaccineCode = null;
-				}
-				char sex;
-				if (radiof.isSelected()) {
-					sex = 'F';
-				} else {
-					if (radiom.isSelected()) {
-						sex = 'M';
-					} else {
-						sex = 'A';
-					}
-				}
-
 				if (dateFrom.getDate() == null) {
 					MessageDialog.error(null, "angal.patvac.pleaseinsertvaliddatefrom");
 					return;
@@ -660,10 +816,9 @@ public class PatVacBrowser extends ModalJFrame {
 					return;
 				}
 
-				model = new PatVacBrowsingModel(vaccineTypeCode, vaccineCode, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(), sex, ageFrom, ageTo);
-				model.fireTableDataChanged();
-				jTable.updateUI();
-				updateRowCounter();
+				filterApplied = true;
+				currentPage = 0;
+				refreshCurrentPage();
 			});
 		}
 		return filterButton;
@@ -707,18 +862,26 @@ public class PatVacBrowser extends ModalJFrame {
 
 		public PatVacBrowsingModel() {
 			try {
-				lPatVac = patVacManager.getPatientVaccine(!GeneralData.ENHANCEDSEARCH);
+				PagedResponse<PatientVaccine> response = patVacManager.getPatientVaccinePageable(!GeneralData.ENHANCEDSEARCH, currentPage,
+						GeneralData.PAGESIZE);
+				lPatVac = response.getData();
+				lastPageInfo = response.getPageInfo();
 			} catch (OHServiceException e) {
 				lPatVac = null;
+				lastPageInfo = null;
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 
 		public PatVacBrowsingModel(String vaccineTypeCode, String vaccineCode, LocalDateTime dateFrom, LocalDateTime dateTo, char sex, int ageFrom, int ageTo) {
 			try {
-				lPatVac = patVacManager.getPatientVaccine(vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex, ageFrom, ageTo);
+				PagedResponse<PatientVaccine> response = patVacManager.getPatientVaccinePageable(vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex, ageFrom,
+						ageTo, currentPage, GeneralData.PAGESIZE);
+				lPatVac = response.getData();
+				lastPageInfo = response.getPageInfo();
 			} catch (OHServiceException e) {
 				lPatVac = null;
+				lastPageInfo = null;
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
@@ -798,7 +961,8 @@ public class PatVacBrowser extends ModalJFrame {
 	}
 
 	private void updateRowCounter() {
-		rowCounter.setText(rowCounterText + lPatVac.size());
+		long total = lastPageInfo != null ? lastPageInfo.getTotalNbOfElements() : 0;
+		rowCounter.setText(rowCounterText + total);
 	}
 
 }
