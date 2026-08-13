@@ -24,6 +24,7 @@ PARAMSURL=https://conf.open-hospital.org/oh-conf.json
 
 # application settings
 ENHANCEDSEARCH=no
+ENHANCEDDIAGNOSTICINOPDEDIT=no
 INTERNALPHARMACIES=yes
 LABEXTENDED=yes
 LABMULTIPLEINSERT=yes
