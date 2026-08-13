@@ -157,11 +157,12 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(), MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
-			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.admission.bed.border").toUpperCase(),
-			MessageBundle.getMessage("angal.admission.room.border").toUpperCase() };
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 80, 80 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, false };
+			MessageBundle.getMessage("angal.patient.country").toUpperCase(),
+			MessageBundle.getMessage("angal.patient.blama").toUpperCase(),
+			MessageBundle.getMessage("angal.common.transport").toUpperCase(),
+			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase() };
+	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 150, 100, 100 };
+	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, false, false };
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
@@ -310,7 +311,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		} catch (Exception e1) {
 		}
 		searchString.requestFocus();
-		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", pPatient.size()));
+		updateRowCounter();
 	}
 
 	@Override
@@ -336,7 +337,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		} catch (Exception e1) {
 		}
 		searchString.requestFocus();
-		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", pPatient.size()));
+		updateRowCounter();
 	}
 
 	public AdmittedPatientBrowser() {
@@ -1057,8 +1058,18 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 	private void filterPatient(String key) {
 		table.setModel(new AdmittedPatientBrowserModel(key));
-		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", table.getRowCount()));
+		updateRowCounter();
 		searchString.requestFocus();
+	}
+
+	/**
+	 * Shows the true total matching count ({@link #lastPageInfo}) rather than the current page's row
+	 * count, falling back to the row count only when there's no page result yet (e.g. before the first
+	 * search, or after a failed fetch).
+	 */
+	private void updateRowCounter() {
+		long total = lastPageInfo != null ? lastPageInfo.getTotalNbOfElements() : table.getRowCount();
+		rowCounter.setText(MessageBundle.formatMessage("angal.admission.count.fmt.txt", total));
 	}
 
 	private void searchPatient() {
@@ -1294,6 +1305,12 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 			} else if (c == 4) {
 				return patient.getInformations();
 			} else if (c == 5) {
+				return patient.getCountry();
+			} else if (c == 6) {
+				return patient.getBlama();
+			} else if (c == 7) {
+				return patient.getTransport();
+			} else if (c == 8) {
 				if (admission == null) {
 					return "";
 				} else {
@@ -1304,10 +1321,6 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 					}
 					return "?";
 				}
-			} else if (c == 6) {
-				return admission == null ? "" : admission.getBed();
-			} else if (c == 7) {
-				return admission == null ? "" : admission.getRoom();
 			}
 
 			return null;
