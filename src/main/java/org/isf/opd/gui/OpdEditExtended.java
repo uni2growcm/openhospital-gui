@@ -604,9 +604,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				types.clear();
 				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
-				diseaseBox1.removeAllItems();
-				diseaseBox2.removeAllItems();
-				diseaseBox3.removeAllItems();
+				if (!GeneralData.ENHANCEDDIAGNOSTICINOPDEDIT) {
+					diseaseBox1.removeAllItems();
+					diseaseBox2.removeAllItems();
+					diseaseBox3.removeAllItems();
+				}
 				dispose();
 			}
 		});
@@ -1443,8 +1445,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				diseaseTypeBox.setSelectedIndex(0);
 			}
 			diseaseTypeBox.addActionListener(actionEvent -> {
-				diseaseBox1.removeAllItems();
-				getDiseaseBox1();
+				if (!GeneralData.ENHANCEDDIAGNOSTICINOPDEDIT) {
+					diseaseBox1.removeAllItems();
+					getDiseaseBox1();
+				}
 			});
 		}
 		return diseaseTypeBox;
@@ -2238,9 +2242,11 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				types.clear();
 				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
-				diseaseBox1.removeAllItems();
-				diseaseBox2.removeAllItems();
-				diseaseBox3.removeAllItems();
+				if (!GeneralData.ENHANCEDDIAGNOSTICINOPDEDIT) {
+					diseaseBox1.removeAllItems();
+					diseaseBox2.removeAllItems();
+					diseaseBox3.removeAllItems();
+				}
 				dispose();
 			});
 		}
