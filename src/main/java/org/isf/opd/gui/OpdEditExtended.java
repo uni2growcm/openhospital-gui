@@ -223,6 +223,10 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	private JRadioButton newPatientButton;
 	private JCheckBox referralToCheckBox;
 	private JCheckBox referralFromCheckBox;
+	private JTextField referralFromTextField;
+	private JTextField referralToTextField;
+	private JTextField motifTextField;
+	private JLabel motifLabel;
 
 	private JPanel jPanelPatient;
 
@@ -533,6 +537,18 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 			}
 			referralFromCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referral.txt"));
+			referralFromCheckBox.addActionListener(actionEvent -> {
+				if (referralFromCheckBox.isSelected()) {
+					referralFromTextField.setEnabled(true);
+					referralFromTextField.requestFocus();
+					motifTextField.setEnabled(true);
+				} else {
+					referralFromTextField.setEnabled(false);
+					referralFromTextField.setText("");
+					motifTextField.setEnabled(false);
+					motifTextField.setText("");
+				}
+			});
 			jPanelNorth.add(referralFromCheckBox);
 			if (!insert) {
 				referralFrom = opd.getReferralFrom();
@@ -543,7 +559,17 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					referralFromCheckBox.setSelected(true);
 				}
 			}
+			jPanelNorth.add(getReferralFromTextField());
 			referralToCheckBox = new JCheckBox(MessageBundle.getMessage("angal.opd.referralto.txt"));
+			referralToCheckBox.addActionListener(actionEvent -> {
+				if (referralToCheckBox.isSelected()) {
+					referralToTextField.setEnabled(true);
+					referralToTextField.requestFocus();
+				} else {
+					referralToTextField.setEnabled(false);
+					referralToTextField.setText("");
+				}
+			});
 			jPanelNorth.add(referralToCheckBox);
 			if (!insert) {
 				referralTo = opd.getReferralTo();
@@ -554,8 +580,61 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 					referralToCheckBox.setSelected(true);
 				}
 			}
+			jPanelNorth.add(getReferralToTextField());
+
+			motifLabel = new JLabel(MessageBundle.getMessage("angal.opd.referral.motif"));
+			jPanelNorth.add(motifLabel);
+			jPanelNorth.add(getMotifTextField());
 		}
 		return jPanelNorth;
+	}
+
+	private JTextField getReferralFromTextField() {
+		if (referralFromTextField == null) {
+			referralFromTextField = new JTextField();
+			referralFromTextField.setColumns(14);
+			referralFromTextField.setEnabled(false);
+			if (!insert) {
+				String referralFromHospital = opd.getReferralFromHospital();
+				if (referralFromHospital != null && !referralFromHospital.isEmpty()) {
+					referralFromTextField.setText(referralFromHospital);
+					referralFromTextField.setEnabled(true);
+				}
+			}
+		}
+		return referralFromTextField;
+	}
+
+	private JTextField getReferralToTextField() {
+		if (referralToTextField == null) {
+			referralToTextField = new JTextField();
+			referralToTextField.setColumns(14);
+			referralToTextField.setEnabled(false);
+			if (!insert) {
+				String referralToHospital = opd.getReferralToHospital();
+				if (referralToHospital != null && !referralToHospital.isEmpty()) {
+					referralToTextField.setText(referralToHospital);
+					referralToTextField.setEnabled(true);
+				}
+			}
+		}
+		return referralToTextField;
+	}
+
+	private JTextField getMotifTextField() {
+		if (motifTextField == null) {
+			motifTextField = new JTextField();
+			motifTextField.setColumns(14);
+			motifTextField.setEnabled(false);
+			if (!insert) {
+				String motif = opd.getMotif();
+				if (motif != null && !motif.isEmpty()) {
+					motifTextField.setText(motif);
+					motifTextField.setEnabled(true);
+				}
+			}
+		}
+		return motifTextField;
 	}
 
 	/**
@@ -2083,6 +2162,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				char newPatient;
 				String referralTo;
 				String referralFrom;
+				String referralToHospital;
+				String referralFromHospital;
+				String motif;
 				Disease disease = null;
 				Disease disease2 = null;
 				Disease disease3 = null;
@@ -2095,13 +2177,19 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				}
 				if (referralToCheckBox.isSelected()) {
 					referralTo = "R";
+					referralToHospital = referralToTextField.getText().trim();
 				} else {
 					referralTo = "";
+					referralToHospital = "";
 				}
 				if (referralFromCheckBox.isSelected()) {
 					referralFrom = "R";
+					referralFromHospital = referralFromTextField.getText().trim();
+					motif = motifTextField.getText().trim();
 				} else {
 					referralFrom = "";
+					referralFromHospital = "";
+					motif = "";
 				}
 				if (GeneralData.ENHANCEDDIAGNOSTICINOPDEDIT) {
 					// legacy fields always mirror the first three of the enhanced list, for every existing reader
@@ -2164,6 +2252,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				opd.setNewPatient(newPatient);
 				opd.setReferralFrom(referralFrom);
 				opd.setReferralTo(referralTo);
+				opd.setReferralFromHospital(referralFromHospital);
+				opd.setReferralToHospital(referralToHospital);
+				opd.setMotif(motif);
 				opd.setDisease(disease);
 				opd.setDisease2(disease2);
 				opd.setDisease3(disease3);
