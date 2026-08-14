@@ -27,25 +27,15 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
+import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SpringLayout;
+import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
@@ -53,6 +43,7 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.manager.PatVacManager;
 import org.isf.patvac.model.PatientVaccine;
@@ -119,6 +110,12 @@ public class PatVacBrowser extends ModalJFrame {
 	private int pfrmHeight;
 	private List<PatientVaccine> lPatVac;
 
+	// Patient filter
+	private JComboBox<Patient> patientFilterComboBox;
+	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+	private List<Patient> filteredPatientsForFilter;
+	private boolean updatingPatientComboProgrammatically;
+
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.patient.txt").toUpperCase(),
@@ -174,12 +171,12 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return jContentPane;
 	}
-	
-	
+
+
 	/**
 	 * This method initializes JButtonPanel, that contains the buttons of the
 	 * frame (on the bottom)
-	 * 
+	 *
 	 * @return JButtonPanel (JPanel)
 	 */
 	private JPanel getJButtonPanel() {
@@ -201,7 +198,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes buttonNew, that loads patientVaccineEdit Mask
-	 * 
+	 *
 	 * @return buttonNew (JButton)
 	 */
 	private JButton getButtonNew() {
@@ -231,7 +228,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes buttonEdit, that loads patientVaccineEdit Mask
-	 * 
+	 *
 	 * @return buttonEdit (JButton)
 	 */
 	private JButton getButtonEdit() {
@@ -269,7 +266,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes buttonDelete, that loads patientVaccineEdit Mask
-	 * 
+	 *
 	 * @return buttonDelete (JButton)
 	 */
 	private JButton getButtonDelete() {
@@ -299,11 +296,11 @@ public class PatVacBrowser extends ModalJFrame {
 			});
 		}
 		return buttonDelete;
-	}	
-	
+	}
+
 	/**
 	 * This method initializes buttonClose
-	 * 
+	 *
 	 * @return buttonClose (JButton)
 	 */
 	private JButton getCloseButton() {
@@ -317,7 +314,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes JSelectionPanel, that contains the filter objects
-	 * 
+	 *
 	 * @return JSelectionPanel (JPanel)
 	 */
 	private JPanel getJSelectionPanel() {
@@ -327,7 +324,9 @@ public class PatVacBrowser extends ModalJFrame {
 
 			jSelectionPanel.add(getVaccineTypePanel());
 			jSelectionPanel.add(getVaccinePanel());
-			
+
+			jSelectionPanel.add(getPatientPanel());
+
 			jSelectionPanel.add(getDateFilterPanel());
 			jSelectionPanel.add(getAgePanel());
 
@@ -341,7 +340,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes getVaccineTypePanel
-	 * 
+	 *
 	 * @return vaccineTypePanel  (JPanel)
 	 */
 	private JPanel getVaccineTypePanel() {
@@ -361,7 +360,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes getVaccinePanel
-	 * 
+	 *
 	 * @return vaccinePanel  (JPanel)
 	 */
 	private JPanel getVaccinePanel() {
@@ -381,7 +380,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes getAgePanel
-	 * 
+	 *
 	 * @return jAgePanel  (JPanel)
 	 */
 	private JPanel getAgePanel() {
@@ -403,10 +402,10 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return jAgePanel;
 	}
-	
+
 	/**
 	 * This method initializes getSexPanel
-	 * 
+	 *
 	 * @return sexPanel  (JPanel)
 	 */
 	public JPanel getSexPanel() {
@@ -416,7 +415,7 @@ public class PatVacBrowser extends ModalJFrame {
 			JPanel label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			label1Panel.add(new JLabel(MessageBundle.getMessage("angal.common.selectsex.txt")), null);
 			sexPanel.add(label1Panel);
-			
+
 			label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			ButtonGroup group = new ButtonGroup();
 			radiom = new JRadioButton(MessageBundle.getMessage("angal.common.male.btn"));
@@ -426,7 +425,7 @@ public class PatVacBrowser extends ModalJFrame {
 			group.add(radiom);
 			group.add(radiof);
 			group.add(radioa);
-			
+
 			label1Panel.add(radioa);
 			sexPanel.add(label1Panel);
 			label1Panel.add(radiom);
@@ -436,10 +435,10 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return sexPanel;
 	}
-	
+
 	/**
-	 * This method initializes getFilterPanel 
-	 * 
+	 * This method initializes getFilterPanel
+	 *
 	 * @return filterPanel  (JPanel)
 	 */
 	private JPanel getFilterPanel() {
@@ -452,16 +451,16 @@ public class PatVacBrowser extends ModalJFrame {
 		filterPanel.add(label1Panel);
 		return filterPanel;
 	}
-	
+
 	/**
-	 * This method initializes getRowCounterPanel 
-	 * 
+	 * This method initializes getRowCounterPanel
+	 *
 	 * @return rowCounterPanel  (JPanel)
 	 */
 	private JPanel  getRowCounterPanel() {
-		
+
 		JPanel rowCounterPanel = new JPanel();
-		
+
 		rowCounterPanel.setLayout(new BoxLayout(rowCounterPanel, BoxLayout.Y_AXIS));
 		JPanel label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		rowCounter = new JLabel(MessageBundle.getMessage("angal.patvac.rowcounter"));
@@ -529,43 +528,21 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return paginationPanel;
 	}
-	/*private JPanel getPaginationPanel() {
-		if (paginationPanel == null) {
-			paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-			previousPageButton = new JButton(MessageBundle.getMessage("angal.common.previouspage.btn"));
-			previousPageButton.addActionListener(actionEvent -> {
-				if (currentPage > 0) {
-					currentPage--;
-					refreshCurrentPage();
-				}
-			});
+	private Patient allPatientsPlaceholder;
 
-			nextPageButton = new JButton(MessageBundle.getMessage("angal.common.nextpage.btn"));
-			nextPageButton.addActionListener(actionEvent -> {
-				currentPage++;
-				refreshCurrentPage();
-			});
-
-			pagesComboBox.setEditable(true);
-			pagesComboBox.addItemListener(itemEvent -> {
-				if (updatingPagesComboProgrammatically || itemEvent.getStateChange() != ItemEvent.SELECTED) {
-					return;
-				}
-				Object selected = pagesComboBox.getSelectedItem();
-				if (selected instanceof Integer pageNumber) {
-					currentPage = pageNumber - 1;
-					refreshCurrentPage();
-				}
-			});
-
-			paginationPanel.add(previousPageButton);
-			paginationPanel.add(pagesComboBox);
-			paginationPanel.add(ofPagesLabel);
-			paginationPanel.add(nextPageButton);
+	private Patient getAllPatientsPlaceholder() {
+		if (allPatientsPlaceholder == null) {
+			allPatientsPlaceholder = new Patient();
+			// Patient.equals() dereferences getCode() unconditionally (this.getCode().equals(...)), so a
+			// null code here would NPE the moment Swing compares combo items (e.g. clicking a popup row) -
+			// use 0 as the "no real patient" sentinel instead (never a real DB identity value), matching
+			// the code == 0 checks in buildModelForCurrentPage()/displayNameFor().
+			allPatientsPlaceholder.setCode(0);
+			allPatientsPlaceholder.setFirstName(MessageBundle.getMessage("angal.patvac.allpatients"));
 		}
-		return paginationPanel;
-	}*/
+		return allPatientsPlaceholder;
+	}
 
 	/**
 	 * Builds the table model for {@link #currentPage}: the default (no-filter) view before any search,
@@ -574,6 +551,15 @@ public class PatVacBrowser extends ModalJFrame {
 	private PatVacBrowsingModel buildModelForCurrentPage() {
 		if (!filterApplied) {
 			return new PatVacBrowsingModel();
+		}
+
+		Object selected = patientFilterComboBox.getSelectedItem();
+		Integer patientCode = null;
+		if (selected instanceof Patient) {
+			Patient p = (Patient) selected;
+			if (p.getCode() != null && p.getCode() != 0) {
+				patientCode = p.getCode();
+			}
 		}
 
 		String vaccineTypeCode = ((VaccineType) vaccineTypeComboBox.getSelectedItem()).getCode();
@@ -594,7 +580,7 @@ public class PatVacBrowser extends ModalJFrame {
 			sex = 'A';
 		}
 
-		return new PatVacBrowsingModel(vaccineTypeCode, vaccineCode, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(), sex, ageFrom, ageTo);
+		return new PatVacBrowsingModel(patientCode, vaccineTypeCode, vaccineCode, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(), sex, ageFrom, ageTo);
 	}
 
 	/**
@@ -711,12 +697,12 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return jAgeToTextField;
 	}
-	
-	
+
+
 	/**
-	 * This method initializes getComboVaccineTypes	
-	 * 	
-	 * @return vaccineTypeComboBox (jComboBox)	
+	 * This method initializes getComboVaccineTypes
+	 *
+	 * @return vaccineTypeComboBox (jComboBox)
 	 */
 	private JComboBox getComboVaccineTypes() {
 		if (vaccineTypeComboBox == null) {
@@ -746,7 +732,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 	/**
 	 * This method initializes comboVaccine.
-	 * It used to display available vaccine  
+	 * It used to display available vaccine
      *
 	 * @return vaccineComboBox (JComboBox)
 	 */
@@ -795,9 +781,224 @@ public class PatVacBrowser extends ModalJFrame {
 	}
 
 	/**
+	 * This method initializes getPatientPanel
+	 *
+	 * @return patientPanel  (JPanel)
+	 */
+	private JPanel getPatientPanel() {
+
+		JPanel patientPanel = new JPanel();
+
+		patientPanel.setLayout(new BoxLayout(patientPanel, BoxLayout.Y_AXIS));
+		JPanel label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		label1Panel.add(new JLabel(MessageBundle.getMessage("angal.patvac.selectapatient")));
+		patientPanel.add(label1Panel);
+
+		label1Panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		label1Panel.add(getComboPatients());
+		patientPanel.add(label1Panel, null);
+		return patientPanel;
+	}
+
+	/**
+	 * This method initializes patientFilterComboBox as an editable autocomplete field:
+	 * on open it shows the first {@code GeneralData.PAGESIZE} patients; as the user types,
+	 * the dropdown is repopulated via {@code patientBrowserManager.getPatientsByOneOfFieldsLike}
+	 * (same search used by {@link PatVacEdit}).
+	 *
+	 * @return patientFilterComboBox (JComboBox)
+	 */
+	private JComboBox<Patient> getComboPatients() {
+		if (patientFilterComboBox == null) {
+			patientFilterComboBox = new JComboBox<>();
+			patientFilterComboBox.setEditable(true);
+			patientFilterComboBox.setPreferredSize(new Dimension(200, 30));
+
+			patientFilterComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+				JLabel label = new JLabel();
+				label.setOpaque(true);
+				if (value != null) {
+					label.setText(displayNameFor(value));
+				}
+				if (isSelected) {
+					label.setBackground(list.getSelectionBackground());
+					label.setForeground(list.getSelectionForeground());
+				} else {
+					label.setBackground(list.getBackground());
+					label.setForeground(list.getForeground());
+				}
+				return label;
+			});
+
+			JTextField editorField = new JTextField();
+			patientFilterComboBox.setEditor(new javax.swing.ComboBoxEditor() {
+				private Object current;
+
+				@Override
+				public Component getEditorComponent() {
+					return editorField;
+				}
+
+				@Override
+				public void setItem(Object anObject) {
+					current = anObject;
+					if (anObject == null) {
+						editorField.setText("");
+					} else if (anObject instanceof Patient) {
+						editorField.setText(displayNameFor((Patient) anObject));
+					} else {
+						editorField.setText(anObject.toString());
+					}
+				}
+
+				@Override
+				public Object getItem() {
+					return current;
+				}
+
+				@Override
+				public void selectAll() {
+					editorField.selectAll();
+				}
+
+				@Override
+				public void addActionListener(java.awt.event.ActionListener l) {
+					editorField.addActionListener(l);
+				}
+
+				@Override
+				public void removeActionListener(java.awt.event.ActionListener l) {
+					editorField.removeActionListener(l);
+				}
+			});
+
+			loadPatientsIntoFilterCombo(null);
+
+			// debounced search: avoids firing an unbounded DB query on every keystroke
+			Runnable doSearch = () -> {
+				String typed = editorField.getText();
+				loadPatientsIntoFilterCombo(typed);
+				editorField.setText(typed);
+				editorField.requestFocus();
+				if (patientFilterComboBox.getItemCount() > 0) {
+					patientFilterComboBox.showPopup();
+				}
+			};
+			Timer patientFilterSearchTimer = new Timer(1000, e -> doSearch.run());
+			patientFilterSearchTimer.setRepeats(false);
+
+			// clicking into the field while it shows the placeholder clears it, ready for typing;
+			// leaving it empty afterward resets the filter to "all patients"
+			editorField.addFocusListener(new FocusListener() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (editorField.getText().equals(displayNameFor(getAllPatientsPlaceholder()))) {
+						editorField.setText("");
+					}
+				}
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (editorField.getText().trim().isEmpty()) {
+						patientFilterSearchTimer.stop();
+						loadPatientsIntoFilterCombo(null);
+					}
+				}
+			});
+
+			editorField.addKeyListener(new KeyListener() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+				}
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						e.consume(); // empêche le binding natif "accepter & fermer popup" de s'exécuter juste après
+						patientFilterSearchTimer.stop();
+						doSearch.run();
+					}
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+					int code = e.getKeyCode();
+					if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN
+							|| code == KeyEvent.VK_ENTER || code == KeyEvent.VK_ESCAPE) {
+						return;
+					}
+					patientFilterSearchTimer.restart();
+				}
+			});
+
+			patientFilterComboBox.addPopupMenuListener(new PopupMenuListener() {
+				@Override
+				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				}
+
+				@Override
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+					// la fermeture du popup laisse parfois un artefact de rendu sur les composants
+					// qu'il recouvrait (ex: le panneau de dates juste en dessous) - forcer un repaint
+					SwingUtilities.invokeLater(() -> {
+						jSelectionPanel.revalidate();
+						jSelectionPanel.repaint();
+					});
+				}
+
+				@Override
+				public void popupMenuCanceled(PopupMenuEvent e) {
+				}
+			});
+		}
+		return patientFilterComboBox;
+	}
+
+	/**
+	 * (Re)loads the dropdown content: full/limited list when {@code searchKey} is blank,
+	 * matching patients otherwise.
+	 */
+	private void loadPatientsIntoFilterCombo(String searchKey) {
+		updatingPatientComboProgrammatically = true;
+		try {
+			patientFilterComboBox.removeAllItems();
+			patientFilterComboBox.addItem(getAllPatientsPlaceholder());
+
+			try {
+				if (searchKey == null || searchKey.trim().isEmpty()) {
+					filteredPatientsForFilter = patientBrowserManager.getPatient(0, GeneralData.PAGESIZE);
+				} else {
+					filteredPatientsForFilter = patientBrowserManager.getPatientsByOneOfFieldsLike(searchKey.trim());
+				}
+			} catch (OHServiceException e) {
+				filteredPatientsForFilter = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+
+			if (filteredPatientsForFilter != null) {
+				for (Patient elem : filteredPatientsForFilter) {
+					patientFilterComboBox.addItem(elem);
+				}
+			}
+		} finally {
+			updatingPatientComboProgrammatically = false;
+		}
+	}
+
+	private String displayNameFor(Patient p) {
+		if (p == null) {
+			return "";
+		}
+		if (p.getCode() == null || p.getCode() == 0) {
+			return p.getFirstName(); // "All patients" placeholder
+		}
+		return p.getName(); // adjust if Patient exposes a different full-name getter
+	}
+
+	/**
 	 * This method initializes filterButton, which is the button that performs
 	 * the filtering and calls the methods to refresh the Table
-	 * 
+	 *
 	 * @return filterButton (JButton)
 	 */
 	private JButton getFilterButton() {
@@ -827,7 +1028,7 @@ public class PatVacBrowser extends ModalJFrame {
 	/**
 	 * This method initializes jTable, that contains the information about the
 	 * patient's vaccines
-	 * 
+	 *
 	 * @return jTable (JTable)
 	 */
 	private JTable getJTable() {
@@ -852,7 +1053,7 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		return jTable;
 	}
-	
+
 	/**
 	 * This class defines the model for the Table
 	 */
@@ -873,10 +1074,11 @@ public class PatVacBrowser extends ModalJFrame {
 			}
 		}
 
-		public PatVacBrowsingModel(String vaccineTypeCode, String vaccineCode, LocalDateTime dateFrom, LocalDateTime dateTo, char sex, int ageFrom, int ageTo) {
+		public PatVacBrowsingModel(Integer patientCode, String vaccineTypeCode, String vaccineCode, LocalDateTime dateFrom, LocalDateTime dateTo,
+		                           char sex, int ageFrom, int ageTo) {
 			try {
-				PagedResponse<PatientVaccine> response = patVacManager.getPatientVaccinePageable(vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex, ageFrom,
-						ageTo, currentPage, GeneralData.PAGESIZE);
+				PagedResponse<PatientVaccine> response = patVacManager.getPatientVaccinePageable(patientCode, vaccineTypeCode, vaccineCode, dateFrom, dateTo,
+						sex, ageFrom, ageTo, currentPage, GeneralData.PAGESIZE);
 				lPatVac = response.getData();
 				lastPageInfo = response.getPageInfo();
 			} catch (OHServiceException e) {
@@ -893,7 +1095,7 @@ public class PatVacBrowser extends ModalJFrame {
 			}
 			return lPatVac.size();
 		}
-		
+
 		@Override
 		public String getColumnName(int c) {
 			return pColumns[getNumber(c)];
@@ -911,7 +1113,7 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 
 		/**
-		 * This method converts a column number in the table 
+		 * This method converts a column number in the table
 		 * to the right number in the data.
 		 */
 		protected int getNumber(int col) {
@@ -931,7 +1133,7 @@ public class PatVacBrowser extends ModalJFrame {
 			}
 			return n;
 		}
-	    
+
 		@Override
 		public Object getValueAt(int r, int c) {
 			PatientVaccine patVac = lPatVac.get(r);
@@ -957,7 +1159,7 @@ public class PatVacBrowser extends ModalJFrame {
 		public boolean isCellEditable(int arg0, int arg1) {
 			return false;
 		}
-	
+
 	}
 
 	private void updateRowCounter() {
