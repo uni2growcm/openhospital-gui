@@ -251,13 +251,7 @@ public class VaccineStockChargeEdit extends JDialog {
 	}
 
 	private void applyVaccineFilter() {
-		String filter = getVaccineFilterTextField().getText().trim().toLowerCase();
-		List<Vaccine> matches = new ArrayList<>();
-		for (Vaccine vaccine : allVaccines) {
-			if (filter.isEmpty() || vaccine.getCode().toLowerCase().contains(filter) || vaccine.getDescription().toLowerCase().contains(filter)) {
-				matches.add(vaccine);
-			}
-		}
+		List<Vaccine> matches = VaccineStockGuiSupport.filterVaccines(allVaccines, getVaccineFilterTextField().getText());
 
 		Vaccine previousSelection = selectedVaccine;
 		getVaccineComboBox().removeAllItems();
@@ -570,11 +564,9 @@ public class VaccineStockChargeEdit extends JDialog {
 			MessageDialog.error(this, "angal.vaccinestock.pleaseinsertalotcode.msg");
 			return;
 		}
-		for (VaccineLot lot : lotRows) {
-			if (code.equals(lot.getCode())) {
-				MessageDialog.error(this, "angal.vaccinestock.lotcodealreadyused.fmt.msg", code);
-				return;
-			}
+		if (VaccineStockGuiSupport.isLotCodeInUse(lotRows, code)) {
+			MessageDialog.error(this, "angal.vaccinestock.lotcodealreadyused.fmt.msg", code);
+			return;
 		}
 		LocalDate preparationDate = getNewLotPreparationDateChooser().getDate();
 		LocalDate dueDate = getNewLotDueDateChooser().getDate();

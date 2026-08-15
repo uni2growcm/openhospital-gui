@@ -249,13 +249,7 @@ public class VaccineStockDischargeEdit extends JDialog {
 	}
 
 	private void applyVaccineFilter() {
-		String filter = getVaccineFilterTextField().getText().trim().toLowerCase();
-		List<Vaccine> matches = new ArrayList<>();
-		for (Vaccine vaccine : allVaccines) {
-			if (filter.isEmpty() || vaccine.getCode().toLowerCase().contains(filter) || vaccine.getDescription().toLowerCase().contains(filter)) {
-				matches.add(vaccine);
-			}
-		}
+		List<Vaccine> matches = VaccineStockGuiSupport.filterVaccines(allVaccines, getVaccineFilterTextField().getText());
 
 		Vaccine previousSelection = selectedVaccine;
 		getVaccineComboBox().removeAllItems();

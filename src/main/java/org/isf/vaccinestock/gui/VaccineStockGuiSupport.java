@@ -23,9 +23,12 @@ package org.isf.vaccinestock.gui;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.vaccine.model.Vaccine;
+import org.isf.vaccinestock.model.VaccineLot;
 import org.isf.vaccinestock.model.VaccineStockMovementReason;
 
 /**
@@ -80,5 +83,33 @@ final class VaccineStockGuiSupport {
 			return null;
 		}
 		return new BigDecimal(trimmed.replace(',', '.'));
+	}
+
+	/**
+	 * The vaccines from {@code allVaccines} whose code or description contains {@code filterText}
+	 * (case-insensitive). A blank filter matches everything.
+	 */
+	static List<Vaccine> filterVaccines(List<Vaccine> allVaccines, String filterText) {
+		String filter = filterText == null ? "" : filterText.trim().toLowerCase();
+		List<Vaccine> matches = new ArrayList<>();
+		for (Vaccine vaccine : allVaccines) {
+			if (filter.isEmpty() || vaccine.getCode().toLowerCase().contains(filter) || vaccine.getDescription().toLowerCase().contains(filter)) {
+				matches.add(vaccine);
+			}
+		}
+		return matches;
+	}
+
+	/**
+	 * {@code true} if one of {@code lots} already has the given code - used when creating a new lot
+	 * to avoid silently colliding with an existing one.
+	 */
+	static boolean isLotCodeInUse(List<VaccineLot> lots, String code) {
+		for (VaccineLot lot : lots) {
+			if (code.equals(lot.getCode())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

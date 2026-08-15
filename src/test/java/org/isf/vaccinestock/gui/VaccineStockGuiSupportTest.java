@@ -26,9 +26,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.vaccine.model.Vaccine;
+import org.isf.vaccinestock.model.VaccineLot;
 import org.isf.vaccinestock.model.VaccineStockMovementReason;
 import org.isf.vactype.model.VaccineType;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +53,15 @@ class VaccineStockGuiSupportTest {
 		Vaccine vaccine = new Vaccine("Z", "TestVaccine", new VaccineType("Z", "TestType"));
 		vaccine.setMinQuantity(minQuantity);
 		return vaccine;
+	}
+
+	private Vaccine vaccine(String code, String description) {
+		return new Vaccine(code, description, new VaccineType("Z", "TestType"));
+	}
+
+	private VaccineLot lot(String code) {
+		LocalDateTime now = LocalDateTime.now();
+		return new VaccineLot(vaccineWithMinQuantity(null), code, now, now.plusMonths(6));
 	}
 
 	@Nested
@@ -114,7 +129,57 @@ class VaccineStockGuiSupportTest {
 	}
 
 	@Nested
-	@DisplayName("VaccineStockChargeEdit: cost parsing")
+	@DisplayName("VaccineStockChargeEdit & VaccineStockDischargeEdit: vaccine search field")
+	class ProductPickerLogic {
+
+		private final List<Vaccine> catalog = Arrays.asList(
+				vaccine("BCG", "Bacillus Calmette-Guerin"),
+				vaccine("POL", "Polio"),
+				vaccine("PENTA", "Pentavalent")
+		);
+
+		@Test
+		@DisplayName("A blank filter matches every vaccine, in order")
+		void filterVaccines_blankMatchesAll() {
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "")).containsExactlyElementsOf(catalog);
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, null)).containsExactlyElementsOf(catalog);
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "   ")).containsExactlyElementsOf(catalog);
+		}
+
+		@Test
+		@DisplayName("Matches by code, case-insensitively")
+		void filterVaccines_matchesByCode() {
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "pol")).containsExactly(catalog.get(1));
+		}
+
+		@Test
+		@DisplayName("Matches by description, case-insensitively")
+		void filterVaccines_matchesByDescription() {
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "calmette")).containsExactly(catalog.get(0));
+		}
+
+		@Test
+		@DisplayName("Matches on either code or description across several vaccines")
+		void filterVaccines_matchesMultiple() {
+			// "p" hits POL's code and PENTA's code/description, but not BCG.
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "p")).containsExactly(catalog.get(1), catalog.get(2));
+		}
+
+		@Test
+		@DisplayName("No match returns an empty list")
+		void filterVaccines_noMatch() {
+			assertThat(VaccineStockGuiSupport.filterVaccines(catalog, "xyz")).isEmpty();
+		}
+
+		@Test
+		@DisplayName("An empty catalog always returns an empty list")
+		void filterVaccines_emptyCatalog() {
+			assertThat(VaccineStockGuiSupport.filterVaccines(Collections.emptyList(), "anything")).isEmpty();
+		}
+	}
+
+	@Nested
+	@DisplayName("VaccineStockChargeEdit: cost parsing and new-lot code collisions")
 	class ChargeEditLogic {
 
 		@Test
@@ -136,6 +201,29 @@ class VaccineStockGuiSupportTest {
 		@DisplayName("Invalid cost text is rejected")
 		void parseCost_rejectsInvalidText() {
 			assertThatThrownBy(() -> VaccineStockGuiSupport.parseCost("not-a-number")).isInstanceOf(NumberFormatException.class);
+		}
+
+		@Test
+		@DisplayName("A code matching an existing lot is flagged as already in use")
+		void isLotCodeInUse_detectsCollision() {
+			List<VaccineLot> lots = Arrays.asList(lot("LOT1"), lot("LOT2"));
+
+			assertThat(VaccineStockGuiSupport.isLotCodeInUse(lots, "LOT1")).isTrue();
+			assertThat(VaccineStockGuiSupport.isLotCodeInUse(lots, "LOT2")).isTrue();
+		}
+
+		@Test
+		@DisplayName("A brand-new code is not flagged")
+		void isLotCodeInUse_newCodeIsFree() {
+			List<VaccineLot> lots = Arrays.asList(lot("LOT1"), lot("LOT2"));
+
+			assertThat(VaccineStockGuiSupport.isLotCodeInUse(lots, "LOT3")).isFalse();
+		}
+
+		@Test
+		@DisplayName("No lots means no code can be in use")
+		void isLotCodeInUse_emptyList() {
+			assertThat(VaccineStockGuiSupport.isLotCodeInUse(new ArrayList<>(), "LOT1")).isFalse();
 		}
 	}
 }
