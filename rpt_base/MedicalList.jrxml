@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MedicalList" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="MedicalList" whenResourceMissingType="Key" uuid="8f5a6c9e-2b21-4e4a-9e2c-2f1a1c9b7d10">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="ospedaleNome" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ospedaleTel" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ospedaleFax" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ospedaleMail" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ospedaleIndirizzo" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ospedaleCitta" class="java.lang.String" isForPrompting="false"/>
+	<field name="type" class="java.lang.String"/>
+	<field name="code" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="pcsPerPck" class="java.lang.Integer"/>
+	<field name="stock" class="java.lang.Double"/>
+	<field name="critLevel" class="java.lang.Double"/>
+	<field name="lastPrice" class="java.math.BigDecimal"/>
+	<field name="avgQty" class="java.lang.Double"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="130" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="535" height="15" uuid="1a1b1c1d-0001-0000-0000-000000000001"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ospedaleNome}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="15" width="535" height="15" uuid="1a1b1c1d-0002-0000-0000-000000000002"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ospedaleCitta} + ", " + $P{ospedaleIndirizzo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="30" width="535" height="15" uuid="1a1b1c1d-0003-0000-0000-000000000003"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ospedaleTel}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="45" width="535" height="15" uuid="1a1b1c1d-0004-0000-0000-000000000004"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ospedaleFax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="60" width="535" height="15" uuid="1a1b1c1d-0005-0000-0000-000000000005"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ospedaleMail}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="90" width="535" height="20" uuid="1a1b1c1d-0006-0000-0000-000000000006"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="90" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000001"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="0" width="60" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000002"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{code}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="150" y="0" width="150" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000003"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="45" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000004"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pcsPerPck}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="345" y="0" width="45" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000005"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stock}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="0" width="45" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000006"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{critLevel}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="435" y="0" width="50" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000007"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{lastPrice}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="485" y="0" width="50" height="20" uuid="2a2b2c2d-0011-0000-0000-000000000008"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{avgQty}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="19" width="535" height="1" uuid="2a2b2c2d-0021-0000-0000-000000000001"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Prevent">
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="90" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000001"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true">
+				<reportElement x="90" y="0" width="60" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000002"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{code}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true">
+				<reportElement x="150" y="0" width="150" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000003"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true">
+				<reportElement x="300" y="0" width="45" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000004"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pcsPerPck}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" pattern="#,##0.##">
+				<reportElement x="345" y="0" width="45" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000005"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{stock}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" pattern="#,##0.##">
+				<reportElement x="390" y="0" width="45" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000006"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{critLevel}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" pattern="#,##0.00">
+				<reportElement x="435" y="0" width="50" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000007"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lastPrice}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" pattern="#,##0.##">
+				<reportElement x="485" y="0" width="50" height="15" uuid="3a3b3c3d-0001-0000-0000-000000000008"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{avgQty}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="0" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy">
+				<reportElement x="406" y="0" width="129" height="15" uuid="4a4b4c4d-0001-0000-0000-000000000001"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
