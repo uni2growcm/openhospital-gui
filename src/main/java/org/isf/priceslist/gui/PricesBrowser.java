@@ -37,7 +37,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
@@ -68,6 +71,7 @@ public class PricesBrowser extends ModalJFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel jPanelNorth;
+	private JPanel jPanelTop;
 	private JComboBox jComboBoxLists;
 	private JScrollPane jScrollPaneList;
 	private JTreeTable jTreeTable;
@@ -80,6 +84,9 @@ public class PricesBrowser extends ModalJFrame {
 	private JButton jButtonManage;
 	private JButton jPrintTableButton;
 	private JPanel jPanelDescription;
+	private JPanel jPanelSearch;
+	private JTextField jTextFieldSearch;
+	private String currentSearchText = "";
 	protected static String[] cCategories = { "EXA", "OPE", "MED", "OTH" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	protected static String[] cCategoriesNames = { MessageBundle.getMessage("angal.priceslist.exams"), MessageBundle.getMessage("angal.priceslist.operations"),
 			MessageBundle.getMessage("angal.priceslist.medicals"),
@@ -138,7 +145,7 @@ public class PricesBrowser extends ModalJFrame {
 			dispose();
 		}
 	}
-	
+
 	private JButton getPrintTableButton() {
 		if (jPrintTableButton == null) {
 			jPrintTableButton = new JButton(MessageBundle.getMessage("angal.priceslist.printing.btn"));
@@ -161,9 +168,9 @@ public class PricesBrowser extends ModalJFrame {
 			jButtonManage = new JButton(MessageBundle.getMessage("angal.priceslist.managelists.btn"));
 			jButtonManage.setMnemonic(MessageBundle.getMnemonic("angal.priceslist.managelists.btn.key"));
 			jButtonManage.addActionListener(actionEvent -> {
-					ListBrowser browseList = new ListBrowser();
-					browseList.setVisible(true);
-					dispose();
+				ListBrowser browseList = new ListBrowser();
+				browseList.setVisible(true);
+				dispose();
 			});
 		}
 		return jButtonManage;
@@ -180,7 +187,7 @@ public class PricesBrowser extends ModalJFrame {
 
 	protected void updateDescription() {
 		jLabelDescription.setText(getTextDescription());
-		
+
 	}
 
 	private JPanel getJPanelSelection() {
@@ -190,6 +197,45 @@ public class PricesBrowser extends ModalJFrame {
 			jPanelSelection.add(getJComboBoxLists());
 		}
 		return jPanelSelection;
+	}
+
+	/**
+	 * Second row of the north panel: holds the "Rechercher" label and the search text field,
+	 * kept separate from {@link #getJPanelSelection()} so the combo/description/manage row and
+	 * the search row can be stacked on their own lines.
+	 */
+	private JPanel getJPanelSearch() {
+		if (jPanelSearch == null) {
+			jPanelSearch = new JPanel();
+			jPanelSearch.setLayout(new FlowLayout(FlowLayout.LEFT));
+			jPanelSearch.add(new JLabel(MessageBundle.getMessage("angal.priceslist.search.txt")));
+			jPanelSearch.add(getJTextFieldSearch());
+		}
+		return jPanelSearch;
+	}
+
+	private JTextField getJTextFieldSearch() {
+		if (jTextFieldSearch == null) {
+			jTextFieldSearch = new JTextField(15);
+			jTextFieldSearch.getDocument().addDocumentListener(new DocumentListener() {
+
+				@Override
+				public void insertUpdate(DocumentEvent event) {
+					filterPrices();
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent event) {
+					filterPrices();
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent event) {
+					filterPrices();
+				}
+			});
+		}
+		return jTextFieldSearch;
 	}
 
 	private JLabel getJLabelDescription() {
@@ -233,12 +279,7 @@ public class PricesBrowser extends ModalJFrame {
 					try {
 						priceListManager.updatePrices(listSelected, updateList);
 						MessageDialog.info(null, "angal.priceslist.listsaved");
-						updateFromDB();
-						PriceNode root = getTreeContent();
-						jTreeTable.setModel(new PriceModel(root));
-						jTreeTable.getTree().expandRow(3);
-						jTreeTable.getTree().expandRow(2);
-						jTreeTable.getTree().expandRow(1);
+						refreshTree();
 						validate();
 						repaint();
 					} catch (OHServiceException e) {
@@ -284,16 +325,13 @@ public class PricesBrowser extends ModalJFrame {
 
 	private JTreeTable getJTreeList() {
 		if (jTreeTable == null) {
-			
+
 			updateFromDB();
-		    PriceNode root = getTreeContent();
-		    
-		    jTreeTable = new JTreeTable(new PriceModel(root));
-		    
-		    jTreeTable.getTree().expandRow(4);
-		    jTreeTable.getTree().expandRow(3);
-		    jTreeTable.getTree().expandRow(2);
-		    jTreeTable.getTree().expandRow(1);
+			getTreeContent();
+
+			jTreeTable = new JTreeTable(new PriceModel(buildFilteredRoot(currentSearchText)));
+
+			expandAllRows();
 
 			for (int i = 0; i < columnWidth.length; i++) {
 				jTreeTable.getColumnModel().getColumn(i).setMinWidth(columnWidth[i]);
@@ -302,7 +340,7 @@ public class PricesBrowser extends ModalJFrame {
 					jTreeTable.getColumnModel().getColumn(i).setMaxWidth(columnWidth[i]);
 				}
 			}
-		    jTreeTable.setAutoCreateColumnsFromModel(false);
+			jTreeTable.setAutoCreateColumnsFromModel(false);
 		}
 		return jTreeTable;
 	}
@@ -368,6 +406,64 @@ public class PricesBrowser extends ModalJFrame {
 		return root;
 	}
 
+	/**
+	 * Rebuilds the category fields ({@code examNodes}/{@code opeNodes}/{@code medNodes}/{@code othNodes})
+	 * from the database, then re-installs the tree model, applying the currently active search
+	 * filter on top. Used whenever the underlying data changes (initial load, list switch, after
+	 * save) so the active search term is never silently dropped.
+	 */
+	private void refreshTree() {
+		updateFromDB();
+		getTreeContent();
+		filterPrices();
+	}
+
+	/**
+	 * Rebuilds the displayed tree from the search field's current text, filtering the *existing*
+	 * in-memory category nodes rather than reloading from the database - so an edited-but-unsaved
+	 * price keeps its edited value whether or not it's currently visible.
+	 */
+	private void filterPrices() {
+		currentSearchText = jTextFieldSearch.getText();
+		jTreeTable.setModel(new PriceModel(buildFilteredRoot(currentSearchText)));
+		expandAllRows();
+	}
+
+	/**
+	 * Builds a filtered view of the in-memory tree: each category keeps only the leaf nodes whose
+	 * description contains {@code filterText} (case-insensitive; a blank filter keeps everything),
+	 * reusing the same leaf {@link PriceNode} instances (not copies) so in-progress edits survive
+	 * filtering. A category with no matching leaves is omitted entirely.
+	 */
+	private PriceNode buildFilteredRoot(String filterText) {
+		PriceNode root = new PriceNode(new Price(null, "", "", listSelected.getName(), null)); //$NON-NLS-1$ //$NON-NLS-2$
+		addFilteredCategory(root, examNodes, filterText);
+		addFilteredCategory(root, opeNodes, filterText);
+		addFilteredCategory(root, medNodes, filterText);
+		addFilteredCategory(root, othNodes, filterText);
+		return root;
+	}
+
+	private void addFilteredCategory(PriceNode root, PriceNode category, String filterText) {
+		PriceNode filteredCategory = PriceListFilterSupport.filterCategory(category, filterText);
+		if (filteredCategory != null) {
+			root.addItem(filteredCategory);
+		}
+	}
+
+	/**
+	 * Expands every row currently in the tree, from the last row up to (but excluding) the root -
+	 * descending order so expanding a row (which inserts its children right after it) never shifts
+	 * the index of a row not yet processed. Unlike a hardcoded {@code expandRow(1..4)} sequence,
+	 * this adapts to however many category rows are actually present, which varies once filtering
+	 * can omit a category entirely.
+	 */
+	private void expandAllRows() {
+		for (int row = jTreeTable.getRowCount() - 1; row >= 1; row--) {
+			jTreeTable.getTree().expandRow(row);
+		}
+	}
+
 	private JScrollPane getJScrollPaneList() {
 		if (jScrollPaneList == null) {
 			jScrollPaneList = new JScrollPane();
@@ -392,11 +488,7 @@ public class PricesBrowser extends ModalJFrame {
 				if (option == 0) {
 					listSelected = (PriceList) jComboBoxLists.getSelectedItem();
 
-					PriceNode root = getTreeContent();
-					jTreeTable.setModel(new PriceModel(root));
-					jTreeTable.getTree().expandRow(3);
-					jTreeTable.getTree().expandRow(2);
-					jTreeTable.getTree().expandRow(1);
+					refreshTree();
 
 					updateDescription();
 					validate();
@@ -412,13 +504,31 @@ public class PricesBrowser extends ModalJFrame {
 		return jComboBoxLists;
 	}
 
+	/**
+	 * Top row of the north panel: combo box, description label and the "manage lists" button,
+	 * laid out side by side as before.
+	 */
+	private JPanel getJPanelTop() {
+		if (jPanelTop == null) {
+			jPanelTop = new JPanel();
+			jPanelTop.setLayout(new BoxLayout(jPanelTop, BoxLayout.X_AXIS));
+			jPanelTop.add(getJPanelSelection());
+			jPanelTop.add(getJPanelDescription());
+			jPanelTop.add(getJPanelConfig());
+		}
+		return jPanelTop;
+	}
+
+	/**
+	 * North panel now stacks two rows vertically: the top row (combo/description/manage button)
+	 * and, below it, the search row (label + text field).
+	 */
 	private JPanel getJPanelNorth() {
 		if (jPanelNorth == null) {
 			jPanelNorth = new JPanel();
-			jPanelNorth.setLayout(new BoxLayout(jPanelNorth, BoxLayout.X_AXIS));
-			jPanelNorth.add(getJPanelSelection());
-			jPanelNorth.add(getJPanelDescription());
-			jPanelNorth.add(getJPanelConfig());
+			jPanelNorth.setLayout(new BoxLayout(jPanelNorth, BoxLayout.Y_AXIS));
+			jPanelNorth.add(getJPanelTop());
+			jPanelNorth.add(getJPanelSearch());
 		}
 		return jPanelNorth;
 	}
