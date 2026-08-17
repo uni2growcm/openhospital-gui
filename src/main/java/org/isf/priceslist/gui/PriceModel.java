@@ -83,11 +83,12 @@ public class PriceModel extends AbstractTreeTableModel {
 	// Names of the columns.
 	protected static String[] cNames = {
 			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.priceslist.prices.txt").toUpperCase()
+			MessageBundle.getMessage("angal.priceslist.prices.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.priceslist.variable.txt").toUpperCase()
 	};
 
 	// Types of the columns.
-	protected static Class<?>[] cTypes = { TreeTableModel.class, Double.class };
+	protected static Class<?>[] cTypes = { TreeTableModel.class, Double.class, Boolean.class };
 
 	protected static String[] cCategories = { "EXA", "OPE", "MED", "OTH" };
 
@@ -114,6 +115,8 @@ public class PriceModel extends AbstractTreeTableModel {
 	public void setValueAt(Object aValue, Object node, int column) {
 		if (column == 1) {
 			((PriceNode) node).getPrice().setPrice((Double) aValue);
+		} else if (column == 2) {
+			((PriceNode) node).getPrice().setVariable((Boolean) aValue);
 		}
 	}
 
@@ -128,6 +131,9 @@ public class PriceModel extends AbstractTreeTableModel {
 			case 1:
 				displayValue = price.getPrice();
 				break;
+			case 2:
+				displayValue = price.isVariable();
+				break;
 			default:
 				break;
 		}
@@ -136,7 +142,11 @@ public class PriceModel extends AbstractTreeTableModel {
 
 	@Override
 	public boolean isCellEditable(Object node, int column) {
-		if (getPrice(node).isPrice() && getPrice(node).isEditable()) {
+		Price price = getPrice(node);
+		if (column == 2) {
+			return price.isPrice();
+		}
+		if (price.isPrice() && price.isEditable()) {
 			return true;
 		}
 		return super.isCellEditable(node, column);

@@ -542,7 +542,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 					item.setPriceID(""); // Update items straightway, no option for the user
 					item.setPrice(false);
 					modified = true;
-				} else if (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount())) {
+				} else if (BillItemPriceSupport.requiresReconciliation(item, p)) {
 					changedPriceList.add(item.getItemDescription());
 				}
 			}
@@ -624,9 +624,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private void updatePrices() {
 		for (BillItems item : billItems.parallelStream().filter(BillItems::isPrice).collect(Collectors.toList())) {
 			Price p = getPrice(item.getPriceID());
-			if (p != null && (!item.getItemDescription().equals(p.getDesc()) || !p.getPrice().equals(item.getItemAmount()))) {
-				item.setItemDescription(p.getDesc());
-				item.setItemAmount(p.getPrice());
+			if (p != null && BillItemPriceSupport.requiresReconciliation(item, p)) {
+				if (BillItemPriceSupport.descriptionChanged(item, p)) {
+					item.setItemDescription(p.getDesc());
+				}
+				if (BillItemPriceSupport.priceChanged(item, p)) {
+					item.setItemAmount(p.getPrice());
+				}
 				modified = true;
 			}
 		}
@@ -1611,6 +1615,20 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				Icon icon = new ImageIcon("rsc/icons/exam_dialog.png"); //$NON-NLS-1$
 				Price exa = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.selectanexam.txt"),
 								MessageBundle.getMessage("angal.newbill.exam.title"), JOptionPane.PLAIN_MESSAGE, icon, exaArray.toArray(), ""); //$NON-NLS-2$
+				if (BillItemPriceSupport.requiresPricePrompt(exa)) {
+					Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+					String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+									MessageBundle.getMessage("angal.newbill.exam.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, exa.getPrice());
+					if (price == null) {
+						return;
+					}
+					try {
+						exa.setPrice(BillItemPriceSupport.parseAmount(price));
+					} catch (NumberFormatException nfe) {
+						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+						return;
+					}
+				}
 				addItem(exa, 1, true);
 			});
 		}
@@ -1637,6 +1655,20 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				Icon icon = new ImageIcon("rsc/icons/operation_dialog.png"); //$NON-NLS-1$
 				Price ope = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.selectanoperation.txt"),
 								MessageBundle.getMessage("angal.newbill.operation.title"), JOptionPane.PLAIN_MESSAGE, icon, opeArray.toArray(), ""); //$NON-NLS-2$
+				if (BillItemPriceSupport.requiresPricePrompt(ope)) {
+					Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+					String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+									MessageBundle.getMessage("angal.newbill.operation.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, ope.getPrice());
+					if (price == null) {
+						return;
+					}
+					try {
+						ope.setPrice(BillItemPriceSupport.parseAmount(price));
+					} catch (NumberFormatException nfe) {
+						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+						return;
+					}
+				}
 				addItem(ope, 1, true);
 			});
 		}
@@ -1672,10 +1704,25 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							return;
 						}
 						qty = Integer.parseInt(quantity);
-						addItem(med, qty, true);
 					} catch (Exception eee) {
 						MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+						return;
 					}
+					if (BillItemPriceSupport.requiresPricePrompt(med)) {
+						Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+						String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+										MessageBundle.getMessage("angal.newbill.medical.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, med.getPrice());
+						if (price == null) {
+							return;
+						}
+						try {
+							med.setPrice(BillItemPriceSupport.parseAmount(price));
+						} catch (NumberFormatException nfe) {
+							MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+							return;
+						}
+					}
+					addItem(med, qty, true);
 				}
 			});
 		}

@@ -125,6 +125,19 @@ class PriceListFilterSupportTest {
 		}
 
 		@Test
+		@DisplayName("An unsaved 'Variable' toggle made through the original leaf survives filtering")
+		void variableToggleOnReusedLeavesSurvivesFiltering() {
+			PriceNode malaria = leaf("Malaria test");
+			PriceNode category = category("Exams", malaria);
+
+			PriceNode filtered = PriceListFilterSupport.filterCategory(category, "malaria");
+			malaria.getPrice().setVariable(true);
+
+			PriceNode filteredLeaf = (PriceNode) filtered.getItems()[0];
+			assertThat(filteredLeaf.getPrice().isVariable()).isTrue();
+		}
+
+		@Test
 		@DisplayName("A category with no matching leaf is omitted (returns null)")
 		void noMatchesReturnsNull() {
 			PriceNode category = category("Exams", leaf("Malaria test"), leaf("X-Ray"));
