@@ -44,6 +44,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 import org.isf.generaldata.GeneralData;
@@ -91,12 +92,13 @@ public class PatVacEdit extends JDialog {
 	private VoLimitedTextField ageTextField;
 	private VoLimitedTextField sexTextField;
 	private VoLimitedTextField progrTextField;
+	private VoLimitedTextField villageTextField;
 
 	private JTextField jTextPatientSrc;
 	private Patient selectedPatient;
-	private String lastKey;
 	private String s;
 	private List<Patient> patientList;
+	private final Timer searchPatientTimer = new Timer(1000, e -> doSearchPatient());
 	private GoodDateChooser vaccineDateFieldCal;
 	private int patNextYProg;
 
@@ -277,6 +279,23 @@ public class PatVacEdit extends JDialog {
 			gbcVaccineComboBox.gridx = 1;
 			gbcVaccineComboBox.gridy = 3;
 			dataPanel.add(getVaccineComboBox(), gbcVaccineComboBox);
+
+			// village
+			JLabel villageLabel = new JLabel(MessageBundle.getMessage("angal.patvac.village"));
+			GridBagConstraints gbcVillageLabel = new GridBagConstraints();
+			gbcVillageLabel.anchor = GridBagConstraints.WEST;
+			gbcVillageLabel.fill = GridBagConstraints.VERTICAL;
+			gbcVillageLabel.insets = new Insets(5, 5, 5, 5);
+			gbcVillageLabel.gridx = 0;
+			gbcVillageLabel.gridy = 4;
+			dataPanel.add(villageLabel, gbcVillageLabel);
+			GridBagConstraints gbcVillageTextField = new GridBagConstraints();
+			gbcVillageTextField.fill = GridBagConstraints.BOTH;
+			gbcVillageTextField.insets = new Insets(5, 5, 5, 5);
+			gbcVillageTextField.gridwidth = 4;
+			gbcVillageTextField.gridx = 1;
+			gbcVillageTextField.gridy = 4;
+			dataPanel.add(getVillageTextField(), gbcVillageTextField);
 		}
 		return dataPanel;
 	}
@@ -305,18 +324,16 @@ public class PatVacEdit extends JDialog {
 			jTextPatientSrc.addKeyListener(new KeyListener() {
 				@Override
 				public void keyTyped(KeyEvent e) {
-					lastKey = "";
-					String s = String.valueOf(e.getKeyChar());
-					if (Character.isLetterOrDigit(e.getKeyChar())) {
-						lastKey = s;
-					}
-					s = jTextPatientSrc.getText() + lastKey;
-					s = s.trim();
-					filterPatient(s);
+					searchPatientTimer.setRepeats(false);
+					searchPatientTimer.restart();
 				}
 
 				@Override
 				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						searchPatientTimer.stop();
+						doSearchPatient();
+					}
 				}
 
 				@Override
@@ -340,13 +357,20 @@ public class PatVacEdit extends JDialog {
 			if (!insert) {
 				jSearchButton.setEnabled(false);
 			}
-			jSearchButton.addActionListener(actionEvent -> {
-					patientComboBox.removeAllItems();
-					resetPatVacPat();
-					getPatientComboBox(jTextPatientSrc.getText());
-			});
+			jSearchButton.addActionListener(actionEvent -> doSearchPatient());
 		}
 		return jSearchButton;
+	}
+
+	/**
+	 * Re-fetches the patient combo box from the database using the current search text (or the default
+	 * bounded list when it's empty). Shared by the search button and the debounced search-as-you-type
+	 * timer in non-{@code ENHANCEDSEARCH} mode.
+	 */
+	private void doSearchPatient() {
+		patientComboBox.removeAllItems();
+		resetPatVacPat();
+		getPatientComboBox(jTextPatientSrc.getText());
 	}
 
 	/**
@@ -382,6 +406,21 @@ public class PatVacEdit extends JDialog {
 			}
 		}
 		return progrTextField;
+	}
+
+	/**
+	 * This method initializes villageTextField
+	 *
+	 * @return villageTextField (VoLimitedTextField)
+	 */
+	private VoLimitedTextField getVillageTextField() {
+		if (villageTextField == null) {
+			villageTextField = new VoLimitedTextField(50, 20);
+			if (!insert) {
+				villageTextField.setText(patVac.getVillage());
+			}
+		}
+		return villageTextField;
 	}
 
 	/**
@@ -465,51 +504,6 @@ public class PatVacEdit extends JDialog {
 	}
 
 	/**
-	 * This method filter patient based on search string
-	 */
-	private void filterPatient(String key) {
-		patientComboBox.removeAllItems();
-
-		if (key == null || key.compareTo("") == 0) {
-			patientComboBox.addItem(MessageBundle.getMessage("angal.patvac.selectapatient"));
-			resetPatVacPat();
-		}
-
-		for (Patient elem : patientList) {
-			if (key != null) {
-				// Search key extended to name and code
-				StringBuilder sbName = new StringBuilder();
-				sbName.append(elem.getSecondName());
-				sbName.append(elem.getFirstName());
-				sbName.append(elem.getCode());
-				String name = sbName.toString();
-
-				if (name.toLowerCase().contains(key.toLowerCase())) {
-					patientComboBox.addItem(elem);
-				}
-			} else {
-				patientComboBox.addItem(elem);
-			}
-		}
-
-		if (patientComboBox.getItemCount() == 1) {
-			selectedPatient = (Patient) patientComboBox.getSelectedItem();
-			setPatient(selectedPatient);
-		}
-
-		if (patientComboBox.getItemCount() > 0) {
-			if (patientComboBox.getItemAt(0) instanceof Patient) {
-				selectedPatient = (Patient) patientComboBox.getItemAt(0);
-				setPatient(selectedPatient);
-			} else {
-				selectedPatient = null;
-			}
-		} else {
-			selectedPatient = null;
-		}
-	}
-
-	/**
 	 * This method reset patient's additional data
 	 */
 	private void resetPatVacPat() {
@@ -543,37 +537,33 @@ public class PatVacEdit extends JDialog {
 			patientComboBox = new JComboBox<>();
 		}
 		patientComboBox.addItem(MessageBundle.getMessage("angal.patvac.selectapatient"));
-		Patient patSelected = null;
 
-		if (GeneralData.ENHANCEDSEARCH) {
+		if (!insert) {
+			// editing an existing record: the patient can't be changed (the combo/search field are
+			// disabled below), so there's no need to fetch a pick-list at all - just show the one
+			// already assigned. Fetching a bounded list here and falling back to "first result" when
+			// the assigned patient isn't in it would silently reassign the record to the wrong patient.
+			Patient assigned = patVac.getPatient();
+			patientComboBox.addItem(assigned);
+			patientComboBox.setSelectedItem(assigned);
+			selectedPatient = assigned;
+		} else {
 			try {
-				patientList = patientBrowserManager.getPatientsByOneOfFieldsLike(regExp);
+				if (regExp != null && !regExp.isEmpty()) {
+					patientList = patientBrowserManager.getPatientsByOneOfFieldsLike(regExp);
+				} else {
+					patientList = patientBrowserManager.getPatient(0, GeneralData.PAGESIZE);
+				}
 			} catch (OHServiceException ex) {
 				OHServiceExceptionUtil.showMessages(ex);
 				patientList = new ArrayList<>();
 			}
-		} else {
-			try {
-				patientList = patientBrowserManager.getPatient();
-			} catch (OHServiceException e) {
-                OHServiceExceptionUtil.showMessages(e);
-			}
-		}
-		if (patientList != null) {
-			for (Patient elem : patientList) {
-				if (!insert) {
-					if (elem.getCode().equals(patVac.getPatient().getCode())) {
-						patSelected = elem;
-					}
+			if (patientList != null) {
+				for (Patient elem : patientList) {
+					patientComboBox.addItem(elem);
 				}
-				patientComboBox.addItem(elem);
 			}
-		}
-		if (patSelected != null) {
-			patientComboBox.setSelectedItem(patSelected);
-			selectedPatient = (Patient) patientComboBox.getSelectedItem();
-		} else {
-			if (patientComboBox.getItemCount() > 0 && GeneralData.ENHANCEDSEARCH) {
+			if (patientComboBox.getItemCount() > 0) {
 				if (patientComboBox.getItemAt(0) instanceof Patient) {
 					selectedPatient = (Patient) patientComboBox.getItemAt(0);
 					setPatient(selectedPatient);
@@ -717,6 +707,7 @@ public class PatVacEdit extends JDialog {
 				patVac.setVaccineDate(vaccineDate.atStartOfDay());
 				patVac.setVaccine((Vaccine) vaccineComboBox.getSelectedItem());
 				patVac.setPatient(selectedPatient);
+				patVac.setVillage(villageTextField.getText());
 				patVac.setLock(0);
 
 				// handling db insert/update
