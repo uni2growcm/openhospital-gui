@@ -23,12 +23,11 @@ package org.isf.accounting.gui;
 
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
@@ -44,25 +43,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -245,6 +228,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JTable jTableBalance;
 	private JScrollPane jScrollPaneBalance;
 	private JPanel jPanelTop;
+	private JPanel jPanelNorthContainer;
+	private JPanel jPanelItemSearch;
+	private JTextField jTextFieldItemSearch;
+	private JList<Price> jListItemSearchResults;
+	private JScrollPane jScrollPaneItemSearchResults;
+	private final DefaultListModel<Price> itemSearchResultsModel = new DefaultListModel<>();
 	private GoodDateTimeToggleChooser jCalendarDate;
 	private JLabel jLabelDate;
 	private JLabel jLabelUser;
@@ -265,6 +254,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonCustom;
 	private JButton jButtonPickPatient;
 	private JButton jButtonTrashPatient;
+	private JDialog jItemSearchWindow;
+	private JTextField jDialogSearchField;
+	private JTextField jDialogItemDescription;
+	private JTextField jDialogItemQuantity;
+	private JTextField jDialogItemPrice;
+	private BillItems editingBillItem;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -307,7 +302,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	// Tables
 	private Object[] billClasses = { Price.class, Integer.class, Double.class };
 	private String[] billColumnNames = {
-			MessageBundle.getMessage("angal.newbill.item.col").toUpperCase(),
+			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.qty.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.amount.txt").toUpperCase()
 	};
@@ -491,7 +486,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	}
 
 	private void initComponents() {
-		add(getJPanelTop(), BorderLayout.NORTH);
+		add(getJPanelNorthContainer(), BorderLayout.NORTH);
 		add(getJPanelData(), BorderLayout.CENTER);
 		add(getJPanelButtons(), BorderLayout.EAST);
 		updateTitle();
@@ -923,6 +918,315 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jPanelTop;
 	}
 
+	/**
+	 * Wraps {@link #getJPanelTop()} (date/patient info) and {@link #getJPanelItemSearch()} (the
+	 * combined item search) into a single NORTH region, so the search field sits directly below the
+	 * patient panel and above {@link #getJPanelData()}'s bill items table.
+	 */
+	private JPanel getJPanelNorthContainer() {
+		if (jPanelNorthContainer == null) {
+			jPanelNorthContainer = new JPanel();
+			jPanelNorthContainer.setLayout(new BoxLayout(jPanelNorthContainer, BoxLayout.Y_AXIS));
+			jPanelNorthContainer.add(getJPanelTop());
+			jPanelNorthContainer.add(getJPanelItemSearch());
+		}
+		return jPanelNorthContainer;
+	}
+
+	/**
+	 * A search field plus a live-filtered, scrollable list of matches across every category
+	 * (Medical, Exam, Operation, Other) combined. Empty when the field is empty; matching is case-
+	 * and accent-insensitive via {@link BillItemSearchSupport}. Selecting a result adds it using the
+	 * same add flow as its category's own Add button.
+	 */
+	private JPanel getJPanelItemSearch() {
+		if (jPanelItemSearch == null) {
+			jPanelItemSearch = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.insets = new Insets(2, 4, 2, 4);
+			gbc.anchor = GridBagConstraints.WEST;
+
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			jPanelItemSearch.add(new JLabel(MessageBundle.getMessage("angal.newbill.searchitem.txt")), gbc);
+			gbc.gridx = 1;
+			jPanelItemSearch.add(new JLabel(MessageBundle.getMessage("angal.newbill.item.col")), gbc);
+			gbc.gridx = 2;
+			jPanelItemSearch.add(new JLabel(MessageBundle.getMessage("angal.common.qty.txt")), gbc);
+			gbc.gridx = 3;
+			jPanelItemSearch.add(new JLabel(MessageBundle.getMessage("angal.common.amount.txt")), gbc);
+
+			getJTextFieldItemSearch().setPreferredSize(new Dimension(180, 22));
+			getJDialogItemDescription().setPreferredSize(new Dimension(180, 22));
+			getJDialogItemQuantity().setPreferredSize(new Dimension(50, 22));
+			getJDialogItemPrice().setPreferredSize(new Dimension(80, 22));
+
+			gbc.gridy = 1;
+			gbc.gridx = 0;
+			jPanelItemSearch.add(getJTextFieldItemSearch(), gbc);
+			gbc.gridx = 1;
+			jPanelItemSearch.add(getJDialogItemDescription(), gbc);
+			gbc.gridx = 2;
+			jPanelItemSearch.add(getJDialogItemQuantity(), gbc);
+			gbc.gridx = 3;
+			jPanelItemSearch.add(getJDialogItemPrice(), gbc);
+
+			gbc.gridx = 4;
+			gbc.gridy = 0;
+			gbc.gridheight = 2;
+			gbc.weightx = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			jPanelItemSearch.add(Box.createHorizontalGlue(), gbc);
+		}
+		return jPanelItemSearch;
+	}
+
+	private JTextField getJDialogItemDescription() {
+		if (jDialogItemDescription == null) {
+			jDialogItemDescription = new JTextField();
+			jDialogItemDescription.setEditable(false);
+		}
+		return jDialogItemDescription;
+	}
+
+	private JTextField getJDialogItemQuantity() {
+		if (jDialogItemQuantity == null) {
+			jDialogItemQuantity = new JTextField();
+			jDialogItemQuantity.addActionListener(actionEvent -> confirmEditedItem());
+		}
+		return jDialogItemQuantity;
+	}
+
+	private JTextField getJDialogItemPrice() {
+		if (jDialogItemPrice == null) {
+			jDialogItemPrice = new JTextField();
+			jDialogItemPrice.addActionListener(actionEvent -> confirmEditedItem());
+		}
+		return jDialogItemPrice;
+	}
+
+	private JTextField getJTextFieldItemSearch() {
+		if (jTextFieldItemSearch == null) {
+			jTextFieldItemSearch = new JTextField(25);
+			jTextFieldItemSearch.addActionListener(actionEvent -> openItemSearchWindow());
+		}
+		return jTextFieldItemSearch;
+	}
+
+	private JTextField getJDialogSearchField() {
+		if (jDialogSearchField == null) {
+			jDialogSearchField = new JTextField(25);
+			jDialogSearchField.getDocument().addDocumentListener(new DocumentListener() {
+
+				@Override
+				public void insertUpdate(DocumentEvent event) {
+					refreshWindowSearchResults();
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent event) {
+					refreshWindowSearchResults();
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent event) {
+					refreshWindowSearchResults();
+				}
+			});
+		}
+		return jDialogSearchField;
+	}
+
+	private void openItemSearchWindow() {
+		filterResults(jTextFieldItemSearch.getText());
+		if (itemSearchResultsModel.isEmpty()) {
+			MessageDialog.warning(this, "angal.newbill.noitemfound.msg");
+			return;
+		}
+
+		JDialog window = getJItemSearchWindow();
+		jDialogSearchField.setText(jTextFieldItemSearch.getText());
+		window.setVisible(true);
+		jDialogSearchField.requestFocusInWindow();
+		jDialogSearchField.selectAll();
+	}
+
+	private JDialog getJItemSearchWindow() {
+		if (jItemSearchWindow == null) {
+			jItemSearchWindow = new JDialog(this, MessageBundle.getMessage("angal.newbill.searchitem.txt"), false);
+
+			JPanel contentPanel = new JPanel(new BorderLayout());
+			contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+			JPanel searchFieldRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			searchFieldRow.add(new JLabel(MessageBundle.getMessage("angal.newbill.searchitem.txt")));
+			searchFieldRow.add(getJDialogSearchField());
+
+			contentPanel.add(searchFieldRow, BorderLayout.NORTH);
+			contentPanel.add(new JScrollPane(getJListItemSearchResults()), BorderLayout.CENTER);
+
+			jItemSearchWindow.setLayout(new BorderLayout());
+			jItemSearchWindow.add(contentPanel, BorderLayout.CENTER);
+			jItemSearchWindow.setSize(550, 400);
+			jItemSearchWindow.setLocationRelativeTo(this);
+		}
+		return jItemSearchWindow;
+	}
+
+	private void filterResults(String filterText) {
+		itemSearchResultsModel.clear();
+		if (filterText != null && !filterText.isBlank()) {
+			for (Price price : BillItemSearchSupport.filter(prcListArray, filterText)) {
+				itemSearchResultsModel.addElement(price);
+			}
+		}
+	}
+
+	private void refreshWindowSearchResults() {
+		filterResults(jDialogSearchField.getText());
+	}
+
+	private JList<Price> getJListItemSearchResults() {
+		if (jListItemSearchResults == null) {
+			jListItemSearchResults = new JList<>(itemSearchResultsModel);
+			jListItemSearchResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			jListItemSearchResults.setVisibleRowCount(5);
+			jListItemSearchResults.addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent event) {
+					if (event.getClickCount() == 2) {
+						addItemFromSearchWindow(jListItemSearchResults.getSelectedValue());
+					}
+				}
+			});
+			jListItemSearchResults.addKeyListener(new KeyAdapter() {
+
+				@Override
+				public void keyPressed(KeyEvent event) {
+					if (event.getKeyCode() == KeyEvent.VK_ENTER) {
+						addItemFromSearchWindow(jListItemSearchResults.getSelectedValue());
+					}
+				}
+			});
+		}
+		return jListItemSearchResults;
+	}
+
+	private void addItemFromSearchWindow(Price selected) {
+		if (selected == null) {
+			return;
+		}
+
+		closeItemSearchWindow();
+
+		if (selected.getGroup().equals("OTH")) {
+			// "Other" garde sa gestion spéciale (discharge/daily/undefined), déjà prix+qty inclus
+			addSelectedOther(selected);
+			return;
+		}
+
+		if (BillItemPriceSupport.requiresPricePrompt(selected)) {
+			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+					MessageBundle.getMessage("angal.newbill.item.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, selected.getPrice());
+			if (price == null) {
+				return;
+			}
+			try {
+				selected.setPrice(BillItemPriceSupport.parseAmount(price));
+			} catch (NumberFormatException nfe) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+
+		String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+				MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, null, null, 1);
+		if (quantity == null) {
+			return;
+		}
+		int qty;
+		try {
+			qty = Integer.parseInt(quantity.trim());
+			if (qty <= 0) {
+				MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+				return;
+			}
+		} catch (NumberFormatException nfe) {
+			MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+			return;
+		}
+
+		addItem(selected, qty, true);
+		closeItemSearchWindow();
+	}
+
+	private void closeItemSearchWindow() {
+		jTextFieldItemSearch.setText("");
+		if (jDialogSearchField != null) {
+			jDialogSearchField.setText("");
+		}
+		itemSearchResultsModel.clear();
+		if (jItemSearchWindow != null) {
+			jItemSearchWindow.setVisible(false);
+		}
+	}
+
+	private void openEditQuantityDialog(int row) {
+		if (jItemSearchWindow != null) {
+			jItemSearchWindow.setVisible(false);
+		}
+		BillItems item = billItems.get(row);
+		editingBillItem = item;
+
+		Price matchingPrice = item.isPrice() ? getPrice(item.getPriceID()) : null;
+		jDialogItemDescription.setText(item.getItemDescription());
+		jDialogItemQuantity.setText(String.valueOf(item.getItemQuantity()));
+		jDialogItemPrice.setText(String.valueOf(item.getItemAmount()));
+		jDialogItemPrice.setEditable(matchingPrice == null || BillItemPriceSupport.requiresPricePrompt(matchingPrice));
+
+		jDialogItemQuantity.requestFocusInWindow();
+		jDialogItemQuantity.selectAll();
+	}
+
+	private void confirmEditedItem() {
+		if (editingBillItem == null) {
+			return;
+		}
+
+		int qty;
+		try {
+			qty = Integer.parseInt(jDialogItemQuantity.getText().trim());
+			if (qty <= 0) {
+				MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+				return;
+			}
+		} catch (NumberFormatException nfe) {
+			MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+			return;
+		}
+
+		if (jDialogItemPrice.isEditable()) {
+			try {
+				editingBillItem.setItemAmount(BillItemPriceSupport.parseAmount(jDialogItemPrice.getText().trim()));
+			} catch (NumberFormatException nfe) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+
+		editingBillItem.setItemQuantity(qty);
+		modified = true;
+		updateTotals();
+		updateGUI();
+
+		editingBillItem = null;
+		jDialogItemDescription.setText("");
+		jDialogItemQuantity.setText("");
+		jDialogItemPrice.setText("");
+	}
+
 	private JScrollPane getJScrollPaneBill() {
 		if (jScrollPaneBill == null) {
 			jScrollPaneBill = new JScrollPane();
@@ -944,6 +1248,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jTableBill.getColumnModel().getColumn(2).setMinWidth(PRICE_WIDTH);
 			jTableBill.getColumnModel().getColumn(2).setMaxWidth(PRICE_WIDTH);
 			jTableBill.setAutoCreateColumnsFromModel(false);
+			jTableBill.addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent event) {
+					if (event.getClickCount() == 2) {
+						int row = jTableBill.getSelectedRow();
+						if (row > -1) {
+							openEditQuantityDialog(row);
+						}
+					}
+				}
+			});
 		}
 		return jTableBill;
 	}
@@ -1533,13 +1849,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonAddOther.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
 			jButtonAddOther.addActionListener(actionEvent -> {
 
-				boolean isPrice = true;
-
-				Map<Integer, PricesOthers> othersHashMap = new HashMap<>();
-				for (PricesOthers other : othPrices) {
-					othersHashMap.put(other.getId(), other);
-				}
-
 				List<Price> othArray = new ArrayList<>();
 				for (Price price : prcListArray) {
 					if (price.getGroup().equals("OTH")) { // TODO: enumerate price categories
@@ -1548,51 +1857,62 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				}
 
 				Icon icon = new ImageIcon("rsc/icons/plus_dialog.png");
-				Price oth = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.pleaseselectanitem.txt"),
-								MessageBundle.getMessage("angal.newbill.item.title"), JOptionPane.PLAIN_MESSAGE, icon, othArray.toArray(), ""); //$NON-NLS-2$
+				Price oth = SearchableItemDialog.show(this, MessageBundle.getMessage("angal.newbill.item.title"), icon,
+								MessageBundle.getMessage("angal.newbill.pleaseselectanitem.txt"), othArray);
 
 				if (oth != null) {
-					if (othersHashMap.get(Integer.valueOf(oth.getItem())).isUndefined()) {
-						icon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
-						String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
-										MessageBundle.getMessage("angal.common.undefined.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, "0"); //$NON-NLS-2$
-						try {
-							if (price == null) {
-								return;
-							}
-							double amount = Double.parseDouble(price);
-							oth.setPrice(amount);
-							isPrice = false;
-						} catch (Exception eee) {
-							MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
-							return;
-						}
-					}
-					if (othersHashMap.get(Integer.valueOf(oth.getItem())).isDischarge()) {
-						double amount = oth.getPrice();
-						oth.setPrice(-amount);
-					}
-					if (othersHashMap.get(Integer.valueOf(oth.getItem())).isDaily()) {
-						int qty = 1;
-						icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
-						String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmanydays.txt"),
-										MessageBundle.getMessage("angal.newbill.days.title"), JOptionPane.PLAIN_MESSAGE, icon, null, qty);
-						try {
-							if (quantity == null || quantity.isEmpty()) {
-								return;
-							}
-							qty = Integer.parseInt(quantity);
-							addItem(oth, qty, isPrice);
-						} catch (Exception eee) {
-							MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
-						}
-					} else {
-						addItem(oth, 1, isPrice);
-					}
+					addSelectedOther(oth);
 				}
 			});
 		}
 		return jButtonAddOther;
+	}
+
+	private void addSelectedOther(Price oth) {
+		boolean isPrice = true;
+
+		Map<Integer, PricesOthers> othersHashMap = new HashMap<>();
+		for (PricesOthers other : othPrices) {
+			othersHashMap.put(other.getId(), other);
+		}
+
+		if (othersHashMap.get(Integer.valueOf(oth.getItem())).isUndefined()) {
+			Icon icon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+							MessageBundle.getMessage("angal.common.undefined.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, "0"); //$NON-NLS-2$
+			try {
+				if (price == null) {
+					return;
+				}
+				double amount = Double.parseDouble(price);
+				oth.setPrice(amount);
+				isPrice = false;
+			} catch (Exception eee) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+		if (othersHashMap.get(Integer.valueOf(oth.getItem())).isDischarge()) {
+			double amount = oth.getPrice();
+			oth.setPrice(-amount);
+		}
+		if (othersHashMap.get(Integer.valueOf(oth.getItem())).isDaily()) {
+			int qty = 1;
+			Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png"); //$NON-NLS-1$
+			String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmanydays.txt"),
+							MessageBundle.getMessage("angal.newbill.days.title"), JOptionPane.PLAIN_MESSAGE, icon, null, qty);
+			try {
+				if (quantity == null || quantity.isEmpty()) {
+					return;
+				}
+				qty = Integer.parseInt(quantity);
+				addItem(oth, qty, isPrice);
+			} catch (Exception eee) {
+				MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+			}
+		} else {
+			addItem(oth, 1, isPrice);
+		}
 	}
 
 	private JButton getJButtonAddExam() {
@@ -1613,26 +1933,32 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				}
 
 				Icon icon = new ImageIcon("rsc/icons/exam_dialog.png"); //$NON-NLS-1$
-				Price exa = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.selectanexam.txt"),
-								MessageBundle.getMessage("angal.newbill.exam.title"), JOptionPane.PLAIN_MESSAGE, icon, exaArray.toArray(), ""); //$NON-NLS-2$
-				if (BillItemPriceSupport.requiresPricePrompt(exa)) {
-					Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
-					String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
-									MessageBundle.getMessage("angal.newbill.exam.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, exa.getPrice());
-					if (price == null) {
-						return;
-					}
-					try {
-						exa.setPrice(BillItemPriceSupport.parseAmount(price));
-					} catch (NumberFormatException nfe) {
-						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
-						return;
-					}
+				Price exa = SearchableItemDialog.show(this, MessageBundle.getMessage("angal.newbill.exam.title"), icon,
+								MessageBundle.getMessage("angal.newbill.selectanexam.txt"), exaArray);
+				if (exa != null) {
+					addSelectedExam(exa);
 				}
-				addItem(exa, 1, true);
 			});
 		}
 		return jButtonAddExam;
+	}
+
+	private void addSelectedExam(Price exa) {
+		if (BillItemPriceSupport.requiresPricePrompt(exa)) {
+			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+							MessageBundle.getMessage("angal.newbill.exam.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, exa.getPrice());
+			if (price == null) {
+				return;
+			}
+			try {
+				exa.setPrice(BillItemPriceSupport.parseAmount(price));
+			} catch (NumberFormatException nfe) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+		addItem(exa, 1, true);
 	}
 
 	private JButton getJButtonAddOperation() {
@@ -1653,26 +1979,32 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				}
 
 				Icon icon = new ImageIcon("rsc/icons/operation_dialog.png"); //$NON-NLS-1$
-				Price ope = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.selectanoperation.txt"),
-								MessageBundle.getMessage("angal.newbill.operation.title"), JOptionPane.PLAIN_MESSAGE, icon, opeArray.toArray(), ""); //$NON-NLS-2$
-				if (BillItemPriceSupport.requiresPricePrompt(ope)) {
-					Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
-					String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
-									MessageBundle.getMessage("angal.newbill.operation.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, ope.getPrice());
-					if (price == null) {
-						return;
-					}
-					try {
-						ope.setPrice(BillItemPriceSupport.parseAmount(price));
-					} catch (NumberFormatException nfe) {
-						MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
-						return;
-					}
+				Price ope = SearchableItemDialog.show(this, MessageBundle.getMessage("angal.newbill.operation.title"), icon,
+								MessageBundle.getMessage("angal.newbill.selectanoperation.txt"), opeArray);
+				if (ope != null) {
+					addSelectedOperation(ope);
 				}
-				addItem(ope, 1, true);
 			});
 		}
 		return jButtonAddOperation;
+	}
+
+	private void addSelectedOperation(Price ope) {
+		if (BillItemPriceSupport.requiresPricePrompt(ope)) {
+			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+							MessageBundle.getMessage("angal.newbill.operation.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, ope.getPrice());
+			if (price == null) {
+				return;
+			}
+			try {
+				ope.setPrice(BillItemPriceSupport.parseAmount(price));
+			} catch (NumberFormatException nfe) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+		addItem(ope, 1, true);
 	}
 
 	private JButton getJButtonAddMedical() {
@@ -1693,40 +2025,45 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				}
 
 				Icon icon = new ImageIcon("rsc/icons/medical_dialog.png"); //$NON-NLS-1$
-				Price med = (Price) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.selectamedical.txt"),
-								MessageBundle.getMessage("angal.newbill.medical.title"), JOptionPane.PLAIN_MESSAGE, icon, medArray.toArray(), ""); //$NON-NLS-2$
+				Price med = SearchableItemDialog.show(this, MessageBundle.getMessage("angal.newbill.medical.title"), icon,
+								MessageBundle.getMessage("angal.newbill.selectamedical.txt"), medArray);
 				if (med != null) {
-					int qty = 1;
-					String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
-									MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, qty);
-					try {
-						if (quantity == null || quantity.equals("")) {
-							return;
-						}
-						qty = Integer.parseInt(quantity);
-					} catch (Exception eee) {
-						MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
-						return;
-					}
-					if (BillItemPriceSupport.requiresPricePrompt(med)) {
-						Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
-						String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
-										MessageBundle.getMessage("angal.newbill.medical.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, med.getPrice());
-						if (price == null) {
-							return;
-						}
-						try {
-							med.setPrice(BillItemPriceSupport.parseAmount(price));
-						} catch (NumberFormatException nfe) {
-							MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
-							return;
-						}
-					}
-					addItem(med, qty, true);
+					addSelectedMedical(med);
 				}
 			});
 		}
 		return jButtonAddMedical;
+	}
+
+	private void addSelectedMedical(Price med) {
+		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png"); //$NON-NLS-1$
+		int qty = 1;
+		String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),
+						MessageBundle.getMessage("angal.common.quantity.txt"), JOptionPane.PLAIN_MESSAGE, icon, null, qty);
+		try {
+			if (quantity == null || quantity.equals("")) {
+				return;
+			}
+			qty = Integer.parseInt(quantity);
+		} catch (Exception eee) {
+			MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+			return;
+		}
+		if (BillItemPriceSupport.requiresPricePrompt(med)) {
+			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
+			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
+							MessageBundle.getMessage("angal.newbill.medical.title"), JOptionPane.PLAIN_MESSAGE, moneyIcon, null, med.getPrice());
+			if (price == null) {
+				return;
+			}
+			try {
+				med.setPrice(BillItemPriceSupport.parseAmount(price));
+			} catch (NumberFormatException nfe) {
+				MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+				return;
+			}
+		}
+		addItem(med, qty, true);
 	}
 
 	private JButton getJButtonAddCustom() {
