@@ -682,7 +682,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jTextFieldPatient = new JTextField();
 			jTextFieldPatient.setText(""); //$NON-NLS-1$
 			jTextFieldPatient.setPreferredSize(PATIENT_DIMENSION);
-			jTextFieldPatient.setEditable(false);
+			jTextFieldPatient.addActionListener(actionEvent -> openPatientSearchWindow());
 		}
 		setJTextFieldPatient();
 		return jTextFieldPatient;
@@ -924,7 +924,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				thisBill.setAdmission(null);
 				// INTERFACE
 				jTextFieldPatient.setText("");
-				jTextFieldPatient.setEditable(false);
 				jButtonPickPatient.setText(MessageBundle.getMessage("angal.newbill.findpatient.btn"));
 				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.newbill.associateapatientwiththisbill.tooltip"));
 				jButtonTrashPatient.setEnabled(false);
@@ -958,6 +957,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		}
 		setJButtonPickPatient();
 		return jButtonPickPatient;
+	}
+
+	private void openPatientSearchWindow() {
+		SelectPatient sp = new SelectPatient(this, jTextFieldPatient.getText());
+		sp.addSelectionListener(this);
+		sp.pack();
+		sp.setVisible(true);
 	}
 
 	private void setJButtonPickPatient() {
