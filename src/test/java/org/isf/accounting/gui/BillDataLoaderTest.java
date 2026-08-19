@@ -52,7 +52,7 @@ class BillDataLoaderTest {
 						Collections.emptyList(),
 						Collections.emptyList(),
 						patientParent,
-						new BillBrowserManager(accountingIoOperations) {
+						new BillBrowserManager(accountingIoOperations, null, null) {
 
 							@Override
 							public List<Bill> getPendingBillsAffiliate(int patID) throws OHServiceException {
@@ -81,7 +81,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "C"),
 										TestBill.notDeletedBillWithStatus(3, "O")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, null, null));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("O", NO_USERNAME);
@@ -101,7 +101,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, null, null));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("ALL", NO_USERNAME);
@@ -121,7 +121,7 @@ class BillDataLoaderTest {
 										TestBill.notDeletedBillWithStatus(1, "0"),
 										TestBill.notDeletedBillWithStatus(3, "C")),
 						null,
-						new BillBrowserManager(accountingIoOperations));
+						new BillBrowserManager(accountingIoOperations, null, null));
 
 		// when:
 		List<Bill> result = billDataLoader.loadBills("C", NO_USERNAME);

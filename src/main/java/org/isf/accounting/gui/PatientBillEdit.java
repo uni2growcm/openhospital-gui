@@ -24,6 +24,7 @@ package org.isf.accounting.gui;
 import static org.isf.utils.Constants.DATE_TIME_FORMATTER;
 
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -62,6 +63,8 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.generaldata.TxtPrinter;
 import org.isf.hospital.manager.HospitalBrowsingManager;
+import org.isf.medicalstockward.manager.MovWardBrowserManager;
+import org.isf.medicalstockward.model.MedicalWard;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
@@ -82,6 +85,8 @@ import org.isf.utils.jobjects.GoodDateTimeToggleChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.time.RememberDates;
 import org.isf.utils.time.TimeTools;
+import org.isf.ward.manager.WardBrowserManager;
+import org.isf.ward.model.Ward;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +102,6 @@ import com.github.lgooddatepicker.zinternaltools.TimeChangeEvent;
 public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PatientBillEdit.class);
-	private static final ImageIcon ADMISSION_ICON = new ImageIcon("rsc/icons/bed_icon.png");
-	private static final String OPD_TEXT = MessageBundle.getMessage("angal.common.opd.txt");
 
 	// LISTENER INTERFACE --------------------------------------------------------
 	private EventListenerList patientBillListener = new EventListenerList();
@@ -240,7 +243,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JLabel jLabelPatient;
 	private JButton jButtonRemoveItem;
 	private JLabel jLabelPriceList;
+	private JComboBox<Ward> jComboBoxWard;
 	private JLabel jLabelWard;
+	private JPanel jPanelWardAndList;
+	private boolean wardManuallySelected;
+	private boolean applyingWardDefault;
 	private JButton jButtonRemovePayment;
 	private JButton jButtonAddRefund;
 	private JPanel jPanelButtonsPayment;
@@ -260,6 +267,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JTextField jDialogItemQuantity;
 	private JTextField jDialogItemPrice;
 	private BillItems editingBillItem;
+	private int editingBillItemRow = -1;
 
 	private static final int PANEL_WIDTH = 450;
 	private static final int BUTTON_WIDTH = 190;
@@ -324,6 +332,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	// Items and Payments (ALL)
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+	private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 
 	// Prices, Items and Payments for the tables
@@ -466,7 +476,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 
 	private void updateGUI() {
 		setJButtonTrashPatient();
-		setJLabelWard();
+		applyWardDefaultIfNeeded();
 		setJTextFieldPatient();
 		setJButtonPickPatient();
 		setJButtonPrintPayment();
@@ -655,9 +665,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelPatient.setLayout(new FlowLayout(FlowLayout.LEFT));
 			jPanelPatient.add(getJLabelPatient());
 			jPanelPatient.add(getJTextFieldPatient());
-			jPanelPatient.add(getJLabelPriceList());
-			jPanelPatient.add(getJComboBoxPriceList());
-			jPanelPatient.add(getJLabelWard());
 		}
 		return jPanelPatient;
 	}
@@ -692,6 +699,30 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jLabelPriceList = new JLabel(MessageBundle.getMessage("angal.newbill.list.txt"));
 		}
 		return jLabelPriceList;
+	}
+
+	private JLabel getJLabelWard() {
+		if (jLabelWard == null) {
+			jLabelWard = new JLabel(MessageBundle.getMessage("angal.common.ward.txt"));
+		}
+		return jLabelWard;
+	}
+
+	/**
+	 * Row above {@link #getJPanelPatient()}: price list and ward selectors, grouped together since
+	 * both affect what's billable (the ward determines available medical stock; the price list
+	 * determines item prices).
+	 */
+	private JPanel getJPanelWardAndList() {
+		if (jPanelWardAndList == null) {
+			jPanelWardAndList = new JPanel();
+			jPanelWardAndList.setLayout(new FlowLayout(FlowLayout.LEFT));
+			jPanelWardAndList.add(getJLabelWard());
+			jPanelWardAndList.add(getJComboBoxWard());
+			jPanelWardAndList.add(getJLabelPriceList());
+			jPanelWardAndList.add(getJComboBoxPriceList());
+		}
+		return jPanelWardAndList;
 	}
 
 	private JComboBox<PriceList> getJComboBoxPriceList() {
@@ -743,30 +774,64 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		}
 	}
 
-	private JLabel getJLabelWard() {
-		if (jLabelWard == null) {
-			jLabelWard = new JLabel();
-			jLabelWard.setPreferredSize(WARD_DIMENSION); // TODO: improve Layouts avoiding fixed dimensions
-			jLabelWard.setHorizontalAlignment(SwingConstants.RIGHT);
+	private JComboBox<Ward> getJComboBoxWard() {
+		if (jComboBoxWard == null) {
+			jComboBoxWard = new JComboBox<>();
+			jComboBoxWard.setPreferredSize(WARD_DIMENSION); // TODO: improve Layouts avoiding fixed dimensions
+			try {
+				for (Ward ward : wardBrowserManager.getWards()) {
+					jComboBoxWard.addItem(ward);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+			}
+			if (!insert) {
+				jComboBoxWard.setSelectedItem(thisBill.getWard());
+			} else {
+				applyWardDefaultIfNeeded();
+			}
+			jComboBoxWard.addItemListener(itemEvent -> {
+				if (itemEvent.getStateChange() == ItemEvent.SELECTED && !applyingWardDefault) {
+					wardManuallySelected = true;
+				}
+			});
 		}
-		setJLabelWard();
-		return jLabelWard;
+		return jComboBoxWard;
 	}
 
-	private void setJLabelWard() {
-		Admission admission = thisBill.getAdmission();
-		if (admission != null) {
-			jLabelWard.setText(admission.getWard().getDescription());
-			jLabelWard.setIcon(ADMISSION_ICON);
-		} else {
-			jLabelWard.setText(OPD_TEXT);
-			jLabelWard.setIcon(null);
+	/**
+	 * Applies the default-ward precedence for new bills only (existing bills always keep their own
+	 * stored ward, selected once in {@link #getJComboBoxWard()}): {@code GeneralData.DEFAULTWARDINNEWBILL}
+	 * first, falling back to the patient's current admission ward, otherwise no selection. A no-op
+	 * once the user has manually picked a ward, so it's safe to call again (e.g. from
+	 * {@link #updateGUI()}) after the admission becomes known post-construction.
+	 */
+	private void applyWardDefaultIfNeeded() {
+		if (!insert || wardManuallySelected || jComboBoxWard == null) {
+			return;
 		}
+		applyingWardDefault = true;
+		jComboBoxWard.setSelectedItem(resolveDefaultWard());
+		applyingWardDefault = false;
+	}
+
+	private Ward resolveDefaultWard() {
+		Ward configuredWard = null;
+		if (GeneralData.DEFAULTWARDINNEWBILL != null && !GeneralData.DEFAULTWARDINNEWBILL.isEmpty()) {
+			try {
+				configuredWard = wardBrowserManager.findWard(GeneralData.DEFAULTWARDINNEWBILL);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+			}
+		}
+		Admission admission = thisBill.getAdmission();
+		Ward admissionWard = admission != null ? admission.getWard() : null;
+		return BillingWardSupport.pickDefaultWard(configuredWard, admissionWard);
 	}
 
 	private GoodDateTimeToggleChooser getJCalendarDate() {
 		if (jCalendarDate == null) {
-			jCalendarDate = new GoodDateTimeToggleChooser(today, false);
+			jCalendarDate = new GoodDateTimeToggleChooser(thisBill.getDate(), false);
 			jCalendarDate.addDateTimeChangeListener(event -> {
 				DateChangeEvent dateChangeEvent = event.getDateChangeEvent();
 				TimeChangeEvent timeChangeEvent = event.getTimeChangeEvent();
@@ -798,6 +863,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 							SwingUtilities.invokeLater(resetDateTime);
 						}
 					}
+				} else {
+					// new bill: no "original date" to protect, so the picker's value applies directly
+					thisBill.setDate(jCalendarDate.getLocalDateTime());
+					modified = true;
 				}
 			});
 		}
@@ -913,6 +982,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelTop = new JPanel();
 			jPanelTop.setLayout(new BoxLayout(jPanelTop, BoxLayout.Y_AXIS));
 			jPanelTop.add(getJPanelDate());
+			jPanelTop.add(getJPanelWardAndList());
 			jPanelTop.add(getJPanelPatient());
 		}
 		return jPanelTop;
@@ -1158,6 +1228,23 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			return;
 		}
 
+		if ("MED".equals(selected.getGroup())) {
+			Ward selectedWard = (Ward) jComboBoxWard.getSelectedItem();
+			if (selectedWard != null) {
+				List<MedicalWard> wardStock;
+				try {
+					wardStock = movWardBrowserManager.getMedicalsWard(selectedWard.getCode(), true);
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+					return;
+				}
+				if (qty > BillingWardSupport.availableQuantity(selected, wardStock)) {
+					MessageDialog.error(this, "angal.newbill.notenoughstockinward.msg");
+					return;
+				}
+			}
+		}
+
 		addItem(selected, qty, true);
 		closeItemSearchWindow();
 	}
@@ -1179,6 +1266,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		}
 		BillItems item = billItems.get(row);
 		editingBillItem = item;
+		editingBillItemRow = row;
 
 		Price matchingPrice = item.isPrice() ? getPrice(item.getPriceID()) : null;
 		jDialogItemDescription.setText(item.getItemDescription());
@@ -1207,6 +1295,30 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			return;
 		}
 
+		if (editingBillItem.isPrice()) {
+			Price matchingPrice = getPrice(editingBillItem.getPriceID());
+			if (matchingPrice != null && "MED".equals(matchingPrice.getGroup())) {
+				Ward selectedWard = (Ward) jComboBoxWard.getSelectedItem();
+				if (selectedWard != null) {
+					List<MedicalWard> wardStock;
+					try {
+						wardStock = movWardBrowserManager.getMedicalsWard(selectedWard.getCode(), true);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e, this);
+						return;
+					}
+					// an already-saved item's current quantity is already deducted from the ward's on-hand stock,
+					// so it must be added back before comparing against the requested new quantity
+					int alreadyReserved = editingBillItemRow < billItemsSaved ? editingBillItem.getItemQuantity() : 0;
+					int available = BillingWardSupport.availableQuantity(matchingPrice, wardStock) + alreadyReserved;
+					if (qty > available) {
+						MessageDialog.error(this, "angal.newbill.notenoughstockinward.msg");
+						return;
+					}
+				}
+			}
+		}
+
 		if (jDialogItemPrice.isEditable()) {
 			try {
 				editingBillItem.setItemAmount(BillItemPriceSupport.parseAmount(jDialogItemPrice.getText().trim()));
@@ -1222,6 +1334,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		updateGUI();
 
 		editingBillItem = null;
+		editingBillItemRow = -1;
 		jDialogItemDescription.setText("");
 		jDialogItemQuantity.setText("");
 		jDialogItemPrice.setText("");
@@ -1508,6 +1621,11 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonSave.setHorizontalAlignment(SwingConstants.LEFT);
 			jButtonSave.addActionListener(actionEvent -> {
 
+				if (jComboBoxWard.getSelectedItem() == null) {
+					MessageDialog.error(this, "angal.newbill.pleaseselectawardfirst.msg");
+					return;
+				}
+
 				/*
 				 * we check again for underlying data changes
 				 */
@@ -1534,6 +1652,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
+					newBill.setWard((Ward) jComboBoxWard.getSelectedItem());
 
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
@@ -1561,6 +1680,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 									balance.doubleValue(), // Balance
 									user, // User
 									thisBill.getAdmission()); // Admission
+					updateBill.setLock(thisBill.getLock());
+					updateBill.setWard((Ward) jComboBoxWard.getSelectedItem());
 
 					try {
 						billBrowserManager.updateBill(updateBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
@@ -2016,10 +2137,24 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jButtonAddMedical.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
 			jButtonAddMedical.addActionListener(actionEvent -> {
 
+				Ward selectedWard = (Ward) jComboBoxWard.getSelectedItem();
+				if (selectedWard == null) {
+					MessageDialog.error(this, "angal.newbill.pleaseselectawardfirst.msg");
+					return;
+				}
+
+				List<MedicalWard> wardStock;
+				try {
+					wardStock = movWardBrowserManager.getMedicalsWard(selectedWard.getCode(), true);
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+					return;
+				}
+
 				List<Price> medArray = new ArrayList<>();
 				for (Price price : prcListArray) {
 
-					if (price.getGroup().equals("MED")) {
+					if (price.getGroup().equals("MED") && BillingWardSupport.isMedicalInWardStock(price, wardStock)) {
 						medArray.add(price);
 					}
 				}
@@ -2035,6 +2170,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		return jButtonAddMedical;
 	}
 
+
 	private void addSelectedMedical(Price med) {
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png"); //$NON-NLS-1$
 		int qty = 1;
@@ -2049,6 +2185,22 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
 			return;
 		}
+
+		Ward selectedWard = (Ward) jComboBoxWard.getSelectedItem();
+		if (selectedWard != null) {
+			List<MedicalWard> wardStock;
+			try {
+				wardStock = movWardBrowserManager.getMedicalsWard(selectedWard.getCode(), true);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+				return;
+			}
+			if (qty > BillingWardSupport.availableQuantity(med, wardStock)) {
+				MessageDialog.error(this, "angal.newbill.notenoughstockinward.msg");
+				return;
+			}
+		}
+
 		if (BillItemPriceSupport.requiresPricePrompt(med)) {
 			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
 			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
