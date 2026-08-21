@@ -375,6 +375,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 			private static final long serialVersionUID = 1L;
 			{
 				put(TelemetryConstants.MENU_ID, Boolean.valueOf(GeneralData.TELEMETRYENABLED));
+				put("reductionplan", Boolean.valueOf(GeneralData.ENABLEREDUCTIONPLAN));
 			}
 		};
 	}

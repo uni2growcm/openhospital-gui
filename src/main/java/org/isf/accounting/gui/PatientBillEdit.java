@@ -78,6 +78,8 @@ import org.isf.priceslist.model.Price;
 import org.isf.priceslist.model.PriceList;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -339,6 +341,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private int reductionPlanId;
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -511,6 +515,10 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	 * check if PriceList, prices and Patient still exist
 	 */
 	private void checkBill() {
+		if (GeneralData.ENABLEREDUCTIONPLAN && thisBill.isPatient() && thisBill.getBillPatient() != null) {
+			ReductionPlan patientReductionPlan = thisBill.getBillPatient().getReductionPlan();
+			reductionPlanId = patientReductionPlan != null ? patientReductionPlan.getId() : 0;
+		}
 		if (thisBill.isList()) {
 			Optional<PriceList> priceList = lstArray.stream().filter(pl -> pl.getId() == thisBill.getPriceList().getId()).findFirst();
 
@@ -551,8 +559,15 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 					item.setPriceID(""); // Update items straightway, no option for the user
 					item.setPrice(false);
 					modified = true;
-				} else if (BillItemPriceSupport.requiresReconciliation(item, p)) {
-					changedPriceList.add(item.getItemDescription());
+				} else {
+					try {
+						p = ReductionPlanBillSupport.applyReduction(p, reductionPlanManager, reductionPlanId);
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e, this);
+					}
+					if (BillItemPriceSupport.requiresReconciliation(item, p)) {
+						changedPriceList.add(item.getItemDescription());
+					}
 				}
 			}
 		}
@@ -631,9 +646,18 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	}
 
 	private void updatePrices() {
-		for (BillItems item : billItems.parallelStream().filter(BillItems::isPrice).collect(Collectors.toList())) {
+		for (BillItems item : billItems.stream().filter(BillItems::isPrice).collect(Collectors.toList())) {
 			Price p = getPrice(item.getPriceID());
-			if (p != null && BillItemPriceSupport.requiresReconciliation(item, p)) {
+			if (p == null) {
+				continue;
+			}
+			try {
+				p = ReductionPlanBillSupport.applyReduction(p, reductionPlanManager, reductionPlanId);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+				continue;
+			}
+			if (BillItemPriceSupport.requiresReconciliation(item, p)) {
 				if (BillItemPriceSupport.descriptionChanged(item, p)) {
 					item.setItemDescription(p.getDesc());
 				}
@@ -985,6 +1009,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 		thisBill.setIsPatient(true);
 		thisBill.setBillPatient(patientSelected);
 		thisBill.setPatName(patientSelected.getName());
+		reductionPlanId = GeneralData.ENABLEREDUCTIONPLAN && patientSelected.getReductionPlan() != null
+						? patientSelected.getReductionPlan().getId() : 0;
 	}
 
 	private JPanel getJPanelTop() {
@@ -1203,6 +1229,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 		if (selected.getGroup().equals("OTH")) {
 			// "Other" garde sa gestion spéciale (discharge/daily/undefined), déjà prix+qty inclus
 			addSelectedOther(selected);
+			return;
+		}
+
+		try {
+			selected = ReductionPlanBillSupport.applyReduction(selected, reductionPlanManager, reductionPlanId);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e, this);
 			return;
 		}
 
@@ -2068,6 +2101,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 				continue;
 			}
 
+			try {
+				price = ReductionPlanBillSupport.applyReduction(price, reductionPlanManager, reductionPlanId);
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+				continue;
+			}
+
 			if (BillItemPriceSupport.requiresPricePrompt(price)) {
 				Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
 				String priceInput = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
@@ -2125,6 +2165,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 
 	private void addSelectedOther(Price oth) {
 		boolean isPrice = true;
+
+		try {
+			oth = ReductionPlanBillSupport.applyReduction(oth, reductionPlanManager, reductionPlanId);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e, this);
+			return;
+		}
 
 		Map<Integer, PricesOthers> othersHashMap = new HashMap<>();
 		for (PricesOthers other : othPrices) {
@@ -2199,6 +2246,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	}
 
 	private void addSelectedExam(Price exa) {
+		try {
+			exa = ReductionPlanBillSupport.applyReduction(exa, reductionPlanManager, reductionPlanId);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e, this);
+			return;
+		}
 		if (BillItemPriceSupport.requiresPricePrompt(exa)) {
 			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
 			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
@@ -2245,6 +2298,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	}
 
 	private void addSelectedOperation(Price ope) {
+		try {
+			ope = ReductionPlanBillSupport.applyReduction(ope, reductionPlanManager, reductionPlanId);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e, this);
+			return;
+		}
 		if (BillItemPriceSupport.requiresPricePrompt(ope)) {
 			Icon moneyIcon = new ImageIcon("rsc/icons/money_dialog.png"); //$NON-NLS-1$
 			String price = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.howmuchisit.txt"),
@@ -2306,6 +2365,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 
 
 	private void addSelectedMedical(Price med) {
+		try {
+			med = ReductionPlanBillSupport.applyReduction(med, reductionPlanManager, reductionPlanId);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e, this);
+			return;
+		}
 		Icon icon = new ImageIcon("rsc/icons/medical_dialog.png"); //$NON-NLS-1$
 		int qty = 1;
 		String quantity = (String) JOptionPane.showInputDialog(this, MessageBundle.getMessage("angal.newbill.insertquantity.txt"),

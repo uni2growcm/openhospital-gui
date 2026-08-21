@@ -77,6 +77,8 @@ import org.isf.patconsensus.model.PatientConsensus;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patient.model.PatientProfilePhoto;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.image.ImageUtil;
@@ -152,6 +154,7 @@ public class PatientInsertExtended extends JDialog {
 
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AgeTypeBrowserManager ageTypeBrowserManager = Context.getApplicationContext().getBean(AgeTypeBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 
 	// COMPONENTS: Data
 	private JPanel jDataPanel;
@@ -292,6 +295,10 @@ public class PatientInsertExtended extends JDialog {
 	// MaritalStatus Components:
 	private JPanel jMaritalPanel;
 	private JComboBox jMaritalStatusComboBox;
+
+	// ReductionPlan Components:
+	private JPanel jReductionPlanPanel;
+	private JComboBox jReductionPlanComboBox;
 
 	// COMPONENTS: Note
 	private JPanel jRightPanel;
@@ -499,6 +506,10 @@ public class PatientInsertExtended extends JDialog {
 						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+						if (GeneralData.ENABLEREDUCTIONPLAN) {
+							ReductionPlan selectedReductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+							patient.setReductionPlan(selectedReductionPlan != null && selectedReductionPlan.getId() != 0 ? selectedReductionPlan : null);
+						}
 						if (jInsuranceYes.isSelected()) {
 							patient.setHasInsurance('Y');
 						} else {
@@ -586,6 +597,10 @@ public class PatientInsertExtended extends JDialog {
 					patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 					patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 					patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+					if (GeneralData.ENABLEREDUCTIONPLAN) {
+						ReductionPlan selectedReductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+						patient.setReductionPlan(selectedReductionPlan != null && selectedReductionPlan.getId() != 0 ? selectedReductionPlan : null);
+					}
 
 					if (jInsuranceYes.isSelected()) {
 						patient.setHasInsurance('Y');
@@ -1049,6 +1064,44 @@ public class PatientInsertExtended extends JDialog {
 			}
 		}
 		return jBloodTypePanel;
+	}
+
+	/**
+	 * This method initializes jReductionPlanPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJReductionPlanPanel() {
+		if (jReductionPlanPanel == null) {
+			jReductionPlanPanel = new JPanel();
+			jReductionPlanPanel = setMyBorder(jReductionPlanPanel, MessageBundle.getMessage("angal.patient.reductionplan.label"));
+
+			jReductionPlanComboBox = new JComboBox();
+			ReductionPlan noReductionPlan = new ReductionPlan();
+			noReductionPlan.setId(0);
+			noReductionPlan.setDescription(MessageBundle.getMessage("angal.patient.selectareductionplan.msg"));
+			jReductionPlanComboBox.addItem(noReductionPlan);
+
+			List<ReductionPlan> reductionPlans;
+			try {
+				reductionPlans = reductionPlanManager.getAll();
+			} catch (OHServiceException e) {
+				reductionPlans = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			for (ReductionPlan reductionPlan : reductionPlans) {
+				jReductionPlanComboBox.addItem(reductionPlan);
+			}
+
+			if (!insert && patient.getReductionPlan() != null) {
+				jReductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
+			} else {
+				jReductionPlanComboBox.setSelectedItem(noReductionPlan);
+			}
+
+			jReductionPlanPanel.add(jReductionPlanComboBox);
+		}
+		return jReductionPlanPanel;
 	}
 
 	/**
@@ -2045,6 +2098,9 @@ public class PatientInsertExtended extends JDialog {
 			jExtensionContent.add(getJMotherPanel(), null);
 			jExtensionContent.add(getJParentPanel(), null);
 			jExtensionContent.add(getJInsurancePanel(), null);
+			if (GeneralData.ENABLEREDUCTIONPLAN) {
+				jExtensionContent.add(getJReductionPlanPanel(), null);
+			}
 		}
 		return jExtensionContent;
 	}
