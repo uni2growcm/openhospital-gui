@@ -27,6 +27,7 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -1416,6 +1417,26 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 					}
 				}
 			});
+			jTableBill.addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyTyped(KeyEvent e) {
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+				}
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+						int row = jTableBill.getSelectedRow();
+						if (row > -1) {
+							removeItem(row);
+						}
+					}
+				}
+			});
 		}
 		return jTableBill;
 	}
@@ -2556,7 +2577,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	}
 
 	private void removeItem(int row) {
-		if (row != -1 && row >= billItemsSaved) {
+		if (row != -1 && (row >= billItemsSaved || GeneralData.ALLOWDELETESAVEDBILLITEM)) {
 			billItems.remove(row);
 			updateTotals();
 			updateGUI();
