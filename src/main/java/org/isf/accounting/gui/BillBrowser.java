@@ -160,6 +160,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JButton jButtonEdit;
 	private JButton jButtonPrintReceipt;
 	private JButton jButtonDelete;
+	private JButton jButtonCloseBill;
 	private JButton jButtonClose;
 	private Patient patientParent;
 	private JTextField jAffiliatePersonJTextField;
@@ -738,6 +739,46 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jButtonDelete;
 	}
 
+	private JButton getJButtonCloseBill() {
+		if (jButtonCloseBill == null) {
+			jButtonCloseBill = new JButton(MessageBundle.getMessage("angal.billbrowser.closebill.btn"));
+			jButtonCloseBill.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.closebill.btn.key"));
+			jButtonCloseBill.addActionListener(actionEvent -> {
+				Bill closeBill = null;
+				int ok = JOptionPane.NO_OPTION;
+				if (jScrollPaneBills.isShowing()) {
+					if (!isOnlyOneSelected(jTableBills)) {
+						return;
+					}
+					int rowSelected = jTableBills.getSelectedRow();
+					closeBill = (Bill) jTableBills.getValueAt(rowSelected, -1);
+					ok = MessageDialog.yesNo(null, "angal.billbrowser.doyoureallywanttoclosetheselectedbill.msg");
+				}
+				if (jScrollPanePending != null && jScrollPanePending.isShowing()) {
+					if (!isOnlyOneSelected(jTablePending)) {
+						return;
+					}
+					int rowSelected = jTablePending.getSelectedRow();
+					closeBill = (Bill) jTablePending.getValueAt(rowSelected, -1);
+					ok = MessageDialog.yesNo(null, "angal.billbrowser.doyoureallywanttoclosetheselectedbill.msg");
+				}
+				if (jScrollPaneClosed != null && jScrollPaneClosed.isShowing()) {
+					MessageDialog.error(null, "angal.billbrowser.cancloseonlyopenbills.msg");
+					return;
+				}
+				if (ok == JOptionPane.YES_OPTION) {
+					try {
+						billBrowserManager.closeBill(closeBill);
+					} catch (OHServiceException ohServiceException) {
+						MessageDialog.showExceptions(ohServiceException);
+					}
+				}
+				billInserted(null);
+			});
+		}
+		return jButtonCloseBill;
+	}
+
 	private JPanel getJPanelButtons() {
 		if (jPanelButtons == null) {
 			jPanelButtons = new JPanel(new WrapLayout());
@@ -749,6 +790,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			}
 			if (MainMenu.checkUserGrants("btnbilldelete")) {
 				jPanelButtons.add(getJButtonDelete());
+			}
+			if (MainMenu.checkUserGrants("btnbillclosebill")) {
+				jPanelButtons.add(getJButtonCloseBill());
 			}
 			if (MainMenu.checkUserGrants("btnbillreceipt") && GeneralData.RECEIPTPRINTER) {
 				jPanelButtons.add(getJButtonPrintReceipt());
