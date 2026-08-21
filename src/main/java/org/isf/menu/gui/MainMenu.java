@@ -376,6 +376,7 @@ public class MainMenu extends JFrame implements ActionListener, LoginListener, C
 			{
 				put(TelemetryConstants.MENU_ID, Boolean.valueOf(GeneralData.TELEMETRYENABLED));
 				put("reductionplan", Boolean.valueOf(GeneralData.ENABLEREDUCTIONPLAN));
+				put("partners", Boolean.valueOf(GeneralData.PARTNERSMODULEENABLED));
 			}
 		};
 	}

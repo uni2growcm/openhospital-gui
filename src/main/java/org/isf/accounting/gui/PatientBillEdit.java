@@ -251,6 +251,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	private JComboBox<Ward> jComboBoxWard;
 	private JLabel jLabelWard;
 	private JPanel jPanelWardAndList;
+	private JComboBox<User> jComboBoxGuarantor;
+	private JLabel jLabelGuarantor;
 	private boolean wardManuallySelected;
 	private boolean applyingWardDefault;
 	private JButton jButtonRemovePayment;
@@ -750,8 +752,37 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 			jPanelWardAndList.add(getJComboBoxWard());
 			jPanelWardAndList.add(getJLabelPriceList());
 			jPanelWardAndList.add(getJComboBoxPriceList());
+			if (GeneralData.ALLOWBILLGUARANTOR) {
+				jPanelWardAndList.add(getJLabelGuarantor());
+				jPanelWardAndList.add(getJComboBoxGuarantor());
+			}
 		}
 		return jPanelWardAndList;
+	}
+
+	private JLabel getJLabelGuarantor() {
+		if (jLabelGuarantor == null) {
+			jLabelGuarantor = new JLabel(MessageBundle.getMessage("angal.newbill.selectguarantor.label"));
+		}
+		return jLabelGuarantor;
+	}
+
+	private JComboBox<User> getJComboBoxGuarantor() {
+		if (jComboBoxGuarantor == null) {
+			jComboBoxGuarantor = new JComboBox<>();
+			jComboBoxGuarantor.addItem(null);
+			try {
+				for (User user : userBrowsingManager.getUser()) {
+					jComboBoxGuarantor.addItem(user);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e, this);
+			}
+			if (!insert) {
+				jComboBoxGuarantor.setSelectedItem(thisBill.getGuarantor());
+			}
+		}
+		return jComboBoxGuarantor;
 	}
 
 	private JComboBox<PriceList> getJComboBoxPriceList() {
@@ -1677,6 +1708,17 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 		}
 	}
 
+	/**
+	 * Applies the guarantor selected in {@link #jComboBoxGuarantor} to {@code bill}, if the guarantor
+	 * module is enabled. The guarantor is purely informational: no validation is tied to its presence
+	 * or absence (see [[bill-guarantor]]).
+	 */
+	private void applyGuarantor(Bill bill) {
+		if (GeneralData.ALLOWBILLGUARANTOR) {
+			bill.setGuarantor((User) jComboBoxGuarantor.getSelectedItem());
+		}
+	}
+
 	private JButton getJButtonSave() {
 		if (jButtonSave == null) {
 			jButtonSave = new JButton(MessageBundle.getMessage("angal.common.save.btn"));
@@ -1718,6 +1760,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 									user, // User
 									thisBill.getAdmission()); // Admission
 					newBill.setWard((Ward) jComboBoxWard.getSelectedItem());
+					applyGuarantor(newBill);
 
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
@@ -1747,6 +1790,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 									thisBill.getAdmission()); // Admission
 					updateBill.setLock(thisBill.getLock());
 					updateBill.setWard((Ward) jComboBoxWard.getSelectedItem());
+					applyGuarantor(updateBill);
 
 					try {
 						billBrowserManager.updateBill(updateBill, billItems, payItems); // TODO: to verify if when can just pass thisBill
