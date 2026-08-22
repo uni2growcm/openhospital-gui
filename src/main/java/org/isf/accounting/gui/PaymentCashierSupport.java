@@ -19,45 +19,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package org.isf.accounting.gui.totals;
+package org.isf.accounting.gui;
 
-import static org.assertj.core.api.Assertions.assertThat;
+final class PaymentCashierSupport {
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-
-import org.isf.accounting.gui.TestBill;
-import org.junit.jupiter.api.Test;
-
-class BalanceTotalTest {
-
-	@Test
-	void shouldCalculateBalanceForWholePeriod() {
-		// given:
-		BalanceTotal balanceTotal = new BalanceTotal(Arrays.asList(
-				TestBill.notDeletedBillWithBalance(1, 123),
-				TestBill.notDeletedBillWithBalance(2, 111)
-		));
-
-		// when:
-		BigDecimal result = balanceTotal.getValue();
-
-		// then:
-		assertThat(result.longValue()).isEqualTo(234);
+	private PaymentCashierSupport() {
 	}
 
-	@Test
-	void shouldSkipDeletedBills() {
-		// given:
-		BalanceTotal balanceTotal = new BalanceTotal(Arrays.asList(
-				TestBill.notDeletedBillWithBalance(1, 123),
-				TestBill.deletedBillWithBalance(2, 111)
-		));
-
-		// when:
-		BigDecimal result = balanceTotal.getValue();
-
-		// then:
-		assertThat(result.longValue()).isEqualTo(123);
+	static String formatPaymentDateWithCashier(String formattedDate, String cashierDisplayName) {
+		if (cashierDisplayName == null || cashierDisplayName.isBlank()) {
+			return formattedDate;
+		}
+		return formattedDate + " [" + cashierDisplayName + "]";
 	}
 }

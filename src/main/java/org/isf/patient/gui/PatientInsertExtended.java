@@ -53,13 +53,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.event.EventListenerList;
 
 import org.isf.agetype.manager.AgeTypeBrowserManager;
@@ -74,9 +78,13 @@ import org.isf.generaldata.SmsParameters;
 import org.isf.menu.manager.Context;
 import org.isf.patconsensus.manager.PatientConsensusBrowserManager;
 import org.isf.patconsensus.model.PatientConsensus;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.model.Partner;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patient.model.PatientProfilePhoto;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.image.ImageUtil;
@@ -152,6 +160,8 @@ public class PatientInsertExtended extends JDialog {
 
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AgeTypeBrowserManager ageTypeBrowserManager = Context.getApplicationContext().getBean(AgeTypeBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+	private PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
 
 	// COMPONENTS: Data
 	private JPanel jDataPanel;
@@ -292,6 +302,15 @@ public class PatientInsertExtended extends JDialog {
 	// MaritalStatus Components:
 	private JPanel jMaritalPanel;
 	private JComboBox jMaritalStatusComboBox;
+
+	// ReductionPlan Components:
+	private JPanel jReductionPlanPanel;
+	private JComboBox jReductionPlanComboBox;
+	private JPanel jPartnerPanel;
+	private JTable jTablePartners;
+	private DefaultTableModel partnerTableModel;
+	private JButton jButtonAddPartner;
+	private JButton jButtonRemovePartner;
 
 	// COMPONENTS: Note
 	private JPanel jRightPanel;
@@ -499,6 +518,10 @@ public class PatientInsertExtended extends JDialog {
 						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 						patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+						if (GeneralData.ENABLEREDUCTIONPLAN) {
+							ReductionPlan selectedReductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+							patient.setReductionPlan(selectedReductionPlan != null && selectedReductionPlan.getId() != 0 ? selectedReductionPlan : null);
+						}
 						if (jInsuranceYes.isSelected()) {
 							patient.setHasInsurance('Y');
 						} else {
@@ -586,6 +609,10 @@ public class PatientInsertExtended extends JDialog {
 					patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 					patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
 					patient.setProfession(patientBrowserManager.getProfessionKey(jProfessionComboBox.getSelectedItem().toString()));
+					if (GeneralData.ENABLEREDUCTIONPLAN) {
+						ReductionPlan selectedReductionPlan = (ReductionPlan) jReductionPlanComboBox.getSelectedItem();
+						patient.setReductionPlan(selectedReductionPlan != null && selectedReductionPlan.getId() != 0 ? selectedReductionPlan : null);
+					}
 
 					if (jInsuranceYes.isSelected()) {
 						patient.setHasInsurance('Y');
@@ -1049,6 +1076,141 @@ public class PatientInsertExtended extends JDialog {
 			}
 		}
 		return jBloodTypePanel;
+	}
+
+	/**
+	 * This method initializes jReductionPlanPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJReductionPlanPanel() {
+		if (jReductionPlanPanel == null) {
+			jReductionPlanPanel = new JPanel();
+			jReductionPlanPanel = setMyBorder(jReductionPlanPanel, MessageBundle.getMessage("angal.patient.reductionplan.label"));
+
+			jReductionPlanComboBox = new JComboBox();
+			ReductionPlan noReductionPlan = new ReductionPlan();
+			noReductionPlan.setId(0);
+			noReductionPlan.setDescription(MessageBundle.getMessage("angal.patient.selectareductionplan.msg"));
+			jReductionPlanComboBox.addItem(noReductionPlan);
+
+			List<ReductionPlan> reductionPlans;
+			try {
+				reductionPlans = reductionPlanManager.getAll();
+			} catch (OHServiceException e) {
+				reductionPlans = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			for (ReductionPlan reductionPlan : reductionPlans) {
+				jReductionPlanComboBox.addItem(reductionPlan);
+			}
+
+			if (!insert && patient.getReductionPlan() != null) {
+				jReductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
+			} else {
+				jReductionPlanComboBox.setSelectedItem(noReductionPlan);
+			}
+
+			jReductionPlanPanel.add(jReductionPlanComboBox);
+		}
+		return jReductionPlanPanel;
+	}
+
+	/**
+	 * This method initializes jPartnerPanel: a table of the patient's partners (informational only,
+	 * see [[patient-partner-linking]]) plus Add/Remove buttons.
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJPartnerPanel() {
+		if (jPartnerPanel == null) {
+			jPartnerPanel = new JPanel(new BorderLayout());
+			jPartnerPanel.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.patient.partner.border")),
+				BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+			String[] columns = {
+				MessageBundle.getMessage("angal.patient.partner.name"),
+				MessageBundle.getMessage("angal.patient.partner.type")
+			};
+			partnerTableModel = new DefaultTableModel(columns, 0) {
+
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			jTablePartners = new JTable(partnerTableModel);
+			jTablePartners.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			refreshPartnerTable();
+
+			JPanel buttonPanel = new JPanel();
+			buttonPanel.add(getJButtonAddPartner());
+			buttonPanel.add(getJButtonRemovePartner());
+
+			JScrollPane scrollPane = new JScrollPane(jTablePartners);
+			scrollPane.setPreferredSize(new Dimension(220, 100));
+
+			jPartnerPanel.add(scrollPane, BorderLayout.CENTER);
+			jPartnerPanel.add(buttonPanel, BorderLayout.SOUTH);
+		}
+		return jPartnerPanel;
+	}
+
+	private void refreshPartnerTable() {
+		partnerTableModel.setRowCount(0);
+		for (Partner p : patient.getPartners()) {
+			partnerTableModel.addRow(new Object[] { p.getName(), p.getType() });
+		}
+	}
+
+	private JButton getJButtonAddPartner() {
+		if (jButtonAddPartner == null) {
+			jButtonAddPartner = new JButton(MessageBundle.getMessage("angal.patient.partner.add.btn"));
+			jButtonAddPartner.addActionListener(actionEvent -> {
+				List<Partner> available;
+				try {
+					available = new ArrayList<>(partnerBrowserManager.getPartners());
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+					return;
+				}
+				available.removeAll(patient.getPartners());
+				if (available.isEmpty()) {
+					MessageDialog.info(this, "angal.patient.partner.noneavailable.msg");
+					return;
+				}
+				JList<Partner> list = new JList<>(available.toArray(new Partner[0]));
+				list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+				int result = JOptionPane.showConfirmDialog(this, new JScrollPane(list),
+					MessageBundle.getMessage("angal.patient.partner.add.multiple.title"), JOptionPane.OK_CANCEL_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
+					for (Partner selected : list.getSelectedValuesList()) {
+						patient.addPartner(selected);
+					}
+					refreshPartnerTable();
+				}
+			});
+		}
+		return jButtonAddPartner;
+	}
+
+	private JButton getJButtonRemovePartner() {
+		if (jButtonRemovePartner == null) {
+			jButtonRemovePartner = new JButton(MessageBundle.getMessage("angal.patient.partner.remove.btn"));
+			jButtonRemovePartner.addActionListener(actionEvent -> {
+				int row = jTablePartners.getSelectedRow();
+				if (row < 0) {
+					return;
+				}
+				List<Partner> partners = new ArrayList<>(patient.getPartners());
+				patient.removePartner(partners.get(row));
+				refreshPartnerTable();
+			});
+		}
+		return jButtonRemovePartner;
 	}
 
 	/**
@@ -2045,6 +2207,12 @@ public class PatientInsertExtended extends JDialog {
 			jExtensionContent.add(getJMotherPanel(), null);
 			jExtensionContent.add(getJParentPanel(), null);
 			jExtensionContent.add(getJInsurancePanel(), null);
+			if (GeneralData.ENABLEREDUCTIONPLAN) {
+				jExtensionContent.add(getJReductionPlanPanel(), null);
+			}
+			if (GeneralData.PARTNERSMODULEENABLED) {
+				jExtensionContent.add(getJPartnerPanel(), null);
+			}
 		}
 		return jExtensionContent;
 	}

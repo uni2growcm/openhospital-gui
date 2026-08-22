@@ -45,7 +45,6 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.swing.BoxLayout;
@@ -65,12 +64,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.accounting.gui.PatientBillEdit.PatientBillListener;
-import org.isf.accounting.gui.totals.BalanceTotal;
-import org.isf.accounting.gui.totals.PaymentsTotal;
-import org.isf.accounting.gui.totals.UserTotal;
 import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.accounting.model.Bill;
-import org.isf.accounting.model.BillPayments;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hospital.manager.HospitalBrowsingManager;
@@ -89,9 +84,9 @@ import org.isf.utils.jobjects.JMonthChooser;
 import org.isf.utils.jobjects.JYearChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.PaginationPanel;
+import org.isf.utils.pagination.PagedResponse;
 import org.isf.utils.time.TimeTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.lgooddatepicker.zinternaltools.WrapLayout;
 
@@ -104,30 +99,21 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	protected static final String NO_USERNAME = null;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BillBrowser.class);
 	private static final ImageIcon ADMISSION_ICON = new ImageIcon("rsc/icons/bed_icon.png");
 
 	@Override
 	public void billInserted(AWTEvent event) {
-		if (patientParent != null) {
-			try {
-				updateDataSet(dateFrom, dateTo, patientParent);
-			} catch (OHServiceException ohServiceException) {
-				LOGGER.error(ohServiceException.getMessage(), ohServiceException);
-			}
-		} else {
-			updateDataSet(dateFrom, dateTo);
-		}
-		updateTables();
+		loadCurrentTabPage(0);
 		updateTotals();
 		if (event != null) {
 			Bill billInserted = (Bill) event.getSource();
 			if (billInserted != null) {
 				int insertedId = billInserted.getId();
-				IntStream.range(0, jTableBills.getRowCount()).forEach(i -> {
-					Bill aBill = (Bill) jTableBills.getModel().getValueAt(i, -1);
+				JTable table = getCurrentTable();
+				IntStream.range(0, table.getRowCount()).forEach(i -> {
+					Bill aBill = (Bill) table.getModel().getValueAt(i, -1);
 					if (aBill.getId() == insertedId) {
-						jTableBills.getSelectionModel().setSelectionInterval(i, i);
+						table.getSelectionModel().setSelectionInterval(i, i);
 					}
 				});
 			}
@@ -153,6 +139,8 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable jTablePeriod;
 	private JTable jTableUser;
 	private JPanel jPanelRange;
+	private JPanel jPanelCenter;
+	private PaginationPanel paginationPanel;
 	private JPanel jPanelButtons;
 	private JPanel jPanelSouth;
 	private JPanel jPanelTotals;
@@ -160,6 +148,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JButton jButtonEdit;
 	private JButton jButtonPrintReceipt;
 	private JButton jButtonDelete;
+	private JButton jButtonCloseBill;
 	private JButton jButtonClose;
 	private Patient patientParent;
 	private JTextField jAffiliatePersonJTextField;
@@ -211,9 +200,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	// Bills & Payments
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
-	private List<Bill> billPeriod;
-	private List<BillPayments> paymentsPeriod;
-	private List<Bill> billFromPayments;
 
 	private String currencyCod;
 
@@ -243,7 +229,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 
 	private void initComponents() {
 		add(getJPanelRange(), BorderLayout.NORTH);
-		add(getJTabbedPaneBills(), BorderLayout.CENTER);
+		add(getJPanelCenter(), BorderLayout.CENTER);
 		add(getJPanelSouth(), BorderLayout.SOUTH);
 		setTitle(MessageBundle.getMessage("angal.billbrowser.patientbillmanagment.title"));
 		setMinimumSize(new Dimension(1150, 600));
@@ -252,12 +238,28 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				billPeriod.clear();
 				users.clear();
 				dispose();
 			}
 		});
+		loadCurrentTabPage(0);
 		pack();
+	}
+
+	private JPanel getJPanelCenter() {
+		if (jPanelCenter == null) {
+			jPanelCenter = new JPanel(new BorderLayout());
+			jPanelCenter.add(getJTabbedPaneBills(), BorderLayout.CENTER);
+			jPanelCenter.add(getPaginationPanel(), BorderLayout.SOUTH);
+		}
+		return jPanelCenter;
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::loadCurrentTabPage);
+		}
+		return paginationPanel;
 	}
 
 	private JPanel getJPanelSouth() {
@@ -492,8 +494,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jButtonClose = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 			jButtonClose.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 			jButtonClose.addActionListener(actionEvent -> {
-				// to free memory
-				billPeriod.clear();
 				users.clear();
 				dispose();
 			});
@@ -664,23 +664,6 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jButtonPrintReceipt;
 	}
 
-	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo, Patient patient) throws OHServiceException {
-		/*
-		 * Bills in the period
-		 */
-		billPeriod = billBrowserManager.getBills(dateFrom, dateTo, patient);
-
-		/*
-		 * Payments in the period
-		 */
-		paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo, patient);
-
-		/*
-		 * Bills not in the period but with payments in the period
-		 */
-		billFromPayments = billBrowserManager.getBills(paymentsPeriod);
-	}
-
 	private JButton getJButtonNew() {
 		if (jButtonNew == null) {
 			jButtonNew = new JButton(MessageBundle.getMessage("angal.billbrowser.newbill.btn"));
@@ -738,6 +721,46 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jButtonDelete;
 	}
 
+	private JButton getJButtonCloseBill() {
+		if (jButtonCloseBill == null) {
+			jButtonCloseBill = new JButton(MessageBundle.getMessage("angal.billbrowser.closebill.btn"));
+			jButtonCloseBill.setMnemonic(MessageBundle.getMnemonic("angal.billbrowser.closebill.btn.key"));
+			jButtonCloseBill.addActionListener(actionEvent -> {
+				Bill closeBill = null;
+				int ok = JOptionPane.NO_OPTION;
+				if (jScrollPaneBills.isShowing()) {
+					if (!isOnlyOneSelected(jTableBills)) {
+						return;
+					}
+					int rowSelected = jTableBills.getSelectedRow();
+					closeBill = (Bill) jTableBills.getValueAt(rowSelected, -1);
+					ok = MessageDialog.yesNo(null, "angal.billbrowser.doyoureallywanttoclosetheselectedbill.msg");
+				}
+				if (jScrollPanePending != null && jScrollPanePending.isShowing()) {
+					if (!isOnlyOneSelected(jTablePending)) {
+						return;
+					}
+					int rowSelected = jTablePending.getSelectedRow();
+					closeBill = (Bill) jTablePending.getValueAt(rowSelected, -1);
+					ok = MessageDialog.yesNo(null, "angal.billbrowser.doyoureallywanttoclosetheselectedbill.msg");
+				}
+				if (jScrollPaneClosed != null && jScrollPaneClosed.isShowing()) {
+					MessageDialog.error(null, "angal.billbrowser.cancloseonlyopenbills.msg");
+					return;
+				}
+				if (ok == JOptionPane.YES_OPTION) {
+					try {
+						billBrowserManager.closeBill(closeBill);
+					} catch (OHServiceException ohServiceException) {
+						MessageDialog.showExceptions(ohServiceException);
+					}
+				}
+				billInserted(null);
+			});
+		}
+		return jButtonCloseBill;
+	}
+
 	private JPanel getJPanelButtons() {
 		if (jPanelButtons == null) {
 			jPanelButtons = new JPanel(new WrapLayout());
@@ -749,6 +772,9 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			}
 			if (MainMenu.checkUserGrants("btnbilldelete")) {
 				jPanelButtons.add(getJButtonDelete());
+			}
+			if (MainMenu.checkUserGrants("btnbillclosebill")) {
+				jPanelButtons.add(getJButtonCloseBill());
 			}
 			if (MainMenu.checkUserGrants("btnbillreceipt") && GeneralData.RECEIPTPRINTER) {
 				jPanelButtons.add(getJButtonPrintReceipt());
@@ -840,8 +866,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		jAffiliatePersonJTextField.setText(patientParent != null ? patientParent.getName() : "");
 
 		if (patientParent != null) {
-			updateDataSet(dateFrom, dateTo, patientParent);
-			updateTables();
+			loadCurrentTabPage(0);
 			updateTotals();
 		}
 	}
@@ -865,9 +890,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.todaycolon.txt") + "</b></html>", 0, 0);
 				jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.periodcolon.txt") + "</b></html>", 0, 2);
 				updateTotals();
-				jTableBills.setModel(new BillTableModel("ALL", user)); //$NON-NLS-1$
-				jTablePending.setModel(new BillTableModel("O", user)); //$NON-NLS-1$
-				jTableClosed.setModel(new BillTableModel("C", user)); //$NON-NLS-1$
+				loadCurrentTabPage(0);
 			});
 		}
 		return jComboUsers;
@@ -946,7 +969,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable getJTableClosed() {
 		if (jTableClosed == null) {
 			jTableClosed = new JTable();
-			jTableClosed.setModel(new BillTableModel("C", NO_USERNAME)); //$NON-NLS-1$
+			jTableClosed.setModel(new BillTableModel(new ArrayList<>()));
 			decorateTable(jTableClosed);
 			jTableClosed.setAutoCreateColumnsFromModel(false);
 			jTableClosed.setDefaultRenderer(String.class, new StringTableCellRenderer());
@@ -968,7 +991,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable getJTablePending() {
 		if (jTablePending == null) {
 			jTablePending = new JTable();
-			jTablePending.setModel(new BillTableModel("O", NO_USERNAME)); //$NON-NLS-1$
+			jTablePending.setModel(new BillTableModel(new ArrayList<>()));
 			decorateTable(jTablePending);
 			jTablePending.setAutoCreateColumnsFromModel(false);
 			jTablePending.setDefaultRenderer(String.class, new StringTableCellRenderer());
@@ -990,7 +1013,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	private JTable getJTableBills() {
 		if (jTableBills == null) {
 			jTableBills = new JTable();
-			jTableBills.setModel(new BillTableModel("ALL", NO_USERNAME)); //$NON-NLS-1$
+			jTableBills.setModel(new BillTableModel(new ArrayList<>()));
 			decorateTable(jTableBills);
 			jTableBills.setAutoCreateColumnsFromModel(false);
 			jTableBills.setDefaultRenderer(String.class, new StringTableCellRenderer());
@@ -1027,6 +1050,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.bills.title"), getJScrollPaneBills());
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.pending.title"), getJScrollPanePending());
 			jTabbedPaneBills.addTab(MessageBundle.getMessage("angal.billbrowser.closed.title"), getJScrollPaneClosed());
+			jTabbedPaneBills.addChangeListener(changeEvent -> loadCurrentTabPage(0));
 		}
 		return jTabbedPaneBills;
 	}
@@ -1136,85 +1160,65 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 		return jTableUser;
 	}
 
-	private void updateTables() {
-		jTableBills.setModel(new BillTableModel("ALL", NO_USERNAME)); //$NON-NLS-1$
-		jTablePending.setModel(new BillTableModel("O", NO_USERNAME)); //$NON-NLS-1$
-		jTableClosed.setModel(new BillTableModel("C", NO_USERNAME)); //$NON-NLS-1$
-	}
-
 	private void updateDataSet() {
-		updateDataSet(LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(1).atStartOfDay());
+		dateFrom = LocalDate.now().atStartOfDay();
+		dateTo = LocalDate.now().plusDays(1).atStartOfDay();
 	}
 
-	private void updateDataSet(LocalDateTime dateFrom, LocalDateTime dateTo) {
-		try {
-			/*
-			 * Bills in the period
-			 */
-			billPeriod = billBrowserManager.getBills(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
+	private String currentTabStatus() {
+		int index = jTabbedPaneBills.getSelectedIndex();
+		if (index == 1) {
+			return "O"; //$NON-NLS-1$
 		}
-
-		try {
-			/*
-			 * Payments in the period
-			 */
-			paymentsPeriod = billBrowserManager.getPayments(dateFrom, dateTo);
-		} catch (OHServiceException ohServiceException) {
-			MessageDialog.showExceptions(ohServiceException);
+		if (index == 2) {
+			return "C"; //$NON-NLS-1$
 		}
+		return null;
+	}
 
+	private JTable getCurrentTable() {
+		int index = jTabbedPaneBills.getSelectedIndex();
+		if (index == 1) {
+			return jTablePending;
+		}
+		if (index == 2) {
+			return jTableClosed;
+		}
+		return jTableBills;
+	}
+
+	private void loadCurrentTabPage(int page) {
+		Integer patientCode = patientParent != null ? patientParent.getCode() : null;
+		String username = jComboUsers != null ? user : NO_USERNAME;
 		try {
-			/*
-			 * Bills not in the period but with payments in the period
-			 */
-			billFromPayments = billBrowserManager.getBills(paymentsPeriod);
+			PagedResponse<Bill> response = billBrowserManager.getBillsPageable(dateFrom, dateTo, currentTabStatus(), patientCode, username, page,
+							GeneralData.PAGESIZE);
+			getCurrentTable().setModel(new BillTableModel(response.getData()));
+			paginationPanel.update(response.getPageInfo());
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 		}
 	}
 
 	private void updateTotals() {
-		List<Bill> billToday = null;
-		List<BillPayments> paymentsToday = null;
-		if (UserBrowsingManager.getCurrentUser().equals("admin")) {
-			try {
-				billToday = billBrowserManager.getBills(dateToday0, dateToday24);
-				paymentsToday = billBrowserManager.getPayments(dateToday0, dateToday24);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-			}
-		} else {
-			billToday = billPeriod;
-			paymentsToday = paymentsPeriod;
+		Integer patientCode = patientParent != null ? patientParent.getCode() : null;
+		try {
+			// Bills in range contribute for Not Paid (balance)
+			balancePeriod = billBrowserManager.getBalanceTotal(dateFrom, dateTo, patientCode);
+
+			// Bills today contribute for Not Paid Today (balance)
+			balanceToday = billBrowserManager.getBalanceTotal(dateToday0, dateToday24, patientCode);
+
+			// Payments in range contribute for Paid Period (total)
+			totalPeriod = billBrowserManager.getPaymentsTotal(dateFrom, dateTo, patientCode, NO_USERNAME);
+			userPeriod = billBrowserManager.getPaymentsTotal(dateFrom, dateTo, patientCode, user);
+
+			// Payments today contribute for Paid Today (total)
+			totalToday = billBrowserManager.getPaymentsTotal(dateToday0, dateToday24, patientCode, NO_USERNAME);
+			userToday = billBrowserManager.getPaymentsTotal(dateToday0, dateToday24, patientCode, user);
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
 		}
-
-		totalPeriod = new BigDecimal(0);
-		balancePeriod = new BigDecimal(0);
-		totalToday = new BigDecimal(0);
-		balanceToday = new BigDecimal(0);
-		userToday = new BigDecimal(0);
-		userPeriod = new BigDecimal(0);
-
-		List<Integer> notDeletedBills = billPeriod.stream()
-						.filter(bill -> !bill.getStatus().equals("D"))
-						.map(Bill::getId)
-						.collect(Collectors.toList());
-
-		// Bills in range contribute for Not Paid (balance)
-		balancePeriod = new BalanceTotal(billPeriod).getValue();
-
-		// Bills in today contribute for Not Paid Today (balance)
-		balanceToday = new BalanceTotal(billToday).getValue();
-
-		// Payments in range contribute for Paid Period (total)
-		userPeriod = new UserTotal(notDeletedBills, paymentsPeriod, user).getValue();
-		totalPeriod = new PaymentsTotal(notDeletedBills, paymentsPeriod).getValue();
-
-		// Payments in today contribute for Paid Today (total)
-		userToday = new UserTotal(notDeletedBills, paymentsToday, user).getValue();
-		totalToday = new PaymentsTotal(notDeletedBills, paymentsToday).getValue();
 
 		jTableToday.setValueAt(totalToday, 0, 2);
 		jTableToday.setValueAt(balanceToday, 0, 5);
@@ -1229,21 +1233,10 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 	public class BillTableModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
-		private List<Bill> tableArray = new ArrayList<>();
+		private final List<Bill> tableArray;
 
-		/*
-		 * All Bills
-		 */
-		public BillTableModel(String status, String username) {
-			loadData(status, username);
-		}
-
-		private void loadData(String status, String username) {
-			try {
-				tableArray = new BillDataLoader(billPeriod, billFromPayments, patientParent, billBrowserManager).loadBills(status, username);
-			} catch (OHServiceException ohServiceException) {
-				LOGGER.error("BillDataLoader error: ", ohServiceException);
-			}
+		public BillTableModel(List<Bill> bills) {
+			this.tableArray = bills;
 		}
 
 		@Override
