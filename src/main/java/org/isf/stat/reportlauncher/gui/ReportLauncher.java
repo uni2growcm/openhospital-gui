@@ -100,8 +100,8 @@ public class ReportLauncher extends ModalJFrame {
 	private JComboBox<String> jRptComboBox;
 
 	private Map<String, File> reportNameFileMap;
-	private Map<String, List<String>> folderNameFileNameMap;
 	private List<String> userInputParamNames;
+	private boolean dateParamsAreStrings;
 
 	private JComboBox<String> shareWith;
 	Interaction userOh;
@@ -216,7 +216,6 @@ public class ReportLauncher extends ModalJFrame {
 
 			jRptComboBox = new JComboBox<>();
 			List<File> jasperFilesInFolder = new LinkedList<>();
-			folderNameFileNameMap = new HashMap<>();
 			try {
 				List<File> loadedFiles = Files.walk(Paths.get("./rpt_stat"))
 								.filter(Files::isRegularFile)
@@ -224,7 +223,6 @@ public class ReportLauncher extends ModalJFrame {
 								.filter(t -> t.getName().endsWith(".jasper"))
 								.collect(Collectors.toList());
 				jasperFilesInFolder.addAll(loadedFiles);
-				folderNameFileNameMap.put("rpt_stat", loadedFiles.stream().map(t -> t.getName().replace(".jasper", "")).collect(Collectors.toList()));
 
 				loadedFiles = Files.walk(Paths.get("./rpt_extra"))
 								.filter(Files::isRegularFile)
@@ -232,7 +230,6 @@ public class ReportLauncher extends ModalJFrame {
 								.filter(t -> t.getName().endsWith(".jasper"))
 								.collect(Collectors.toList());
 				jasperFilesInFolder.addAll(loadedFiles);
-				folderNameFileNameMap.put("rpt_extra", loadedFiles.stream().map(t -> t.getName().replace(".jasper", "")).collect(Collectors.toList()));
 
 				reportNameFileMap = new HashMap<>();
 				List<String> jRptComboBoxList = new LinkedList<>();
@@ -339,6 +336,9 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
+				dateParamsAreStrings = userInputParams.stream()
+								.anyMatch(t -> ("fromdate".equals(t.getName()) || "todate".equals(t.getName()))
+												&& String.class.getName().equals(t.getValueClassName()));
 				if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 					jMonthComboBox.setVisible(false);
 					jMonthLabel.setVisible(false);
@@ -392,13 +392,20 @@ public class ReportLauncher extends ModalJFrame {
 
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
+			File resolvedFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
+			// Derived from the resolved File's actual parent directory, not from a name-existence check --
+			// "rpt_stat" and "rpt_extra" both contain files sharing some basenames (e.g. hmis108_cover,
+			// hmis033_weekly_epid_surv*), one ported by this change (String-typed fromdate/todate) and one
+			// from the pre-existing base catalog (Date-typed). A basename-existence check against "rpt_stat"
+			// alone always resolved to "rpt_stat" for these shared basenames regardless of which file was
+			// actually selected by title, loading the wrong physical file while dateParamsAreStrings stayed
+			// correct for the one actually selected -- causing a ClassCastException between Date and String.
+			String jasperFileFolder = resolvedFile.getParentFile().getName();
+			String jasperFileName = resolvedFile.getName().replace(".jasper", "");
 			if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
-								jRptComboBox.getSelectedItem().toString(), toExcel);
+								jasperFileFolder, jasperFileName,
+								jRptComboBox.getSelectedItem().toString(), toExcel, dateParamsAreStrings);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
@@ -412,10 +419,7 @@ public class ReportLauncher extends ModalJFrame {
 				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
 
 				new GenericReportMY(month, year,
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
+								jasperFileFolder, jasperFileName,
 								jRptComboBox.getSelectedItem().toString(), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="certificateOfDeclaration" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="25ec697b-1f1c-4c24-ae45-052b3debe3ef">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<parameter name="Hospital" class="java.lang.String">
+		<defaultValueExpression><![CDATA["HOPITAL HELVETIQUE DE MADA"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Prg_id" class="java.lang.Long">
+		<defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+	</parameter>
+	<parameter name="author" class="java.lang.String">
+		<defaultValueExpression><![CDATA["ABAKAR GOUNSSOU"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="BirthCertificateNumber" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="NationalIdNumber" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="District" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Address" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Telephone" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Email" class="java.lang.String">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT  	
+		DATE_FORMAT(PDEL.PRGDLV_DATE, '%d/%m/%Y') as PRGDLV_DATE,
+		PAT.PAT_NAME,
+		PAT.PAT_BIRTH_PLACE,
+		PAT.PAT_TAXCODE,       
+		DATE_FORMAT(PAT.PAT_BDATE, '%d/%m/%Y') as PAT_BDATE		
+		FROM oh_pregnancydelivery PDEL
+		JOIN oh_pregnancy OP ON PDEL.PRGDLV_PRG_ID = OP.PRG_ID 
+		JOIN oh_patient PAT ON OP.PRG_PAT_ID = PAT.PAT_ID 
+		WHERE OP.PRG_ID = $P{Prg_id} LIMIT 1]]>
+	</queryString>
+	<field name="PRGDLV_DATE" class="java.lang.String"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_BIRTH_PLACE" class="java.lang.String"/>
+	<field name="PAT_TAXCODE" class="java.lang.String"/>
+	<field name="PAT_BDATE" class="java.lang.String"/>
+	<title>
+		<band height="139">
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="300" height="15" uuid="1b42fe02-eba3-4eb6-b952-2cdb5553fabe"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="30" y="15" width="300" height="11" uuid="4f8709b0-9784-49a4-8e18-236762831b39"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="30" width="300" height="20" uuid="e79f811f-31c7-484f-b8de-f3b7355ac558"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="355" y="0" width="180" height="15" uuid="8037c316-8190-49ff-aeb3-20469579042e"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="355" y="17" width="180" height="11" uuid="33fc5755-de25-4e77-9115-8911b94ea3b4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="355" y="30" width="180" height="20" uuid="33fc5755-de25-4e77-9115-8911b94ea3b5"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="42" width="515" height="24" uuid="0b15d47c-033b-42e5-9f6d-97c0db232274"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cert_title}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="88" width="300" height="14" uuid="3f1c1e8a-2f4b-4a6b-9d1e-1a2b3c4d5e6f"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{Hospital} != null && $P{Hospital}.contains("-") ? $P{Hospital}.substring($P{Hospital}.lastIndexOf("-")+1).trim() : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="300" y="90" width="235" height="14" uuid="4a2d2f9b-3e5c-4b7d-8e2f-2b3c4d5e6f7a"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="104" width="300" height="14" uuid="5b3e3f0c-4f6d-4c8e-9f3a-3c4d5e6f7a8b"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="300" y="104" width="235" height="14" uuid="6c4f4a1d-5a7e-4d9f-af4b-4d5e6f7a8b9c"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="300" y="120" width="235" height="14" uuid="7d5a5b2e-6b8f-4eaf-b05c-5e6f7a8b9c0d"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="136" width="535" height="1" uuid="e8c1e97e-e698-4f26-9f55-7911380b76f6"/>
+				<graphicElement>
+					<pen lineWidth="1.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="450">
+			<textField>
+				<reportElement x="0" y="0" width="120" height="25" uuid="ef25bc90-cacd-4b19-b3c0-2903c3a50697"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{autor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="0" width="400" height="25" uuid="6ffe19f3-2643-4c03-b2ba-634c7d9010b1"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="120" height="25" uuid="2d3bbe40-a56c-4b33-990d-3b44b2a41684"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bdate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="130" y="30" width="150" height="25" uuid="270dfe6b-8a40-4716-9afe-379d63f78ded"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{PAT_BDATE} == null || $F{PAT_BDATE}.trim().equalsIgnoreCase("null")) ? "" : $F{PAT_BDATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="285" y="30" width="30" height="25" uuid="ab121603-e503-4f3a-951c-b2447d1ea46a"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{at}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="320" y="30" width="200" height="25" uuid="928b2751-86ec-4cea-bc6e-94bd3c96de1c"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{PAT_BIRTH_PLACE} == null || $F{PAT_BIRTH_PLACE}.trim().equalsIgnoreCase("null")) ? "" : $F{PAT_BIRTH_PLACE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="60" width="180" height="25" uuid="3b0eea6f-d713-4bb8-bf7c-52b388758f20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{birthcertificatenum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="190" y="60" width="200" height="25" uuid="86a2bfeb-2809-4cf5-a7cf-957e10f04016"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{BirthCertificateNumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="90" width="180" height="25" uuid="aab06419-e539-4645-94f0-f17cfb027280"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="190" y="90" width="200" height="25" uuid="387a3360-6498-4353-92ea-d4aec8fb9b16"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{NationalIdNumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="120" width="535" height="25" uuid="42e9cdd4-607f-4c46-a011-691321e40e59"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{iborn} + " " + $P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="150" width="120" height="25" uuid="19c737a1-52da-4fed-9ca4-c64d71bcd917"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{dateborn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="150" width="150" height="25" uuid="b8f302b6-5d9b-42ea-a7f1-92ea8edcf4e1"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PRGDLV_DATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="180" width="535" height="30" uuid="0e503148-0e14-4ec0-892d-796591ceb17d"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{icertify}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="220" width="535" height="35" uuid="81b3b5f6-31f9-4baa-862a-f740ef3de592"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{iknow}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="260" width="535" height="30" uuid="e2538b7e-dfca-432e-a623-e0b0d03cd26a"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infaith}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="300" width="535" height="25" uuid="990d1beb-8647-4447-9453-8d86b60631ad"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cert_paceanddate} + " " + ($P{Hospital} != null && $P{Hospital}.contains("-") ? $P{Hospital}.substring($P{Hospital}.lastIndexOf("-")+1).trim() : "") + " " + $R{cert_date} + " " + " " + new SimpleDateFormat("dd/MM/yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="340" width="535" height="25" uuid="a60e0608-2974-43f1-bdb2-d78f4de4bab2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{mothersignature}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
