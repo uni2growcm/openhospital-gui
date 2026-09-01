@@ -156,6 +156,10 @@ public class ExamPicker extends JPanel {
 			@Override
 			public void mousePressed(MouseEvent mouseEvent) {
 				if (mouseEvent.getClickCount() == 2) {
+					int row = jTableData.rowAtPoint(mouseEvent.getPoint());
+					if (row >= 0 && !jTableData.isRowSelected(row)) {
+						jTableData.addRowSelectionInterval(row, row);
+					}
 					validateSelection();
 				}
 			}

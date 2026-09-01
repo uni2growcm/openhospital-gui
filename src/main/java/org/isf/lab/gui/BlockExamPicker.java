@@ -97,6 +97,10 @@ public class BlockExamPicker extends JPanel {
 			@Override
 			public void mousePressed(MouseEvent evt) {
 				if (evt.getClickCount() == 2) {
+					int row = jTableData.rowAtPoint(evt.getPoint());
+					if (row >= 0 && !jTableData.isRowSelected(row)) {
+						jTableData.addRowSelectionInterval(row, row);
+					}
 					validateSelection();
 				}
 			}
