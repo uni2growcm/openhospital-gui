@@ -35,6 +35,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -232,7 +233,14 @@ public class WardPharmacy extends ModalJFrame implements
 	private List<MovementWard> listMovementWardFromTo = new ArrayList<>();
 	private List<MedicalWard> wardDrugs;
 	private List<MovementWard> wardOutcomes;
+	private List<MovementWard> wardOutcomesFull;
 	private List<Movement> wardIncomes;
+	private List<Movement> wardIncomesFull;
+
+	private static final int PAGE_SIZE = 50;
+	private TablePaginator outcomesPaginator;
+	private TablePaginator incomesPaginator;
+	private TablePaginator drugsPaginator;
 
 	// private static final String PREFERRED_LOOK_AND_FEEL = "javax.swing.plaf.metal.MetalLookAndFeel"; //$NON-NLS-1$
 
@@ -466,6 +474,8 @@ public class WardPharmacy extends ModalJFrame implements
 				LocalDate newDate = dateChangeEvent.getNewDate();
 				if (newDate != null) {
 					dateTo = newDate.atTime(LocalTime.MAX);
+					outcomesPaginator.resetToFirstPage();
+					incomesPaginator.resetToFirstPage();
 					jTableOutcomes.setModel(new OutcomesModel());
 					jTableIncomes.setModel(new IncomesModel());
 					rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
@@ -483,6 +493,8 @@ public class WardPharmacy extends ModalJFrame implements
 				LocalDate newDate = dateChangeEvent.getNewDate();
 				if (newDate != null) {
 					dateFrom = newDate.atStartOfDay();
+					outcomesPaginator.resetToFirstPage();
+					incomesPaginator.resetToFirstPage();
 					jTableOutcomes.setModel(new OutcomesModel());
 					jTableIncomes.setModel(new IncomesModel());
 					rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
@@ -499,6 +511,16 @@ public class WardPharmacy extends ModalJFrame implements
 			jScrollPaneIncomes.setViewportView(getJTableIncomes());
 		}
 		return jScrollPaneIncomes;
+	}
+
+	private JPanel getIncomesTabPanel() {
+		if (incomesPaginator == null) {
+			incomesPaginator = new TablePaginator(() -> jTableIncomes.setModel(new IncomesModel()));
+		}
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneIncomes(), BorderLayout.CENTER);
+		panel.add(incomesPaginator.getPanel(), BorderLayout.SOUTH);
+		return panel;
 	}
 
 	private JTable getJTableIncomes() {
@@ -526,6 +548,16 @@ public class WardPharmacy extends ModalJFrame implements
 			jScrollPaneDrugs.setViewportView(getJTableDrugs());
 		}
 		return jScrollPaneDrugs;
+	}
+
+	private JPanel getDrugsTabPanel() {
+		if (drugsPaginator == null) {
+			drugsPaginator = new TablePaginator(() -> jTableDrugs.setModel(new DrugsModel()));
+		}
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneDrugs(), BorderLayout.CENTER);
+		panel.add(drugsPaginator.getPanel(), BorderLayout.SOUTH);
+		return panel;
 	}
 
 	private JTable getJTableDrugs() {
@@ -728,6 +760,7 @@ public class WardPharmacy extends ModalJFrame implements
 					weightFrom = weightTo;
 					return;
 				}
+				outcomesPaginator.resetToFirstPage();
 				jTableOutcomes.setModel(new OutcomesModel());
 				rowCounter.setText(rowCounterText + jTableOutcomes.getRowCount());
 			});
@@ -1057,9 +1090,9 @@ public class WardPharmacy extends ModalJFrame implements
 	private JTabbedPane getJTabbedPaneWard() {
 		if (jTabbedPaneWard == null) {
 			jTabbedPaneWard = new JTabbedPane();
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.outcomes"), getJScrollPaneOutcomes()); //$NON-NLS-1$
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.incomings"), getJScrollPaneIncomes()); //$NON-NLS-1$
-			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.drugs"), getJScrollPaneDrugs()); //$NON-NLS-1$
+			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.outcomes"), getOutcomesTabPanel()); //$NON-NLS-1$
+			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.incomings"), getIncomesTabPanel()); //$NON-NLS-1$
+			jTabbedPaneWard.addTab(MessageBundle.getMessage("angal.medicalstockward.drugs"), getDrugsTabPanel()); //$NON-NLS-1$
 		}
 		return jTabbedPaneWard;
 	}
@@ -1070,6 +1103,16 @@ public class WardPharmacy extends ModalJFrame implements
 			jScrollPaneOutcomes.setViewportView(getJTableOutcomes());
 		}
 		return jScrollPaneOutcomes;
+	}
+
+	private JPanel getOutcomesTabPanel() {
+		if (outcomesPaginator == null) {
+			outcomesPaginator = new TablePaginator(() -> jTableOutcomes.setModel(new OutcomesModel()));
+		}
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(getJScrollPaneOutcomes(), BorderLayout.CENTER);
+		panel.add(outcomesPaginator.getPanel(), BorderLayout.SOUTH);
+		return panel;
 	}
 
 	private JTable getJTableOutcomes() {
@@ -1157,6 +1200,9 @@ public class WardPharmacy extends ModalJFrame implements
 						added = true;
 					} else {
 						if (wardSelected != null) {
+							outcomesPaginator.resetToFirstPage();
+							incomesPaginator.resetToFirstPage();
+							drugsPaginator.resetToFirstPage();
 							jTableIncomes.setModel(new IncomesModel());
 							jTableOutcomes.setModel(new OutcomesModel());
 							jTableDrugs.setModel(new DrugsModel());
@@ -1185,19 +1231,123 @@ public class WardPharmacy extends ModalJFrame implements
 		return jComboBoxWard;
 	}
 
+	/**
+	 * Client-side pagination controls (Previous/Next buttons, page combo, "of N pages" label) shared by the
+	 * Outcomes, Incomes and Drugs tabs. Each table keeps loading its full filtered list as before; this only
+	 * windows what gets displayed, while the full list stays available for print/export.
+	 */
+	private static class TablePaginator {
+
+		private int startIndex;
+		private int totalItems;
+		private boolean suppressEvents;
+		private final JButton previousButton;
+		private final JButton nextButton;
+		private final JComboBox<Integer> pagesComboBox = new JComboBox<>();
+		private final JLabel ofPagesLabel = new JLabel(MessageBundle.formatMessage("angal.common.pages.fmt.txt", 1));
+
+		TablePaginator(Runnable onPageChanged) {
+			previousButton = new JButton(MessageBundle.getMessage("angal.medicalstockward.arrowprevious.btn"));
+			previousButton.addActionListener(actionEvent -> {
+				if (startIndex > 0) {
+					startIndex -= PAGE_SIZE;
+					updateControls();
+					onPageChanged.run();
+				}
+			});
+			nextButton = new JButton(MessageBundle.getMessage("angal.medicalstockward.arrownext.btn"));
+			nextButton.addActionListener(actionEvent -> {
+				if (startIndex / PAGE_SIZE < totalPages() - 1) {
+					startIndex += PAGE_SIZE;
+					updateControls();
+					onPageChanged.run();
+				}
+			});
+			pagesComboBox.setEditable(true);
+			pagesComboBox.addItemListener(itemEvent -> {
+				if (suppressEvents || itemEvent.getStateChange() != ItemEvent.SELECTED) {
+					return;
+				}
+				int pageNumber = (Integer) pagesComboBox.getSelectedItem();
+				startIndex = (pageNumber - 1) * PAGE_SIZE;
+				updateControls();
+				onPageChanged.run();
+			});
+			updateControls();
+		}
+
+		private int totalPages() {
+			return Math.max(1, (int) Math.ceil((double) totalItems / PAGE_SIZE));
+		}
+
+		/** Called whenever the underlying data is (re)loaded; keeps the current page if it is still valid. */
+		void notifyDataReloaded(int newTotalItems) {
+			totalItems = newTotalItems;
+			int maxStart = (totalPages() - 1) * PAGE_SIZE;
+			if (startIndex > maxStart) {
+				startIndex = Math.max(0, maxStart);
+			}
+			updateControls();
+		}
+
+		/** Called by filter-changing actions (ward, date range, filter button) before the data is reloaded. */
+		void resetToFirstPage() {
+			startIndex = 0;
+		}
+
+		<T> List<T> page(List<T> fullList) {
+			if (fullList.isEmpty()) {
+				return fullList;
+			}
+			int from = Math.min(startIndex, fullList.size());
+			int to = Math.min(from + PAGE_SIZE, fullList.size());
+			return new ArrayList<>(fullList.subList(from, to));
+		}
+
+		private void updateControls() {
+			suppressEvents = true;
+			pagesComboBox.removeAllItems();
+			int pages = totalPages();
+			for (int i = 1; i <= pages; i++) {
+				pagesComboBox.addItem(i);
+			}
+			pagesComboBox.setSelectedItem(startIndex / PAGE_SIZE + 1);
+			previousButton.setEnabled(startIndex > 0);
+			nextButton.setEnabled(startIndex / PAGE_SIZE < pages - 1);
+			ofPagesLabel.setText(MessageBundle.formatMessage("angal.common.pages.fmt.txt", pages));
+			suppressEvents = false;
+		}
+
+		JPanel getPanel() {
+			JPanel panel = new JPanel();
+			panel.add(previousButton);
+			panel.add(pagesComboBox);
+			panel.add(ofPagesLabel);
+			panel.add(nextButton);
+			return panel;
+		}
+	}
+
 	class IncomesModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
 
 		public IncomesModel() {
-			wardIncomes = new ArrayList<>();
+			this(false);
+		}
+
+		/**
+		 * @param exportAll if {@code true}, bypasses pagination so the full filtered list is exposed (used for export/print)
+		 */
+		public IncomesModel(boolean exportAll) {
+			wardIncomesFull = new ArrayList<>();
 			try {
 				listMovementCentral = movBrowserManager.getMovements(wardSelected.getCode(), dateFrom, dateTo);
 
 				for (Movement mov : listMovementCentral) {
 					if (mov.getWard().getDescription() != null) {
 						if (mov.getWard().equals(wardSelected)) {
-							wardIncomes.add(mov);
+							wardIncomesFull.add(mov);
 						}
 					}
 				}
@@ -1207,7 +1357,7 @@ public class WardPharmacy extends ModalJFrame implements
 					if (wMvnt.getWardTo().getDescription() != null) {
 						if (wMvnt.getWardTo().equals(wardSelected)) {
 							MovementType typeCharge = new MovementType("fromward", wMvnt.getWard().getDescription(), "*", "*");
-							wardIncomes.add(new Movement(
+							wardIncomesFull.add(new Movement(
 											wMvnt.getMedical(),
 											typeCharge,
 											wardSelected,
@@ -1222,6 +1372,12 @@ public class WardPharmacy extends ModalJFrame implements
 			} catch (OHServiceException ohServiceException) {
 				OHServiceExceptionUtil.showMessages(ohServiceException);
 				LOGGER.error(ohServiceException.getMessage(), ohServiceException);
+			}
+			if (exportAll) {
+				wardIncomes = wardIncomesFull;
+			} else {
+				incomesPaginator.notifyDataReloaded(wardIncomesFull.size());
+				wardIncomes = incomesPaginator.page(wardIncomesFull);
 			}
 		}
 
@@ -1295,7 +1451,14 @@ public class WardPharmacy extends ModalJFrame implements
 		private static final long serialVersionUID = 1L;
 
 		public OutcomesModel() {
-			wardOutcomes = new ArrayList<>();
+			this(false);
+		}
+
+		/**
+		 * @param exportAll if {@code true}, bypasses pagination so the full filtered list is exposed (used for export/print)
+		 */
+		public OutcomesModel(boolean exportAll) {
+			wardOutcomesFull = new ArrayList<>();
 			try {
 				listMovementWardFromTo = movWardBrowserManager.getMovementWard(wardSelected.getCode(), dateFrom, dateTo);
 			} catch (OHServiceException e) {
@@ -1369,11 +1532,17 @@ public class WardPharmacy extends ModalJFrame implements
 				}
 
 				if (ok) {
-					wardOutcomes.add(mov);
+					wardOutcomesFull.add(mov);
 				}
 			}
 
-			Collections.reverse(wardOutcomes);
+			Collections.reverse(wardOutcomesFull);
+			if (exportAll) {
+				wardOutcomes = wardOutcomesFull;
+			} else {
+				outcomesPaginator.notifyDataReloaded(wardOutcomesFull.size());
+				wardOutcomes = outcomesPaginator.page(wardOutcomesFull);
+			}
 		}
 
 		@Override
@@ -1459,13 +1628,27 @@ public class WardPharmacy extends ModalJFrame implements
 		private List<MedicalWard> tableModel;
 
 		public DrugsModel() {
+			this(false);
+		}
+
+		/**
+		 * @param exportAll if {@code true}, bypasses pagination so the full list is exposed (used for export)
+		 */
+		public DrugsModel(boolean exportAll) {
+			List<MedicalWard> allDrugs;
 			try {
-				tableModel = movWardBrowserManager.getMedicalsWardTotalQuantity(wardSelected.getCode());
+				allDrugs = movWardBrowserManager.getMedicalsWardTotalQuantity(wardSelected.getCode());
 				wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
-				tableModel = new ArrayList<>();
+				allDrugs = new ArrayList<>();
 				wardDrugs = new ArrayList<>();
+			}
+			if (exportAll) {
+				tableModel = allDrugs;
+			} else {
+				drugsPaginator.notifyDataReloaded(allDrugs.size());
+				tableModel = drugsPaginator.page(allDrugs);
 			}
 		}
 
@@ -1557,13 +1740,13 @@ public class WardPharmacy extends ModalJFrame implements
 
 				if (jTabbedPaneWard.getSelectedIndex() == 0) {
 					try {
-						printManager.print("WardPharmacyOutcomes", movWardBrowserManager.convertMovementWardForPrint(wardOutcomes), 0); //$NON-NLS-1$
+						printManager.print("WardPharmacyOutcomes", movWardBrowserManager.convertMovementWardForPrint(wardOutcomesFull), 0); //$NON-NLS-1$
 					} catch (OHServiceException e) {
 						OHServiceExceptionUtil.showMessages(e, this);
 					}
 				} else if (jTabbedPaneWard.getSelectedIndex() == 1) {
 					try {
-						printManager.print("WardPharmacyIncomes", movWardBrowserManager.convertMovementForPrint(wardIncomes), 0); //$NON-NLS-1$
+						printManager.print("WardPharmacyIncomes", movWardBrowserManager.convertMovementForPrint(wardIncomesFull), 0); //$NON-NLS-1$
 					} catch (OHServiceException e) {
 						OHServiceExceptionUtil.showMessages(e, this);
 					}
@@ -1635,21 +1818,21 @@ public class WardPharmacy extends ModalJFrame implements
 						int index = jTabbedPaneWard.getSelectedIndex();
 						if (exportFile.getName().endsWith(".xlsx")) {
 							if (index == 0) {
-								xlsExport.exportTableToExcel(jTableOutcomes, exportFile);
+								xlsExport.exportTableToExcel(new JTable(new OutcomesModel(true)), exportFile);
 							} else if (index == 1) {
-								xlsExport.exportTableToExcel(jTableIncomes, exportFile);
+								xlsExport.exportTableToExcel(new JTable(new IncomesModel(true)), exportFile);
 							} else if (index == 2) {
 								// ignore the last column in the table as it is a button object
-								xlsExport.exportTableToExcel(jTableDrugs, exportFile, 3);
+								xlsExport.exportTableToExcel(new JTable(new DrugsModel(true)), exportFile, 3);
 							}
 						} else {
 							if (index == 0) {
-								xlsExport.exportTableToExcelOLD(jTableOutcomes, exportFile);
+								xlsExport.exportTableToExcelOLD(new JTable(new OutcomesModel(true)), exportFile);
 							} else if (index == 1) {
-								xlsExport.exportTableToExcelOLD(jTableIncomes, exportFile);
+								xlsExport.exportTableToExcelOLD(new JTable(new IncomesModel(true)), exportFile);
 							} else if (index == 2) {
 								// ignore the last column in the table as it is a button object
-								xlsExport.exportTableToExcelOLD(jTableDrugs, exportFile, 3);
+								xlsExport.exportTableToExcelOLD(new JTable(new DrugsModel(true)), exportFile, 3);
 							}
 						}
 					} catch (IOException exc) {

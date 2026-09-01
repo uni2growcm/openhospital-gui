@@ -760,11 +760,6 @@ public class InventoryEdit extends ModalJFrame {
 				MessageDialog.error(null, "angal.inventory.allinventoryrowswithnewlotshouldhaverealqtygreatterthanzero.msg");
 				return;
 			}
-			String errorMessage = this.checkParamsValues(chargeCode, dischargeCode, supplierId, wardCode);
-			if (errorMessage != null) {
-				MessageDialog.error(null, errorMessage);
-				return;
-			}
 			if (checkParametersChanges(wardCode, chargeCode, dischargeCode, supplierId, lastReference, lastInventoryDate)) {
 				MessageDialog.error(null, "angal.inventory.pleasesaveinventorybeforevalidateit.msg");
 				return;
@@ -854,11 +849,6 @@ public class InventoryEdit extends ModalJFrame {
 					.collect(Collectors.toList());
 				if (!invRowWithoutRealQty.isEmpty()) {
 					MessageDialog.error(null, "angal.inventory.allinventoryrowswithnewlotshouldhaverealqtygreatterthanzero.msg");
-					return;
-				}
-				String errorMessage = this.checkParamsValues(chargeCode, dischargeCode, supplierId, wardCode);
-				if (errorMessage != null) {
-					MessageDialog.error(null, errorMessage);
 					return;
 				}
 				if (checkParametersChanges(wardCode, chargeCode, dischargeCode, supplierId, lastReference, lastDate)) {
@@ -1069,22 +1059,6 @@ public class InventoryEdit extends ModalJFrame {
 			}
 		});
 		return closeButton;
-	}
-
-	private String checkParamsValues(String chargeCode, String dischargeCode, Integer supplierId, String wardCode) {
-		if (chargeCode == null || chargeCode.isEmpty()) {
-			return "angal.inventory.choosechargetypebeforevalidation.msg";
-		}
-		if (dischargeCode == null || dischargeCode.isEmpty()) {
-			return "angal.inventory.choosedischargetypebeforevalidation.msg";
-		}
-		if (supplierId == null || supplierId == 0) {
-			return "angal.inventory.choosesupplierbeforevalidation.msg";
-		}
-		if (wardCode == null || wardCode.isEmpty()) {
-			return "angal.inventory.choosedestinationbeforevalidation.msg";
-		}
-		return null;
 	}
 
 	private JScrollPane getScrollPaneInventory() {
@@ -1776,6 +1750,12 @@ public class InventoryEdit extends ModalJFrame {
 			if (inventory != null && !mode.equals("new")) {
 				referenceTextField.setText(inventory.getInventoryReference());
 				newReference = inventory.getInventoryReference();
+			} else {
+				try {
+					referenceTextField.setText(medicalInventoryManager.generateReference(TimeTools.getNow()));
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e);
+				}
 			}
 		}
 		return referenceTextField;
