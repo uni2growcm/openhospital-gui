@@ -96,6 +96,7 @@ import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.operation.gui.OperationRowAdm;
 import org.isf.patient.gui.PatientSummary;
 import org.isf.patient.model.Patient;
+import org.isf.pregnancy.gui.PregnancyDeliveryPanel;
 import org.isf.pregtreattype.manager.PregnantTreatmentTypeBrowserManager;
 import org.isf.pregtreattype.model.PregnantTreatmentType;
 import org.isf.utils.exception.OHServiceException;
@@ -200,6 +201,8 @@ public class AdmissionBrowser extends ModalJFrame {
 	private JPanel jPanelOperation;
 
 	private JPanel jPanelDelivery;
+
+	private PregnancyDeliveryPanel pregnancyDeliveryPanel;
 
 	private int pregnancyTabIndex;
 
@@ -516,6 +519,13 @@ public class AdmissionBrowser extends ModalJFrame {
 				if (!viewingPregnancy) {
 					jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, false);
 				}
+
+				jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.cpn.newborns.title"), getPregnancyDeliveryPanel());
+				int newbornsTabIndex = jTabbedPaneAdmission.getTabCount() - 1;
+				if (!viewingPregnancy) {
+					jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, false);
+				}
+				pregnancyDeliveryPanel.loadFor(admission);
 			}
 			jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.common.note.title"), getJPanelNote());
 		}
@@ -579,6 +589,23 @@ public class AdmissionBrowser extends ModalJFrame {
 			jPanelOperation.add(operationad);
 		}
 		return jPanelOperation;
+	}
+
+	private PregnancyDeliveryPanel getPregnancyDeliveryPanel() {
+		if (pregnancyDeliveryPanel == null) {
+			pregnancyDeliveryPanel = new PregnancyDeliveryPanel();
+		}
+		return pregnancyDeliveryPanel;
+	}
+
+	/**
+	 * Persists the newborns / delivery data captured on the {@link #getPregnancyDeliveryPanel()} tab, once
+	 * the admission being edited has a valid database id. No-op for admissions outside a pregnancy ward.
+	 */
+	private void savePregnancyDeliveryDataIfNeeded() {
+		if (enablePregnancy && admission.getId() > 0) {
+			pregnancyDeliveryPanel.saveFor(admission);
+		}
 	}
 
 	private JPanel getDeliveryTab() {
@@ -1845,6 +1872,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						if (newKey > 0) {
 							result = true;
 							admission.setId(newKey);
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionInserted(admission);
 							if (GeneralData.XMPPMODULEENABLED) {
 								CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
@@ -1870,6 +1898,7 @@ public class AdmissionBrowser extends ModalJFrame {
 							OHServiceExceptionUtil.showMessages(ex);
 						}
 						if (result) {
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionUpdated(admission);
 							dispose();
 						}
@@ -1889,6 +1918,7 @@ public class AdmissionBrowser extends ModalJFrame {
 							OHServiceExceptionUtil.showMessages(ex);
 						}
 						if (result) {
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionUpdated(admission);
 							if (GeneralData.XMPPMODULEENABLED) {
 								CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
