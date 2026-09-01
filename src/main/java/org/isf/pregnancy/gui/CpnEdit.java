@@ -48,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 
+import org.isf.familyplanning.gui.FamilyPlanningEdit;
 import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabNew;
 import org.isf.menu.manager.Context;
@@ -170,6 +171,10 @@ public class CpnEdit extends JDialog {
 			new PatVacEdit(null, patientVaccine, true).setVisible(true);
 		});
 		shortcuts.add(vaccinesButton);
+
+		JButton familyPlanningButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.familyplanning.btn"));
+		familyPlanningButton.addActionListener(e -> new FamilyPlanningEdit(null, patient, null).setVisible(true));
+		shortcuts.add(familyPlanningButton);
 
 		return shortcuts;
 	}
