@@ -50,6 +50,7 @@ import javax.swing.SpinnerNumberModel;
 
 import org.isf.familyplanning.gui.FamilyPlanningEdit;
 import org.isf.generaldata.MessageBundle;
+import org.isf.hivchildfollowup.gui.HivExposedChildEdit;
 import org.isf.lab.gui.LabNew;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsertExtended;
@@ -175,6 +176,10 @@ public class CpnEdit extends JDialog {
 		JButton familyPlanningButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.familyplanning.btn"));
 		familyPlanningButton.addActionListener(e -> new FamilyPlanningEdit(null, patient, null).setVisible(true));
 		shortcuts.add(familyPlanningButton);
+
+		JButton hivFollowUpButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.hivchildfollowup.btn"));
+		hivFollowUpButton.addActionListener(e -> new HivExposedChildEdit(null, patient, null).setVisible(true));
+		shortcuts.add(hivFollowUpButton);
 
 		return shortcuts;
 	}

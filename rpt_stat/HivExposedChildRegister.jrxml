@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="HivExposedChildRegister"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="Hospital" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="fromdate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="todate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rpt_stat/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LOGO_PATH" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	</parameter>
+
+	<queryString><![CDATA[SELECT
+	HEC.HEC_ID AS HEC_ID,
+	HEC.HEC_DOB AS HEC_DOB,
+	PAT.PAT_NAME AS MOTHER_NAME,
+	HEC.HEC_CHILD_NAME AS HEC_CHILD_NAME,
+	HEC.HEC_ARV_GIVEN AS HEC_ARV_GIVEN,
+	HEC.HEC_CTX_GIVEN AS HEC_CTX_GIVEN,
+	HEC.HEC_FEEDING_MODE AS HEC_FEEDING_MODE,
+	HEC.HEC_STATUS AS HEC_STATUS,
+	(SELECT MAX(V.HECV_DATE) FROM OH_HIVEXPOSEDCHILDVISIT V WHERE V.HECV_HEC_ID = HEC.HEC_ID) AS LAST_VISIT_DATE,
+	(SELECT V2.HECV_TEST_RESULT FROM OH_HIVEXPOSEDCHILDVISIT V2 WHERE V2.HECV_HEC_ID = HEC.HEC_ID ORDER BY V2.HECV_DATE DESC LIMIT 1) AS LAST_TEST_RESULT
+FROM OH_HIVEXPOSEDCHILD HEC
+	JOIN PATIENT PAT ON ( PAT.PAT_ID = HEC.HEC_MOTHER_PAT_ID )
+WHERE HEC.HEC_DOB BETWEEN $P{fromdate} AND $P{todate}
+ORDER BY HEC.HEC_DOB ASC]]></queryString>
+
+	<field name="HEC_ID" class="java.lang.Integer"/>
+	<field name="HEC_DOB" class="java.sql.Date"/>
+	<field name="MOTHER_NAME" class="java.lang.String"/>
+	<field name="HEC_CHILD_NAME" class="java.lang.String"/>
+	<field name="HEC_ARV_GIVEN" class="java.lang.Boolean"/>
+	<field name="HEC_CTX_GIVEN" class="java.lang.Boolean"/>
+	<field name="HEC_FEEDING_MODE" class="java.lang.String"/>
+	<field name="HEC_STATUS" class="java.lang.String"/>
+	<field name="LAST_VISIT_DATE" class="java.sql.Date"/>
+	<field name="LAST_TEST_RESULT" class="java.lang.String"/>
+
+		<background>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="46" isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="782"
+						height="24"
+						key="staticText-1"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[REGISTRE DE SUIVI DES ENFANTS NES DE MERE VIH+]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="26"
+						width="782"
+						height="16"
+						key="textField-1"/>
+					<textElement textAlignment="Center">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Hospital}+" - "+$P{Address}+", "+$P{City}+" — Période du " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " au " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20" isSplitAllowed="true" >
+				<staticText>
+					<reportElement x="0" y="0" width="70" height="20" key="staticText-2"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Naissance]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="70" y="0" width="150" height="20" key="staticText-3"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Mère]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="220" y="0" width="130" height="20" key="staticText-4"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Enfant]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="350" y="0" width="40" height="20" key="staticText-5"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[ARV]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="390" y="0" width="40" height="20" key="staticText-6"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[CTX]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="430" y="0" width="100" height="20" key="staticText-7"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Alimentation]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="530" y="0" width="90" height="20" key="staticText-8"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Statut final]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="620" y="0" width="70" height="20" key="staticText-9"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Dernière visite]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="690" y="0" width="92" height="20" key="staticText-10"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Dernier résultat]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16" isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="0" y="0" width="70" height="16" key="textField-2"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_DOB}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="70" y="0" width="150" height="16" key="textField-3"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MOTHER_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="220" y="0" width="130" height="16" key="textField-4"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_CHILD_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="350" y="0" width="40" height="16" key="textField-5"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_ARV_GIVEN} != null && $F{HEC_ARV_GIVEN} ? "Oui" : "Non"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="390" y="0" width="40" height="16" key="textField-6"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_CTX_GIVEN} != null && $F{HEC_CTX_GIVEN} ? "Oui" : "Non"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="430" y="0" width="100" height="16" key="textField-7"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_FEEDING_MODE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="530" y="0" width="90" height="16" key="textField-8"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{HEC_STATUS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="620" y="0" width="70" height="16" key="textField-9"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LAST_VISIT_DATE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="690" y="0" width="92" height="16" key="textField-10"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{LAST_TEST_RESULT}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>
