@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -289,6 +290,15 @@ public class PregnancyDeliveryPanel extends JPanel {
 
 		try {
 			currentDelivery = deliveryManager.saveOrUpdate(delivery);
+			for (NewbornRowPanel row : newbornRows) {
+				row.setNewbornId(0);
+			}
+			for (PregnancyNewborn newborn : currentDelivery.getNewborns()) {
+				int index = newborn.getChildNumber() - 1;
+				if (index >= 0 && index < newbornRows.length) {
+					newbornRows[index].setNewbornId(newborn.getId());
+				}
+			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -327,7 +337,11 @@ public class PregnancyDeliveryPanel extends JPanel {
 		private final JTextField malformationField;
 		private final JComboBox<Object> feedingModeBox;
 		private final JCheckBox hivExposedCheckBox;
+		private final JButton declarationButton;
+		private final JButton certificateButton;
+		private final BirthDocumentPrinter birthDocumentPrinter = new BirthDocumentPrinter();
 
+		private int newbornId;
 		private final List<java.awt.Component> dependentFields = new ArrayList<>();
 
 		NewbornRowPanel(int childNumber, List<DeliveryType> deliveryTypeList, List<DeliveryResultType> deliveryResultTypeList) {
@@ -399,6 +413,18 @@ public class PregnancyDeliveryPanel extends JPanel {
 			c.gridy = 4;
 			add(hivExposedCheckBox, c);
 
+			declarationButton = new JButton(MessageBundle.getMessage("angal.cpn.printdeclarationofbirth.txt"));
+			declarationButton.addActionListener(e -> birthDocumentPrinter.printDeclarationOfBirth(newbornId));
+			c.gridx = 2;
+			c.gridy = 4;
+			add(declarationButton, c);
+
+			certificateButton = new JButton(MessageBundle.getMessage("angal.cpn.printcertificateofdeclaration.txt"));
+			certificateButton.addActionListener(e -> birthDocumentPrinter.printCertificateOfDeclaration(newbornId));
+			c.gridx = 3;
+			c.gridy = 4;
+			add(certificateButton, c);
+
 			dependentFields.add(childNameField);
 			dependentFields.add(sexBox);
 			dependentFields.add(deliveryTypeBox);
@@ -436,6 +462,8 @@ public class PregnancyDeliveryPanel extends JPanel {
 			for (java.awt.Component field : dependentFields) {
 				field.setEnabled(active);
 			}
+			declarationButton.setEnabled(active && newbornId > 0);
+			certificateButton.setEnabled(active && newbornId > 0);
 		}
 
 		boolean isActive() {
@@ -447,8 +475,14 @@ public class PregnancyDeliveryPanel extends JPanel {
 			updateEnabled();
 		}
 
+		void setNewbornId(int newbornId) {
+			this.newbornId = newbornId;
+			updateEnabled();
+		}
+
 		void reset() {
 			setActive(childNumber == 1);
+			setNewbornId(0);
 			childNameField.setText("");
 			sexBox.setSelectedIndex(0);
 			deliveryTypeBox.setSelectedIndex(0);
@@ -466,6 +500,7 @@ public class PregnancyDeliveryPanel extends JPanel {
 
 		void populate(PregnancyNewborn newborn) {
 			setActive(true);
+			setNewbornId(newborn.getId());
 			childNameField.setText(nullToEmpty(newborn.getChildName()));
 			sexBox.setSelectedItem(String.valueOf(newborn.getSex()));
 			deliveryTypeBox.setSelectedItem(newborn.getDeliveryType() == null ? "" : newborn.getDeliveryType());

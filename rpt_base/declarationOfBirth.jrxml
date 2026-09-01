@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="declarationOfBirth"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="595"
+		 pageHeight="421"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="Hospital" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="author" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="newbornID" isForPrompting="false" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rpt_base/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LOGO_PATH" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	</parameter>
+
+	<queryString><![CDATA[SELECT
+	PNB.PNB_CHILD_NAME AS PNB_CHILD_NAME,
+	PNB.PNB_SEX AS PNB_SEX,
+	PDEL.PDEL_DATE_DEL AS PDEL_DATE_DEL,
+	PDEL.PDEL_FATHER_NAME AS PDEL_FATHER_NAME,
+	PDEL.PDEL_FATHER_OCCUPATION AS PDEL_FATHER_OCCUPATION,
+	PDEL.PDEL_FATHER_RESIDENCE AS PDEL_FATHER_RESIDENCE,
+	PDEL.PDEL_FATHER_BIRTH_PLACE AS PDEL_FATHER_BIRTH_PLACE,
+	PDEL.PDEL_FATHER_AGE AS PDEL_FATHER_AGE,
+	PDEL.PDEL_FATHER_CNI AS PDEL_FATHER_CNI,
+	PAT.PAT_NAME AS PAT_NAME,
+	PAT.PAT_ADDR AS PAT_ADDR,
+	PAT.PAT_CITY AS PAT_CITY,
+	PAT.PAT_PROFESSION AS PAT_PROFESSION,
+	PAT.PAT_TAXCODE AS PAT_TAXCODE,
+	PAT.PAT_TELE AS PAT_TELE,
+	IF(PAT.PAT_BDATE is not null, ROUND(DATEDIFF(CURDATE(), DATE(PAT.PAT_BDATE)) / 365,0), PAT.PAT_AGE) as age
+FROM OH_PREGNANCYNEWBORN PNB
+	JOIN OH_PREGNANCYDELIVERY PDEL ON ( PNB.PNB_PDEL_ID = PDEL.PDEL_ID )
+	JOIN ADMISSION ADM ON ( PDEL.PDEL_ADM_ID = ADM.ADM_ID )
+	JOIN PATIENT PAT ON ( PAT.PAT_ID = ADM.ADM_PAT_ID )
+WHERE PNB.PNB_ID = $P{newbornID}]]></queryString>
+
+	<field name="PNB_CHILD_NAME" class="java.lang.String"/>
+	<field name="PNB_SEX" class="java.lang.String"/>
+	<field name="PDEL_DATE_DEL" class="java.sql.Timestamp"/>
+	<field name="PDEL_FATHER_NAME" class="java.lang.String"/>
+	<field name="PDEL_FATHER_OCCUPATION" class="java.lang.String"/>
+	<field name="PDEL_FATHER_RESIDENCE" class="java.lang.String"/>
+	<field name="PDEL_FATHER_BIRTH_PLACE" class="java.lang.String"/>
+	<field name="PDEL_FATHER_AGE" class="java.lang.Integer"/>
+	<field name="PDEL_FATHER_CNI" class="java.lang.Long"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_ADDR" class="java.lang.String"/>
+	<field name="PAT_CITY" class="java.lang.String"/>
+	<field name="PAT_PROFESSION" class="java.lang.String"/>
+	<field name="PAT_TAXCODE" class="java.lang.String"/>
+	<field name="PAT_TELE" class="java.lang.String"/>
+	<field name="age" class="java.math.BigDecimal"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="95"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="0" width="360" height="20" key="hospitalName"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Hospital}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="20" width="360" height="15" key="hospitalAddress"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Address}+", "+$P{City}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="35" width="360" height="15" key="hospitalContact"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Telephone}+" / "+$P{Email}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="60" width="535" height="30" key="title"/>
+					<box>
+						<bottomPen lineWidth="1.0" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="18" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.title")]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="230"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="10" width="535" height="150" key="body"/>
+					<box></box>
+					<textElement textAlignment="Justified" verticalAlignment="Top">
+						<font pdfFontName="Helvetica" size="11" isBold="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.attest1")+" "+$P{author}+" "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.attest2")+" "+$P{Hospital}+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.attest3")+" "+
+$F{PNB_CHILD_NAME}+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.sex")+" "+
+("M".equalsIgnoreCase($F{PNB_SEX})?$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.male"):$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.female"))+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.bornon")+" "+
+($F{PDEL_DATE_DEL}==null?"":new java.text.SimpleDateFormat("dd/MM/yyyy 'à' HH:mm").format(new Date($F{PDEL_DATE_DEL}.getTime())))+" "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.atmaternity")+" "+$P{Hospital}+".\n\n"+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.sonof")+" "+
+(($F{PDEL_FATHER_NAME}==null||$F{PDEL_FATHER_NAME}.isEmpty())?$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.unknown"):$F{PDEL_FATHER_NAME})+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.bornat")+" "+(($F{PDEL_FATHER_BIRTH_PLACE}==null)?"":$F{PDEL_FATHER_BIRTH_PLACE})+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.agedof")+" "+(($F{PDEL_FATHER_AGE}==null)?"":String.valueOf($F{PDEL_FATHER_AGE}))+" "+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.years")+"; "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.occupation")+" "+(($F{PDEL_FATHER_OCCUPATION}==null)?"":$F{PDEL_FATHER_OCCUPATION})+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.residingat")+" "+(($F{PDEL_FATHER_RESIDENCE}==null)?"":$F{PDEL_FATHER_RESIDENCE})+". "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.andofnamed")+" "+$F{PAT_NAME}+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.agedof")+" "+(($F{age}==null)?"":$F{age}.toString())+" "+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.years")+"; "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.occupation")+" "+(($F{PAT_PROFESSION}==null)?"":$F{PAT_PROFESSION})+", "+
+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.residingat")+" "+(($F{PAT_CITY}==null)?"":$F{PAT_CITY})+" / "+(($F{PAT_ADDR}==null)?"":$F{PAT_ADDR})+"."
+]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="165" width="535" height="17" key="marriageLine"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.marriagecert")+" ____________________  "+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.dated")+" ____________________"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="185" width="260" height="17" key="fatherCniLine"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.fathercni")+" "+(($F{PDEL_FATHER_CNI}==null)?"____________":String.valueOf($F{PDEL_FATHER_CNI}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="270" y="185" width="265" height="17" key="motherCniLine"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.mothercni")+" "+(($F{PAT_TAXCODE}==null||$F{PAT_TAXCODE}.isEmpty())?"____________":$F{PAT_TAXCODE})]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="40"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="0" y="0" width="300" height="17" key="place_date"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{City}+", "+$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.datedon")+" "+(new java.text.SimpleDateFormat("dd/MM/yyyy")).format(new Date())]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement x="330" y="0" width="205" height="17" key="doctor"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.declarationbirth.thedoctor")+" "+(($P{author}==null)?"":$P{author})]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>
