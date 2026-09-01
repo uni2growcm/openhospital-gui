@@ -32,6 +32,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -61,8 +63,11 @@ import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.serviceprinting.manager.PrintLabels;
 import org.isf.serviceprinting.manager.PrintManager;
+import org.isf.stat.gui.report.GenericReportLabExamList;
 import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -84,13 +89,17 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 
 	@Override
 	public void labInserted() {
-		jTable.setModel(new LabBrowsingModel());
+		applyFilters();
 	}
 
 	@Override
 	public void labUpdated() {
 		filterButton.doClick();
 	}
+
+	private static final int FILTER_WIDTH = 200;
+	private static final int FILTER_HEIGHT = 22;
+	private static final Dimension FILTER_DIMENSION = new Dimension(FILTER_WIDTH, FILTER_HEIGHT);
 
 	private JPanel jContentPane;
 	private JPanel jButtonPanel;
@@ -107,19 +116,23 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private int pfrmHeight = 100;
 	private List<Laboratory> pLabs;
 	private String[] pColumns = {
+			MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.patient.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.exam.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.result.txt").toUpperCase()
+			MessageBundle.getMessage("angal.lab.prescriber").toUpperCase(),
+			MessageBundle.getMessage("angal.common.result.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.lab.paid").toUpperCase()
 	};
-	private boolean[] columnsResizable = {false, true, true, false};
-	private int[] pColumnWidth = {150, 200, 200, 200};
-	private int[] maxWidth = {150, 200, 200, 200};
-	private boolean[] columnsVisible = { true, GeneralData.LABEXTENDED, true, true};
+	private boolean[] columnsResizable = {false, false, true, true, true, true, false};
+	private int[] pColumnWidth = {80, 150, 200, 200, 150, 200, 90};
+	private int[] maxWidth = {80, 150, 200, 200, 150, 200, 90};
+	private boolean[] columnsVisible = { true, true, GeneralData.LABEXTENDED, true, true, true, true};
 	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 	private PatientBrowserManager patManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private PrintManager printManager = Context.getApplicationContext().getBean(PrintManager.class);
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private PrescriberBrowserManager prescriberBrowserManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
 	private LabBrowsingModel model;
 	private Laboratory laboratory;
 	private int selectedrow;
@@ -129,6 +142,13 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private GoodDateChooser dateTo;
 	private final JFrame myFrame;
 	private JButton printLabelButton;
+	private JButton examListButton;
+	private JComboBox<String> comboWithResult;
+	private JComboBox<String> userComboBox;
+	private JComboBox<String> paidComboBox;
+	private JLabel totalPaidValueLabel;
+	private JLabel totalNotPaidValueLabel;
+	private JLabel totalNotFacturedValueLabel;
 
 	/**
 	 * This is the default constructor
@@ -139,9 +159,9 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		this.setTitle(MessageBundle.getMessage("angal.lab.laboratorybrowser.title"));
 		this.setContentPane(getJContentPane());
 		setSize(new Dimension(1345, 650));
-		setResizable(false);
-		setVisible(true);
 		setLocationRelativeTo(null);
+		applyFilters();
+		setVisible(true);
 	}
 
 	/**
@@ -169,22 +189,57 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	 */
 	private JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
-			jButtonPanel = new JPanel();
+			jButtonPanel = new JPanel(new BorderLayout());
+			JPanel buttonsPanel = new JPanel();
 			if (MainMenu.checkUserGrants("btnlaboratorynew")) {
-				jButtonPanel.add(getButtonNew(), null);
+				buttonsPanel.add(getButtonNew(), null);
 			}
 			if (MainMenu.checkUserGrants("btnlaboratoryedit")) {
-				jButtonPanel.add(getButtonEdit(), null);
+				buttonsPanel.add(getButtonEdit(), null);
 			}
 			if (MainMenu.checkUserGrants("btnlaboratorydel")) {
-				jButtonPanel.add(getButtonDelete(), null);
+				buttonsPanel.add(getButtonDelete(), null);
 			}
-			jButtonPanel.add(getPrintTableButton(), null);
-			jButtonPanel.add(getPrintLabelButton(), null);
-			jButtonPanel.add(getCloseButton(), null);
-
+			buttonsPanel.add(getPrintTableButton(), null);
+			buttonsPanel.add(getPrintLabelButton(), null);
+			buttonsPanel.add(getExamListButton(), null);
+			buttonsPanel.add(getCloseButton(), null);
+			jButtonPanel.add(getPanelTotal(), BorderLayout.NORTH);
+			jButtonPanel.add(buttonsPanel, BorderLayout.SOUTH);
 		}
 		return jButtonPanel;
+	}
+
+	private JPanel getPanelTotal() {
+		JPanel panelTotal = new JPanel();
+		panelTotal.add(new JLabel(MessageBundle.getMessage("angal.lab.totalpaid") + ": "));
+		panelTotal.add(getTotalPaidValueLabel());
+		panelTotal.add(new JLabel(MessageBundle.getMessage("angal.lab.totalnotpaid") + ": "));
+		panelTotal.add(getTotalNotPaidValueLabel());
+		panelTotal.add(new JLabel(MessageBundle.getMessage("angal.lab.totalnotcharged") + ": "));
+		panelTotal.add(getTotalNotFacturedValueLabel());
+		return panelTotal;
+	}
+
+	private JLabel getTotalPaidValueLabel() {
+		if (totalPaidValueLabel == null) {
+			totalPaidValueLabel = new JLabel("0");
+		}
+		return totalPaidValueLabel;
+	}
+
+	private JLabel getTotalNotPaidValueLabel() {
+		if (totalNotPaidValueLabel == null) {
+			totalNotPaidValueLabel = new JLabel("0");
+		}
+		return totalNotPaidValueLabel;
+	}
+
+	private JLabel getTotalNotFacturedValueLabel() {
+		if (totalNotFacturedValueLabel == null) {
+			totalNotFacturedValueLabel = new JLabel("0");
+		}
+		return totalNotFacturedValueLabel;
 	}
 
 	private JButton getPrintTableButton() {
@@ -197,12 +252,12 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					typeSelected = null;
 				}
 
-				try {
-					List<LaboratoryForPrint> labs;
-					labs = labManager.getLaboratoryForPrint(typeSelected, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay());
-					if (!labs.isEmpty()) {
-						printManager.print(MessageBundle.getMessage("angal.common.laboratory.txt"), labs, 0);
-					}
+try {
+				List<LaboratoryForPrint> labs;
+				labs = labManager.getLaboratoryForPrint(typeSelected, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay());
+				if (!labs.isEmpty()) {
+					printManager.print("Laboratory", labs, 0);
+				}
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
@@ -249,6 +304,67 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			});
 		}
 		return printLabelButton;
+	}
+
+	private JButton getExamListButton() {
+		if (examListButton == null) {
+			examListButton = new JButton(MessageBundle.getMessage("angal.lab.printexamlist.btn"));
+			examListButton.setMnemonic(MessageBundle.getMnemonic("angal.lab.printexamlist.btn.key"));
+			examListButton.addActionListener(actionEvent -> {
+				int withResult = -1;
+				if (comboWithResult.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.lab.withresults"))) {
+					withResult = 1;
+				} else if (comboWithResult.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.lab.withoutresults"))) {
+					withResult = 0;
+				}
+
+				String patientCode = "all";
+				String patientname = "";
+				String patText = patientCodeField.getText().trim();
+				if (!patText.isEmpty()) {
+					try {
+						Patient pat = patManager.getPatientById(Integer.parseInt(patText));
+						if (pat != null) {
+							patientCode = String.valueOf(pat.getCode());
+							patientname = pat.getName();
+						}
+					} catch (OHServiceException | NumberFormatException e) {
+						// ignore, keep "all"
+					}
+				}
+
+				String userCode = "all";
+				String name = "";
+				if (!userComboBox.getSelectedItem().toString()
+						.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.selectprescriber"))) {
+					userCode = userComboBox.getSelectedItem().toString();
+					name = userComboBox.getSelectedItem().toString();
+				}
+
+				String codeexam = "all";
+				String examSel = comboExams.getSelectedItem().toString();
+				if (!examSel.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
+					codeexam = examSel;
+				}
+
+				String paidStatus = "all";
+				String sel = paidComboBox.getSelectedItem().toString();
+				if (sel.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.paid"))) {
+					paidStatus = "C";
+				} else if (sel.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.notpaid"))) {
+					paidStatus = "O";
+				} else if (sel.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.notfactured"))) {
+					paidStatus = "0";
+				}
+
+				String fromDateStr = dateFrom.getDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+				String toDateStr = dateTo.getDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+				new GenericReportLabExamList(fromDateStr, toDateStr, codeexam, withResult,
+						patientCode, userCode, name, patientname, paidStatus);
+			});
+		}
+		return examListButton;
 	}
 
 	private JButton getButtonEdit() {
@@ -368,13 +484,21 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JPanel getJSelectionPanel() {
 		if (jSelectionPanel == null) {
 			jSelectionPanel = new JPanel();
-			jSelectionPanel.setPreferredSize(new Dimension(225, pfrmHeight));
+			jSelectionPanel.setPreferredSize(new Dimension(FILTER_WIDTH + 20, pfrmHeight));
+			jSelectionPanel.setLayout(new BoxLayout(jSelectionPanel, BoxLayout.Y_AXIS));
 			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.searchbycodepatientpressenter")));
 			jSelectionPanel.add(getPatientCodeField());
 			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.selectanexam")));
 			jSelectionPanel.add(getComboExams());
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.withallresults")));
+			jSelectionPanel.add(getComboWithResult());
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.selectprescriber")));
+			jSelectionPanel.add(getUserComboBox());
+			jSelectionPanel.add(new JLabel(MessageBundle.getMessage("angal.lab.selectpaidstatus")));
+			jSelectionPanel.add(getPaidComboBox());
 			jSelectionPanel.add(getDateFilterPanel());
 			jSelectionPanel.add(getFilterButton());
+			jSelectionPanel.add(Box.createVerticalGlue());
 		}
 		return jSelectionPanel;
 	}
@@ -413,15 +537,15 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JTextField getPatientCodeField() {
 		if (patientCodeField == null) {
 			patientCodeField = new JTextField();
-			patientCodeField.setPreferredSize(new Dimension(215, 30));
+			patientCodeField.setPreferredSize(FILTER_DIMENSION);
+			patientCodeField.setMaximumSize(FILTER_DIMENSION);
+			patientCodeField.setAlignmentX(Component.LEFT_ALIGNMENT);
 			patientCodeField.addKeyListener(new KeyListener() {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					int key = e.getKeyCode();
 					if (key == KeyEvent.VK_ENTER) {
-						model = new LabBrowsingModel(patientCodeField.getText());
-						model.fireTableDataChanged();
-						jTable.updateUI();
+						applyFilters();
 					}
 				}
 
@@ -447,7 +571,9 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JComboBox getComboExams() {
 		if (comboExams == null) {
 			comboExams = new JComboBox();
-			comboExams.setPreferredSize(new Dimension(225, 30));
+			comboExams.setPreferredSize(FILTER_DIMENSION);
+			comboExams.setMaximumSize(FILTER_DIMENSION);
+			comboExams.setAlignmentX(Component.LEFT_ALIGNMENT);
 			comboExams.addItem(new Exam("", MessageBundle.getMessage("angal.common.all.txt"), new ExamType("", ""), 0, ""));
 			List<Exam> type;
 			try {
@@ -477,11 +603,18 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			dateFilterPanel = new JPanel(new SpringLayout());
 			dateFilterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
 			dateFrom = new GoodDateChooser(LocalDate.now().minusWeeks(1));
+			dateFrom.setPreferredSize(new Dimension(120, FILTER_HEIGHT));
+			dateFrom.setMaximumSize(new Dimension(120, FILTER_HEIGHT));
 			dateFilterPanel.add(dateFrom);
 			dateFilterPanel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
 			dateTo = new GoodDateChooser(LocalDate.now());
+			dateTo.setPreferredSize(new Dimension(120, FILTER_HEIGHT));
+			dateTo.setMaximumSize(new Dimension(120, FILTER_HEIGHT));
 			dateFilterPanel.add(dateTo);
 			SpringUtilities.makeCompactGrid(dateFilterPanel, 2, 2, 5, 5, 5, 5);
+			dateFilterPanel.setPreferredSize(new Dimension(FILTER_WIDTH, dateFilterPanel.getPreferredSize().height));
+			dateFilterPanel.setMaximumSize(new Dimension(FILTER_WIDTH, dateFilterPanel.getPreferredSize().height));
+			dateFilterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		}
 		return dateFilterPanel;
 	}
@@ -496,17 +629,140 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		if (filterButton == null) {
 			filterButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
 			filterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.search.btn.key"));
-			filterButton.addActionListener(actionEvent -> {
-				typeSelected = comboExams.getSelectedItem().toString();
-				if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
-					typeSelected = "";
-				}
-				model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
-				model.fireTableDataChanged();
-				jTable.updateUI();
-			});
+			filterButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+			filterButton.setPreferredSize(FILTER_DIMENSION);
+			filterButton.setMaximumSize(FILTER_DIMENSION);
+			filterButton.addActionListener(actionEvent -> applyFilters());
 		}
 		return filterButton;
+	}
+
+	/**
+	 * This method initializes comboWithResult, that allows to choose the result
+	 * type to display on the Table: all, with results or without results.
+	 *
+	 * @return comboWithResult (JComboBox)
+	 */
+	private JComboBox<String> getComboWithResult() {
+		if (comboWithResult == null) {
+			comboWithResult = new JComboBox<>();
+			comboWithResult.setPreferredSize(FILTER_DIMENSION);
+			comboWithResult.setMaximumSize(FILTER_DIMENSION);
+			comboWithResult.setAlignmentX(Component.LEFT_ALIGNMENT);
+			comboWithResult.addItem(MessageBundle.getMessage("angal.lab.withallresults"));
+			comboWithResult.addItem(MessageBundle.getMessage("angal.lab.withresults"));
+			comboWithResult.addItem(MessageBundle.getMessage("angal.lab.withoutresults"));
+		}
+		return comboWithResult;
+	}
+
+	/**
+	 * This method initializes userComboBox, that allows to choose the prescriber
+	 * to display on the Table.
+	 *
+	 * @return userComboBox (JComboBox)
+	 */
+	private JComboBox<String> getUserComboBox() {
+		if (userComboBox == null) {
+			userComboBox = new JComboBox<>();
+			userComboBox.setPreferredSize(FILTER_DIMENSION);
+			userComboBox.setMaximumSize(FILTER_DIMENSION);
+			userComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			userComboBox.addItem(MessageBundle.getMessage("angal.lab.selectprescriber"));
+			try {
+				List<Prescriber> prescribers = prescriberBrowserManager.getPrescribers();
+				for (Prescriber prescriber : prescribers) {
+					userComboBox.addItem(prescriber.getDescription());
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		return userComboBox;
+	}
+
+	/**
+	 * This method initializes paidComboBox, that allows to choose the financial
+	 * status to display on the Table: all, paid, not paid or not charged.
+	 *
+	 * @return paidComboBox (JComboBox)
+	 */
+	private JComboBox<String> getPaidComboBox() {
+		if (paidComboBox == null) {
+			paidComboBox = new JComboBox<>();
+			paidComboBox.setPreferredSize(FILTER_DIMENSION);
+			paidComboBox.setMaximumSize(FILTER_DIMENSION);
+			paidComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			paidComboBox.addItem(MessageBundle.getMessage("angal.lab.selectpaidstatus"));
+			paidComboBox.addItem(MessageBundle.getMessage("angal.lab.paid"));
+			paidComboBox.addItem(MessageBundle.getMessage("angal.lab.notpaid"));
+			paidComboBox.addItem(MessageBundle.getMessage("angal.lab.notfactured"));
+		}
+		return paidComboBox;
+	}
+
+	/**
+	 * This method reads the selected filters and refreshes the table and the totals.
+	 */
+	private void applyFilters() {
+		typeSelected = comboExams.getSelectedItem().toString();
+		if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
+			typeSelected = null;
+		}
+
+		int withResult = -1;
+		if (comboWithResult.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.lab.withresults"))) {
+			withResult = 1;
+		} else if (comboWithResult.getSelectedItem().toString().equalsIgnoreCase(MessageBundle.getMessage("angal.lab.withoutresults"))) {
+			withResult = 0;
+		}
+
+		String patientCode = patientCodeField.getText().trim();
+
+		String userCode = null;
+		if (!userComboBox.getSelectedItem().toString()
+						.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.selectprescriber"))) {
+			userCode = userComboBox.getSelectedItem().toString();
+		}
+
+		String paidStatus = null;
+		String selectedPaidStatus = paidComboBox.getSelectedItem().toString();
+		if (selectedPaidStatus.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.paid"))) {
+			paidStatus = "C";
+		} else if (selectedPaidStatus.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.notpaid"))) {
+			paidStatus = "O";
+		} else if (selectedPaidStatus.equalsIgnoreCase(MessageBundle.getMessage("angal.lab.notfactured"))) {
+			paidStatus = "0";
+		}
+
+		model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCode, withResult, userCode, paidStatus);
+		updateTotals(typeSelected, withResult, patientCode, userCode);
+		model.fireTableDataChanged();
+		jTable.updateUI();
+	}
+
+	private void updateTotals(String exam, int withResult, String patientCode, String userCode) {
+		try {
+			totalPaidValueLabel.setText(String.valueOf(labManager.getLaboratoryCount(exam, dateFrom.getDateStartOfDay(),
+					dateTo.getDateEndOfDay(), withResult, getPatientFilter(patientCode), userCode, "C")));
+			totalNotPaidValueLabel.setText(String.valueOf(labManager.getLaboratoryCount(exam, dateFrom.getDateStartOfDay(),
+					dateTo.getDateEndOfDay(), withResult, getPatientFilter(patientCode), userCode, "O")));
+			totalNotFacturedValueLabel.setText(String.valueOf(labManager.getLaboratoryCount(exam, dateFrom.getDateStartOfDay(),
+					dateTo.getDateEndOfDay(), withResult, getPatientFilter(patientCode), userCode, "0")));
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private Patient getPatientFilter(String patientCode) {
+		if (patientCode.isEmpty()) {
+			return null;
+		}
+		try {
+			return patManager.getPatientById(Integer.parseInt(patientCode));
+		} catch (OHServiceException | NumberFormatException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -519,29 +775,28 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 
 		private static final long serialVersionUID = 1L;
 
-        public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo, String patid) {
-            try {
+		public LabBrowsingModel(String exam, LocalDate dateFrom, LocalDate dateTo, String patid, int resultFilter, String userCode, String paidCode) {
+			try {
+				Patient pat = null;
 				if (!patid.isEmpty()) {
-					Patient pat = patManager.getPatientById(Integer.parseInt(patid));
+					pat = patManager.getPatientById(Integer.parseInt(patid));
 					if (pat == null) {
 						pLabs = new ArrayList<>();
-					} else {
-						pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), pat);
+						return;
 					}
-				} else {
-					pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), null);
 				}
-            } catch (OHServiceException e) {
-                pLabs = new ArrayList<>();
-                OHServiceExceptionUtil.showMessages(e);
-            } catch (NumberFormatException e) {
+				pLabs = labManager.getLaboratory(exam, dateFrom.atStartOfDay(), dateTo.atStartOfDay(), resultFilter, pat, userCode, paidCode);
+			} catch (OHServiceException e) {
+				pLabs = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			} catch (NumberFormatException e) {
 				pLabs = new ArrayList<>();
 				MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
 			}
-        }
+		}
 
 		public LabBrowsingModel(String patid) {
-            try {
+			try {
 				if (!patid.isEmpty()) {
 					Patient pat = patManager.getPatientById(Integer.parseInt(patid));
 					if (pat == null) {
@@ -552,14 +807,14 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				} else {
 					pLabs = new ArrayList<>();
 				}
-            } catch (OHServiceException e) {
-                pLabs = new ArrayList<>();
-                OHServiceExceptionUtil.showMessages(e);
-            } catch (NumberFormatException e) {
+			} catch (OHServiceException e) {
+				pLabs = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			} catch (NumberFormatException e) {
 				pLabs = new ArrayList<>();
 				MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
 			}
-        }
+		}
 
 		public LabBrowsingModel() {
 			try {
@@ -599,13 +854,24 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			if (c == -1) {
 				return lab;
 			} else if (c == 0) {
-				return lab.getLabDate().format(DATE_TIME_FORMATTER);
+				return lab.getPatient() != null ? lab.getPatient().getCode() : null;
 			} else if (c == 1) {
-				return lab.getPatName();
+				return lab.getLabDate().format(DATE_TIME_FORMATTER);
 			} else if (c == 2) {
-				return lab.getExam();
+				return lab.getPatName();
 			} else if (c == 3) {
+				return lab.getExam();
+			} else if (c == 4) {
+				return lab.getPrescriber() != null ? lab.getPrescriber() : "";
+			} else if (c == 5) {
 				return lab.getResult();
+			} else if (c == 6) {
+				if (lab.getBill() == null) {
+					return MessageBundle.getMessage("angal.lab.notfactured");
+				}
+				return "C".equals(lab.getBill().getStatus())
+						? MessageBundle.getMessage("angal.lab.alreadypaid")
+						: MessageBundle.getMessage("angal.lab.notalreadypaid");
 			}
 			return null;
 		}
