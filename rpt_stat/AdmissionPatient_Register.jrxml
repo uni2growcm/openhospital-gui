@@ -1,0 +1,1226 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="AdmissionPatient_Register"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="fromdate" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="todate" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Hospital" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="LOGO_PATH" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rpt/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="phone_lenght" isForPrompting="false" class="java.lang.Integer"/>
+	<queryString><![CDATA[SELECT 
+       DATE_FORMAT(ADM_DATE_ADM, '%d/%m/%Y') as ADM_DATE_ADM,
+       IF((select DIS_DESC from OH_DISEASE where ADM_IN_DIS_ID_A=DIS_ID_A) is null, "",(select DIS_DESC from OH_DISEASE where ADM_IN_DIS_ID_A=DIS_ID_A)) as disease_in,
+       DATE_FORMAT(ADM_DATE_DIS, '%d/%m/%Y') as ADM_DATE_DIS,
+       ADM_NOTE,
+       ADM_YPROG,
+       IF((select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A=DIS_ID_A) is null, "",(select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A=DIS_ID_A)) as disease_out_1,
+       IF((select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A_2=DIS_ID_A) is null, "",(select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A_2=DIS_ID_A)) as disease_out_2,
+       IF((select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A_3=DIS_ID_A) is null, "",(select DIS_DESC from OH_DISEASE where ADM_OUT_DIS_ID_A_3=DIS_ID_A)) as disease_out_3,      
+       IF(DIST_DESC is null,"",DIST_DESC) as DIST_DESC,
+       PAT_ID, 
+       PAT_NAME,
+       PAT_MAR_STAT,
+       PAT_NEXT_KIN, 
+       PAT_CITY, 
+       PAT_ADDR,
+       PAT_PROFESSION,
+       IF(LENGTH(PAT_TELE)>=$P{phone_lenght},SUBSTRING(PAT_TELE,-($P{phone_lenght})),PAT_TELE) as PAT_TELE,
+       PAT_SEX,
+       PAT_BDATE,
+       (select GROUP_CONCAT(LAB_EXA_ID_A) from OH_LABORATORY where LAB_PAT_ID = PAT_ID and DATE(LAB_DATE) BETWEEN DATE(ADM_DATE_ADM) and IF(ADM_DATE_DIS is null, CURDATE(),DATE(ADM_DATE_DIS))) as exams_requested,
+       (select GROUP_CONCAT(MDSR_DESC) from OH_THERAPIES join OH_MEDICALDSR on MDSR_ID = THR_MDSR_ID where  THR_PAT_ID = PAT_ID and DATE(THR_STARTDATE) BETWEEN DATE(ADM_DATE_ADM) and IF(ADM_DATE_DIS is null, CURDATE(),DATE(ADM_DATE_DIS))) as treatment,
+       IF((DATEDIFF(IF(ADM_DATE_DIS is null, CURDATE(),DATE(ADM_DATE_DIS)),ADM_DATE_ADM))=0,1,(DATEDIFF(IF(ADM_DATE_DIS is null, CURDATE(),DATE(ADM_DATE_DIS)),ADM_DATE_ADM))) as duration,
+       IF(PAT_BDATE is not null,DATEDIFF(CURDATE(),DATE(PAT_BDATE))/365,PAT_AGE) as age	
+From OH_ADMISSION
+
+     join OH_PATIENT       on PAT_ID = ADM_PAT_ID
+left join OH_DISCHARGETYPE on DIST_ID_A = ADM_DIST_ID_A
+
+WHERE DATE(ADM_DATE_ADM) BETWEEN STR_TO_DATE($P{fromdate}, '%d/%m/%Y') and STR_TO_DATE($P{todate}, '%d/%m/%Y')
+
+Order by ADM_ID]]></queryString>
+
+	<field name="ADM_DATE_ADM" class="java.lang.String"/>
+	<field name="disease_in" class="java.lang.String"/>
+	<field name="ADM_DATE_DIS" class="java.lang.String"/>
+	<field name="ADM_NOTE" class="java.lang.String"/>
+	<field name="ADM_YPROG" class="java.lang.Integer"/>
+	<field name="disease_out_1" class="java.lang.String"/>
+	<field name="disease_out_2" class="java.lang.String"/>
+	<field name="disease_out_3" class="java.lang.String"/>
+	<field name="DIST_DESC" class="java.lang.String"/>
+	<field name="PAT_ID" class="java.lang.Integer"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_MAR_STAT" class="java.lang.String"/>
+	<field name="PAT_NEXT_KIN" class="java.lang.String"/>
+	<field name="PAT_CITY" class="java.lang.String"/>
+	<field name="PAT_ADDR" class="java.lang.String"/>
+	<field name="PAT_PROFESSION" class="java.lang.String"/>
+	<field name="PAT_TELE" class="java.lang.String"/>
+	<field name="PAT_SEX" class="java.lang.String"/>
+	<field name="PAT_BDATE" class="java.sql.Date"/>
+	<field name="exams_requested" class="java.lang.String"/>
+	<field name="treatment" class="java.lang.String"/>
+	<field name="duration" class="java.lang.Integer"/>
+	<field name="age" class="java.math.BigDecimal"/>
+
+	<variable name="TOTAL" class="java.lang.Long" resetType="Report" calculation="Sum">
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="78"  isSplitAllowed="true" >
+				<rectangle radius="0" >
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="1"
+						width="782"
+						height="34"
+						forecolor="#00CCCC"
+						backcolor="#000099"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<image  evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="726"
+						y="5"
+						width="56"
+						height="30"
+						key="image-1"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<graphicElement stretchType="NoStretch"/>
+					<imageExpression class="java.lang.String"><![CDATA[$P{LOGO_PATH} + "splash.png"]]></imageExpression>
+				</image>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="572"
+						y="35"
+						width="208"
+						height="18"
+						key="textField-4"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{Hospital}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="249"
+						y="55"
+						width="531"
+						height="18"
+						key="textField-5"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{Address} + " - " + $P{City}+",  "+$P{Email}+",  "+$P{Telephone}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="5"
+						width="626"
+						height="30"
+						forecolor="#FFFFFF"
+						key="textField-13"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="SansSerif" isBold="true" size="18" pdfEncoding ="Cp1252"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" "+$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.stat.admissionpatient.register" )+" [ "+$P{fromdate}+"  -  "+$P{todate}+"  ]"]]></textFieldExpression>
+				</textField>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="73"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="26"
+						y="0"
+						width="14"
+						height="73"
+						key="textField-18"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.monthorder" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="51"
+						y="0"
+						width="90"
+						height="73"
+						key="textField-19"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.opdhistory.name" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="156"
+						y="0"
+						width="15"
+						height="73"
+						key="textField-20"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.opdhistory.age" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="218"
+						y="0"
+						width="27"
+						height="73"
+						key="textField-22"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.patient.occupation" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="326"
+						y="0"
+						width="25"
+						height="73"
+						key="textField-26"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.admission.dateofentry" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="351"
+						y="0"
+						width="62"
+						height="73"
+						key="textField-27"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.diagnosticentry" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="413"
+						y="0"
+						width="50"
+						height="73"
+						key="textField-28"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.examinationrequested" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="463"
+						y="0"
+						width="56"
+						height="73"
+						key="textField-29"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.traitment" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="544"
+						y="0"
+						width="48"
+						height="73"
+						key="textField-30"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.numberofday" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="592"
+						y="0"
+						width="36"
+						height="73"
+						key="textField-31"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.diagnosticdischarge" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="700"
+						y="0"
+						width="43"
+						height="73"
+						key="textField-32"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.reference" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="26"
+						height="73"
+						key="textField-37"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.date" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="40"
+						y="0"
+						width="11"
+						height="73"
+						key="textField-38"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.case" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="141"
+						y="0"
+						width="15"
+						height="73"
+						key="textField-39"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.sexe" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="171"
+						y="0"
+						width="12"
+						height="73"
+						key="textField-40"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.status" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="183"
+						y="0"
+						width="15"
+						height="73"
+						key="textField-41"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.ispregnant" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="198"
+						y="0"
+						width="20"
+						height="73"
+						key="textField-42"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.patientcode" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="245"
+						y="0"
+						width="27"
+						height="73"
+						key="textField-43"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.residence" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="272"
+						y="0"
+						width="27"
+						height="73"
+						key="textField-44"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.contactandnextkin" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="299"
+						y="0"
+						width="27"
+						height="73"
+						key="textField-45"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.antecedent" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="519"
+						y="0"
+						width="25"
+						height="73"
+						key="textField-46"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.admission.dateofdischarge" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="628"
+						y="0"
+						width="36"
+						height="73"
+						key="textField-47"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.relaytreatment" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="664"
+						y="0"
+						width="36"
+						height="73"
+						key="textField-48"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.admission.future" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="743"
+						y="0"
+						width="39"
+						height="73"
+						key="textField-61"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.opd.register.observation" )]]></textFieldExpression>
+				</textField>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="37"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="156"
+						y="0"
+						width="15"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{age}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="171"
+						y="0"
+						width="12"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PAT_MAR_STAT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="26"
+						y="0"
+						width="14"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$F{ADM_YPROG}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="51"
+						y="0"
+						width="90"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" "+$F{PAT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#0.0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="272"
+						y="0"
+						width="27"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PAT_TELE}+" "+$F{PAT_NEXT_KIN}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="299"
+						y="0"
+						width="27"
+						height="37"
+						key="textField-34"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="326"
+						y="0"
+						width="25"
+						height="37"
+						key="textField-35"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new SimpleDateFormat("dd/MM/yy").format(new SimpleDateFormat("dd/MM/yyyy").parse($F{ADM_DATE_ADM}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="0"
+						width="26"
+						height="37"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+						<font size="5" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new SimpleDateFormat("dd/MM/yy").format(new SimpleDateFormat("dd/MM/yyyy").parse($F{ADM_DATE_ADM}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="40"
+						y="0"
+						width="11"
+						height="37"
+						key="textField-49"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="141"
+						y="0"
+						width="15"
+						height="37"
+						key="textField-50"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PAT_SEX}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="198"
+						y="0"
+						width="20"
+						height="37"
+						key="textField-51"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$F{PAT_ID}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#0.0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="218"
+						y="0"
+						width="27"
+						height="37"
+						key="textField-52"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PAT_PROFESSION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="#0.0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="245"
+						y="0"
+						width="27"
+						height="37"
+						key="textField-53"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{PAT_ADDR}+" / "+$F{PAT_CITY}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="664"
+						y="0"
+						width="36"
+						height="37"
+						key="textField-56"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement verticalAlignment="Middle">
+						<font size="6" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" "+$F{DIST_DESC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="###0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="183"
+						y="0"
+						width="15"
+						height="37"
+						key="textField-58"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="544"
+						y="0"
+						width="48"
+						height="37"
+						key="textField-59"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{duration}+" Jour(s)"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="628"
+						y="0"
+						width="36"
+						height="37"
+						key="textField-60"/>
+					<box>					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="743"
+						y="0"
+						width="39"
+						height="37"
+						key="textField-62"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ADM_NOTE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="700"
+						y="0"
+						width="43"
+						height="37"
+						key="textField-63"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="519"
+						y="0"
+						width="25"
+						height="37"
+						key="textField-64"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="6"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[new SimpleDateFormat("dd/MM/yy").format(new SimpleDateFormat("dd/MM/yyyy").parse($F{ADM_DATE_DIS}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="351"
+						y="0"
+						width="62"
+						height="37"
+						key="textField-65"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{disease_in}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="592"
+						y="0"
+						width="36"
+						height="37"
+						key="textField-66"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{disease_out_1}+ ($F{disease_out_2}.equals("")?"":", "+$F{disease_out_2})+ ($F{disease_out_3}.equals("")?"":", "+$F{disease_out_3})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="413"
+						y="0"
+						width="50"
+						height="37"
+						key="textField-67"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{exams_requested}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="463"
+						y="0"
+						width="56"
+						height="37"
+						key="textField-68"/>
+					<box>					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+</box>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{treatment}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="27"  isSplitAllowed="true" >
+				<rectangle radius="0" >
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="5"
+						width="782"
+						height="20"
+						forecolor="#000099"
+						backcolor="#000099"
+						key="rectangle-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Transparent"
+						x="572"
+						y="4"
+						width="174"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="SansSerif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.diseaseslist.page" ) +" "+ $V{PAGE_NUMBER} +" "+ $P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.diseaseslist.of" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Transparent"
+						x="746"
+						y="4"
+						width="36"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="SansSerif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="1"
+						width="780"
+						height="0"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="6"
+						width="209"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Serif" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="26"  isSplitAllowed="true" >
+				<rectangle radius="0" >
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="6"
+						width="782"
+						height="20"
+						forecolor="#000099"
+						backcolor="#000099"
+						key="rectangle-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Transparent"
+						x="572"
+						y="5"
+						width="174"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField-10"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="SansSerif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.diseaseslist.page" ) +" "+ $V{PAGE_NUMBER} +" "+ $P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.diseaseslist.of" )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Transparent"
+						x="746"
+						y="5"
+						width="36"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField-11"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="SansSerif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="-2"
+						width="782"
+						height="4"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="7"
+						width="209"
+						height="19"
+						forecolor="#FFFFFF"
+						backcolor="#FFFFFF"
+						key="textField-12"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Serif" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+			</band>
+		</lastPageFooter>
+		<summary>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="731"
+						y="5"
+						width="51"
+						height="20"
+						forecolor="#000066"
+						backcolor="#FFFFFF"
+						key="textField-2"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" lineSpacing="Single">
+						<font fontName="SansSerif" size="14" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="392"
+						y="5"
+						width="339"
+						height="20"
+						forecolor="#000099"
+						backcolor="#FFFFFF"
+						key="textField-17"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="SansSerif" size="14" isBold="false" isItalic="false" pdfEncoding ="CP1252"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "angal.report.admission.totalonperiode" )+" "]]></textFieldExpression>
+				</textField>
+			</band>
+		</summary>
+</jasperReport>

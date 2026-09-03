@@ -38,10 +38,13 @@ public class DisplayReport {
 			return;
 		}
 		if (GeneralData.INTERNALVIEWER) {
-			JasperViewer.viewReport(
+			JasperViewer viewer = new JasperViewer(
 					jasperReportResultDto.getJasperPrint(),
 					false,
 					new Locale(GeneralData.LANGUAGE));
+			viewer.setVisible(true);
+			viewer.toFront();
+			viewer.requestFocus();
 		} else {
 			Runtime rt = Runtime.getRuntime();
 			rt.exec(GeneralData.VIEWER + ' ' + jasperReportResultDto.getFilename());
