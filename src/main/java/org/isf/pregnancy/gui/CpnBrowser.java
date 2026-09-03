@@ -28,6 +28,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +39,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -52,6 +54,8 @@ import org.isf.patient.model.Patient;
 import org.isf.pregnancy.manager.PregnancyBrowserManager;
 import org.isf.pregnancy.manager.PregnancyDeliveryBrowserManager;
 import org.isf.pregnancy.model.Pregnancy;
+import org.isf.stat.gui.report.GenericReportCpn;
+import org.isf.stat.gui.report.GenericReportPregnancyDelivery;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -225,6 +229,8 @@ public class CpnBrowser extends ModalJFrame implements SelectionListener {
 			JPanel actionsPanel = new JPanel();
 			actionsPanel.add(getJNewButton(), null);
 			actionsPanel.add(getJEditButton(), null);
+			actionsPanel.add(getJRegisterButton(), null);
+			actionsPanel.add(getJDeliveryRegisterButton(), null);
 			actionsPanel.add(getJCloseButton(), null);
 			jButtonPanel.add(actionsPanel, BorderLayout.SOUTH);
 		}
@@ -285,6 +291,48 @@ public class CpnBrowser extends ModalJFrame implements SelectionListener {
 			}
 		});
 		return jEditButton;
+	}
+
+	private JButton getJRegisterButton() {
+		JButton jRegisterButton = new JButton(MessageBundle.getMessage("angal.cpn.printregister.btn"));
+		jRegisterButton.addActionListener(actionEvent -> {
+			GoodDateChooser fromChooser = new GoodDateChooser(LocalDate.now().withDayOfMonth(1), false, false);
+			GoodDateChooser toChooser = new GoodDateChooser(LocalDate.now(), false, false);
+			JPanel panel = new JPanel();
+			panel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+			panel.add(fromChooser);
+			panel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+			panel.add(toChooser);
+			int result = JOptionPane.showConfirmDialog(myFrame, panel, MessageBundle.getMessage("angal.cpn.printregister.btn"),
+					JOptionPane.OK_CANCEL_OPTION);
+			if (result == JOptionPane.OK_OPTION) {
+				LocalDateTime dateFrom = fromChooser.getDateStartOfDay();
+				LocalDateTime dateTo = toChooser.getDateEndOfDay();
+				new GenericReportCpn(dateFrom, dateTo);
+			}
+		});
+		return jRegisterButton;
+	}
+
+	private JButton getJDeliveryRegisterButton() {
+		JButton jDeliveryRegisterButton = new JButton(MessageBundle.getMessage("angal.cpn.printdeliveryregister.btn"));
+		jDeliveryRegisterButton.addActionListener(actionEvent -> {
+			GoodDateChooser fromChooser = new GoodDateChooser(LocalDate.now().withDayOfMonth(1), false, false);
+			GoodDateChooser toChooser = new GoodDateChooser(LocalDate.now(), false, false);
+			JPanel panel = new JPanel();
+			panel.add(new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")));
+			panel.add(fromChooser);
+			panel.add(new JLabel(MessageBundle.getMessage("angal.common.dateto.label")));
+			panel.add(toChooser);
+			int result = JOptionPane.showConfirmDialog(myFrame, panel, MessageBundle.getMessage("angal.cpn.printdeliveryregister.btn"),
+					JOptionPane.OK_CANCEL_OPTION);
+			if (result == JOptionPane.OK_OPTION) {
+				LocalDateTime dateFrom = fromChooser.getDateStartOfDay();
+				LocalDateTime dateTo = toChooser.getDateEndOfDay();
+				new GenericReportPregnancyDelivery(dateFrom, dateTo);
+			}
+		});
+		return jDeliveryRegisterButton;
 	}
 
 	private JButton getJCloseButton() {

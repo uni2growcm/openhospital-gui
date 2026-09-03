@@ -27,6 +27,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,13 +135,42 @@ public class CpnEdit extends JDialog {
 	private final Map<String, JComponent> parameterControls = new LinkedHashMap<>();
 	private List<PregnancyExamParameter> currentParameters;
 
+	/**
+	 * The most recent {@link PregnancyVisit} of this pregnancy, if any: pre-loaded into the visit form so
+	 * that "Enregistrer" updates it instead of silently piling up a new history entry on every edit. Set
+	 * back to {@code null} by {@link #getNewVisitButton()} when the user explicitly wants to register a new
+	 * visit.
+	 */
+	private PregnancyVisit currentVisit;
+	private List<PregnancyExamResult> currentVisitResults = List.of();
+
 	public CpnEdit(JFrame owner, Patient patient, Pregnancy pregnancy) {
 		super(owner, true);
 		this.ownerFrame = owner;
 		this.patient = patient;
 		this.insertPregnancy = pregnancy == null;
 		this.pregnancy = pregnancy == null ? new Pregnancy(patient, LocalDate.now()) : pregnancy;
+		loadLatestVisit();
 		initialize();
+	}
+
+	/**
+	 * Loads the latest visit (and its exam results) of an existing pregnancy, so the visit form can be
+	 * pre-filled for editing instead of always starting a brand new visit.
+	 */
+	private void loadLatestVisit() {
+		if (insertPregnancy) {
+			return;
+		}
+		try {
+			List<PregnancyVisit> visits = visitManager.getByPregnancyId(pregnancy.getId());
+			if (!visits.isEmpty()) {
+				currentVisit = visits.get(visits.size() - 1);
+				currentVisitResults = examResultManager.getByVisitId(currentVisit.getId());
+			}
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+		}
 	}
 
 	private void initialize() {
@@ -150,6 +180,7 @@ public class CpnEdit extends JDialog {
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getPregnancyPanel(), getVisitPanel());
 		splitPane.setResizeWeight(0.5);
+		loadVisitIntoForm();
 
 		JTabbedPane mainTabs = new JTabbedPane();
 		mainTabs.addTab(MessageBundle.getMessage("angal.cpn.visit.txt"), splitPane);
@@ -160,6 +191,38 @@ public class CpnEdit extends JDialog {
 		setContentPane(content);
 		setSize(950, 650);
 		setLocationRelativeTo(null);
+	}
+
+	/**
+	 * Pre-fills the visit form (type, dates, treatments, note and CPN parameters) from {@link #currentVisit},
+	 * so that saving updates that visit instead of creating a new one. No-op when there is no prior visit to
+	 * edit (new pregnancy, or a pregnancy with no visit yet).
+	 */
+	private void loadVisitIntoForm() {
+		if (currentVisit == null) {
+			return;
+		}
+		visitTypeComboBox.setSelectedIndex(currentVisit.getVisitType() == PregnancyVisit.POSTNATAL ? 1 : 0);
+		visitDateChooser.setDateTime(currentVisit.getVisitDate());
+		nextVisitDateChooser.setDate(currentVisit.getNextVisitDate() == null ? null : currentVisit.getNextVisitDate().toLocalDate());
+		noteTextArea.setText(currentVisit.getNote() == null ? "" : currentVisit.getNote());
+
+		List<Integer> selectedIndices = new ArrayList<>();
+		for (int i = 0; i < treatmentTypeList.getModel().getSize(); i++) {
+			if (currentVisit.getTreatmentTypes().contains(treatmentTypeList.getModel().getElementAt(i))) {
+				selectedIndices.add(i);
+			}
+		}
+		treatmentTypeList.setSelectedIndices(selectedIndices.stream().mapToInt(Integer::intValue).toArray());
+
+		// refreshed by the visitTypeComboBox selection above (if it actually changed) with this visit
+		// type's parameters: safe to fill in the saved outcomes now.
+		for (PregnancyExamResult result : currentVisitResults) {
+			JComponent control = parameterControls.get(result.getExamParameter().getCode());
+			if (control != null) {
+				setValueOf(control, result.getOutcome());
+			}
+		}
 	}
 
 	/*
@@ -402,6 +465,25 @@ public class CpnEdit extends JDialog {
 		return "";
 	}
 
+	private void setValueOf(JComponent control, String value) {
+		if (value == null) {
+			return;
+		}
+		if (control instanceof JSpinner spinner) {
+			try {
+				spinner.setValue(Double.parseDouble(value));
+			} catch (NumberFormatException numberFormatException) {
+				// leave the spinner at its default value
+			}
+		} else if (control instanceof JComboBox<?> combo) {
+			combo.setSelectedItem(value);
+		} else if (control instanceof JCheckBox checkBox) {
+			checkBox.setSelected(Boolean.parseBoolean(value));
+		} else if (control instanceof JTextField textField) {
+			textField.setText(value);
+		}
+	}
+
 	/*
 	 * ----------------------------------------------------------------
 	 * Accouchement : rattaché directement à la grossesse, sans nécessiter d'hospitalisation.
@@ -469,8 +551,30 @@ public class CpnEdit extends JDialog {
 		closeButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
         closeButton.addActionListener(e -> dispose());
 		panel.add(saveButton);
+		panel.add(getNewVisitButton());
 		panel.add(closeButton);
 		return panel;
+	}
+
+	/**
+	 * Clears {@link #currentVisit} and resets the visit form to blank defaults, so the next "Enregistrer"
+	 * registers a brand new visit in the history instead of updating the one that was pre-loaded.
+	 */
+	private JButton getNewVisitButton() {
+		JButton newVisitButton = new JButton(MessageBundle.getMessage("angal.cpn.newvisit.btn"));
+		newVisitButton.setEnabled(currentVisit != null);
+		newVisitButton.addActionListener(e -> {
+			currentVisit = null;
+			currentVisitResults = List.of();
+			visitTypeComboBox.setSelectedIndex(0);
+			visitDateChooser.setDateTime(TimeTools.getNow());
+			nextVisitDateChooser.setDate(null);
+			noteTextArea.setText("");
+			treatmentTypeList.clearSelection();
+			refreshParametersPanel();
+			newVisitButton.setEnabled(false);
+		});
+		return newVisitButton;
 	}
 
 	private void save() {
@@ -488,6 +592,7 @@ public class CpnEdit extends JDialog {
 			}
 		}
 
+		boolean updatingVisit = currentVisit != null;
 		try {
 			// validate every CPN parameter value before persisting anything
 			for (Map.Entry<PregnancyExamParameter, String> entry : outcomes.entrySet()) {
@@ -509,17 +614,26 @@ public class CpnEdit extends JDialog {
 
 			Pregnancy savedPregnancy = insertPregnancy ? pregnancyManager.newPregnancy(pregnancy) : pregnancyManager.updatePregnancy(pregnancy);
 
-			PregnancyVisit visit = new PregnancyVisit(savedPregnancy, patient, visitDate, getSelectedVisitType());
+			PregnancyVisit visit = updatingVisit ? currentVisit : new PregnancyVisit(savedPregnancy, patient, visitDate, getSelectedVisitType());
+			visit.setPregnancy(savedPregnancy);
+			visit.setPatient(patient);
+			visit.setVisitDate(visitDate);
+			visit.setVisitType(getSelectedVisitType());
 			visit.setNextVisitDate(nextVisitDateChooser.getDate() == null ? null : nextVisitDateChooser.getDate().atStartOfDay());
 			visit.setNote(noteTextArea.getText());
 			visit.setTreatmentTypes(treatmentTypeList.getSelectedValuesList());
-			PregnancyVisit savedVisit = visitManager.newVisit(visit);
+			PregnancyVisit savedVisit = updatingVisit ? visitManager.updateVisit(visit) : visitManager.newVisit(visit);
 
+			if (updatingVisit) {
+				// replace this visit's exam results rather than accumulating duplicates for the same parameter
+				examResultManager.deleteByVisitId(savedVisit.getId());
+			}
 			for (Map.Entry<PregnancyExamParameter, String> entry : outcomes.entrySet()) {
 				PregnancyExamResult result = new PregnancyExamResult(savedVisit, entry.getKey(), entry.getValue());
 				examResultManager.saveResult(result);
 			}
 
+			currentVisit = savedVisit;
 			MessageDialog.info(this, "angal.cpn.cpnvisitsavedsuccessfully.msg");
 			dispose();
 		} catch (OHServiceException ohServiceException) {
