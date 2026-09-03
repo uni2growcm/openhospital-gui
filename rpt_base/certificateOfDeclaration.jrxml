@@ -28,7 +28,7 @@
 	<parameter name="City" isForPrompting="true" class="java.lang.String"/>
 	<parameter name="Email" isForPrompting="true" class="java.lang.String"/>
 	<parameter name="Telephone" isForPrompting="true" class="java.lang.String"/>
-	<parameter name="newbornID" isForPrompting="false" class="java.lang.Integer"/>
+	<parameter name="deliveryID" isForPrompting="false" class="java.lang.Integer"/>
 	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
 		<defaultValueExpression ><![CDATA["./rpt_base/"]]></defaultValueExpression>
 	</parameter>
@@ -41,11 +41,11 @@
 	PAT.PAT_NAME AS PAT_NAME,
 	PAT.PAT_TAXCODE AS PAT_TAXCODE,
 	DATE_FORMAT(PAT.PAT_BDATE, '%d/%m/%Y') as PAT_BDATE
-FROM OH_PREGNANCYNEWBORN PNB
-	JOIN OH_PREGNANCYDELIVERY PDEL ON ( PNB.PNB_PDEL_ID = PDEL.PDEL_ID )
-	JOIN ADMISSION ADM ON ( PDEL.PDEL_ADM_ID = ADM.ADM_ID )
-	JOIN PATIENT PAT ON ( PAT.PAT_ID = ADM.ADM_PAT_ID )
-WHERE PNB.PNB_ID = $P{newbornID}
+FROM OH_PREGNANCYDELIVERY PDEL
+	LEFT JOIN OH_ADMISSION ADM ON ( PDEL.PDEL_ADM_ID = ADM.ADM_ID )
+	LEFT JOIN OH_PREGNANCY PREG ON ( PDEL.PDEL_PREG_ID = PREG.PREG_ID )
+	JOIN OH_PATIENT PAT ON ( PAT.PAT_ID = COALESCE(ADM.ADM_PAT_ID, PREG.PREG_PAT_ID) )
+WHERE PDEL.PDEL_ID = $P{deliveryID}
 LIMIT 1]]></queryString>
 
 	<field name="PDEL_DATE_DEL" class="java.lang.String"/>

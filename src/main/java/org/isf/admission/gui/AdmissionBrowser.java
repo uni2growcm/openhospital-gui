@@ -206,6 +206,8 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private int pregnancyTabIndex;
 
+	private int newbornsTabIndex;
+
 	private JPanel jContentPane;
 
 	// enable is if patient is female
@@ -365,7 +367,9 @@ public class AdmissionBrowser extends ModalJFrame {
 		super();
 		setTitle(editing ? MessageBundle.getMessage("angal.admission.editadmissionrecord.title")
 						: MessageBundle.getMessage("angal.admission.newadmission.title"));
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		this.editing = editing;
 		patient = admPatient.getPatient();
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
@@ -423,8 +427,12 @@ public class AdmissionBrowser extends ModalJFrame {
 	public AdmissionBrowser(JFrame parentFrame, JFrame parentParentFrame, Patient aPatient, Admission anAdmission) {
 		super();
 		setTitle(MessageBundle.getMessage("angal.admission.editadmissionrecord.title"));
-		addAdmissionListener((AdmissionListener) parentParentFrame);
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentParentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentParentFrame);
+		}
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		editing = true;
 		patient = aPatient;
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
@@ -521,7 +529,7 @@ public class AdmissionBrowser extends ModalJFrame {
 				}
 
 				jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.cpn.newborns.title"), getPregnancyDeliveryPanel());
-				int newbornsTabIndex = jTabbedPaneAdmission.getTabCount() - 1;
+				newbornsTabIndex = jTabbedPaneAdmission.getTabCount() - 1;
 				if (!viewingPregnancy) {
 					jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, false);
 				}
@@ -970,6 +978,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						saveYProg = yProgTextField.getText();
 						viewingPregnancy = true;
 						jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, true);
+						jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, true);
 						validate();
 						repaint();
 					}
@@ -979,6 +988,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						saveYProg = yProgTextField.getText();
 						viewingPregnancy = false;
 						jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, false);
+						jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, false);
 						validate();
 						repaint();
 					}

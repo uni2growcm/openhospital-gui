@@ -21,6 +21,7 @@
  */
 package org.isf.stat.gui.report;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -38,10 +39,21 @@ public class DisplayReport {
 			return;
 		}
 		if (GeneralData.INTERNALVIEWER) {
-			JasperViewer.viewReport(
+			JasperViewer jasperViewer = new JasperViewer(
 					jasperReportResultDto.getJasperPrint(),
 					false,
 					new Locale(GeneralData.LANGUAGE));
+			// This report window is a plain JFrame opened while a modal JDialog (e.g. CpnEdit) is still
+			// showing. AWT's own modal-blocking - not just the window manager - keeps every window of the
+			// same application behind an active application-modal dialog unless explicitly excluded from
+			// its modality, which is why toFront()/requestFocus() alone (and even a WM-level always-on-top
+			// request) failed to raise it. setModalExclusionType() opts this window out of that blocking so
+			// it can be shown, and stay, above the modal CpnEdit dialog for as long as both are open.
+			jasperViewer.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+			jasperViewer.setAlwaysOnTop(true);
+			jasperViewer.setVisible(true);
+			jasperViewer.toFront();
+			jasperViewer.requestFocus();
 		} else {
 			Runtime rt = Runtime.getRuntime();
 			rt.exec(GeneralData.VIEWER + ' ' + jasperReportResultDto.getFilename());

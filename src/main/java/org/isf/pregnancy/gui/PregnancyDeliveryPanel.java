@@ -22,14 +22,16 @@
 package org.isf.pregnancy.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -40,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.border.TitledBorder;
 
 import org.isf.admission.model.Admission;
 import org.isf.dlvrrestype.manager.DeliveryResultTypeBrowserManager;
@@ -51,21 +54,30 @@ import org.isf.menu.manager.Context;
 import org.isf.pregnancy.manager.PregnancyDeliveryBrowserManager;
 import org.isf.pregnancy.model.Lochies;
 import org.isf.pregnancy.model.NewbornFeedingMode;
+import org.isf.pregnancy.model.Pregnancy;
 import org.isf.pregnancy.model.PregnancyDelivery;
 import org.isf.pregnancy.model.PregnancyNewborn;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
+import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.MessageDialog;
 
 /**
- * Reusable panel embedded in the admission delivery workflow: it shows the length of stay in nights, the
- * mother-level delivery information (father identification, lochies, counseling, family planning method
- * chosen at discharge) and up to {@value PregnancyNewborn#MAX_CHILDREN} newborns, each with its own weight,
- * height, head/chest/arm circumference, complications, congenital malformation, feeding mode and HIV
- * exposure flag.
+ * Reusable panel embedded in the delivery workflow: it shows the length of stay in nights (when linked to an
+ * admission), the mother-level delivery information (delivery date, father identification, lochies,
+ * counseling, family planning method chosen at discharge) and the newborns, each added on demand (up to
+ * {@value PregnancyNewborn#MAX_CHILDREN}) with its own weight, height, head/chest/arm circumference,
+ * complications, congenital malformation, feeding mode and HIV exposure flag.
  * <p>
- * Call {@link #loadFor(Admission)} once the admission being edited is known (and again after it has been
- * persisted, to refresh the length of stay), and {@link #saveFor(Admission)} once the admission has a valid
- * database id.
+ * A delivery can be recorded two ways, which this panel supports symmetrically:
+ * <ul>
+ * <li>{@link #loadFor(Admission)} / {@link #saveFor(Admission)} - from a ward admission (e.g. a maternity
+ * stay), which also gives the computed length of stay; the delivery date itself is taken from the
+ * admission's own legacy delivery-date field and is not editable here.</li>
+ * <li>{@link #loadFor(Pregnancy)} / {@link #saveFor(Pregnancy)} - from the CPN module directly, without
+ * requiring the mother to be hospitalized; the delivery date is entered on this panel and
+ * {@link Pregnancy#getId()} must already be a saved (non-zero) id.</li>
+ * </ul>
  */
 public class PregnancyDeliveryPanel extends JPanel {
 
@@ -78,6 +90,7 @@ public class PregnancyDeliveryPanel extends JPanel {
 	private List<DeliveryResultType> deliveryResultTypeList = new ArrayList<>();
 
 	private JTextField nightsOfStayField;
+	private GoodDateChooser deliveryDateChooser;
 	private JComboBox<Object> lochiesBox;
 	private JTextField counselingField;
 	private JTextField familyPlanningMethodField;
@@ -89,7 +102,11 @@ public class PregnancyDeliveryPanel extends JPanel {
 	private JSpinner fatherAgeSpinner;
 	private JTextField fatherCniField;
 
-	private final NewbornRowPanel[] newbornRows = new NewbornRowPanel[PregnancyNewborn.MAX_CHILDREN];
+	private JPanel newbornsListPanel;
+	private JButton addNewbornButton;
+	private JButton printCertificateButton;
+	private final List<NewbornRowPanel> newbornRows = new ArrayList<>();
+	private final BirthDocumentPrinter birthDocumentPrinter = new BirthDocumentPrinter();
 
 	private PregnancyDelivery currentDelivery;
 
@@ -118,18 +135,21 @@ public class PregnancyDeliveryPanel extends JPanel {
 		nightsOfStayField.setFocusable(false);
 		addField(motherPanel, c, 0, 0, "angal.cpn.nightsofstay.txt", nightsOfStayField);
 
+		deliveryDateChooser = new GoodDateChooser(LocalDate.now(), false, false);
+		addField(motherPanel, c, 1, 0, "angal.cpn.deliverydate.txt", deliveryDateChooser);
+
 		lochiesBox = new JComboBox<>();
 		lochiesBox.addItem("");
 		lochiesBox.addItem(Lochies.NORMAL);
 		lochiesBox.addItem(Lochies.ABUNDANT);
 		lochiesBox.addItem(Lochies.ABSENT);
-		addField(motherPanel, c, 1, 0, "angal.cpn.lochies.txt", lochiesBox);
+		addField(motherPanel, c, 0, 1, "angal.cpn.lochies.txt", lochiesBox);
 
 		counselingField = new JTextField(20);
-		addField(motherPanel, c, 0, 1, "angal.cpn.counseling.txt", counselingField);
+		addField(motherPanel, c, 1, 1, "angal.cpn.counseling.txt", counselingField);
 
 		familyPlanningMethodField = new JTextField(20);
-		addField(motherPanel, c, 1, 1, "angal.cpn.familyplanningmethod.txt", familyPlanningMethodField);
+		addField(motherPanel, c, 0, 2, "angal.cpn.familyplanningmethod.txt", familyPlanningMethodField);
 
 		JPanel fatherPanel = new JPanel(new GridBagLayout());
 		fatherPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.cpn.father.title")));
@@ -155,13 +175,24 @@ public class PregnancyDeliveryPanel extends JPanel {
 		headerPanel.add(motherPanel);
 		headerPanel.add(fatherPanel);
 
-		JPanel newbornsPanel = new JPanel();
-		newbornsPanel.setLayout(new BoxLayout(newbornsPanel, BoxLayout.Y_AXIS));
+		newbornsListPanel = new JPanel();
+		newbornsListPanel.setLayout(new BoxLayout(newbornsListPanel, BoxLayout.Y_AXIS));
+
+		addNewbornButton = new JButton(MessageBundle.getMessage("angal.cpn.addnewborn.btn"));
+		addNewbornButton.addActionListener(e -> addNewborn());
+
+		printCertificateButton = new JButton(MessageBundle.getMessage("angal.cpn.printcertificateofdeclaration.txt"));
+		printCertificateButton.setEnabled(false);
+		printCertificateButton.addActionListener(e -> birthDocumentPrinter.printCertificateOfDeclaration(currentDelivery.getId()));
+
+		JPanel newbornsButtonPanel = new JPanel();
+		newbornsButtonPanel.add(addNewbornButton);
+		newbornsButtonPanel.add(printCertificateButton);
+
+		JPanel newbornsPanel = new JPanel(new BorderLayout());
 		newbornsPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.cpn.newborns.title")));
-		for (int i = 0; i < PregnancyNewborn.MAX_CHILDREN; i++) {
-			newbornRows[i] = new NewbornRowPanel(i + 1, deliveryTypeList, deliveryResultTypeList);
-			newbornsPanel.add(newbornRows[i]);
-		}
+		newbornsPanel.add(newbornsListPanel, BorderLayout.CENTER);
+		newbornsPanel.add(newbornsButtonPanel, BorderLayout.SOUTH);
 
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
@@ -171,7 +202,7 @@ public class PregnancyDeliveryPanel extends JPanel {
 		add(new JScrollPane(topPanel), BorderLayout.CENTER);
 	}
 
-	private void addField(JPanel panel, GridBagConstraints template, int col, int row, String labelKey, java.awt.Component field) {
+	private void addField(JPanel panel, GridBagConstraints template, int col, int row, String labelKey, Component field) {
 		GridBagConstraints labelConstraints = (GridBagConstraints) template.clone();
 		labelConstraints.gridx = col * 2;
 		labelConstraints.gridy = row;
@@ -183,24 +214,97 @@ public class PregnancyDeliveryPanel extends JPanel {
 		panel.add(field, fieldConstraints);
 	}
 
+	/*
+	 * ----------------------------------------------------------------
+	 * Newborns : added on demand (no pre-defined slots), up to PregnancyNewborn.MAX_CHILDREN.
+	 * ----------------------------------------------------------------
+	 */
+	private void addNewborn() {
+		if (newbornRows.size() >= PregnancyNewborn.MAX_CHILDREN) {
+			return;
+		}
+		NewbornRowPanel row = new NewbornRowPanel(deliveryTypeList, deliveryResultTypeList, this::removeNewborn);
+		newbornRows.add(row);
+		newbornsListPanel.add(row);
+		renumberNewborns();
+		newbornsListPanel.revalidate();
+		newbornsListPanel.repaint();
+	}
+
+	private void removeNewborn(NewbornRowPanel row) {
+		newbornRows.remove(row);
+		newbornsListPanel.remove(row);
+		renumberNewborns();
+		newbornsListPanel.revalidate();
+		newbornsListPanel.repaint();
+	}
+
+	private void renumberNewborns() {
+		for (int i = 0; i < newbornRows.size(); i++) {
+			newbornRows.get(i).setDisplayNumber(i + 1);
+		}
+		addNewbornButton.setEnabled(newbornRows.size() < PregnancyNewborn.MAX_CHILDREN);
+		updatePrintCertificateButtonState();
+	}
+
+	private void clearNewbornRows() {
+		newbornsListPanel.removeAll();
+		newbornRows.clear();
+		addNewbornButton.setEnabled(true);
+		updatePrintCertificateButtonState();
+	}
+
+	private void updatePrintCertificateButtonState() {
+		printCertificateButton.setEnabled(currentDelivery != null && currentDelivery.getId() > 0);
+	}
+
 	/**
 	 * Loads (or resets, for a brand new admission) the delivery data for the given admission. Safe to call
 	 * repeatedly, e.g. once when the delivery tab is built and again right after the admission has been
-	 * persisted, so that the length of stay reflects the saved discharge date.
+	 * persisted, so that the length of stay reflects the saved discharge date. The delivery date is taken
+	 * from the admission's own field and is not editable on this panel in this mode.
 	 */
 	public void loadFor(Admission admission) {
 		nightsOfStayField.setText(String.valueOf(deliveryManager.computeNightsOfStay(admission)));
+		deliveryDateChooser.setEnabled(false);
 
-		currentDelivery = null;
+		PregnancyDelivery delivery = null;
 		if (admission.getId() > 0) {
 			try {
-				currentDelivery = deliveryManager.getCurrentForAdmission(admission.getId());
+				delivery = deliveryManager.getCurrentForAdmission(admission.getId());
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
+		loadDeliveryData(delivery, admission.getDeliveryDate());
+	}
+
+	/**
+	 * Loads (or resets, for a pregnancy with no delivery recorded yet) the delivery data for the given
+	 * pregnancy, independently of any hospital admission. {@link Pregnancy#getId()} does not need to be a
+	 * saved id yet - in that case the panel simply starts blank.
+	 */
+	public void loadFor(Pregnancy pregnancy) {
+		nightsOfStayField.setText("");
+		deliveryDateChooser.setEnabled(true);
+
+		PregnancyDelivery delivery = null;
+		if (pregnancy.getId() > 0) {
+			try {
+				delivery = deliveryManager.getCurrentForPregnancy(pregnancy.getId());
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		loadDeliveryData(delivery, null);
+	}
+
+	private void loadDeliveryData(PregnancyDelivery delivery, LocalDateTime fallbackDeliveryDate) {
+		currentDelivery = delivery;
+		clearNewbornRows();
 
 		if (currentDelivery == null) {
+			deliveryDateChooser.setDate(fallbackDeliveryDate != null ? fallbackDeliveryDate.toLocalDate() : LocalDate.now());
 			lochiesBox.setSelectedIndex(0);
 			counselingField.setText("");
 			familyPlanningMethodField.setText("");
@@ -210,13 +314,10 @@ public class PregnancyDeliveryPanel extends JPanel {
 			fatherBirthPlaceField.setText("");
 			fatherAgeSpinner.setValue(0);
 			fatherCniField.setText("");
-			for (NewbornRowPanel row : newbornRows) {
-				row.reset();
-			}
-			newbornRows[0].setActive(true);
 			return;
 		}
 
+		deliveryDateChooser.setDate(currentDelivery.getDeliveryDate() == null ? null : currentDelivery.getDeliveryDate().toLocalDate());
 		lochiesBox.setSelectedItem(currentDelivery.getLochies() == null ? "" : currentDelivery.getLochies());
 		counselingField.setText(nullToEmpty(currentDelivery.getCounseling()));
 		familyPlanningMethodField.setText(nullToEmpty(currentDelivery.getFamilyPlanningMethodChosen()));
@@ -227,42 +328,65 @@ public class PregnancyDeliveryPanel extends JPanel {
 		fatherAgeSpinner.setValue(currentDelivery.getFatherAge() == null ? 0 : currentDelivery.getFatherAge());
 		fatherCniField.setText(currentDelivery.getFatherCni() == null ? "" : String.valueOf(currentDelivery.getFatherCni()));
 
-		for (NewbornRowPanel row : newbornRows) {
-			row.reset();
-		}
 		for (PregnancyNewborn newborn : currentDelivery.getNewborns()) {
-			int index = newborn.getChildNumber() - 1;
-			if (index >= 0 && index < newbornRows.length) {
-				newbornRows[index].populate(newborn);
-			}
+			NewbornRowPanel row = new NewbornRowPanel(deliveryTypeList, deliveryResultTypeList, this::removeNewborn);
+			row.populate(newborn);
+			newbornRows.add(row);
+			newbornsListPanel.add(row);
 		}
+		renumberNewborns();
+		newbornsListPanel.revalidate();
+		newbornsListPanel.repaint();
 	}
 
 	/**
-	 * Persists the delivery data (mother-level fields and the active newborn rows) for an admission that has
-	 * already been saved (i.e. {@code admission.getId() > 0}). Does nothing if no newborn row is active and
-	 * no mother-level field has been filled in, so that admissions unrelated to a pregnancy are not affected.
+	 * Persists the delivery data (mother-level fields and every newborn row added) for an admission that has
+	 * already been saved (i.e. {@code admission.getId() > 0}). Does nothing if no newborn was added and no
+	 * mother-level field has been filled in, so that admissions unrelated to a pregnancy are not affected.
 	 */
 	public void saveFor(Admission admission) {
-		boolean anyNewbornActive = false;
-		for (NewbornRowPanel row : newbornRows) {
-			if (row.isActive()) {
-				anyNewbornActive = true;
-				break;
-			}
+		if (!hasAnyDeliveryDataEntered() && currentDelivery == null) {
+			return;
 		}
-		boolean anyMotherField = lochiesBox.getSelectedIndex() > 0
+		PregnancyDelivery delivery = currentDelivery != null ? currentDelivery : new PregnancyDelivery(admission);
+		delivery.setAdmission(admission);
+		populateDeliveryFields(delivery, admission.getDeliveryDate());
+		persist(delivery);
+	}
+
+	/**
+	 * Persists the delivery data for the given pregnancy, without requiring any hospital admission.
+	 * {@code pregnancy.getId()} must already be a saved (non-zero) id - the caller is responsible for saving
+	 * the pregnancy itself first. Does nothing (and returns {@code false}) if no newborn was added and no
+	 * mother-level field has been filled in.
+	 *
+	 * @return {@code true} if the delivery was actually persisted.
+	 */
+	public boolean saveFor(Pregnancy pregnancy) {
+		if (pregnancy.getId() <= 0) {
+			MessageDialog.error(null, "angal.cpn.pleasesavethepregnancyfirst.msg");
+			return false;
+		}
+		if (!hasAnyDeliveryDataEntered() && currentDelivery == null) {
+			return false;
+		}
+		PregnancyDelivery delivery = currentDelivery != null ? currentDelivery : new PregnancyDelivery(pregnancy);
+		delivery.setPregnancy(pregnancy);
+		populateDeliveryFields(delivery, deliveryDateChooser.getDateStartOfDay());
+		persist(delivery);
+		return true;
+	}
+
+	private boolean hasAnyDeliveryDataEntered() {
+		return !newbornRows.isEmpty()
+						|| lochiesBox.getSelectedIndex() > 0
 						|| !counselingField.getText().isBlank()
 						|| !familyPlanningMethodField.getText().isBlank()
 						|| !fatherNameField.getText().isBlank();
+	}
 
-		if (!anyNewbornActive && !anyMotherField && currentDelivery == null) {
-			return;
-		}
-
-		PregnancyDelivery delivery = currentDelivery != null ? currentDelivery : new PregnancyDelivery(admission);
-		delivery.setAdmission(admission);
-		delivery.setDeliveryDate(admission.getDeliveryDate());
+	private void populateDeliveryFields(PregnancyDelivery delivery, LocalDateTime deliveryDate) {
+		delivery.setDeliveryDate(deliveryDate);
 		delivery.setLochies(lochiesBox.getSelectedIndex() <= 0 ? null : (Lochies) lochiesBox.getSelectedItem());
 		delivery.setCounseling(emptyToNull(counselingField.getText()));
 		delivery.setFamilyPlanningMethodChosen(emptyToNull(familyPlanningMethodField.getText()));
@@ -280,25 +404,21 @@ public class PregnancyDeliveryPanel extends JPanel {
 		}
 
 		List<PregnancyNewborn> newborns = new ArrayList<>();
-		for (NewbornRowPanel row : newbornRows) {
-			if (row.isActive()) {
-				newborns.add(row.toNewborn(delivery));
-			}
+		for (int i = 0; i < newbornRows.size(); i++) {
+			newborns.add(newbornRows.get(i).toNewborn(delivery, i + 1));
 		}
 		delivery.getNewborns().clear();
 		delivery.getNewborns().addAll(newborns);
+	}
 
+	private void persist(PregnancyDelivery delivery) {
 		try {
 			currentDelivery = deliveryManager.saveOrUpdate(delivery);
-			for (NewbornRowPanel row : newbornRows) {
-				row.setNewbornId(0);
+			List<PregnancyNewborn> saved = currentDelivery.getNewborns();
+			for (int i = 0; i < newbornRows.size(); i++) {
+				newbornRows.get(i).setNewbornId(i < saved.size() ? saved.get(i).getId() : 0);
 			}
-			for (PregnancyNewborn newborn : currentDelivery.getNewborns()) {
-				int index = newborn.getChildNumber() - 1;
-				if (index >= 0 && index < newbornRows.length) {
-					newbornRows[index].setNewbornId(newborn.getId());
-				}
-			}
+			updatePrintCertificateButtonState();
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -313,17 +433,13 @@ public class PregnancyDeliveryPanel extends JPanel {
 	}
 
 	/**
-	 * One newborn's fields (a real, addable/removable row backed by a {@link PregnancyNewborn}), toggled on
-	 * and off with the "active" checkbox instead of a dynamic table, which keeps the layout stable while
-	 * still allowing between 1 and {@value PregnancyNewborn#MAX_CHILDREN} children per delivery.
+	 * One newborn's fields, added and removed on demand from the newborns list (instead of a fixed pool of
+	 * slots), backed by a {@link PregnancyNewborn}. Its displayed number and persisted
+	 * {@code PNB_CHILD_NUMBER} both simply reflect its current position in that list.
 	 */
 	private static final class NewbornRowPanel extends JPanel {
 
-		private final int childNumber;
-		private final List<DeliveryType> deliveryTypeList;
-		private final List<DeliveryResultType> deliveryResultTypeList;
-
-		private final JCheckBox activeCheckBox;
+		private final TitledBorder titledBorder;
 		private final JTextField childNameField;
 		private final JComboBox<String> sexBox;
 		private final JComboBox<Object> deliveryTypeBox;
@@ -337,34 +453,26 @@ public class PregnancyDeliveryPanel extends JPanel {
 		private final JTextField malformationField;
 		private final JComboBox<Object> feedingModeBox;
 		private final JCheckBox hivExposedCheckBox;
+		private final JButton removeButton;
 		private final JButton declarationButton;
-		private final JButton certificateButton;
 		private final BirthDocumentPrinter birthDocumentPrinter = new BirthDocumentPrinter();
 
 		private int newbornId;
-		private final List<java.awt.Component> dependentFields = new ArrayList<>();
 
-		NewbornRowPanel(int childNumber, List<DeliveryType> deliveryTypeList, List<DeliveryResultType> deliveryResultTypeList) {
-			this.childNumber = childNumber;
-			this.deliveryTypeList = deliveryTypeList;
-			this.deliveryResultTypeList = deliveryResultTypeList;
-
+		NewbornRowPanel(List<DeliveryType> deliveryTypeList, List<DeliveryResultType> deliveryResultTypeList,
+						java.util.function.Consumer<NewbornRowPanel> onRemove) {
 			setLayout(new GridBagLayout());
-			setBorder(BorderFactory.createTitledBorder(MessageBundle.formatMessage("angal.cpn.newborn.fmt.txt", childNumber)));
+			titledBorder = BorderFactory.createTitledBorder(MessageBundle.formatMessage("angal.cpn.newborn.fmt.txt", 1));
+			setBorder(titledBorder);
 			GridBagConstraints c = new GridBagConstraints();
 			c.insets = new Insets(2, 4, 2, 4);
 			c.fill = GridBagConstraints.HORIZONTAL;
 
-			activeCheckBox = new JCheckBox(MessageBundle.getMessage("angal.cpn.active.txt"));
-			c.gridx = 0;
-			c.gridy = 0;
-			add(activeCheckBox, c);
-
 			childNameField = new JTextField(15);
-			addLabeledField(c, 1, 0, "angal.cpn.childname.txt", childNameField);
+			addLabeledField(c, 0, 0, "angal.cpn.childname.txt", childNameField);
 
 			sexBox = new JComboBox<>(new String[] { "F", "M" });
-			addLabeledField(c, 2, 0, "angal.cpn.sex.txt", sexBox);
+			addLabeledField(c, 1, 0, "angal.cpn.sex.txt", sexBox);
 
 			deliveryTypeBox = new JComboBox<>();
 			deliveryTypeBox.addItem("");
@@ -409,43 +517,25 @@ public class PregnancyDeliveryPanel extends JPanel {
 			addLabeledField(c, 0, 4, "angal.cpn.feedingmode.txt", feedingModeBox);
 
 			hivExposedCheckBox = new JCheckBox(MessageBundle.getMessage("angal.cpn.hivexposed.txt"));
-			c.gridx = 1;
+			c.gridx = 2;
 			c.gridy = 4;
 			add(hivExposedCheckBox, c);
 
-			declarationButton = new JButton(MessageBundle.getMessage("angal.cpn.printdeclarationofbirth.txt"));
-			declarationButton.addActionListener(e -> birthDocumentPrinter.printDeclarationOfBirth(newbornId));
-			c.gridx = 2;
-			c.gridy = 4;
-			add(declarationButton, c);
-
-			certificateButton = new JButton(MessageBundle.getMessage("angal.cpn.printcertificateofdeclaration.txt"));
-			certificateButton.addActionListener(e -> birthDocumentPrinter.printCertificateOfDeclaration(newbornId));
+			removeButton = new JButton(MessageBundle.getMessage("angal.cpn.removenewborn.btn"));
+			removeButton.addActionListener(e -> onRemove.accept(this));
 			c.gridx = 3;
 			c.gridy = 4;
-			add(certificateButton, c);
+			add(removeButton, c);
 
-			dependentFields.add(childNameField);
-			dependentFields.add(sexBox);
-			dependentFields.add(deliveryTypeBox);
-			dependentFields.add(deliveryResultTypeBox);
-			dependentFields.add(weightSpinner);
-			dependentFields.add(heightSpinner);
-			dependentFields.add(headCircumferenceSpinner);
-			dependentFields.add(chestCircumferenceSpinner);
-			dependentFields.add(armCircumferenceSpinner);
-			dependentFields.add(complicationsField);
-			dependentFields.add(malformationField);
-			dependentFields.add(feedingModeBox);
-			dependentFields.add(hivExposedCheckBox);
-
-			activeCheckBox.addActionListener(e -> updateEnabled());
-			// first child is active by default, the others start disabled (i.e. "removed") until checked
-			activeCheckBox.setSelected(childNumber == 1);
-			updateEnabled();
+			declarationButton = new JButton(MessageBundle.getMessage("angal.cpn.printdeclarationofbirth.txt"));
+			declarationButton.addActionListener(e -> birthDocumentPrinter.printDeclarationOfBirth(newbornId));
+			declarationButton.setEnabled(false);
+			c.gridx = 4;
+			c.gridy = 4;
+			add(declarationButton, c);
 		}
 
-		private void addLabeledField(GridBagConstraints template, int col, int row, String labelKey, java.awt.Component field) {
+		private void addLabeledField(GridBagConstraints template, int col, int row, String labelKey, Component field) {
 			GridBagConstraints labelConstraints = (GridBagConstraints) template.clone();
 			labelConstraints.gridx = col * 2;
 			labelConstraints.gridy = row;
@@ -457,49 +547,21 @@ public class PregnancyDeliveryPanel extends JPanel {
 			add(field, fieldConstraints);
 		}
 
-		private void updateEnabled() {
-			boolean active = activeCheckBox.isSelected();
-			for (java.awt.Component field : dependentFields) {
-				field.setEnabled(active);
-			}
-			declarationButton.setEnabled(active && newbornId > 0);
-			certificateButton.setEnabled(active && newbornId > 0);
-		}
-
-		boolean isActive() {
-			return activeCheckBox.isSelected();
-		}
-
-		void setActive(boolean active) {
-			activeCheckBox.setSelected(active);
-			updateEnabled();
+		void setDisplayNumber(int number) {
+			titledBorder.setTitle(MessageBundle.formatMessage("angal.cpn.newborn.fmt.txt", number));
+			repaint();
 		}
 
 		void setNewbornId(int newbornId) {
 			this.newbornId = newbornId;
-			updateEnabled();
+			declarationButton.setEnabled(newbornId > 0);
 		}
 
-		void reset() {
-			setActive(childNumber == 1);
-			setNewbornId(0);
-			childNameField.setText("");
-			sexBox.setSelectedIndex(0);
-			deliveryTypeBox.setSelectedIndex(0);
-			deliveryResultTypeBox.setSelectedIndex(0);
-			weightSpinner.setValue(0.0);
-			heightSpinner.setValue(0.0);
-			headCircumferenceSpinner.setValue(0.0);
-			chestCircumferenceSpinner.setValue(0.0);
-			armCircumferenceSpinner.setValue(0.0);
-			complicationsField.setText("");
-			malformationField.setText("");
-			feedingModeBox.setSelectedIndex(0);
-			hivExposedCheckBox.setSelected(false);
+		int getNewbornId() {
+			return newbornId;
 		}
 
 		void populate(PregnancyNewborn newborn) {
-			setActive(true);
 			setNewbornId(newborn.getId());
 			childNameField.setText(nullToEmpty(newborn.getChildName()));
 			sexBox.setSelectedItem(String.valueOf(newborn.getSex()));
@@ -516,7 +578,7 @@ public class PregnancyDeliveryPanel extends JPanel {
 			hivExposedCheckBox.setSelected(newborn.isHivExposed());
 		}
 
-		PregnancyNewborn toNewborn(org.isf.pregnancy.model.PregnancyDelivery delivery) {
+		PregnancyNewborn toNewborn(PregnancyDelivery delivery, int childNumber) {
 			PregnancyNewborn newborn = new PregnancyNewborn(delivery, childNumber);
 			newborn.setChildName(emptyToNull(childNameField.getText()));
 			newborn.setSex(((String) sexBox.getSelectedItem()).charAt(0));

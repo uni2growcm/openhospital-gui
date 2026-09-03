@@ -30,9 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Prints the two birth documents (declaration of birth and certificate of declaration) for one
- * {@code PregnancyNewborn}, reusing the same JasperReports mechanism already used elsewhere in the
- * application for single-record documents (e.g. {@code GenericReportBill}, {@code GenericReportAdmission}).
+ * Prints the two birth documents for the CPN delivery workflow, reusing the same JasperReports mechanism
+ * already used elsewhere in the application for single-record documents (e.g. {@code GenericReportBill},
+ * {@code GenericReportAdmission}): the declaration of birth, one per {@code PregnancyNewborn} (each child
+ * is declared individually), and the certificate of declaration, one per {@code PregnancyDelivery} (it
+ * only carries mother/delivery-level data, so it is issued once for the whole birth event).
  */
 public class BirthDocumentPrinter extends DisplayReport {
 
@@ -50,9 +52,9 @@ public class BirthDocumentPrinter extends DisplayReport {
 		}
 	}
 
-	public void printCertificateOfDeclaration(int newbornId) {
+	public void printCertificateOfDeclaration(int deliveryId) {
 		try {
-			JasperReportResultDto result = jasperReportsManager.getCertificateOfDeclarationPdf(newbornId, "certificateOfDeclaration");
+			JasperReportResultDto result = jasperReportsManager.getCertificateOfDeclarationPdf(deliveryId, "certificateOfDeclaration");
 			showReport(result);
 		} catch (Exception e) {
 			LOGGER.error("", e);

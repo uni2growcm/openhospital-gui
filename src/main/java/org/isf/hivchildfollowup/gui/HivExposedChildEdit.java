@@ -311,7 +311,7 @@ public class HivExposedChildEdit extends JDialog {
 
 		private static final long serialVersionUID = 1L;
 		private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		private final String[] columns = {
+		private static final String[] columns = {
 				MessageBundle.getMessage("angal.hivchildfollowup.visitdate.txt"),
 				MessageBundle.getMessage("angal.hivchildfollowup.ageatvisitmonths.txt"),
 				MessageBundle.getMessage("angal.hivchildfollowup.weightkg.txt"),

@@ -23,6 +23,8 @@ package org.isf.pregnancy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -43,11 +45,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 
+import org.isf.admission.gui.AdmissionBrowser;
+import org.isf.admission.manager.AdmissionBrowserManager;
+import org.isf.admission.model.Admission;
+import org.isf.admission.model.AdmittedPatient;
 import org.isf.familyplanning.gui.FamilyPlanningEdit;
 import org.isf.generaldata.MessageBundle;
 import org.isf.hivchildfollowup.gui.HivExposedChildEdit;
@@ -87,6 +94,7 @@ public class CpnEdit extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
+	private final JFrame ownerFrame;
 	private final Patient patient;
 	private final Pregnancy pregnancy;
 	private final boolean insertPregnancy;
@@ -99,6 +107,9 @@ public class CpnEdit extends JDialog {
 			Context.getApplicationContext().getBean(PregnancyExamResultBrowserManager.class);
 	private final PregnantTreatmentTypeBrowserManager treatmentTypeManager =
 			Context.getApplicationContext().getBean(PregnantTreatmentTypeBrowserManager.class);
+	private final AdmissionBrowserManager admissionManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+
+	private PregnancyDeliveryPanel deliveryPanel;
 
 	private GoodDateChooser lmpChooser;
 	private JTextField scheduledDeliveryField;
@@ -125,6 +136,7 @@ public class CpnEdit extends JDialog {
 
 	public CpnEdit(JFrame owner, Patient patient, Pregnancy pregnancy) {
 		super(owner, true);
+		this.ownerFrame = owner;
 		this.patient = patient;
 		this.insertPregnancy = pregnancy == null;
 		this.pregnancy = pregnancy == null ? new Pregnancy(patient, LocalDate.now()) : pregnancy;
@@ -135,9 +147,15 @@ public class CpnEdit extends JDialog {
 		setTitle(MessageBundle.getMessage("angal.cpn.cpnedit.title") + " - " + patient.getFirstName() + ' ' + patient.getSecondName());
 		JPanel content = new JPanel(new BorderLayout());
 		content.add(getShortcutsPanel(), BorderLayout.NORTH);
+
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getPregnancyPanel(), getVisitPanel());
 		splitPane.setResizeWeight(0.5);
-		content.add(splitPane, BorderLayout.CENTER);
+
+		JTabbedPane mainTabs = new JTabbedPane();
+		mainTabs.addTab(MessageBundle.getMessage("angal.cpn.visit.txt"), splitPane);
+		mainTabs.addTab(MessageBundle.getMessage("angal.cpn.delivery.tab.title"), getDeliveryTab());
+		content.add(mainTabs, BorderLayout.CENTER);
+
 		content.add(getButtonPanel(), BorderLayout.SOUTH);
 		setContentPane(content);
 		setSize(950, 650);
@@ -154,34 +172,61 @@ public class CpnEdit extends JDialog {
 		shortcuts.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.cpn.shortcuts.txt")));
 
 		JButton patientParamsButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.patientparams.btn"));
-		patientParamsButton.addActionListener(e -> new PatientInsertExtended((JDialog) null, patient, false).setVisible(true));
+		patientParamsButton.addActionListener(e -> new PatientInsertExtended(this, patient, false).setVisible(true));
 		shortcuts.add(patientParamsButton);
 
 		JButton examsButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.exams.btn"));
-		examsButton.addActionListener(e -> new LabNew(null, patient).setVisible(true));
+		examsButton.addActionListener(e -> {
+			// LabNew shows itself synchronously from its constructor, so this dialog must already be
+			// hidden before it is built - otherwise, being application-modal, it blocks that JFrame from
+			// ever receiving focus/input.
+			setVisible(false);
+			LabNew labNew = new LabNew(ownerFrame, patient);
+			labNew.addWindowListener(closeListenerToRestoreThisDialog());
+		});
 		shortcuts.add(examsButton);
 
 		JButton therapiesButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.therapies.btn"));
-		therapiesButton.addActionListener(e -> new TherapyEdit(null, patient, false).setVisible(true));
+		therapiesButton.addActionListener(e -> {
+			setVisible(false);
+			TherapyEdit therapyEdit = new TherapyEdit(ownerFrame, patient, false);
+			therapyEdit.addWindowListener(closeListenerToRestoreThisDialog());
+			therapyEdit.setVisible(true);
+		});
 		shortcuts.add(therapiesButton);
 
 		JButton vaccinesButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.vaccines.btn"));
 		vaccinesButton.addActionListener(e -> {
 			PatientVaccine patientVaccine = new PatientVaccine(0, 0, TimeTools.getNow(), patient,
 					new Vaccine("", "", new VaccineType("", "")), 0);
-			new PatVacEdit(null, patientVaccine, true).setVisible(true);
+			new PatVacEdit(ownerFrame, patientVaccine, true).setVisible(true);
 		});
 		shortcuts.add(vaccinesButton);
 
 		JButton familyPlanningButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.familyplanning.btn"));
-		familyPlanningButton.addActionListener(e -> new FamilyPlanningEdit(null, patient, null).setVisible(true));
+		familyPlanningButton.addActionListener(e -> new FamilyPlanningEdit(ownerFrame, patient, null).setVisible(true));
 		shortcuts.add(familyPlanningButton);
 
 		JButton hivFollowUpButton = new JButton(MessageBundle.getMessage("angal.cpn.shortcut.hivchildfollowup.btn"));
-		hivFollowUpButton.addActionListener(e -> new HivExposedChildEdit(null, patient, null).setVisible(true));
+		hivFollowUpButton.addActionListener(e -> new HivExposedChildEdit(ownerFrame, patient, null).setVisible(true));
 		shortcuts.add(hivFollowUpButton);
 
 		return shortcuts;
+	}
+
+	/**
+	 * Restores this (application-modal) dialog once a shortcut window opened while it was hidden - see
+	 * {@link #getShortcutsPanel()} - is closed.
+	 */
+	private WindowAdapter closeListenerToRestoreThisDialog() {
+		return new WindowAdapter() {
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setVisible(true);
+				toFront();
+			}
+		};
 	}
 
 	/*
@@ -355,6 +400,59 @@ public class CpnEdit extends JDialog {
 			return ((JTextField) control).getText();
 		}
 		return "";
+	}
+
+	/*
+	 * ----------------------------------------------------------------
+	 * Accouchement : rattaché directement à la grossesse, sans nécessiter d'hospitalisation.
+	 * L'hospitalisation reste possible depuis cet onglet pour les cas qui le nécessitent
+	 * (complications, séjour prolongé), mais n'est plus un préalable pour enregistrer l'accouchement.
+	 * ----------------------------------------------------------------
+	 */
+	private JPanel getDeliveryTab() {
+		JPanel panel = new JPanel(new BorderLayout());
+		deliveryPanel = new PregnancyDeliveryPanel();
+		deliveryPanel.loadFor(pregnancy);
+		panel.add(deliveryPanel, BorderLayout.CENTER);
+		panel.add(getDeliveryButtonPanel(), BorderLayout.SOUTH);
+		return panel;
+	}
+
+	private JPanel getDeliveryButtonPanel() {
+		JPanel panel = new JPanel();
+
+		JButton saveDeliveryButton = new JButton(MessageBundle.getMessage("angal.cpn.savedelivery.btn"));
+		saveDeliveryButton.addActionListener(e -> {
+			if (deliveryPanel.saveFor(pregnancy)) {
+				MessageDialog.info(this, "angal.cpn.deliverysavedsuccessfully.msg");
+			}
+		});
+		panel.add(saveDeliveryButton);
+
+		JButton hospitalizeButton = new JButton(MessageBundle.getMessage("angal.cpn.hospitalizepatient.btn"));
+		hospitalizeButton.addActionListener(e -> hospitalizePatient());
+		panel.add(hospitalizeButton);
+
+		return panel;
+	}
+
+	private void hospitalizePatient() {
+		if (admissionManager.getCurrentAdmission(patient) != null) {
+			MessageDialog.info(this, "angal.cpn.patientalreadyadmitted.msg");
+			return;
+		}
+		// AdmissionBrowser is application-modal-blocked by this dialog, exactly like LabNew/TherapyEdit
+		// above, and it also shows itself synchronously from its constructor.
+		setVisible(false);
+		AdmissionBrowser admissionBrowser = new AdmissionBrowser(ownerFrame, new AdmittedPatient(patient, null), false);
+		admissionBrowser.addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setVisible(true);
+				toFront();
+			}
+		});
 	}
 
 	/*
