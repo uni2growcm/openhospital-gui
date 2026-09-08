@@ -1398,6 +1398,7 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				options.add(MessageBundle.getMessage("angal.report.oh004alldebtsgroupedbyitemcategories.txt"));
 				options.add(MessageBundle.getMessage("angal.billbrowser.reportgroupbyreduction.txt"));
 				options.add(MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.title"));
+				options.add(MessageBundle.getMessage("angal.billbrowser.revenuereportbyitemfamily.txt"));
 
 				icon = new ImageIcon("rsc/icons/list_dialog.png");
 				option = (String) MessageDialog.inputDialog(this,
@@ -1465,7 +1466,11 @@ public class BillBrowser extends ModalJFrame implements PatientBillListener {
 				}
 				if (options.indexOf(option) == 8) {
 						new GenericReportFromDateToDate(from, to, "rpt_base", "GlobalConsumptionReportByService",
-								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), true);
+								MessageBundle.getMessage("angal.report.globalconsumptionreportbyservice.txt"), false, true);
+				}
+				if (options.indexOf(option) == 9) {
+					new GenericReportFromDateToDate(from, to, "rpt_base", "GlobalRevenueReportByFamily",
+							MessageBundle.getMessage("angal.billbrowser.revenuereportbyitemfamily.txt"), false, true);
 				}
 			});
 		}
