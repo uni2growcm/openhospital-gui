@@ -77,6 +77,8 @@ import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.lab.manager.LabManager;
+import org.isf.lab.model.Laboratory;
 import org.isf.generaldata.TxtPrinter;
 import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.menu.gui.MainMenu;
@@ -229,6 +231,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private JButton jButtonAddOperation;
 	private JButton jButtonAddExam;
 	private JButton jButtonAddOther;
+	private JButton jButtonAddPrescription;
 	private JButton jButtonAddPayment;
 	private JPanel jPanelButtons;
 	private JPanel jPanelDate;
@@ -330,6 +333,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 	private BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
+	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -860,6 +864,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 				jButtonPickPatient.setText(MessageBundle.getMessage("angal.newbill.findpatient.btn"));
 				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.newbill.associateapatientwiththisbill.tooltip"));
 				jButtonTrashPatient.setEnabled(false);
+				if (jButtonAddPrescription != null) {
+					jButtonAddPrescription.setVisible(false);
+				}
 			});
 		}
 		return jButtonTrashPatient;
@@ -907,6 +914,31 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 		thisBill.setIsPatient(true);
 		thisBill.setBillPatient(patientSelected);
 		thisBill.setPatName(patientSelected.getName());
+		// Show/hide prescription button based on unbilled labs
+		if (jButtonAddPrescription != null) {
+			try {
+				boolean hasPresc = labManager.hasLabWithoutBill(patientSelected.getCode());
+				jButtonAddPrescription.setVisible(hasPresc);
+			} catch (OHServiceException e) {
+				jButtonAddPrescription.setVisible(false);
+			}
+		}
+	}
+
+	/**
+	 * Link prescription lab exams to the bill after saving.
+	 * For each bill item that has a prescriptionId (lab code), call updateBillIdLaboratory.
+	 */
+	private void linkPrescriptionLabs(int billId) {
+		for (BillItems item : billItems) {
+			if (item.getPrescriptionId() > 0) {
+				try {
+					labManager.updateBillIdLaboratory(item.getPrescriptionId(), billId);
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+				}
+			}
+		}
 	}
 
 	private JPanel getJPanelTop() {
@@ -1098,6 +1130,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			jPanelButtonsBill.add(getJButtonAddMedical());
 			jPanelButtonsBill.add(getJButtonAddOperation());
 			jPanelButtonsBill.add(getJButtonAddExam());
+			jPanelButtonsBill.add(getJButtonAddPrescription());
 			jPanelButtonsBill.add(getJButtonAddOther());
 			jPanelButtonsBill.add(getJButtonAddCustom());
 			jPanelButtonsBill.add(getJButtonRemoveItem());
@@ -1222,6 +1255,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						OHServiceExceptionUtil.showMessages(ex, this);
 						return;
 					}
+					// Link prescription labs to the new bill
+					linkPrescriptionLabs(newBill.getId());
 					fireBillInserted(newBill);
 					dispose();
 
@@ -1248,6 +1283,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 						OHServiceExceptionUtil.showMessages(ex, this);
 						return;
 					}
+					// Link prescription labs to the updated bill
+					linkPrescriptionLabs(updateBill.getId());
 					fireBillInserted(updateBill);
 				}
 				if (hasNewPayments()) {
@@ -1615,6 +1652,93 @@ public class PatientBillEdit extends JDialog implements SelectionListener {
 			});
 		}
 		return jButtonAddExam;
+	}
+
+	private JButton getJButtonAddPrescription() {
+		if (jButtonAddPrescription == null) {
+			jButtonAddPrescription = new JButton(MessageBundle.getMessage("angal.newbill.prescription.btn"));
+			jButtonAddPrescription.setMnemonic(MessageBundle.getMnemonic("angal.newbill.prescription.btn.key"));
+			jButtonAddPrescription.setMaximumSize(BUTTON_ITEM_SIZE);
+			jButtonAddPrescription.setHorizontalAlignment(SwingConstants.LEFT);
+			// Hidden by default: shown only once a patient with unbilled prescriptions is selected
+			jButtonAddPrescription.setVisible(false);
+			jButtonAddPrescription.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+			jButtonAddPrescription.addActionListener(actionEvent -> {
+				if (thisBill.getBillPatient() == null) {
+					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+					return;
+				}
+				try {
+					List<Laboratory> unbilledLabs = labManager.getLabWithoutBill(thisBill.getBillPatient());
+					if (unbilledLabs == null || unbilledLabs.isEmpty()) {
+						MessageDialog.info(this, "angal.newbill.noprescription.msg");
+						return;
+					}
+					// Build display labels for each unbilled lab
+					String[] labLabels = new String[unbilledLabs.size()];
+					for (int i = 0; i < unbilledLabs.size(); i++) {
+						Laboratory lab = unbilledLabs.get(i);
+						labLabels[i] = lab.getExam().getDescription() + " - " + lab.getLabDate().toLocalDate();
+					}
+					// Show a multi-selection dialog
+					javax.swing.JDialog dialog = new javax.swing.JDialog(this, MessageBundle.getMessage("angal.newbill.prescription.btn"), true);
+					dialog.setLayout(new java.awt.BorderLayout());
+					javax.swing.JPanel topPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+					topPanel.add(new javax.swing.JLabel(MessageBundle.getMessage("angal.newbill.selectprescriptions.msg")));
+					dialog.add(topPanel, java.awt.BorderLayout.NORTH);
+					javax.swing.JCheckBox[] checkboxes = new javax.swing.JCheckBox[unbilledLabs.size()];
+					javax.swing.JPanel checkPanel = new javax.swing.JPanel(new java.awt.GridLayout(unbilledLabs.size(), 1));
+					for (int i = 0; i < unbilledLabs.size(); i++) {
+						checkboxes[i] = new javax.swing.JCheckBox(labLabels[i]);
+						checkPanel.add(checkboxes[i]);
+					}
+					dialog.add(new javax.swing.JScrollPane(checkPanel), java.awt.BorderLayout.CENTER);
+					javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+					javax.swing.JButton okBtn = new javax.swing.JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+					javax.swing.JButton cancelBtn = new javax.swing.JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
+					buttonPanel.add(okBtn);
+					buttonPanel.add(cancelBtn);
+					dialog.add(buttonPanel, java.awt.BorderLayout.SOUTH);
+					okBtn.addActionListener(e -> {
+						for (int i = 0; i < checkboxes.length; i++) {
+							if (checkboxes[i].isSelected()) {
+								Laboratory lab = unbilledLabs.get(i);
+								// Find the exam price in prcListArray
+								String examCode = lab.getExam().getCode();
+								Price examPrice = null;
+								for (Price prc : prcListArray) {
+									if (prc.getGroup().equals("EXA") && prc.getItem().equals(examCode)) {
+										examPrice = prc;
+										break;
+									}
+								}
+								if (examPrice != null) {
+									try {
+										BillItems item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), true,
+												examPrice.getGroup() + examPrice.getItem(), examPrice.getDesc(), examPrice.getPrice(), 1);
+										item.setPrescriptionId(lab.getCode());
+										billItems.add(item);
+									} catch (OHServiceException ex) {
+										OHServiceExceptionUtil.showMessages(ex, this);
+									}
+								}
+							}
+						}
+						modified = true;
+						updateTotals();
+						updateGUI();
+						dialog.dispose();
+					});
+					cancelBtn.addActionListener(e -> dialog.dispose());
+					dialog.setSize(450, 350);
+					dialog.setLocationRelativeTo(this);
+					dialog.setVisible(true);
+				} catch (OHServiceException ex) {
+					OHServiceExceptionUtil.showMessages(ex, this);
+				}
+			});
+		}
+		return jButtonAddPrescription;
 	}
 
 	private JButton getJButtonAddOperation() {
