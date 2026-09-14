@@ -181,13 +181,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		patientCodeField.setText(String.valueOf(patient.getCode()));
 		patientCodeField.setEnabled(false);
 
-		typeSelected = comboExams.getSelectedItem().toString();
-		if (typeSelected.equalsIgnoreCase(MessageBundle.getMessage("angal.common.all.txt"))) {
-			typeSelected = "";
-		}
-		model = new LabBrowsingModel(typeSelected, dateFrom.getDate(), dateTo.getDate(), patientCodeField.getText());
-		model.fireTableDataChanged();
-		jTable.updateUI();
+		applyFilters();
 
 		setVisible(true);
 	}
