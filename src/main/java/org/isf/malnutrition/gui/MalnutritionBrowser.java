@@ -42,6 +42,7 @@ import org.isf.malnutrition.gui.InsertMalnutrition.MalnutritionListener;
 import org.isf.malnutrition.manager.MalnutritionManager;
 import org.isf.malnutrition.model.Malnutrition;
 import org.isf.menu.manager.Context;
+import org.isf.opd.model.Opd;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
@@ -93,12 +94,27 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 
 	private Admission adm;
 
+	private Opd opd;
+
 	private MalnutritionManager malnutritionManager = Context.getApplicationContext().getBean(MalnutritionManager.class);
 
 	public MalnutritionBrowser(JFrame owner, Admission aAdm) {
 		super(owner, true);
 		adm = aAdm;
 		admId = String.valueOf(adm.getId());
+		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
+		add(getJContentPane());
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+
+	/**
+	 * Opens malnutrition tracking scoped to an OPD visit, independent of any admission.
+	 */
+	public MalnutritionBrowser(JFrame owner, Opd anOpd) {
+		super(owner, true);
+		opd = anOpd;
 		setTitle(MessageBundle.getMessage("angal.malnutrition.malnutritionbrowser.title"));
 		add(getJContentPane());
 		pack();
@@ -128,7 +144,12 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 		JButton newButton = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		newButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 		newButton.addActionListener(actionEvent -> {
-			malnutrition = new Malnutrition(0, null, null, adm, 0, 0);
+			if (adm != null) {
+				malnutrition = new Malnutrition(0, null, null, adm, 0, 0);
+			} else {
+				malnutrition = new Malnutrition();
+				malnutrition.setOpd(opd);
+			}
 			InsertMalnutrition newRecord = new InsertMalnutrition(this, malnutrition, true);
 			newRecord.addMalnutritionListener(this);
 			newRecord.setVisible(true);
@@ -191,7 +212,7 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 	}
 
 	private JTable getTable() {
-		model = new MalnBrowsingModel(admId);
+		model = new MalnBrowsingModel(admId, opd);
 		table = new JTable(model);
 		table.getColumnModel().getColumn(0).setMaxWidth(pColumnWidth[0]);
 		table.getColumnModel().getColumn(1).setMaxWidth(pColumnWidth[1]);
@@ -204,18 +225,20 @@ public class MalnutritionBrowser extends JDialog implements MalnutritionListener
 		
 		private static final long serialVersionUID = 1L;
 
-		public MalnBrowsingModel(String s) {
+		public MalnBrowsingModel(String s, Opd opd) {
 
 			pMaln = null;
-			
-			if (null != s && !s.isEmpty()) {
-				try {
+
+			try {
+				if (null != s && !s.isEmpty()) {
 					pMaln = malnutritionManager.getMalnutrition(s);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}				
-			} else {
-				MessageDialog.error(MalnutritionBrowser.this, "angal.malnutrition.nonameselected");
+				} else if (opd != null) {
+					pMaln = malnutritionManager.getMalnutritionByOpd(opd);
+				} else {
+					MessageDialog.error(MalnutritionBrowser.this, "angal.malnutrition.nonameselected");
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
 			}
 		}
 

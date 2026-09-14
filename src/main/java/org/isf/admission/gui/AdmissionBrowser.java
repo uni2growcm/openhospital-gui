@@ -261,9 +261,17 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JTextField FHUTextField;
 
+	private JTextField bedTextField;
+
+	private JTextField roomTextField;
+
 	private JPanel wardPanel;
 
 	private JPanel fhuPanel;
+
+	private JPanel bedPanel;
+
+	private JPanel roomPanel;
 
 	private JPanel yearProgPanel;
 
@@ -558,11 +566,13 @@ public class AdmissionBrowser extends ModalJFrame {
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getWardPanel())
 																			.addComponent(getAdmissionDatePanel())
-																			.addComponent(getDischargeDatePanel()))
+																			.addComponent(getDischargeDatePanel())
+																			.addComponent(getBedPanel()))
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getFHUPanel())
 																			.addComponent(getAdmissionTypePanel())
-																			.addComponent(getBedDaysPanel()))
+																			.addComponent(getBedDaysPanel())
+																			.addComponent(getRoomPanel()))
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getProgYearPanel())
 																			.addComponent(getMalnutritionPanel())
@@ -584,6 +594,9 @@ public class AdmissionBrowser extends ModalJFrame {
 											.addComponent(getBedDaysPanel())
 											.addComponent(getDischargeTypePanel()))
 							.addComponent(getDiseaseOutPanel())
+							.addGroup(layout.createParallelGroup(BASELINE)
+											.addComponent(getBedPanel())
+											.addComponent(getRoomPanel()))
 							.addComponent(getJLabelRequiredFields()));
 		}
 		updateBedDays();
@@ -917,6 +930,42 @@ public class AdmissionBrowser extends ModalJFrame {
 
 		}
 		return fhuPanel;
+	}
+
+	private JPanel getBedPanel() {
+		if (bedPanel == null) {
+			bedPanel = new JPanel();
+
+			if (editing) {
+				bedTextField = new JTextField(admission.getBed());
+			} else {
+				bedTextField = new JTextField();
+			}
+			bedTextField.setColumns(20);
+
+			bedPanel.add(bedTextField);
+			bedPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.bed.border")));
+
+		}
+		return bedPanel;
+	}
+
+	private JPanel getRoomPanel() {
+		if (roomPanel == null) {
+			roomPanel = new JPanel();
+
+			if (editing) {
+				roomTextField = new JTextField(admission.getRoom());
+			} else {
+				roomTextField = new JTextField();
+			}
+			roomTextField.setColumns(20);
+
+			roomPanel.add(roomTextField);
+			roomPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.room.border")));
+
+		}
+		return roomPanel;
 	}
 
 	private JPanel getWardPanel() {
@@ -1713,6 +1762,10 @@ public class AdmissionBrowser extends ModalJFrame {
 				} else {
 					admission.setFHU(FHUTextField.getText());
 				}
+
+				// get bed and room (both optional)
+				admission.setBed(bedTextField.getText().isEmpty() ? null : bedTextField.getText());
+				admission.setRoom(roomTextField.getText().isEmpty() ? null : roomTextField.getText());
 
 				dateIn = dateInFieldCal.getLocalDateTime();
 				if (dateIn == null) {
