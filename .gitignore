@@ -16,7 +16,6 @@ logs
 /rsc/*.xml
 /target/
 
-
 openspec
 .opencode
 .claude

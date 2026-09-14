@@ -25,6 +25,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -34,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.PatientInsert.PatientListener;
@@ -42,6 +44,9 @@ import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.PaginationPanel;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 
 public class PatientBrowser extends ModalJFrame implements PatientListener {
 
@@ -57,6 +62,7 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 	};
 	private JPanel jButtonPanel;
 	private JPanel jContainPanel;
+	private PaginationPanel paginationPanel;
 	private JButton jNewButton;
 	private JButton jEditButton;
 	private JButton jCloseButton;
@@ -66,6 +72,8 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 	private int[] pColumnWidth = { 200, 30, 25, 100, 100, 50 };
 	private int selectedrow;
 	private Patient patient;
+	private int currentPage;
+	private PageInfo lastPageInfo;
 
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
@@ -139,9 +147,47 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 			jContainPanel.setLayout(new BorderLayout());
 			jContainPanel.add(getJButtonPanel(), BorderLayout.SOUTH);
 			jContainPanel.add(new JScrollPane(getJTable()), BorderLayout.CENTER);
+			jContainPanel.add(getPaginationPanel(), BorderLayout.NORTH);
 			validate();
 		}
 		return jContainPanel;
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::navigateToPage);
+		}
+		return paginationPanel;
+	}
+
+	/**
+	 * Triggered by {@link PaginationPanel} navigation, where the total number of patients hasn't changed
+	 * since the last fetch. Skips the total-count query by reusing the total already known from it.
+	 */
+	private void navigateToPage(int page) {
+		loadPage(page, lastPageInfo == null ? null : lastPageInfo.getTotalNbOfElements());
+	}
+
+	/**
+	 * Triggered whenever the total patient count may have changed (initial load, after insert/delete).
+	 * Always forces a fresh total-count query.
+	 */
+	private void loadPage(int page) {
+		loadPage(page, null);
+	}
+
+	private void loadPage(int page, Long knownTotalElements) {
+		try {
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsPageable(page, GeneralData.PAGESIZE, knownTotalElements);
+			pPat = new ArrayList<>(response.getData());
+			lastPageInfo = response.getPageInfo();
+			currentPage = page;
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+			pPat = new ArrayList<>();
+			lastPageInfo = null;
+		}
+		getPaginationPanel().update(lastPageInfo);
 	}
 	
 	/**
@@ -219,7 +265,7 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 					if (answer == JOptionPane.YES_OPTION) {
 						try {
 							patientBrowserManager.deletePatient(pat);
-							pPat.remove(pPat.size() - jTable.getSelectedRow() - 1);
+							loadPage(currentPage);
 							model.fireTableDataChanged();
 							jTable.updateUI();
 						} catch (OHServiceException ohServiceException) {
@@ -237,11 +283,7 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 		private static final long serialVersionUID = 1L;
 
 		public PatientBrowserModel() {
-			try {
-				pPat = patientBrowserManager.getPatient();
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-			}
+			loadPage(currentPage);
 		}
 
 		@Override
@@ -302,7 +344,7 @@ public class PatientBrowser extends ModalJFrame implements PatientListener {
 	@Override
 	public void patientInserted(AWTEvent e) {
 
-		pPat.add(0, patient);
+		loadPage(0);
 		((PatientBrowserModel) jTable.getModel()).fireTableDataChanged();
 		if (jTable.getRowCount() > 0) {
 			jTable.setRowSelectionInterval(0, 0);
