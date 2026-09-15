@@ -247,6 +247,11 @@ public class MovStockMultipleCharging extends JDialog {
 		gbcTextFieldReference.gridy = 0;
 		headerPanel.add(jTextFieldReference, gbcTextFieldReference);
 		jTextFieldReference.setColumns(10);
+		try {
+			jTextFieldReference.setText(movStockInsertingManager.generateReferenceNumber(TimeTools.getNow()));
+		} catch (OHServiceException e) {
+			LOGGER.error("Unable to generate an automatic reference number", e);
+		}
 
 		JLabel jLabelChargeType = new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.chargetype") + ':'); //$NON-NLS-1$
 		GridBagConstraints gbcLabelChargeType = new GridBagConstraints();

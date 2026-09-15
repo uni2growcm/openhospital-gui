@@ -48,6 +48,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -61,9 +62,11 @@ import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
+import org.isf.utils.jobjects.PaginationPanel;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
@@ -103,8 +106,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JLabel jLabelSearch;
 	private JTextField jTextFieldSearchPatient;
 	private JButton jSearchButton;
+	private PaginationPanel paginationPanel;
 	private JPanel jPanelDataPatient;
 	private Patient patient;
+	private int currentPage;
+	private PageInfo lastPageInfo;
 
 	public Patient getPatient() {
 		return patient;
@@ -120,19 +126,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	List<Patient> patArray = new ArrayList<>();
 	List<Patient> patSearch = new ArrayList<>();
-	private String lastKey = "";
+	private Timer searchTimer;
 
 	public SelectPatient(JFrame owner, Patient pat) {
 		super(owner, true);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			try {
-				patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(null);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-				patArray = new ArrayList<>();
-			}
-			patSearch = patArray;
-		}
+		loadPatients(null);
 		patient = pat;
 		ps = new PatientSummary(patient);
 		initComponents();
@@ -141,25 +139,17 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
+		searchPatients(0);
 	}
 
 	public SelectPatient(JDialog owner, Patient pat) {
 		super(owner, true);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			try {
-				patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(null);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-				patArray = new ArrayList<>();
-			}
-			patSearch = patArray;
-		}
+		loadPatients(null);
 		patient = pat;
 		ps = new PatientSummary(patient);
 		initComponents();
@@ -168,25 +158,17 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
+		searchPatients(0);
 	}
 
 	public SelectPatient(JDialog owner, String search) {
 		super(owner, true);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			try {
-				patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(null);
-			} catch (OHServiceException ohServiceException) {
-				MessageDialog.showExceptions(ohServiceException);
-				patArray = new ArrayList<>();
-			}
-			patSearch = patArray;
-		}
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -194,36 +176,21 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
 		jTextFieldSearchPatient.setText(search);
-		if (GeneralData.ENHANCEDSEARCH) {
-			jSearchButton.doClick();
-		}
+		searchPatients(search);
 	}
 
+	/**
+	 * @param full unused since patient search is always paginated - kept for caller compatibility.
+	 */
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			if (!full) {
-				try {
-					patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(null);
-				} catch (OHServiceException ohServiceException) {
-					MessageDialog.showExceptions(ohServiceException);
-				}
-			} else {
-				try {
-					patArray = patientBrowserManager.getPatient();
-				} catch (OHServiceException ohServiceException) {
-					MessageDialog.showExceptions(ohServiceException);
-				}
-			}
-			patSearch = patArray;
-		}
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -231,33 +198,21 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
+		searchPatients(0);
 	}
 
+	/**
+	 * @param full unused since patient search is always paginated - kept for caller compatibility.
+	 */
 	public SelectPatient(JDialog owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
-		if (!GeneralData.ENHANCEDSEARCH) {
-			if (!full) {
-				try {
-					patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(null);
-				} catch (OHServiceException e2) {
-					OHServiceExceptionUtil.showMessages(e2);
-				}
-			} else {
-				try {
-					patArray = patientBrowserManager.getPatient();
-				} catch (OHServiceException e1) {
-					OHServiceExceptionUtil.showMessages(e1);
-				}
-			}
-			patSearch = patArray;
-		}
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -265,13 +220,13 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
+		searchPatients(0);
 	}
 
 	private void initComponents() {
@@ -295,76 +250,44 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jTextFieldSearchPatient = new VoLimitedTextField(100, 20);
 			jTextFieldSearchPatient.setText("");
 			jTextFieldSearchPatient.selectAll();
-			if (GeneralData.ENHANCEDSEARCH) {
-				jTextFieldSearchPatient.addKeyListener(new KeyListener() {
+			jTextFieldSearchPatient.addKeyListener(new KeyListener() {
 
-					@Override
-					public void keyPressed(KeyEvent e) {
-						int key = e.getKeyCode();
-						if (key == KeyEvent.VK_ENTER) {
-							jSearchButton.doClick();
-						}
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						getSearchTimer().stop();
+						searchPatients(jTextFieldSearchPatient.getText());
+					} else {
+						getSearchTimer().restart();
 					}
+				}
 
-					@Override
-					public void keyReleased(KeyEvent e) {
-					}
+				@Override
+				public void keyReleased(KeyEvent e) {
+				}
 
-					@Override
-					public void keyTyped(KeyEvent e) {
-					}
-				});
-			} else {
-				jTextFieldSearchPatient.addKeyListener(new KeyListener() {
-
-					@Override
-					public void keyTyped(KeyEvent e) {
-						lastKey = "";
-						String s = String.valueOf(e.getKeyChar());
-						if (Character.isLetterOrDigit(e.getKeyChar())) {
-							lastKey = s;
-						}
-						filterPatient();
-					}
-
-					@Override
-					public void keyPressed(KeyEvent e) {
-					}
-
-					@Override
-					public void keyReleased(KeyEvent e) {
-					}
-				});
-			}
+				@Override
+				public void keyTyped(KeyEvent e) {
+				}
+			});
 		}
 		return jTextFieldSearchPatient;
 	}
 
-	private void filterPatient() {
-
-		String s = jTextFieldSearchPatient.getText() + lastKey;
-		s = s.trim();
-		String[] s1 = s.split(" ");
-
-		patSearch = new ArrayList<>();
-
-		for (Patient pat : patArray) {
-
-			if (!s.equals("")) {
-				String name = pat.getSearchString();
-				int a = 0;
-				for (String value : s1) {
-					if (name.contains(value.toLowerCase())) {
-						a++;
-					}
-				}
-				if (a == s1.length) {
-					patSearch.add(pat);
-				}
-			} else {
-				patSearch.add(pat);
-			}
+	private Timer getSearchTimer() {
+		if (searchTimer == null) {
+			searchTimer = new Timer(1000, actionEvent -> searchPatients(jTextFieldSearchPatient.getText()));
+			searchTimer.setRepeats(false);
 		}
+		return searchTimer;
+	}
+
+	/**
+	 * Renders the already server-filtered, already paginated {@code patArray} as {@code patSearch},
+	 * auto-selecting the patient when exactly one result comes back.
+	 */
+	private void filterPatient() {
+		patSearch = patArray;
 
 		if (jTablePatient.getRowCount() == 0) {
 
@@ -379,6 +302,30 @@ public class SelectPatient extends JDialog implements PatientListener {
 		}
 		jTablePatient.updateUI();
 		jTextFieldSearchPatient.requestFocus();
+	}
+
+	/**
+	 * Loads at most {@link GeneralData#PAGESIZE} patients matching {@code keyword} (or the first
+	 * page of all patients, for a blank/null keyword) into {@link #patSearch}, with no other UI
+	 * side effect - used for the constructors' initial, pre-{@link #initComponents()} population.
+	 */
+	private void loadPatients(String keyword) {
+		try {
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, 0);
+			patSearch = new ArrayList<>(response.getData());
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+			patSearch = new ArrayList<>();
+		}
+	}
+
+	/**
+	 * Same as {@link #loadPatients(String)}, followed by the UI refresh a user-triggered search
+	 * needs: auto-selecting a single match, clearing the selection when there are none, refreshing
+	 * the table, and giving focus back to the search field.
+	 */
+	private void searchPatients(String keyword) {
+		searchPatients(0, null);
 	}
 
 	private JLabel getJLabelSearch() {
@@ -396,7 +343,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 				if (patient != null) {
 					// to free memory
-					patArray.clear();
 					patSearch.clear();
 					dispose();
 					fireSelectedPatient(patient);
@@ -412,7 +358,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jButtonCancel.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
 			jButtonCancel.addActionListener(actionEvent -> {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			});
@@ -534,9 +479,8 @@ public class SelectPatient extends JDialog implements PatientListener {
 			if (MainMenu.checkUserGrants("btnadmnew")) {
 				jPanelTop.add(getButtonNew());
 			}
-			if (GeneralData.ENHANCEDSEARCH) {
-				jPanelTop.add(getJSearchButton());
-			}
+			jPanelTop.add(getJSearchButton());
+			jPanelTop.add(getPaginationPanel());
 		}
 		return jPanelTop;
 	}
@@ -547,16 +491,50 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jSearchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 			jSearchButton.setPreferredSize(new Dimension(20, 20));
 			jSearchButton.addActionListener(actionEvent -> {
-				try {
-					patArray = patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText());
-				} catch (OHServiceException ohServiceException) {
-					MessageDialog.showExceptions(ohServiceException);
-					patArray = new ArrayList<>();
-				}
-				filterPatient();
+				getSearchTimer().stop();
+				searchPatients(jTextFieldSearchPatient.getText());
 			});
 		}
 		return jSearchButton;
+	}
+
+	/**
+	 * Triggered by a filter-changing action (search text change, dialog open). Always forces a fresh
+	 * total-count query, since the total may have changed for the new search.
+	 */
+	private void searchPatients(int page) {
+		searchPatients(page, null);
+	}
+
+	/**
+	 * Triggered by {@link PaginationPanel} navigation on an unchanged search. Skips the total-count query
+	 * by reusing the total already known from the last fetch.
+	 */
+	private void navigateToPage(int page) {
+		searchPatients(page, lastPageInfo == null ? null : lastPageInfo.getTotalNbOfElements());
+	}
+
+	private void searchPatients(int page, Long knownTotalElements) {
+		try {
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText(), page,
+					knownTotalElements);
+			patArray = new ArrayList<>(response.getData());
+			lastPageInfo = response.getPageInfo();
+			currentPage = page;
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+			patArray = new ArrayList<>();
+			lastPageInfo = null;
+		}
+		getPaginationPanel().update(lastPageInfo);
+		filterPatient();
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::navigateToPage);
+		}
+		return paginationPanel;
 	}
 	private JButton getButtonNew() {
 		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));

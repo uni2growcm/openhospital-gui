@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="CpnRegister"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="Hospital" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="fromdate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="todate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rpt_stat/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LOGO_PATH" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	</parameter>
+
+	<queryString><![CDATA[SELECT
+	PV.PVIS_ID AS PVIS_ID,
+	PV.PVIS_DATE AS PVIS_DATE,
+	PAT.PAT_NAME AS PAT_NAME,
+	IF(PAT.PAT_BDATE is not null, ROUND(DATEDIFF(CURDATE(), DATE(PAT.PAT_BDATE)) / 365,0), PAT.PAT_AGE) AS PAT_AGE,
+	PV.PVIS_TYPE AS PVIS_TYPE,
+	PREG.PREG_LMP AS PREG_LMP,
+	PREG.PREG_CALC_DELIVERY AS PREG_CALC_DELIVERY,
+	PREG.PREG_NB_GROSS AS PREG_NB_GROSS,
+	(SELECT GROUP_CONCAT(PTT.PTT_DESC SEPARATOR ', ')
+		FROM OH_PREGNANCYVISITTREATMENTTYPE PVTT
+		JOIN OH_PREGNANTTREATMENTTYPE PTT ON PTT.PTT_ID_A = PVTT.PVTT_PTT_ID_A
+		WHERE PVTT.PVTT_PVIS_ID = PV.PVIS_ID) AS PVIS_TREATMENTS,
+	PV.PVIS_NEXTDATE AS PVIS_NEXTDATE,
+	PV.PVIS_NOTE AS PVIS_NOTE
+FROM OH_PREGNANCYVISIT PV
+	JOIN OH_PATIENT PAT ON ( PAT.PAT_ID = PV.PVIS_PAT_ID )
+	JOIN OH_PREGNANCY PREG ON ( PREG.PREG_ID = PV.PVIS_PREG_ID )
+WHERE DATE(PV.PVIS_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+ORDER BY PV.PVIS_DATE ASC]]></queryString>
+
+	<field name="PVIS_ID" class="java.lang.Integer"/>
+	<field name="PVIS_DATE" class="java.sql.Timestamp"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_AGE" class="java.math.BigDecimal"/>
+	<field name="PVIS_TYPE" class="java.lang.Integer"/>
+	<field name="PREG_LMP" class="java.sql.Date"/>
+	<field name="PREG_CALC_DELIVERY" class="java.sql.Date"/>
+	<field name="PREG_NB_GROSS" class="java.lang.Integer"/>
+	<field name="PVIS_TREATMENTS" class="java.lang.String"/>
+	<field name="PVIS_NEXTDATE" class="java.sql.Timestamp"/>
+	<field name="PVIS_NOTE" class="java.lang.String"/>
+
+		<background>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="46" isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="782"
+						height="24"
+						key="staticText-1"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[REGISTRE CPN (CONSULTATION PRENATALE)]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="26"
+						width="782"
+						height="16"
+						key="textField-1"/>
+					<textElement textAlignment="Center">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Hospital}+" - "+$P{Address}+", "+$P{City}+" — Période du " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " au " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20" isSplitAllowed="true" >
+				<staticText>
+					<reportElement x="0" y="0" width="65" height="20" key="staticText-2"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Date visite]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="65" y="0" width="150" height="20" key="staticText-3"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Patiente]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="215" y="0" width="35" height="20" key="staticText-4"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Âge]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="250" y="0" width="70" height="20" key="staticText-5"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Type visite]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="320" y="0" width="65" height="20" key="staticText-6"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[DDR]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="385" y="0" width="65" height="20" key="staticText-7"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[DPA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="450" y="0" width="55" height="20" key="staticText-8"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Geste]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="505" y="0" width="140" height="20" key="staticText-9"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Traitements]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="645" y="0" width="65" height="20" key="staticText-10"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Prochain RDV]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="710" y="0" width="72" height="20" key="staticText-11"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Note]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16" isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="0" y="0" width="65" height="16" key="textField-3"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PVIS_DATE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="65" y="0" width="150" height="16" key="textField-4"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="215" y="0" width="35" height="16" key="textField-5"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PAT_AGE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="250" y="0" width="70" height="16" key="textField-6"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PVIS_TYPE} != null && $F{PVIS_TYPE} == 1 ? "Postnatale" : "Prénatale"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="320" y="0" width="65" height="16" key="textField-7"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PREG_LMP}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="385" y="0" width="65" height="16" key="textField-8"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PREG_CALC_DELIVERY}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="450" y="0" width="55" height="16" key="textField-9"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PREG_NB_GROSS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="505" y="0" width="140" height="16" key="textField-10"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PVIS_TREATMENTS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="645" y="0" width="65" height="16" key="textField-11"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PVIS_NEXTDATE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="710" y="0" width="72" height="16" key="textField-12"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PVIS_NOTE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

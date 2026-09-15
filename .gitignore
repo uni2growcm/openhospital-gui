@@ -15,3 +15,8 @@ logs
 /rsc/*.pref
 /rsc/*.xml
 /target/
+
+openspec
+.opencode
+.claude
+LOG_*
