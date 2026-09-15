@@ -311,7 +311,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	 */
 	private void loadPatients(String keyword) {
 		try {
-			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, GeneralData.PAGESIZE);
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, 0);
 			patSearch = new ArrayList<>(response.getData());
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
@@ -325,17 +325,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	 * the table, and giving focus back to the search field.
 	 */
 	private void searchPatients(String keyword) {
-		loadPatients(keyword);
-
-		if (patSearch.isEmpty()) {
-			patient = null;
-			updatePatientSummary();
-		} else if (patSearch.size() == 1) {
-			patient = reloadSelectedPatient(patSearch.get(0).getCode());
-			updatePatientSummary();
-		}
-		jTablePatient.updateUI();
-		jTextFieldSearchPatient.requestFocus();
+		searchPatients(0, null);
 	}
 
 	private JLabel getJLabelSearch() {
