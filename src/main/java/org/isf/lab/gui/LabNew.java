@@ -63,6 +63,7 @@ import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.manager.ExamRowBrowsingManager;
+import org.isf.exa.model.Block;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
 import org.isf.generaldata.MessageBundle;
@@ -74,12 +75,15 @@ import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.priceslist.model.Price;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateTimeSpinnerChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.isf.utils.jobjects.OhTableModelBlockExam;
 import org.isf.utils.jobjects.OhTableModelExam;
 import org.isf.utils.time.RememberDates;
 import org.isf.utils.time.TimeTools;
@@ -140,6 +144,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	private JPanel jPanelNorth;
 	private JButton jButtonRemoveItem;
 	private JButton jButtonAddExam;
+	private JButton jButtonAddBlockExam;
 	private JPanel jPanelExamButtons;
 	private JPanel jPanelEast;
 	private JPanel jPanelSouth;
@@ -153,6 +158,9 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	private GoodDateTimeSpinnerChooser jCalendarDate;
 	private JPanel jPanelMaterial;
 	private JComboBox<String> jComboBoxMaterial;
+	private JPanel jPanelPrescriber;
+	private JComboBox<String> jComboBoxPrescriber;
+	private JLabel jLabelPrescriber;
 	private JPanel jPanelResults;
 	private JPanel jPanelNote;
 	private JPanel jPanelButtons;
@@ -187,6 +195,9 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 	// Materials
 	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 	private List<String> matList = labManager.getMaterialList();
+
+	// Prescribers
+	private PrescriberBrowserManager prescriberBrowserManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
 
 	// Exams (ALL)
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
@@ -302,12 +313,18 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				RememberDates.setLastLabExamDate(newDate);
 				String inOut = jRadioButtonOPD.isSelected() ? "O" : "I";
 
-				int row = 0;
-				for (Laboratory lab : examItems) {
-					lab.setLabDate(newDate);
-					lab.setInOutPatient(inOut);
-					lab.setPatient(patientSelected);
-					lab.setStatus(LaboratoryStatus.done.toString());
+int row = 0;
+			String prescriber = "";
+			Object prescriberSelected = jComboBoxPrescriber.getSelectedItem();
+			if (prescriberSelected != null) {
+				prescriber = prescriberSelected.toString().trim();
+			}
+			for (Laboratory lab : examItems) {
+				lab.setLabDate(newDate);
+				lab.setInOutPatient(inOut);
+				lab.setPatient(patientSelected);
+				lab.setPrescriber(prescriber);
+				lab.setStatus(LaboratoryStatus.done.toString());
 					int procedure = lab.getExam().getProcedure();
 					if ((procedure == 1 || procedure == 3) && lab.getResult().isEmpty()) {
 						MessageDialog.error(this, "angal.labnew.pleaseinsertavalidvalue");
@@ -525,6 +542,37 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		return jPanelMaterial;
 	}
 
+	private JComboBox<String> getJComboBoxPrescriber() {
+		if (jComboBoxPrescriber == null) {
+			jComboBoxPrescriber = new JComboBox<>();
+			jComboBoxPrescriber.setEditable(true);
+			try {
+				List<Prescriber> prescribers = prescriberBrowserManager.getPrescribers();
+				for (Prescriber prescriber : prescribers) {
+					jComboBoxPrescriber.addItem(prescriber.getDescription());
+				}
+			} catch (OHServiceException ex) {
+				LOGGER.error(ex.getMessage(), ex);
+			}
+			// no prescriber is selected by default: it is not mandatory for an exam
+			jComboBoxPrescriber.setSelectedItem("");
+			jComboBoxPrescriber.setPreferredSize(new Dimension(PATIENT_DIMENSION.width, COMPONENT_HEIGHT));
+			jComboBoxPrescriber.setMaximumSize(new Dimension(PATIENT_DIMENSION.width, COMPONENT_HEIGHT));
+		}
+		return jComboBoxPrescriber;
+	}
+
+	private JPanel getJPanelPrescriber() {
+		if (jPanelPrescriber == null) {
+			jPanelPrescriber = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			jLabelPrescriber = new JLabel(MessageBundle.getMessage("angal.lab.prescriber"));
+			jLabelPrescriber.setPreferredSize(LABEL_DIMENSION);
+			jPanelPrescriber.add(jLabelPrescriber);
+			jPanelPrescriber.add(getJComboBoxPrescriber());
+		}
+		return jPanelPrescriber;
+	}
+
 	private JLabel getJLabelDate() {
 		if (jLabelDate == null) {
 			jLabelDate = new JLabel(MessageBundle.getMessage("angal.common.date.txt"));
@@ -665,6 +713,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelNorth.setLayout(new BoxLayout(jPanelNorth, BoxLayout.Y_AXIS));
 			jPanelNorth.add(getJPanelDate());
 			jPanelNorth.add(getJPanelPatient());
+			jPanelNorth.add(getJPanelPrescriber());
 		}
 		return jPanelNorth;
 	}
@@ -716,6 +765,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelExamButtons = new JPanel();
 			jPanelExamButtons.setLayout(new BoxLayout(jPanelExamButtons, BoxLayout.X_AXIS));
 			jPanelExamButtons.add(getJButtonAddExam());
+			jPanelExamButtons.add(getJButtonAddBlockExam());
 			jPanelExamButtons.add(getJButtonRemoveItem());
 		}
 		return jPanelExamButtons;
@@ -785,6 +835,77 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			});
 		}
 		return jButtonAddExam;
+	}
+
+	private JButton getJButtonAddBlockExam() {
+		if (jButtonAddBlockExam == null) {
+			jButtonAddBlockExam = new JButton(MessageBundle.getMessage("angal.common.blockexams"));
+			jButtonAddBlockExam.setMnemonic(MessageBundle.getMnemonic("angal.labnew.exam.btn.key"));
+			jButtonAddBlockExam.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+			jButtonAddBlockExam.addActionListener(actionEvent -> {
+				ArrayList<Block> blockArray;
+				try {
+					blockArray = new ArrayList<>(examBrowsingManager.getBlocks());
+				} catch (OHServiceException ex) {
+					blockArray = null;
+					LOGGER.error(ex.getMessage(), ex);
+				}
+				if (blockArray == null || blockArray.isEmpty()) {
+					return;
+				}
+				OhTableModelBlockExam modelOh = new OhTableModelBlockExam(blockArray);
+				BlockExamPicker blockExamPicker = new BlockExamPicker(modelOh);
+
+				JDialog dialog = new JDialog();
+				dialog.setTitle(MessageBundle.getMessage("angal.common.blockexams"));
+				dialog.setSize(600, 350);
+				dialog.setLocationRelativeTo(null);
+				dialog.setModal(true);
+				blockExamPicker.setParentFrame(dialog);
+				dialog.setContentPane(blockExamPicker);
+				dialog.setVisible(true);
+				dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+				List<Block> selectedBlocks = blockExamPicker.getAllSelectedBlocks();
+				if (selectedBlocks.isEmpty()) {
+					return;
+				}
+				String mat = "";
+				Laboratory lab;
+				boolean alreadyIn;
+				for (Block block : selectedBlocks) {
+					List<Exam> blockExams;
+					try {
+						blockExams = examBrowsingManager.getExamWithBlock(block.getCode());
+					} catch (OHServiceException ex) {
+						LOGGER.error(ex.getMessage(), ex);
+						continue;
+					}
+					for (Exam exa : blockExams) {
+						alreadyIn = false;
+						for (Laboratory labItem : examItems) {
+							if (labItem.getExam() != null && labItem.getExam().getCode().equals(exa.getCode())) {
+								MessageDialog.error(this, "angal.labnew.thisexamisalreadypresent");
+								alreadyIn = true;
+							}
+						}
+						if (alreadyIn) {
+							continue;
+						}
+						lab = new Laboratory();
+						if (exa.getProcedure() == 1 || exa.getProcedure() == 3) {
+							lab.setResult(exa.getDefaultResult());
+						} else {
+							lab.setResult(MessageBundle.getMessage("angal.labnew.multipleresults"));
+						}
+						lab.setExam(exa);
+						lab.setMaterial(labManager.getMaterialKey(mat));
+						addItem(lab);
+					}
+				}
+			});
+		}
+		return jButtonAddBlockExam;
 	}
 
 	private void addItem(Laboratory lab) {

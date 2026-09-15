@@ -41,6 +41,8 @@ import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
 
+import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
+import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
@@ -114,7 +116,10 @@ public class MedicalEdit extends JDialog {
 	private VoLimitedTextField descriptionTextField;
 	private VoLimitedTextField codeTextField;
 	private VoDoubleTextField minQtiField;
+	private VoLimitedTextField shapeTextField;
+	private VoLimitedTextField dosingTextField;
 	private JComboBox<MedicalType> typeComboBox;
+	private JComboBox<ArticleFamily> articleFamilyComboBox;
 	private JCheckBox activeCheckbox;
 	private Medical oldMedical;
 	private Medical medical;
@@ -122,6 +127,7 @@ public class MedicalEdit extends JDialog {
 
 	private MedicalTypeBrowserManager medicalTypeManager = Context.getApplicationContext().getBean(MedicalTypeBrowserManager.class);
 	private MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
+	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
 
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
@@ -178,14 +184,19 @@ public class MedicalEdit extends JDialog {
 			dataPanel = new JPanel(new SpringLayout());
 
 			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.type") + ':');
+			JLabel familyLabel = new JLabel(MessageBundle.getMessage("angal.medicals.family.txt") + ':');
 			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
 			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':');
 			JLabel pcsperpckLabel = new JLabel(MessageBundle.getMessage("angal.medicals.pcsperpck.txt") + ':');
 			JLabel criticLabel = new JLabel(MessageBundle.getMessage("angal.medicals.criticallevel.txt") + ':');
+			JLabel shapeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.shape.txt") + ':');
+			JLabel dosingLabel = new JLabel(MessageBundle.getMessage("angal.medicals.dosing.txt") + ':');
 			JLabel activeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.active.txt") + ':');
 
 			dataPanel.add(typeLabel);
 			dataPanel.add(getTypeComboBox());
+			dataPanel.add(familyLabel);
+			dataPanel.add(getArticleFamilyComboBox());
 			dataPanel.add(codeLabel);
 			dataPanel.add(getCodeTextField());
 			dataPanel.add(descLabel);
@@ -194,11 +205,34 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getPcsperpckField());
 			dataPanel.add(criticLabel);
 			dataPanel.add(getMinQtiField());
+			dataPanel.add(shapeLabel);
+			dataPanel.add(getShapeField());
+			dataPanel.add(dosingLabel);
+			dataPanel.add(getDosingField());
 			dataPanel.add(activeLabel);
 			dataPanel.add(getActiveField());
-			SpringUtilities.makeCompactGrid(dataPanel, 6, 2, 5, 5, 5, 5);
+			SpringUtilities.makeCompactGrid(dataPanel, 9, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
+	}
+
+	private JComboBox<ArticleFamily> getArticleFamilyComboBox() {
+		if (articleFamilyComboBox == null) {
+			articleFamilyComboBox = new JComboBox<>();
+			articleFamilyComboBox.addItem(null);
+			try {
+				List<ArticleFamily> families = articleFamilyManager.getArticleFamilies();
+				for (ArticleFamily family : families) {
+					articleFamilyComboBox.addItem(family);
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			if (!insert) {
+				articleFamilyComboBox.setSelectedItem(medical.getArticleFamily());
+			}
+		}
+		return articleFamilyComboBox;
 	}
 
 	private JCheckBox getActiveField() {
@@ -256,10 +290,13 @@ public class MedicalEdit extends JDialog {
 						try {
 							newMedical = (Medical) medical.clone();
 							newMedical.setType((MedicalType) typeComboBox.getSelectedItem());
+							newMedical.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 							newMedical.setDescription(descriptionTextField.getText());
 							newMedical.setProdCode(codeTextField.getText());
 							newMedical.setPcsperpck(pcsperpckField.getValue());
 							newMedical.setMinqty(minQtiField.getValue());
+							newMedical.setShape(shapeTextField.getText());
+							newMedical.setDosing(dosingTextField.getText());
 							newMedical.setDeleted(activeCheckbox.isSelected() ? 'N' : 'Y');
 						} catch (CloneNotSupportedException cloneNotSupportedException) {
 							LOGGER.error(cloneNotSupportedException.getMessage(), cloneNotSupportedException);
@@ -298,10 +335,13 @@ public class MedicalEdit extends JDialog {
 						}
 					} else { // updating
 						oldMedical.setType((MedicalType) typeComboBox.getSelectedItem());
+						oldMedical.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 						oldMedical.setDescription(descriptionTextField.getText());
 						oldMedical.setProdCode(codeTextField.getText());
 						oldMedical.setPcsperpck(pcsperpckField.getValue());
 						oldMedical.setMinqty(minQtiField.getValue());
+						oldMedical.setShape(shapeTextField.getText());
+						oldMedical.setDosing(dosingTextField.getText());
 						oldMedical.setDeleted(activeCheckbox.isSelected() ? 'N' : 'Y');
 						try {
 							Medical updatedMedical = medicalBrowsingManager.updateMedical(oldMedical);
@@ -340,10 +380,13 @@ public class MedicalEdit extends JDialog {
 								updatedMedical = medical;
 							}
 							medical.setType((MedicalType) typeComboBox.getSelectedItem());
+							medical.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 							medical.setDescription(descriptionTextField.getText());
 							medical.setProdCode(codeTextField.getText());
 							medical.setPcsperpck(pcsperpckField.getValue());
 							medical.setMinqty(minQtiField.getValue());
+							medical.setShape(shapeTextField.getText());
+							medical.setDosing(dosingTextField.getText());
 							medical.setLock(updatedMedical.getLock());
 							medical.setDeleted(updatedMedical.getDeleted());
 							fireMedicalUpdated();
@@ -421,6 +464,28 @@ public class MedicalEdit extends JDialog {
 			}
 		}
 		return pcsperpckField;
+	}
+
+	private VoLimitedTextField getShapeField() {
+		if (shapeTextField == null) {
+			if (insert) {
+				shapeTextField = new VoLimitedTextField(50, 20);
+			} else {
+				shapeTextField = new VoLimitedTextField(50, medical.getShape(), 20);
+			}
+		}
+		return shapeTextField;
+	}
+
+	private VoLimitedTextField getDosingField() {
+		if (dosingTextField == null) {
+			if (insert) {
+				dosingTextField = new VoLimitedTextField(50, 20);
+			} else {
+				dosingTextField = new VoLimitedTextField(50, medical.getDosing(), 20);
+			}
+		}
+		return dosingTextField;
 	}
 
 	/**

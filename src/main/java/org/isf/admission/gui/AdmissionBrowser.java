@@ -96,6 +96,7 @@ import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.operation.gui.OperationRowAdm;
 import org.isf.patient.gui.PatientSummary;
 import org.isf.patient.model.Patient;
+import org.isf.pregnancy.gui.PregnancyDeliveryPanel;
 import org.isf.pregtreattype.manager.PregnantTreatmentTypeBrowserManager;
 import org.isf.pregtreattype.model.PregnantTreatmentType;
 import org.isf.utils.exception.OHServiceException;
@@ -201,7 +202,11 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JPanel jPanelDelivery;
 
+	private PregnancyDeliveryPanel pregnancyDeliveryPanel;
+
 	private int pregnancyTabIndex;
+
+	private int newbornsTabIndex;
 
 	private JPanel jContentPane;
 
@@ -256,9 +261,17 @@ public class AdmissionBrowser extends ModalJFrame {
 
 	private JTextField FHUTextField;
 
+	private JTextField bedTextField;
+
+	private JTextField roomTextField;
+
 	private JPanel wardPanel;
 
 	private JPanel fhuPanel;
+
+	private JPanel bedPanel;
+
+	private JPanel roomPanel;
 
 	private JPanel yearProgPanel;
 
@@ -362,7 +375,9 @@ public class AdmissionBrowser extends ModalJFrame {
 		super();
 		setTitle(editing ? MessageBundle.getMessage("angal.admission.editadmissionrecord.title")
 						: MessageBundle.getMessage("angal.admission.newadmission.title"));
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		this.editing = editing;
 		patient = admPatient.getPatient();
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
@@ -420,8 +435,12 @@ public class AdmissionBrowser extends ModalJFrame {
 	public AdmissionBrowser(JFrame parentFrame, JFrame parentParentFrame, Patient aPatient, Admission anAdmission) {
 		super();
 		setTitle(MessageBundle.getMessage("angal.admission.editadmissionrecord.title"));
-		addAdmissionListener((AdmissionListener) parentParentFrame);
-		addAdmissionListener((AdmissionListener) parentFrame);
+		if (parentParentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentParentFrame);
+		}
+		if (parentFrame instanceof AdmissionListener) {
+			addAdmissionListener((AdmissionListener) parentFrame);
+		}
 		editing = true;
 		patient = aPatient;
 		if (Character.toUpperCase(patient.getSex()) == 'F') {
@@ -516,6 +535,13 @@ public class AdmissionBrowser extends ModalJFrame {
 				if (!viewingPregnancy) {
 					jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, false);
 				}
+
+				jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.cpn.newborns.title"), getPregnancyDeliveryPanel());
+				newbornsTabIndex = jTabbedPaneAdmission.getTabCount() - 1;
+				if (!viewingPregnancy) {
+					jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, false);
+				}
+				pregnancyDeliveryPanel.loadFor(admission);
 			}
 			jTabbedPaneAdmission.addTab(MessageBundle.getMessage("angal.common.note.title"), getJPanelNote());
 		}
@@ -540,11 +566,13 @@ public class AdmissionBrowser extends ModalJFrame {
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getWardPanel())
 																			.addComponent(getAdmissionDatePanel())
-																			.addComponent(getDischargeDatePanel()))
+																			.addComponent(getDischargeDatePanel())
+																			.addComponent(getBedPanel()))
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getFHUPanel())
 																			.addComponent(getAdmissionTypePanel())
-																			.addComponent(getBedDaysPanel()))
+																			.addComponent(getBedDaysPanel())
+																			.addComponent(getRoomPanel()))
 															.addGroup(layout.createParallelGroup(LEADING)
 																			.addComponent(getProgYearPanel())
 																			.addComponent(getMalnutritionPanel())
@@ -566,6 +594,9 @@ public class AdmissionBrowser extends ModalJFrame {
 											.addComponent(getBedDaysPanel())
 											.addComponent(getDischargeTypePanel()))
 							.addComponent(getDiseaseOutPanel())
+							.addGroup(layout.createParallelGroup(BASELINE)
+											.addComponent(getBedPanel())
+											.addComponent(getRoomPanel()))
 							.addComponent(getJLabelRequiredFields()));
 		}
 		updateBedDays();
@@ -579,6 +610,23 @@ public class AdmissionBrowser extends ModalJFrame {
 			jPanelOperation.add(operationad);
 		}
 		return jPanelOperation;
+	}
+
+	private PregnancyDeliveryPanel getPregnancyDeliveryPanel() {
+		if (pregnancyDeliveryPanel == null) {
+			pregnancyDeliveryPanel = new PregnancyDeliveryPanel();
+		}
+		return pregnancyDeliveryPanel;
+	}
+
+	/**
+	 * Persists the newborns / delivery data captured on the {@link #getPregnancyDeliveryPanel()} tab, once
+	 * the admission being edited has a valid database id. No-op for admissions outside a pregnancy ward.
+	 */
+	private void savePregnancyDeliveryDataIfNeeded() {
+		if (enablePregnancy && admission.getId() > 0) {
+			pregnancyDeliveryPanel.saveFor(admission);
+		}
 	}
 
 	private JPanel getDeliveryTab() {
@@ -884,6 +932,42 @@ public class AdmissionBrowser extends ModalJFrame {
 		return fhuPanel;
 	}
 
+	private JPanel getBedPanel() {
+		if (bedPanel == null) {
+			bedPanel = new JPanel();
+
+			if (editing) {
+				bedTextField = new JTextField(admission.getBed());
+			} else {
+				bedTextField = new JTextField();
+			}
+			bedTextField.setColumns(20);
+
+			bedPanel.add(bedTextField);
+			bedPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.bed.border")));
+
+		}
+		return bedPanel;
+	}
+
+	private JPanel getRoomPanel() {
+		if (roomPanel == null) {
+			roomPanel = new JPanel();
+
+			if (editing) {
+				roomTextField = new JTextField(admission.getRoom());
+			} else {
+				roomTextField = new JTextField();
+			}
+			roomTextField.setColumns(20);
+
+			roomPanel.add(roomTextField);
+			roomPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.admission.room.border")));
+
+		}
+		return roomPanel;
+	}
+
 	private JPanel getWardPanel() {
 		if (wardPanel == null) {
 			wardPanel = new JPanel();
@@ -943,6 +1027,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						saveYProg = yProgTextField.getText();
 						viewingPregnancy = true;
 						jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, true);
+						jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, true);
 						validate();
 						repaint();
 					}
@@ -952,6 +1037,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						saveYProg = yProgTextField.getText();
 						viewingPregnancy = false;
 						jTabbedPaneAdmission.setEnabledAt(pregnancyTabIndex, false);
+						jTabbedPaneAdmission.setEnabledAt(newbornsTabIndex, false);
 						validate();
 						repaint();
 					}
@@ -1677,6 +1763,10 @@ public class AdmissionBrowser extends ModalJFrame {
 					admission.setFHU(FHUTextField.getText());
 				}
 
+				// get bed and room (both optional)
+				admission.setBed(bedTextField.getText().isEmpty() ? null : bedTextField.getText());
+				admission.setRoom(roomTextField.getText().isEmpty() ? null : roomTextField.getText());
+
 				dateIn = dateInFieldCal.getLocalDateTime();
 				if (dateIn == null) {
 					MessageDialog.error(this, "angal.admission.pleaseinsertavalidadmissiondate.msg");
@@ -1845,6 +1935,7 @@ public class AdmissionBrowser extends ModalJFrame {
 						if (newKey > 0) {
 							result = true;
 							admission.setId(newKey);
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionInserted(admission);
 							if (GeneralData.XMPPMODULEENABLED) {
 								CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
@@ -1870,6 +1961,7 @@ public class AdmissionBrowser extends ModalJFrame {
 							OHServiceExceptionUtil.showMessages(ex);
 						}
 						if (result) {
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionUpdated(admission);
 							dispose();
 						}
@@ -1889,6 +1981,7 @@ public class AdmissionBrowser extends ModalJFrame {
 							OHServiceExceptionUtil.showMessages(ex);
 						}
 						if (result) {
+							savePregnancyDeliveryDataIfNeeded();
 							fireAdmissionUpdated(admission);
 							if (GeneralData.XMPPMODULEENABLED) {
 								CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();

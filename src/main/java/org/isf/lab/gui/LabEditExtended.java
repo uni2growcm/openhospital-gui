@@ -69,6 +69,8 @@ import org.isf.lab.model.LaboratoryRow;
 import org.isf.menu.manager.Context;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.serviceprinting.manager.PrintManager;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -136,6 +138,7 @@ public class LabEditExtended extends ModalJFrame {
 	private VoLimitedTextField patTextField;
 	private VoLimitedTextField ageTextField;
 	private VoLimitedTextField sexTextField;
+	private JComboBox<String> prescriberComboBox;
 
 	private JPanel dataPatient;
 	private VoLimitedTextField jTextPatientSrc;
@@ -147,7 +150,7 @@ public class LabEditExtended extends ModalJFrame {
 
 	private static final int PANEL_WIDTH = 550;
 	private static final int LABEL_WIDTH = 70;
-	private static final int DATA_PANEL_HEIGHT = 90;
+	private static final int DATA_PANEL_HEIGHT = 115;
 	private static final int DATA_PATIENT_HEIGHT = 100;
 	private static final int RESULT_PANEL_HEIGHT = 350;
 	private static final int BUTTON_PANEL_HEIGHT = 45;
@@ -161,6 +164,7 @@ public class LabEditExtended extends ModalJFrame {
 	private ExamRowBrowsingManager examRowBrowsingManager = Context.getApplicationContext().getBean(ExamRowBrowsingManager.class);
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
+	private PrescriberBrowserManager prescriberBrowserManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
 
 	private JTextField examTextField;
 
@@ -270,6 +274,12 @@ public class LabEditExtended extends ModalJFrame {
 			patientComboBox = getPatientComboBox();
 			patientComboBox.setBounds(LABEL_WIDTH + 170, 65, 305, 20);
 
+			// prescriber
+			JLabel prescriberLabel = new JLabel(MessageBundle.getMessage("angal.lab.prescriber"));
+			prescriberLabel.setBounds(5, 90, LABEL_WIDTH, 20);
+			prescriberComboBox = getPrescriberComboBox();
+			prescriberComboBox.setBounds(LABEL_WIDTH + 5, 90, 470, 20);
+
 			// add all to the data panel
 			dataPanel.add(examDateLabel, null);
 			dataPanel.add(examDateFieldCal, null);
@@ -282,10 +292,36 @@ public class LabEditExtended extends ModalJFrame {
 			// ADDED: Alex
 			dataPanel.add(jTextPatientSrc, null);
 			dataPanel.add(patientComboBox, null);
+			dataPanel.add(prescriberLabel, null);
+			dataPanel.add(prescriberComboBox, null);
 
 			dataPanel.setPreferredSize(new Dimension(150, 200));
 		}
 		return dataPanel;
+	}
+
+	private JComboBox<String> getPrescriberComboBox() {
+		if (prescriberComboBox == null) {
+			prescriberComboBox = new JComboBox<>();
+			prescriberComboBox.setEditable(true);
+			List<Prescriber> prescribers;
+			try {
+				prescribers = prescriberBrowserManager.getPrescribers();
+			} catch (OHServiceException e) {
+				prescribers = new ArrayList<>();
+				OHServiceExceptionUtil.showMessages(e);
+			}
+			for (Prescriber prescriber : prescribers) {
+				prescriberComboBox.addItem(prescriber.getDescription());
+			}
+			if (!insert && lab.getPrescriber() != null && !lab.getPrescriber().isEmpty()) {
+				prescriberComboBox.setSelectedItem(lab.getPrescriber());
+			} else {
+				// no prescriber is selected by default: it is not mandatory for an exam
+				prescriberComboBox.setSelectedItem("");
+			}
+		}
+		return prescriberComboBox;
 	}
 
 	private JPanel getDataPatient() {
@@ -565,7 +601,7 @@ public class LabEditExtended extends ModalJFrame {
 									lab.getExam(),
 									lab.getLabDate(),
 									lab.getResult()));
-					printManager.print(MessageBundle.getMessage("angal.common.laboratory.txt"), labs, 0);
+					printManager.print("Laboratory", labs, 0);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
@@ -622,6 +658,8 @@ public class LabEditExtended extends ModalJFrame {
 				lab.setPatName(labPat.getName());
 				lab.setSex(String.valueOf(labPat.getSex()));
 				// lab.setStatus(LaboratoryStatus.DONE.toString()); status remains unchanged
+				Object prescriberSelected = prescriberComboBox.getSelectedItem();
+				lab.setPrescriber(prescriberSelected == null ? "" : prescriberSelected.toString().trim());
 
 				if (examSelected.getProcedure() == 1) {
 					lab.setResult(examRowComboBox.getSelectedItem().toString());

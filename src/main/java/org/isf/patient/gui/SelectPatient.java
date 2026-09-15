@@ -63,7 +63,10 @@ import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.jobjects.MessageDialog;
+import org.isf.utils.jobjects.PaginationPanel;
 import org.isf.utils.jobjects.VoLimitedTextField;
+import org.isf.utils.pagination.PageInfo;
+import org.isf.utils.pagination.PagedResponse;
 
 public class SelectPatient extends JDialog implements PatientListener {
 
@@ -103,8 +106,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private JLabel jLabelSearch;
 	private JTextField jTextFieldSearchPatient;
 	private JButton jSearchButton;
+	private PaginationPanel paginationPanel;
 	private JPanel jPanelDataPatient;
 	private Patient patient;
+	private int currentPage;
+	private PageInfo lastPageInfo;
 
 	public Patient getPatient() {
 		return patient;
@@ -118,6 +124,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private boolean[] patColumnsResizable = { false, true };
 
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+	List<Patient> patArray = new ArrayList<>();
 	List<Patient> patSearch = new ArrayList<>();
 	private Timer searchTimer;
 
@@ -137,6 +144,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 			}
 		});
 		setLocationRelativeTo(null);
+		searchPatients(0);
 	}
 
 	public SelectPatient(JDialog owner, Patient pat) {
@@ -155,6 +163,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 			}
 		});
 		setLocationRelativeTo(null);
+		searchPatients(0);
 	}
 
 	public SelectPatient(JDialog owner, String search) {
@@ -176,6 +185,9 @@ public class SelectPatient extends JDialog implements PatientListener {
 		searchPatients(search);
 	}
 
+	/**
+	 * @param full unused since patient search is always paginated - kept for caller compatibility.
+	 */
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
 		loadPatients(null);
@@ -192,8 +204,12 @@ public class SelectPatient extends JDialog implements PatientListener {
 		});
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
+		searchPatients(0);
 	}
 
+	/**
+	 * @param full unused since patient search is always paginated - kept for caller compatibility.
+	 */
 	public SelectPatient(JDialog owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
 		loadPatients(null);
@@ -210,6 +226,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 		});
 		setLocationRelativeTo(null);
 		buttonNew.setVisible(abbleAddPatient);
+		searchPatients(0);
 	}
 
 	private void initComponents() {
@@ -266,13 +283,36 @@ public class SelectPatient extends JDialog implements PatientListener {
 	}
 
 	/**
+	 * Renders the already server-filtered, already paginated {@code patArray} as {@code patSearch},
+	 * auto-selecting the patient when exactly one result comes back.
+	 */
+	private void filterPatient() {
+		patSearch = patArray;
+
+		if (jTablePatient.getRowCount() == 0) {
+
+			patient = null;
+			updatePatientSummary();
+		}
+		if (jTablePatient.getRowCount() == 1) {
+
+			Patient selectedPatient = (Patient) jTablePatient.getValueAt(0, -1);
+			patient = reloadSelectedPatient(selectedPatient.getCode());
+			updatePatientSummary();
+		}
+		jTablePatient.updateUI();
+		jTextFieldSearchPatient.requestFocus();
+	}
+
+	/**
 	 * Loads at most {@link GeneralData#PAGESIZE} patients matching {@code keyword} (or the first
 	 * page of all patients, for a blank/null keyword) into {@link #patSearch}, with no other UI
 	 * side effect - used for the constructors' initial, pre-{@link #initComponents()} population.
 	 */
 	private void loadPatients(String keyword) {
 		try {
-			patSearch = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, GeneralData.PAGESIZE);
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, GeneralData.PAGESIZE);
+			patSearch = new ArrayList<>(response.getData());
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);
 			patSearch = new ArrayList<>();
@@ -449,9 +489,8 @@ public class SelectPatient extends JDialog implements PatientListener {
 			if (MainMenu.checkUserGrants("btnadmnew")) {
 				jPanelTop.add(getButtonNew());
 			}
-			if (GeneralData.ENHANCEDSEARCH) {
-				jPanelTop.add(getJSearchButton());
-			}
+			jPanelTop.add(getJSearchButton());
+			jPanelTop.add(getPaginationPanel());
 		}
 		return jPanelTop;
 	}
@@ -467,6 +506,45 @@ public class SelectPatient extends JDialog implements PatientListener {
 			});
 		}
 		return jSearchButton;
+	}
+
+	/**
+	 * Triggered by a filter-changing action (search text change, dialog open). Always forces a fresh
+	 * total-count query, since the total may have changed for the new search.
+	 */
+	private void searchPatients(int page) {
+		searchPatients(page, null);
+	}
+
+	/**
+	 * Triggered by {@link PaginationPanel} navigation on an unchanged search. Skips the total-count query
+	 * by reusing the total already known from the last fetch.
+	 */
+	private void navigateToPage(int page) {
+		searchPatients(page, lastPageInfo == null ? null : lastPageInfo.getTotalNbOfElements());
+	}
+
+	private void searchPatients(int page, Long knownTotalElements) {
+		try {
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(jTextFieldSearchPatient.getText(), page,
+					knownTotalElements);
+			patArray = new ArrayList<>(response.getData());
+			lastPageInfo = response.getPageInfo();
+			currentPage = page;
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+			patArray = new ArrayList<>();
+			lastPageInfo = null;
+		}
+		getPaginationPanel().update(lastPageInfo);
+		filterPatient();
+	}
+
+	private PaginationPanel getPaginationPanel() {
+		if (paginationPanel == null) {
+			paginationPanel = new PaginationPanel(this::navigateToPage);
+		}
+		return paginationPanel;
 	}
 	private JButton getButtonNew() {
 		buttonNew = new JButton(MessageBundle.getMessage("angal.common.newpatient.btn"));

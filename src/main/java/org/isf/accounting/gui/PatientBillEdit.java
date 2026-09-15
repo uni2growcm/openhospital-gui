@@ -62,6 +62,8 @@ import org.isf.admission.manager.AdmissionBrowserManager;
 import org.isf.admission.model.Admission;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.lab.manager.LabManager;
+import org.isf.lab.model.Laboratory;
 import org.isf.generaldata.TxtPrinter;
 import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.medicalstockward.manager.MovWardBrowserManager;
@@ -346,6 +348,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 	private AdmissionBrowserManager admissionBrowserManager = Context.getApplicationContext().getBean(AdmissionBrowserManager.class);
 	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 	private int reductionPlanId;
+	private LabManager labManager = Context.getApplicationContext().getBean(LabManager.class);
 
 	// Prices, Items and Payments for the tables
 	private List<BillItems> billItems = new ArrayList<>();
@@ -987,6 +990,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 				jButtonPickPatient.setText(MessageBundle.getMessage("angal.newbill.findpatient.btn"));
 				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.newbill.associateapatientwiththisbill.tooltip"));
 				jButtonTrashPatient.setEnabled(false);
+				if (jButtonAddPrescription != null) {
+					jButtonAddPrescription.setVisible(false);
+				}
 			});
 		}
 		return jButtonTrashPatient;
@@ -1043,6 +1049,31 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 		thisBill.setPatName(patientSelected.getName());
 		reductionPlanId = GeneralData.ENABLEREDUCTIONPLAN && patientSelected.getReductionPlan() != null
 						? patientSelected.getReductionPlan().getId() : 0;
+		// Show/hide prescription button based on unbilled labs
+		if (jButtonAddPrescription != null) {
+			try {
+				boolean hasPresc = labManager.hasLabWithoutBill(patientSelected.getCode());
+				jButtonAddPrescription.setVisible(hasPresc);
+			} catch (OHServiceException e) {
+				jButtonAddPrescription.setVisible(false);
+			}
+		}
+	}
+
+	/**
+	 * Link prescription lab exams to the bill after saving.
+	 * For each bill item that has a prescriptionId (lab code), call updateBillIdLaboratory.
+	 */
+	private void linkPrescriptionLabs(int billId) {
+		for (BillItems item : billItems) {
+			if (item.getPrescriptionId() > 0) {
+				try {
+					labManager.updateBillIdLaboratory(item.getPrescriptionId(), billId);
+				} catch (OHServiceException e) {
+					OHServiceExceptionUtil.showMessages(e, this);
+				}
+			}
+		}
 	}
 
 	private JPanel getJPanelTop() {
@@ -1627,6 +1658,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 			jPanelButtonsBill.add(getJButtonAddMedical());
 			jPanelButtonsBill.add(getJButtonAddOperation());
 			jPanelButtonsBill.add(getJButtonAddExam());
+			jPanelButtonsBill.add(getJButtonAddPrescription());
 			jPanelButtonsBill.add(getJButtonAddOther());
 			jPanelButtonsBill.add(getJButtonAddCustom());
 			jPanelButtonsBill.add(getJButtonRemoveItem());
@@ -1769,6 +1801,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 						OHServiceExceptionUtil.showMessages(ex, this);
 						return;
 					}
+					// Link prescription labs to the new bill
+					linkPrescriptionLabs(newBill.getId());
 					fireBillInserted(newBill);
 					dispose();
 
@@ -1798,6 +1832,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, Selec
 						OHServiceExceptionUtil.showMessages(ex, this);
 						return;
 					}
+					// Link prescription labs to the updated bill
+					linkPrescriptionLabs(updateBill.getId());
 					fireBillInserted(updateBill);
 				}
 				if (hasNewPayments()) {

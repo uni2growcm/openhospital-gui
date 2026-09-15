@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="PregnancyDeliveryRegister"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="782"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isFloatColumnFooter="true"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="Hospital" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Address" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="City" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Email" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="Telephone" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="fromdate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="todate" isForPrompting="true" class="java.util.Date"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rpt_stat/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LOGO_PATH" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	</parameter>
+
+	<queryString><![CDATA[SELECT
+	PD.PDEL_ID AS PDEL_ID,
+	PD.PDEL_DATE_DEL AS PDEL_DATE_DEL,
+	PAT.PAT_NAME AS PAT_NAME,
+	IF(PAT.PAT_BDATE is not null, ROUND(DATEDIFF(CURDATE(), DATE(PAT.PAT_BDATE)) / 365,0), PAT.PAT_AGE) AS PAT_AGE,
+	PNB.PNB_CHILD_NUMBER AS PNB_CHILD_NUMBER,
+	PNB.PNB_SEX AS PNB_SEX,
+	DLT.DLT_DESC AS DLT_DESC,
+	DRT.DRT_DESC AS DRT_DESC,
+	PNB.PNB_WEIGHT AS PNB_WEIGHT,
+	PNB.PNB_HEIGHT AS PNB_HEIGHT,
+	PNB.PNB_COMPLICATIONS AS PNB_COMPLICATIONS,
+	PNB.PNB_MALFORMATION AS PNB_MALFORMATION,
+	PNB.PNB_HIV_EXPOSED AS PNB_HIV_EXPOSED,
+	CONCAT_WS(' / ', PD.PDEL_LOCHIES, PD.PDEL_COUNSELING, PD.PDEL_FP_METHOD) AS PDEL_NOTE
+FROM OH_PREGNANCYDELIVERY PD
+	JOIN OH_PREGNANCYNEWBORN PNB ON ( PNB.PNB_PDEL_ID = PD.PDEL_ID )
+	LEFT JOIN OH_ADMISSION ADM ON ( ADM.ADM_ID = PD.PDEL_ADM_ID )
+	LEFT JOIN OH_PREGNANCY PREG ON ( PREG.PREG_ID = PD.PDEL_PREG_ID )
+	JOIN OH_PATIENT PAT ON ( PAT.PAT_ID = COALESCE(ADM.ADM_PAT_ID, PREG.PREG_PAT_ID) )
+	LEFT JOIN OH_DELIVERYTYPE DLT ON ( DLT.DLT_ID_A = PNB.PNB_DLT_ID_A )
+	LEFT JOIN OH_DELIVERYRESULTTYPE DRT ON ( DRT.DRT_ID_A = PNB.PNB_DRT_ID_A )
+WHERE DATE(PD.PDEL_DATE_DEL) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+ORDER BY PD.PDEL_DATE_DEL ASC, PNB.PNB_CHILD_NUMBER ASC]]></queryString>
+
+	<field name="PDEL_ID" class="java.lang.Integer"/>
+	<field name="PDEL_DATE_DEL" class="java.sql.Timestamp"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_AGE" class="java.math.BigDecimal"/>
+	<field name="PNB_CHILD_NUMBER" class="java.lang.Integer"/>
+	<field name="PNB_SEX" class="java.lang.String"/>
+	<field name="DLT_DESC" class="java.lang.String"/>
+	<field name="DRT_DESC" class="java.lang.String"/>
+	<field name="PNB_WEIGHT" class="java.lang.Float"/>
+	<field name="PNB_HEIGHT" class="java.lang.Float"/>
+	<field name="PNB_COMPLICATIONS" class="java.lang.String"/>
+	<field name="PNB_MALFORMATION" class="java.lang.String"/>
+	<field name="PNB_HIV_EXPOSED" class="java.lang.Boolean"/>
+	<field name="PDEL_NOTE" class="java.lang.String"/>
+
+		<background>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="46" isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="782"
+						height="24"
+						key="staticText-1"/>
+					<textElement textAlignment="Center">
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[REGISTRE DES ACCOUCHEMENTS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="26"
+						width="782"
+						height="16"
+						key="textField-1"/>
+					<textElement textAlignment="Center">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$P{Hospital}+" - "+$P{Address}+", "+$P{City}+" — Période du " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " au " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="20" isSplitAllowed="true" >
+				<staticText>
+					<reportElement x="0" y="0" width="55" height="20" key="staticText-2"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="55" y="0" width="110" height="20" key="staticText-3"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Patiente]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="165" y="0" width="30" height="20" key="staticText-4"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Âge]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="195" y="0" width="30" height="20" key="staticText-5"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[N° enf.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="225" y="0" width="30" height="20" key="staticText-6"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Sexe]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="255" y="0" width="70" height="20" key="staticText-7"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Type accouch.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="325" y="0" width="70" height="20" key="staticText-8"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Résultat]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="395" y="0" width="45" height="20" key="staticText-9"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Poids (g)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="440" y="0" width="40" height="20" key="staticText-10"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Taille (cm)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="480" y="0" width="90" height="20" key="staticText-11"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Complications]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="570" y="0" width="90" height="20" key="staticText-12"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Malformation]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="660" y="0" width="40" height="20" key="staticText-13"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[VIH exp.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="700" y="0" width="82" height="20" key="staticText-14"/>
+					<box><pen lineWidth="0.5"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<text><![CDATA[Lochies / Counsel. / PF]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="16" isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" pattern="dd/MM/yyyy" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="0" y="0" width="55" height="16" key="textField-3"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PDEL_DATE_DEL}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="55" y="0" width="110" height="16" key="textField-4"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="165" y="0" width="30" height="16" key="textField-5"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PAT_AGE}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="195" y="0" width="30" height="16" key="textField-6"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_CHILD_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="225" y="0" width="30" height="16" key="textField-7"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_SEX}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="255" y="0" width="70" height="16" key="textField-8"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{DLT_DESC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="325" y="0" width="70" height="16" key="textField-9"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{DRT_DESC}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="395" y="0" width="45" height="16" key="textField-10"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_WEIGHT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="440" y="0" width="40" height="16" key="textField-11"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_HEIGHT}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="480" y="0" width="90" height="16" key="textField-12"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_COMPLICATIONS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="570" y="0" width="90" height="16" key="textField-13"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_MALFORMATION}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="660" y="0" width="40" height="16" key="textField-14"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PNB_HIV_EXPOSED} != null && $F{PNB_HIV_EXPOSED} ? "Oui" : "Non"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self" >
+					<reportElement x="700" y="0" width="82" height="16" key="textField-15"/>
+					<box><pen lineWidth="0.25"/></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle"><font size="7"/></textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{PDEL_NOTE}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0" isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>
