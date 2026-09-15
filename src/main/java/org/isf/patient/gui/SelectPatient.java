@@ -126,10 +126,11 @@ public class SelectPatient extends JDialog implements PatientListener {
 	private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 	List<Patient> patArray = new ArrayList<>();
 	List<Patient> patSearch = new ArrayList<>();
-	private Timer searchTimer = new Timer(1000, e -> searchPatients(0));
+	private Timer searchTimer;
 
 	public SelectPatient(JFrame owner, Patient pat) {
 		super(owner, true);
+		loadPatients(null);
 		patient = pat;
 		ps = new PatientSummary(patient);
 		initComponents();
@@ -138,7 +139,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
@@ -149,6 +149,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public SelectPatient(JDialog owner, Patient pat) {
 		super(owner, true);
+		loadPatients(null);
 		patient = pat;
 		ps = new PatientSummary(patient);
 		initComponents();
@@ -157,7 +158,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
@@ -168,6 +168,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	public SelectPatient(JDialog owner, String search) {
 		super(owner, true);
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -175,14 +176,13 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
 		});
 		setLocationRelativeTo(null);
 		jTextFieldSearchPatient.setText(search);
-		searchPatients(0);
+		searchPatients(search);
 	}
 
 	/**
@@ -190,6 +190,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	 */
 	public SelectPatient(JFrame owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -197,7 +198,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
@@ -212,6 +212,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 	 */
 	public SelectPatient(JDialog owner, boolean abbleAddPatient, boolean full) {
 		super(owner, true);
+		loadPatients(null);
 		ps = new PatientSummary(patient);
 		initComponents();
 		addWindowListener(new WindowAdapter() {
@@ -219,7 +220,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			}
@@ -255,10 +255,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						searchPatients(0);
+						getSearchTimer().stop();
+						searchPatients(jTextFieldSearchPatient.getText());
 					} else {
-						searchTimer.setRepeats(false);
-						searchTimer.start();
+						getSearchTimer().restart();
 					}
 				}
 
@@ -272,6 +272,14 @@ public class SelectPatient extends JDialog implements PatientListener {
 			});
 		}
 		return jTextFieldSearchPatient;
+	}
+
+	private Timer getSearchTimer() {
+		if (searchTimer == null) {
+			searchTimer = new Timer(1000, actionEvent -> searchPatients(jTextFieldSearchPatient.getText()));
+			searchTimer.setRepeats(false);
+		}
+		return searchTimer;
 	}
 
 	/**
@@ -296,6 +304,30 @@ public class SelectPatient extends JDialog implements PatientListener {
 		jTextFieldSearchPatient.requestFocus();
 	}
 
+	/**
+	 * Loads at most {@link GeneralData#PAGESIZE} patients matching {@code keyword} (or the first
+	 * page of all patients, for a blank/null keyword) into {@link #patSearch}, with no other UI
+	 * side effect - used for the constructors' initial, pre-{@link #initComponents()} population.
+	 */
+	private void loadPatients(String keyword) {
+		try {
+			PagedResponse<Patient> response = patientBrowserManager.getPatientsByOneOfFieldsLike(keyword, 0);
+			patSearch = new ArrayList<>(response.getData());
+		} catch (OHServiceException ohServiceException) {
+			MessageDialog.showExceptions(ohServiceException);
+			patSearch = new ArrayList<>();
+		}
+	}
+
+	/**
+	 * Same as {@link #loadPatients(String)}, followed by the UI refresh a user-triggered search
+	 * needs: auto-selecting a single match, clearing the selection when there are none, refreshing
+	 * the table, and giving focus back to the search field.
+	 */
+	private void searchPatients(String keyword) {
+		searchPatients(0, null);
+	}
+
 	private JLabel getJLabelSearch() {
 		if (jLabelSearch == null) {
 			jLabelSearch = new JLabel(MessageBundle.getMessage("angal.patient.searchpatient"));
@@ -311,7 +343,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 				if (patient != null) {
 					// to free memory
-					patArray.clear();
 					patSearch.clear();
 					dispose();
 					fireSelectedPatient(patient);
@@ -327,7 +358,6 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jButtonCancel.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
 			jButtonCancel.addActionListener(actionEvent -> {
 				// to free memory
-				patArray.clear();
 				patSearch.clear();
 				dispose();
 			});
@@ -460,7 +490,10 @@ public class SelectPatient extends JDialog implements PatientListener {
 			jSearchButton = new JButton();
 			jSearchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
 			jSearchButton.setPreferredSize(new Dimension(20, 20));
-			jSearchButton.addActionListener(actionEvent -> searchPatients(0));
+			jSearchButton.addActionListener(actionEvent -> {
+				getSearchTimer().stop();
+				searchPatients(jTextFieldSearchPatient.getText());
+			});
 		}
 		return jSearchButton;
 	}
