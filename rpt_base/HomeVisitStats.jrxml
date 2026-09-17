@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="HomeVisitStats" pageWidth="535" pageHeight="200" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="HomeVisitStats" whenResourceMissingType="Key" uuid="c1000001-0001-0001-0001-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<parameter name="PeriodStart" class="java.sql.Timestamp"/>
+	<parameter name="PeriodEnd" class="java.sql.Timestamp"/>
+	<queryString>
+		<![CDATA[SELECT
+		COALESCE(COUNT(*), 0) AS TOTAL_VISITS,
+		COALESCE(SUM(CASE WHEN HV_STATUS = 'PLANNED'   THEN 1 ELSE 0 END), 0) AS PLANNED_COUNT,
+		COALESCE(SUM(CASE WHEN HV_STATUS = 'COMPLETED' THEN 1 ELSE 0 END), 0) AS COMPLETED_COUNT,
+		COALESCE(SUM(CASE WHEN HV_STATUS = 'CANCELLED' THEN 1 ELSE 0 END), 0) AS CANCELLED_COUNT,
+		COALESCE(SUM(CASE WHEN HV_STATUS = 'POSTPONED' THEN 1 ELSE 0 END), 0) AS POSTPONED_COUNT,
+		COALESCE(COUNT(DISTINCT HV_PAT_ID), 0) AS PATIENT_COUNT
+	FROM OH_HOME_VISIT
+	WHERE HV_DELETE = 1
+		AND HV_VISIT_START_DATE >= $P{PeriodStart}
+		AND HV_VISIT_START_DATE <  $P{PeriodEnd}]]>
+	</queryString>
+	<field name="TOTAL_VISITS" class="java.lang.Long"/>
+	<field name="PLANNED_COUNT" class="java.lang.Long"/>
+	<field name="COMPLETED_COUNT" class="java.lang.Long"/>
+	<field name="CANCELLED_COUNT" class="java.lang.Long"/>
+	<field name="POSTPONED_COUNT" class="java.lang.Long"/>
+	<field name="PATIENT_COUNT" class="java.lang.Long"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="130" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="535" height="120" uuid="c1000001-0001-0001-0001-000000000002"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="15" y="10" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000003"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stats_visites_planifiees}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="10" width="20" height="18" uuid="c1000001-0001-0001-0001-000000000004"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="10" width="100" height="18" uuid="c1000001-0001-0001-0001-000000000005"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PLANNED_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="30" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000006"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stats_visites_realisees}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="30" width="20" height="18" uuid="c1000001-0001-0001-0001-000000000007"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="30" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000008"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{COMPLETED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="50" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000009"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stats_visites_annulees}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="50" width="20" height="18" uuid="c100000a-0001-0001-0001-000000000001"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="50" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000002"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{CANCELLED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="70" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000003"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stats_visites_reportees}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="70" width="20" height="18" uuid="c100000a-0001-0001-0001-000000000004"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="70" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000005"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{POSTPONED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="94" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000006"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{stats_total_patients}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="94" width="20" height="18" uuid="c100000a-0001-0001-0001-000000000007"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="94" width="100" height="18" uuid="c100000a-0001-0001-0001-000000000008"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PATIENT_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

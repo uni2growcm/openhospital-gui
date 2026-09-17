@@ -69,5 +69,4 @@ public class GenericReportUserInDate extends DisplayReport {
 			MessageDialog.error(null, "angal.stat.reporterror.msg");
 		}
 	}
-
 }
