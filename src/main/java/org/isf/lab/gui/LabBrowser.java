@@ -31,8 +31,11 @@ import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -265,7 +268,11 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 					List<LaboratoryForPrint> labs;
 					labs = labManager.getLaboratoryForPrint(typeSelected, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay());
 					if (!labs.isEmpty()) {
-						printManager.print("Laboratory", labs, 0);
+						Map<String, Object> extraParameters = new HashMap<>();
+						DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+						extraParameters.put("PeriodLabel", dateFrom.getDate().format(periodFormatter) + " - "
+								+ dateTo.getDate().format(periodFormatter));
+						printManager.print("Laboratory", labs, extraParameters, 0);
 					}
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);

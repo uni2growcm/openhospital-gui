@@ -26,9 +26,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.swing.BorderFactory;
@@ -461,7 +464,10 @@ public class LabEdit extends ModalJFrame {
 							lab.getPatName(),
 							lab.getPrescriber(),
 							lab.getPaidStatus()));
-					printManager.print("Laboratory", labs, 0);
+					Map<String, Object> extraParameters = new HashMap<>();
+					DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+					extraParameters.put("PeriodLabel", lab.getLabDate().toLocalDate().format(periodFormatter));
+					printManager.print("Laboratory", labs, extraParameters, 0);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
