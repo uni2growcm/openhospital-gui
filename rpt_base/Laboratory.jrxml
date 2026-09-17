@@ -5,6 +5,7 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
+	<import value="java.text.SimpleDateFormat"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="ospedaleNome" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ospedaleTel" class="java.lang.String" isForPrompting="false"/>
@@ -13,6 +14,7 @@
 	<parameter name="ospedaleIndirizzo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ospedaleCitta" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ospedaleCurrency" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PeriodLabel" class="java.lang.String" isForPrompting="false"/>
 	<field name="exam" class="java.lang.String"/>
 	<field name="date" class="java.time.LocalDateTime"/>
 	<field name="result" class="java.lang.String"/>
@@ -76,26 +78,19 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="75" width="535" height="16" uuid="5cdc24aa-2e90-4987-9f93-7176f078f0c7"/>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{period}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_periode} + ($P{PeriodLabel} != null ? " " + $P{PeriodLabel} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="95" width="280" height="14" uuid="e2f4a6c8-0b1d-4e3f-9a5b-7c8d9e0f1a2b"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{ospedaleNome} != null ? $P{ospedaleNome} : "")]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="95" width="255" height="14" uuid="fab2389b-4837-4d5d-a2c9-3d202a8c4356"/>
-				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_devise} + " " + ($P{ospedaleCurrency} != null ? $P{ospedaleCurrency} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{ospedaleCitta} != null ? $P{ospedaleCitta} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="109" width="280" height="14" uuid="ecabcac7-7983-42c8-91f0-87c4e7b2a276"/>
@@ -105,25 +100,25 @@
 				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{ospedaleIndirizzo} != null ? $P{ospedaleIndirizzo} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="109" width="255" height="14" uuid="77962e8b-8b9a-4a84-9b1f-673880822945"/>
+				<reportElement x="280" y="95" width="255" height="14" uuid="fab2389b-4837-4d5d-a2c9-3d202a8c4356"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{ospedaleNome} != null ? $P{ospedaleNome} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="109" width="255" height="14" uuid="dfa63c7d-2f4a-4d9b-8b1e-3c9d2f4a6b7c"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_ville} + " " + ($P{ospedaleCitta} != null ? $P{ospedaleCitta} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{ospedaleTel} != null ? $P{ospedaleTel} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="123" width="280" height="14" uuid="8be0c1b3-1fbe-4cd2-8836-b437b08e08a0"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_tel} + " " + ($P{ospedaleTel} != null ? $P{ospedaleTel} : "")]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="123" width="255" height="14" uuid="dfa63c7d-2f4a-4d9b-8b1e-3c9d2f4a6b7c"/>
+				<reportElement x="280" y="123" width="255" height="14" uuid="77962e8b-8b9a-4a84-9b1f-673880822945"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_mail} + " " + ($P{ospedaleMail} != null ? $P{ospedaleMail} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{ospedaleMail} != null ? $P{ospedaleMail} : "")]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="0" y="140" width="535" height="1" uuid="e11510fe-7c1f-4e3a-9816-c97672feb0a3"/>
