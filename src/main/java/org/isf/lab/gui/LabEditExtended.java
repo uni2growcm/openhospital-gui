@@ -23,9 +23,12 @@ package org.isf.lab.gui;
 
 import java.awt.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.swing.BorderFactory;
@@ -539,8 +542,14 @@ public class LabEditExtended extends ModalJFrame {
 							lab.getCode(),
 							lab.getExam(),
 							lab.getLabDate(),
-							lab.getResult()));
-					printManager.print(MessageBundle.getMessage("angal.common.laboratory.txt"), labs, 0);
+							lab.getResult(),
+							lab.getPatName(),
+							lab.getPrescriber(),
+							lab.getPaidStatus()));
+					Map<String, Object> extraParameters = new HashMap<>();
+					DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+					extraParameters.put("PeriodLabel", lab.getLabDate().toLocalDate().format(periodFormatter));
+					printManager.print("Laboratory", labs, extraParameters, 0);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e);
 				}
