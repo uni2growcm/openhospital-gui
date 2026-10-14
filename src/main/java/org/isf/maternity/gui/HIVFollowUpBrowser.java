@@ -48,6 +48,7 @@ import org.isf.hiv.model.HIVInfant;
 import org.isf.hiv.model.HIVInfant.FeedingType;
 import org.isf.hiv.model.HIVInfant.HIVInfantStatus;
 import org.isf.hiv.model.HIVVisit;
+import org.isf.lab.gui.LabBrowser;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
@@ -543,6 +544,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         if (MainMenu.checkUserGrants("hiv.deletevisit")) {
             buttonPanel.add(getJDeleteVisitButton());
         }
+       buttonPanel.add(getLabButton());
         if (MainMenu.checkUserGrants("hiv.therapy")) {
             buttonPanel.add(getJTherapyButton());
         }
@@ -650,6 +652,12 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     private JButton getJTherapyButton() {
         JButton button = new JButton(MessageBundle.getMessage("angal.hiv.button.therapy"));
         button.addActionListener(e -> therapy());
+        return button;
+    }
+
+    private JButton getLabButton(){
+        JButton button = new JButton(MessageBundle.getMessage("angal.hiv.button.laboratory.txt"));
+        button.addActionListener(e -> new LabBrowser());
         return button;
     }
 
