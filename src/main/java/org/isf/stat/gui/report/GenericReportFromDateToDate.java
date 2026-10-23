@@ -249,6 +249,11 @@ public class GenericReportFromDateToDate extends DisplayReport {
 		parameters.put("todate", toDate != null ? Date.from(toDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
 		parameters.put("IMAGE_PATH", "./rsc/images/logo_report.png");
 
+		if (fromDate != null && toDate != null) {
+			DateTimeFormatter periodLabelFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
+			parameters.put("PeriodLabel", fromDate.format(periodLabelFormatter) + " - " + toDate.format(periodLabelFormatter));
+		}
+
 		parameters.put(JRParameter.REPORT_LOCALE, Locale.getDefault());
 
 		try {
