@@ -16,7 +16,7 @@
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PeriodLabel" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="state" class="java.lang.String" isForPrompting="true">
+	<parameter name="state" class="java.lang.String">
 		<defaultValueExpression><![CDATA["O"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="state2" class="java.lang.String" isForPrompting="false">
@@ -146,7 +146,7 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:" ")]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{designation}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-12" x="208" y="2" width="59" height="16" uuid="0a03ece4-97aa-4157-8d24-ca051a85af76"/>
+					<reportElement key="textField-12" x="180" y="2" width="87" height="16" uuid="0a03ece4-97aa-4157-8d24-ca051a85af76"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="11" isBold="true" isUnderline="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
