@@ -96,6 +96,8 @@ public class ReportLauncher extends ModalJFrame {
 	private JLabel jToDateLabel;
 	private GoodDateChooser jToDateField;
 	private GoodDateChooser jFromDateField;
+	private JLabel jStatusLabel;
+	private JComboBox<String> jStatusComboBox;
 
 	private JComboBox<String> jRptComboBox;
 
@@ -271,6 +273,8 @@ public class ReportLauncher extends ModalJFrame {
 			jRptComboBox.addActionListener(actionEvent -> {
 				if (actionEvent.getActionCommand() != null && actionEvent.getActionCommand().equalsIgnoreCase("comboBoxChanged")) {
 					selectAction();
+					pack();
+					setLocationRelativeTo(null);
 				}
 			});
 
@@ -314,6 +318,16 @@ public class ReportLauncher extends ModalJFrame {
 			jFromDateLabel.setVisible(false);
 			jFromDateField.setVisible(false);
 
+			// TODO: fix how the layout of the last two fields are done; adding
+			// spaces is a hack
+			jStatusLabel = new JLabel("               " + MessageBundle.getMessage("angal.common.status.txt"));
+			jStatusComboBox = new JComboBox<>();
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.common.all.txt"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.pending.title"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.closed.title"));
+			jStatusLabel.setVisible(false);
+			jStatusComboBox.setVisible(false);
+
 			jMonthPanel.add(jRptLabel, null);
 			jMonthPanel.add(jRptComboBox, null);
 			jMonthPanel.add(jMonthLabel, null);
@@ -324,6 +338,8 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthPanel.add(jFromDateField, null);
 			jMonthPanel.add(jToDateLabel, null);
 			jMonthPanel.add(jToDateField, null);
+			jMonthPanel.add(jStatusLabel, null);
+			jMonthPanel.add(jStatusComboBox, null);
 		}
 		return jMonthPanel;
 
@@ -357,6 +373,12 @@ public class ReportLauncher extends ModalJFrame {
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
+				}
+				boolean hasStatus = userInputParamNames.contains("state");
+				jStatusLabel.setVisible(hasStatus);
+				jStatusComboBox.setVisible(hasStatus);
+				if (hasStatus) {
+					jStatusComboBox.setSelectedIndex(0);
 				}
 			} catch (JRException e) {
 				LOGGER.error("Exception in selectAction method.", e);
@@ -393,12 +415,30 @@ public class ReportLauncher extends ModalJFrame {
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
 			if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
-				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
-								jRptComboBox.getSelectedItem().toString(), toExcel);
+				String folder = folderNameFileNameMap.get("rpt_stat").contains(
+								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+												: "rpt_extra";
+				String jasperFileName = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "");
+
+				if (userInputParamNames.contains("state")) {
+					String state;
+					String state2;
+					if (jStatusComboBox.getSelectedIndex() == 1) {
+						state = "O";
+						state2 = "O";
+					} else if (jStatusComboBox.getSelectedIndex() == 2) {
+						state = "C";
+						state2 = "C";
+					} else {
+						state = "O";
+						state2 = "C";
+					}
+					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
+									jRptComboBox.getSelectedItem().toString(), toExcel, state, state2);
+				} else {
+					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
+									jRptComboBox.getSelectedItem().toString(), toExcel);
+				}
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();

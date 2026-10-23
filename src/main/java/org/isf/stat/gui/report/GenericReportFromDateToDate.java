@@ -228,6 +228,84 @@ public class GenericReportFromDateToDate extends DisplayReport {
 		}
 	}
 
+	public GenericReportFromDateToDate(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName, String defaultName, boolean toExcel,
+			String state, String state2) {
+		try {
+			File defaultFilename = new File(jasperReportsManager.compileDefaultFilename(defaultName));
+
+			if (toExcel) {
+				JFileChooser fcExcel = ExcelExporter.getJFileChooserExcel(defaultFilename);
+
+				int iRetVal = fcExcel.showSaveDialog(null);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File exportFile = fcExcel.getSelectedFile();
+					FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fcExcel.getFileFilter();
+					String extension = selectedFilter.getExtensions()[0];
+					if (!exportFile.getName().endsWith(extension)) {
+						exportFile = new File(exportFile.getAbsoluteFile() + "." + extension);
+					}
+					jasperReportsManager.getGenericReportFromDateToDateExcel(fromDate, toDate, jasperFileFolder, jasperFileName, exportFile.getAbsolutePath(), state,
+							state2);
+				}
+			} else {
+				JasperReportResultDto jasperReportResultDto = getGenericReportFromDateToDatePdf(fromDate, toDate, jasperFileFolder, jasperFileName, state, state2);
+				showReport(jasperReportResultDto);
+			}
+		} catch (OHReportException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		} catch (Exception e) {
+			LOGGER.error("", e);
+			MessageDialog.error(null, "angal.stat.reporterror.msg");
+		}
+	}
+
+	private JasperReportResultDto getGenericReportFromDateToDatePdf(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName,
+			String state, String state2) throws Exception {
+		DataSource dataSource = Context.getApplicationContext().getBean(DataSource.class);
+		HospitalBrowsingManager hospitalManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
+
+		String jasperFilename = jasperFileFolder + File.separator + jasperFileName + ".jasper";
+		String pdfFilename = jasperFileFolder + File.separator + "PDF" + File.separator + jasperFileName + ".pdf";
+
+		HashMap<String, Object> parameters = new HashMap<>();
+
+		Hospital hosp = hospitalManager.getHospital();
+		parameters.put("Hospital", hosp.getDescription());
+		parameters.put("Address", hosp.getAddress());
+		parameters.put("City", hosp.getCity());
+		parameters.put("Email", hosp.getEmail());
+		parameters.put("Telephone", hosp.getTelephone());
+		parameters.put("Currency", hosp.getCurrencyCod());
+
+		parameters.put("fromdate", fromDate != null ? Date.from(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
+		parameters.put("todate", toDate != null ? Date.from(toDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
+		parameters.put("IMAGE_PATH", "./rsc/images/logo_report.png");
+		parameters.put("state", state);
+		parameters.put("state2", state2);
+
+		if (fromDate != null && toDate != null) {
+			DateTimeFormatter periodLabelFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
+			parameters.put("PeriodLabel", fromDate.format(periodLabelFormatter) + " - " + toDate.format(periodLabelFormatter));
+		}
+
+		parameters.put(JRParameter.REPORT_LOCALE, Locale.getDefault());
+
+		try {
+			ResourceBundle resourceBundle = ResourceBundle.getBundle(jasperFileName, Locale.getDefault(), new UTF8Control());
+			parameters.put(JRParameter.REPORT_RESOURCE_BUNDLE, resourceBundle);
+		} catch (MissingResourceException e) {
+			LOGGER.error(">> no resource bundle for language '{}' found for report {}", GeneralData.LANGUAGE, jasperFileName);
+		}
+
+		File jasperFile = new File(jasperFilename);
+		JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperFile);
+		Connection connection = dataSource.getConnection();
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, connection);
+		connection.close();
+		JasperExportManager.exportReportToPdfFile(jasperPrint, pdfFilename);
+		return new JasperReportResultDto(jasperPrint, jasperFilename, pdfFilename);
+	}
+
 	private JasperReportResultDto getGenericReportFromDateToDatePdf(LocalDate fromDate, LocalDate toDate, String jasperFileFolder, String jasperFileName) throws Exception {
 		DataSource dataSource = Context.getApplicationContext().getBean(DataSource.class);
 		HospitalBrowsingManager hospitalManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
@@ -248,6 +326,11 @@ public class GenericReportFromDateToDate extends DisplayReport {
 		parameters.put("fromdate", fromDate != null ? Date.from(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
 		parameters.put("todate", toDate != null ? Date.from(toDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null);
 		parameters.put("IMAGE_PATH", "./rsc/images/logo_report.png");
+
+		if (fromDate != null && toDate != null) {
+			DateTimeFormatter periodLabelFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
+			parameters.put("PeriodLabel", fromDate.format(periodLabelFormatter) + " - " + toDate.format(periodLabelFormatter));
+		}
 
 		parameters.put(JRParameter.REPORT_LOCALE, Locale.getDefault());
 
