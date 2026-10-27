@@ -9,18 +9,18 @@
 	<parameter name="year" class="java.lang.String"/>
 	<parameter name="month" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select 'Total admissions' as Description,count(*) as Number from OH_ADMISSION
+		<![CDATA[select 'TotalAdmissions' as Description,count(*) as Number from OH_ADMISSION
 where year(ADM_DATE_ADM) = $P{year}
 and month(ADM_DATE_ADM) = $P{month}
 and ADM_DELETED = 'N'
 union
-select 'Number inpatients referred TO this unit (admission date, see *Note)',count(*) from OH_ADMISSION
+select 'InpatientsReferredTo',count(*) from OH_ADMISSION
 where year(ADM_DATE_ADM) = $P{year}
 and month(ADM_DATE_ADM) = $P{month}
 and ADM_DELETED = 'N'
 and ADM_ADMT_ID_A_ADM = 'R'
 union
-select 'Number inpatients referred FROM this unit (discharged date, see *Note)',count(*) from OH_ADMISSION
+select 'InpatientsReferredFrom',count(*) from OH_ADMISSION
 where year(ADM_DATE_DIS) = $P{year}
 and month(ADM_DATE_DIS) = $P{month}
 and ADM_DELETED = 'N'
@@ -42,7 +42,7 @@ and ADM_DIST_ID_A = 'B']]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="18" isBold="true"/>
+					<font size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Hmis108InpatientMonthlyReport}]]></textFieldExpression>
 			</textField>
@@ -174,7 +174,7 @@ and ADM_DIST_ID_A = 'B']]>
 				<textElement>
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey($F{Description}) ? $P{REPORT_RESOURCE_BUNDLE}.getString($F{Description}) : $F{Description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField" x="357" y="0" width="100" height="18" uuid="0bc50bd7-3ed3-477e-9b2d-c3cdc88d68c9"/>
