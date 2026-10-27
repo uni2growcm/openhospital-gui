@@ -56,11 +56,16 @@ import javax.swing.border.Border;
 
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.menu.manager.Context;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
+import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.isf.ward.manager.WardBrowserManager;
+import org.isf.ward.model.Ward;
 import org.isf.xmpp.gui.CommunicationFrame;
 import org.isf.xmpp.manager.Interaction;
 import org.slf4j.Logger;
@@ -80,6 +85,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportLauncher.class);
+	private static final String SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME = "OH004_IncomesAllByPriceCodes_3";
 
 	private JPanel jPanel;
 	private JPanel jButtonPanel;
@@ -96,6 +102,10 @@ public class ReportLauncher extends ModalJFrame {
 	private JLabel jToDateLabel;
 	private GoodDateChooser jToDateField;
 	private GoodDateChooser jFromDateField;
+	private JLabel jStatusLabel;
+	private JComboBox<String> jStatusComboBox;
+	private JLabel jWardLabel;
+	private JComboBox<Object> jWardComboBox;
 
 	private JComboBox<String> jRptComboBox;
 
@@ -271,6 +281,8 @@ public class ReportLauncher extends ModalJFrame {
 			jRptComboBox.addActionListener(actionEvent -> {
 				if (actionEvent.getActionCommand() != null && actionEvent.getActionCommand().equalsIgnoreCase("comboBoxChanged")) {
 					selectAction();
+					pack();
+					setLocationRelativeTo(null);
 				}
 			});
 
@@ -314,6 +326,21 @@ public class ReportLauncher extends ModalJFrame {
 			jFromDateLabel.setVisible(false);
 			jFromDateField.setVisible(false);
 
+			// TODO: fix how the layout of the last two fields are done; adding
+			// spaces is a hack
+			jStatusLabel = new JLabel("               " + MessageBundle.getMessage("angal.billbrowser.statusfilter.label"));
+			jStatusComboBox = new JComboBox<>();
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.common.all.txt"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.pending.title"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.closed.title"));
+			jStatusLabel.setVisible(false);
+			jStatusComboBox.setVisible(false);
+
+			jWardLabel = new JLabel("               " + MessageBundle.getMessage("angal.billbrowser.wardfilter.label"));
+			jWardComboBox = getJWardComboBox();
+			jWardLabel.setVisible(false);
+			jWardComboBox.setVisible(false);
+
 			jMonthPanel.add(jRptLabel, null);
 			jMonthPanel.add(jRptComboBox, null);
 			jMonthPanel.add(jMonthLabel, null);
@@ -324,9 +351,30 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthPanel.add(jFromDateField, null);
 			jMonthPanel.add(jToDateLabel, null);
 			jMonthPanel.add(jToDateField, null);
+			jMonthPanel.add(jStatusLabel, null);
+			jMonthPanel.add(jStatusComboBox, null);
+			jMonthPanel.add(jWardLabel, null);
+			jMonthPanel.add(jWardComboBox, null);
 		}
 		return jMonthPanel;
 
+	}
+
+	private JComboBox<Object> getJWardComboBox() {
+		JComboBox<Object> comboBox = new JComboBox<>();
+		WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+		List<Ward> wardList;
+		try {
+			wardList = wardBrowserManager.getWards();
+		} catch (OHServiceException e) {
+			wardList = new LinkedList<>();
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		comboBox.addItem(MessageBundle.getMessage("angal.billbrowser.allwards.txt"));
+		for (Ward ward : wardList) {
+			comboBox.addItem(ward);
+		}
+		return comboBox;
 	}
 
 	protected void selectAction() {
@@ -339,7 +387,23 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
-				if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
+
+				boolean isSalesByProductAndServicePerYear = jasperFile.getName().equals(SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME + ".jasper");
+				jStatusLabel.setVisible(isSalesByProductAndServicePerYear);
+				jStatusComboBox.setVisible(isSalesByProductAndServicePerYear);
+				jWardLabel.setVisible(isSalesByProductAndServicePerYear);
+				jWardComboBox.setVisible(isSalesByProductAndServicePerYear);
+
+				if (isSalesByProductAndServicePerYear) {
+					jMonthComboBox.setVisible(false);
+					jMonthLabel.setVisible(false);
+					jYearComboBox.setVisible(true);
+					jYearLabel.setVisible(true);
+					jFromDateLabel.setVisible(false);
+					jFromDateField.setVisible(false);
+					jToDateLabel.setVisible(false);
+					jToDateField.setVisible(false);
+				} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 					jMonthComboBox.setVisible(false);
 					jMonthLabel.setVisible(false);
 					jYearComboBox.setVisible(false);
@@ -392,7 +456,32 @@ public class ReportLauncher extends ModalJFrame {
 
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
-			if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
+			File selectedJasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
+			if (selectedJasperFile != null && selectedJasperFile.getName().equals(SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME + ".jasper")) {
+				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+
+				String state;
+				String state2;
+				switch (jStatusComboBox.getSelectedIndex()) {
+					case 1:
+						state = "O";
+						state2 = "O";
+						break;
+					case 2:
+						state = "C";
+						state2 = "C";
+						break;
+					default:
+						state = "O";
+						state2 = "C";
+						break;
+				}
+
+				Object selectedWard = jWardComboBox.getSelectedItem();
+				String ward = selectedWard instanceof Ward ? ((Ward) selectedWard).getCode() : "ALL";
+
+				new GenericReportFromDateToDate(year, state, state2, ward, jRptComboBox.getSelectedItem().toString(), toExcel);
+			} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
 								folderNameFileNameMap.get("rpt_stat").contains(
 												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
