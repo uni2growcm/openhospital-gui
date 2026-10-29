@@ -1,435 +1,554 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PregnancyReport" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="PregnancyReport" uuid="bb720af0-a19c-4020-9487-e2cf3b50ac5f">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter2.jrdax"/>
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<parameter name="Hospital" class="java.lang.String"/>
-	<parameter name="Address" class="java.lang.String"/>
-	<parameter name="City" class="java.lang.String"/>
-	<parameter name="Email" class="java.lang.String"/>
-	<parameter name="Telephone" class="java.lang.String"/>
-	<parameter name="PregId" class="java.lang.String"/>
-	<parameter name="PathLogoImage" class="java.lang.String"/>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="PregnancyReport" 
+              pageWidth="842" 
+              pageHeight="595" 
+              orientation="Landscape" 
+              columnWidth="782" 
+              leftMargin="30" 
+              rightMargin="30" 
+              topMargin="20" 
+              bottomMargin="20" 
+              resourceBundle="PregnancyReport" 
+              whenResourceMissingType="Key" 
+              uuid="bb720af0-a19c-4020-9487-e2cf3b50ac5f">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<import value="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PregId" class="java.lang.Object"/>
+	<parameter name="PathLogoImage" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[
-SELECT
-    CONCAT('Pregnancy ', DENSE_RANK() OVER (PARTITION BY PR.PRG_PAT_ID ORDER BY PR.PRG_DATE ASC)) AS PREGNANCY_NUM,
-    COUNT(PR.PRG_ID) OVER (PARTITION BY PR.PRG_PAT_ID) AS TOTAL_PREGNANCY,
-    PR.*,
-    PA.PAT_NAME,
-    VI.PRGV_ID,
-    VI.PRGV_DATE,
-    IF(VI.PRGV_DATE > VID.PRGDLV_DATE, 'Postnatal', 'Prenatal') AS PRGV_TYPE,
-    LAB.LAB_NOTE,
-    LAB.LAB_RES,
-    EX.EXA_DESC
-FROM OH_PREGNANCY PR
-LEFT JOIN OH_PATIENT PA 
-    ON PR.PRG_PAT_ID = PA.PAT_ID
-LEFT JOIN OH_PREGNANCYVISIT VI 
-    ON VI.PRGV_PRG_ID = PR.PRG_ID
-LEFT JOIN OH_PREGNANCYDELIVERY VID 
-    ON PR.PRG_ID = VID.PRGDLV_PRG_ID
-LEFT JOIN OH_LABORATORY LAB 
-    ON LAB.LAB_PAT_ID = PA.PAT_ID 
-    AND LAB.LAB_DATE <= PR.PRG_DATE
-LEFT JOIN OH_EXAM EX 
-    ON EX.EXA_ID_A = LAB.LAB_EXA_ID_A
-WHERE PR.PRG_ID = $P{PregId}
-ORDER BY PR.PRG_DATE ASC, VI.PRGV_ID DESC;]]>
+		<![CDATA[SELECT
+    pr.PRG_ID,
+    CONCAT('Grossesse ', DENSE_RANK() OVER (PARTITION BY pr.PRG_PAT_ID ORDER BY pr.PRG_DATE ASC)) AS PREGNANCY_NUM,
+    DATE_FORMAT(pr.PRG_DATE, '%d/%m/%Y') AS PRG_DATE_STR,
+    DATE_FORMAT(pr.PRG_LMP, '%d/%m/%Y') AS PRG_LMP_STR,
+    DATE_FORMAT(COALESCE(pr.PRG_EDD_LMP, pr.PRG_EDD_SCAN), '%d/%m/%Y') AS PRG_EDD_STR,
+    CONCAT('G', COALESCE(pr.PRG_GRAVIDITY, 0), ' P', COALESCE(pr.PRG_PARITY, 0), ' A', COALESCE(pr.PRG_MISSCARRIAGES, 0), ' EV', COALESCE(pr.PRG_LIVING_CHILDREN, 0)) AS OBS_FORMULA,
+    COALESCE(pr.PRG_RISK_LEVEL, 'LOW') AS PRG_RISK_LEVEL,
+    COALESCE(pr.PRG_STATUS, 'ONGOING') AS PRG_STATUS,
+    pat.PAT_ID,
+    pat.PAT_NAME,
+    IF(pat.PAT_BDATE IS NOT NULL, TIMESTAMPDIFF(YEAR, pat.PAT_BDATE, CURDATE()), pat.PAT_AGE) AS PAT_AGE,
+    COALESCE(NULLIF(pat.PAT_BTYPE, ''), '-') AS PAT_BLOOD_TYPE,
+    COALESCE(pat.PAT_TELE, '-') AS PAT_TELEPHONE,
+    COALESCE(pat.PAT_CITY, '-') AS PAT_CITY,
+    COALESCE(pat.PAT_ADDR, '-') AS PAT_ADDRESS,
+    pv.PRGV_ID,
+    DATE_FORMAT(pv.PRGV_DATE, '%d/%m/%Y') AS VISIT_DATE_STR,
+    COALESCE(ty.TYPO_DESCRIPTION, pv.PRGV_TYPE_ID, 'CPN') AS VISIT_TYPE,
+    IF(pr.PRG_LMP IS NOT NULL, CONCAT(TIMESTAMPDIFF(WEEK, pr.PRG_LMP, pv.PRGV_DATE), ' SA'), '-') AS GESTATIONAL_AGE,
+    IF(pv.PRGV_MATERNAL_WEIGHT IS NOT NULL, CONCAT(ROUND(pv.PRGV_MATERNAL_WEIGHT, 1), ' kg'), '-') AS MATERNAL_WEIGHT,
+    IF(pv.PRGV_SYSTOLIC_BP IS NOT NULL AND pv.PRGV_DIASTOLIC_BP IS NOT NULL, CONCAT(pv.PRGV_SYSTOLIC_BP, '/', pv.PRGV_DIASTOLIC_BP), '-') AS BLOOD_PRESSURE,
+    IF(pv.PRGV_FUNDAL_HEIGHT IS NOT NULL, CONCAT(ROUND(pv.PRGV_FUNDAL_HEIGHT, 0), ' cm'), '-') AS FUNDAL_HEIGHT,
+    IF(pv.PRGV_FETAL_HEART_RATE IS NOT NULL, CONCAT(pv.PRGV_FETAL_HEART_RATE, ' bpm'), '-') AS FETAL_HEART_RATE,
+    COALESCE(pv.PRGV_FETAL_PRESENTATION, '-') AS FETAL_PRESENTATION,
+    CONCAT(COALESCE(pv.PRGV_URINE_PROTEIN, '-'), ' / ', COALESCE(pv.PRGV_URINE_GLUCOSE, '-')) AS URINE_TEST,
+    DATE_FORMAT(pv.PRGV_NEXT_APPOINTMENT_DATE, '%d/%m/%Y') AS NEXT_APP_STR,
+    COALESCE(pv.PRGV_CLINICAL_NOTES, '-') AS CLINICAL_NOTES
+FROM OH_PREGNANCY pr
+JOIN OH_PATIENT pat ON pat.PAT_ID = pr.PRG_PAT_ID
+LEFT JOIN OH_PREGNANCYVISIT pv ON pv.PRGV_PRG_ID = pr.PRG_ID AND (pv.PRGV_ACTIVE = 1 OR pv.PRGV_ACTIVE IS TRUE)
+LEFT JOIN OH_TYPOLOGIES ty ON ty.TYPO_CODE = pv.PRGV_TYPE_ID
+WHERE pr.PRG_PAT_ID = (SELECT PRG_PAT_ID FROM OH_PREGNANCY WHERE PRG_ID = $P{PregId})
+ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC;]]>
 	</queryString>
-	<field name="PREGNANCY_NUM" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PREGNANCY_NUM"/>
-		<property name="com.jaspersoft.studio.field.label" value="PREGNANCY_NUM"/>
-	</field>
-	<field name="TOTAL_PREGNANCY" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.name" value="TOTAL_PREGNANCY"/>
-		<property name="com.jaspersoft.studio.field.label" value="TOTAL_PREGNANCY"/>
-	</field>
-	<field name="PRG_ID" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_ID"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_ID"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_PAT_ID" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_PAT_ID"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_PAT_ID"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_DATE" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_DATE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_DATE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_LMP" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_LMP"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_LMP"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_EDD_LMP" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_EDD_LMP"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_EDD_LMP"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_EDD_SCAN" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_EDD_SCAN"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_EDD_SCAN"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_GRAVIDITY" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_GRAVIDITY"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_GRAVIDITY"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_PARITY" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_PARITY"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_PARITY"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_MISSCARRIAGES" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_MISSCARRIAGES"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_MISSCARRIAGES"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_RISK_LEVEL" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_RISK_LEVEL"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_RISK_LEVEL"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_STATUS" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_STATUS"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_STATUS"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_CREATED_BY" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_CREATED_BY"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_CREATED_BY"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_CREATED_DATE" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_CREATED_DATE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_CREATED_DATE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_LAST_MODIFIED_BY" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_LAST_MODIFIED_BY"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_LAST_MODIFIED_BY"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_LAST_MODIFIED_DATE" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_LAST_MODIFIED_DATE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_LAST_MODIFIED_DATE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_LOCK" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_LOCK"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_LOCK"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PRG_ACTIVE" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.name" value="PRG_ACTIVE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRG_ACTIVE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancy"/>
-	</field>
-	<field name="PAT_NAME" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PAT_NAME"/>
-		<property name="com.jaspersoft.studio.field.label" value="PAT_NAME"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_patient"/>
-	</field>
-	<field name="PRGV_ID" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="PRGV_ID"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRGV_ID"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancyvisit"/>
-	</field>
-	<field name="PRGV_DATE" class="java.time.LocalDateTime">
-		<property name="com.jaspersoft.studio.field.name" value="PRGV_DATE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRGV_DATE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_pregnancyvisit"/>
-	</field>
-	<field name="PRGV_TYPE" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="PRGV_TYPE"/>
-		<property name="com.jaspersoft.studio.field.label" value="PRGV_TYPE"/>
-	</field>
-	<field name="LAB_NOTE" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="LAB_NOTE"/>
-		<property name="com.jaspersoft.studio.field.label" value="LAB_NOTE"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_laboratory"/>
-	</field>
-	<field name="LAB_RES" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="LAB_RES"/>
-		<property name="com.jaspersoft.studio.field.label" value="LAB_RES"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_laboratory"/>
-	</field>
-	<field name="EXA_DESC" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="EXA_DESC"/>
-		<property name="com.jaspersoft.studio.field.label" value="EXA_DESC"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="oh_exam"/>
-	</field>
+	<field name="PRG_ID" class="java.lang.Integer"/>
+	<field name="PREGNANCY_NUM" class="java.lang.String"/>
+	<field name="PRG_DATE_STR" class="java.lang.String"/>
+	<field name="PRG_LMP_STR" class="java.lang.String"/>
+	<field name="PRG_EDD_STR" class="java.lang.String"/>
+	<field name="OBS_FORMULA" class="java.lang.String"/>
+	<field name="PRG_RISK_LEVEL" class="java.lang.String"/>
+	<field name="PRG_STATUS" class="java.lang.String"/>
+	<field name="PAT_ID" class="java.lang.Integer"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_AGE" class="java.lang.Integer"/>
+	<field name="PAT_BLOOD_TYPE" class="java.lang.String"/>
+	<field name="PAT_TELEPHONE" class="java.lang.String"/>
+	<field name="PAT_CITY" class="java.lang.String"/>
+	<field name="PAT_ADDRESS" class="java.lang.String"/>
+	<field name="PRGV_ID" class="java.lang.Integer"/>
+	<field name="VISIT_DATE_STR" class="java.lang.String"/>
+	<field name="VISIT_TYPE" class="java.lang.String"/>
+	<field name="GESTATIONAL_AGE" class="java.lang.String"/>
+	<field name="MATERNAL_WEIGHT" class="java.lang.String"/>
+	<field name="BLOOD_PRESSURE" class="java.lang.String"/>
+	<field name="FUNDAL_HEIGHT" class="java.lang.String"/>
+	<field name="FETAL_HEART_RATE" class="java.lang.String"/>
+	<field name="FETAL_PRESENTATION" class="java.lang.String"/>
+	<field name="URINE_TEST" class="java.lang.String"/>
+	<field name="NEXT_APP_STR" class="java.lang.String"/>
+	<field name="CLINICAL_NOTES" class="java.lang.String"/>
+	<group name="PatientProfileGroup">
+		<groupExpression><![CDATA[$F{PAT_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="44" splitType="Prevent">
+				<!-- Fiche Patiente Box (Landscape 782pt) -->
+				<rectangle>
+					<reportElement mode="Opaque" x="0" y="2" width="782" height="38" backcolor="#F8FAFC" uuid="b0000001-0001-0001-0001-000000000001"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+					</graphicElement>
+				</rectangle>
+				<textField>
+					<reportElement x="8" y="5" width="766" height="12" forecolor="#0F172A" uuid="b0000001-0001-0001-0001-000000000002"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patient_sheet}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="8" y="19" width="105" height="14" uuid="b0000001-0001-0001-0001-000000000003"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patientCode} + " " + $F{PAT_ID}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="118" y="19" width="200" height="14" uuid="b0000001-0001-0001-0001-000000000004"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patientName} + " " + $F{PAT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="323" y="19" width="75" height="14" uuid="b0000001-0001-0001-0001-000000000005"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patientAge} + " " + ($F{PAT_AGE} != null ? $F{PAT_AGE} + " " + $R{label_ans} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="403" y="19" width="115" height="14" uuid="b0000001-0001-0001-0001-000000000008"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patientBloodType} + " " + ($F{PAT_BLOOD_TYPE} == null || $F{PAT_BLOOD_TYPE}.equals("-") ? "-" : ($F{PAT_BLOOD_TYPE}.equalsIgnoreCase("Unknown") ? $R{blood_unknown} : $F{PAT_BLOOD_TYPE}))]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="523" y="19" width="115" height="14" uuid="b0000001-0001-0001-0001-000000000006"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{patientPhone} + " " + $F{PAT_TELEPHONE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="643" y="19" width="131" height="14" uuid="b0000001-0001-0001-0001-000000000007"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PAT_CITY} + ($F{PAT_ADDRESS} != null && !$F{PAT_ADDRESS}.equals("-") ? " (" + $F{PAT_ADDRESS} + ")" : "")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="PregnancyGroup">
+		<groupExpression><![CDATA[$F{PRG_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="48" splitType="Prevent">
+				<!-- Pregnancy Banner (Landscape 782pt) -->
+				<rectangle>
+					<reportElement mode="Opaque" x="0" y="2" width="782" height="26" backcolor="#EAF0F6" uuid="b0000001-0001-0001-0001-000000000010"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</graphicElement>
+				</rectangle>
+				<textField isBlankWhenNull="true">
+					<reportElement x="8" y="4" width="300" height="12" forecolor="#1E3A8A" uuid="b0000001-0001-0001-0001-000000000011"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{pregnancy_title} + " : " + $F{PREGNANCY_NUM} + "  [" + $R{status} + " " + ($F{PRG_STATUS}.equals("DELIVERED") ? $R{status_delivered} : ($F{PRG_STATUS}.equals("INTERRUPTED") ? $R{status_interrupted} : $R{status_ongoing})) + "]"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="315" y="4" width="220" height="12" uuid="b0000001-0001-0001-0001-000000000012"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{pregnancy_start} + " " + ($F{PRG_DATE_STR} != null ? $F{PRG_DATE_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="545" y="4" width="230" height="12" uuid="b0000001-0001-0001-0001-000000000013"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{riskLevel} + " " + ($F{PRG_RISK_LEVEL}.equals("HIGH") ? $R{risk_high} : ($F{PRG_RISK_LEVEL}.equals("MEDIUM") ? $R{risk_medium} : $R{risk_low}))]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="8" y="16" width="140" height="11" uuid="b0000001-0001-0001-0001-000000000014"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{lmp} + " " + ($F{PRG_LMP_STR} != null ? $F{PRG_LMP_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="155" y="16" width="140" height="11" uuid="b0000001-0001-0001-0001-000000000015"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{calcDelivery} + " " + ($F{PRG_EDD_STR} != null ? $F{PRG_EDD_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="305" y="16" width="470" height="11" uuid="b0000001-0001-0001-0001-000000000016"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{obsFormula} + " " + ($F{OBS_FORMULA} != null ? $F{OBS_FORMULA} : "-")]]></textFieldExpression>
+				</textField>
+				<!-- Table Header for Visits (Landscape 782pt) -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="28" width="50" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000020"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_visit_num}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="50" y="28" width="60" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000021"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_visit_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="110" y="28" width="45" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000022"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_gest_age}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="155" y="28" width="40" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000023"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_weight}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="195" y="28" width="50" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000024"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_bp}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="245" y="28" width="40" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000025"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_fh}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="285" y="28" width="45" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000026"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_fhr}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="330" y="28" width="55" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000027"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_urine}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="385" y="28" width="60" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000028"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_next_app}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="445" y="28" width="337" height="20" backcolor="#F1F5F9" uuid="b0000001-0001-0001-0001-000000000029"/>
+					<box leftPadding="4">
+						<pen lineWidth="0.5" lineColor="#94A3B8"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_notes}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="10" splitType="Stretch">
+				<line>
+					<reportElement x="0" y="5" width="782" height="1" uuid="b0000001-0001-0001-0001-000000000040"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<title>
-		<band height="174" splitType="Stretch">
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-18" x="336" y="0" width="199" height="22" uuid="e3ede081-1d5a-44d5-9ae3-1875ae969e64"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-19" x="336" y="22" width="199" height="17" uuid="02f2edbf-2e04-4ac6-b55f-8149934d8e6e"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-20" x="336" y="39" width="199" height="17" uuid="a052a2c8-fc52-494b-a755-98327d6a7f44"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-21" x="336" y="56" width="199" height="17" uuid="b11aa04a-c1f9-4b39-9845-df0465da6c3a"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$P{Telephone}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="179" y="80" width="196" height="30" uuid="17207f70-fff8-46ef-adbd-eea651b9647e"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="15" isBold="true" isUnderline="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{pregnancyReport}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="270" y="119" width="187" height="21" uuid="a58e176f-1dc2-48c9-89e5-379cc589c463">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{patientName}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="83" y="119" width="187" height="21" uuid="84aa26b1-1b14-4190-8a42-4038e67c7478">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{patientCode}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="270" y="140" width="187" height="28" uuid="04a67c84-8928-44bb-b001-9747180f4c58"/>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="83" y="140" width="187" height="28" uuid="a83677ef-0da2-4d01-87d8-86256c4fac2a"/>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{PRG_PAT_ID}]]></textFieldExpression>
-			</textField>
-			<image>
-				<reportElement x="0" y="0" width="90" height="73" uuid="37c2ef80-e8aa-4a4d-8703-271161f71c54"/>
-				<imageExpression><![CDATA[$P{PathLogoImage}]]></imageExpression>
-			</image>
-		</band>
-	</title>
 	<pageHeader>
-		<band height="35" splitType="Stretch"/>
-	</pageHeader>
-	<columnHeader>
-		<band height="30" splitType="Stretch">
+		<band height="135" splitType="Stretch">
 			<textField>
-				<reportElement x="0" y="0" width="100" height="30" uuid="688b533d-e63f-40b8-b994-d91c486f58bb">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5c26eefe-bd51-4a88-8cc2-92d6244e37f8"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
+				<reportElement x="0" y="0" width="380" height="16" uuid="b0000001-0001-0001-0001-000000000050"/>
+				<textElement>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{pregnancyNumber}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="100" y="0" width="100" height="30" uuid="69563d3e-db2a-4ea8-bbfb-a3090a41e53b">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b952e546-755f-4db7-a526-68302398600f"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{visitDate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="200" y="0" width="100" height="30" uuid="dd0db3ef-67cb-4278-a426-44d1fe5a41d8">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c25f14f6-aa8d-41f4-afed-d84d900ecef1"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{visitType}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="300" y="0" width="100" height="30" uuid="05ceb4ec-775b-493e-b06d-87181f27ed89">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7b2386ba-8225-434e-8448-772581747887"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{examNote}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="400" y="0" width="100" height="30" uuid="5317d668-0643-4e33-9e34-f0f6146c9b45">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="1499f0ec-b2db-42a1-92a3-1e085b14a542"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{examResult}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="500" y="0" width="64" height="30" uuid="8cc835b4-5c5b-4608-94d5-932dad3a5811">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6b8f6b1d-1ee7-47ba-9425-74fd26751b85"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{examNote}]]></textFieldExpression>
-			</textField>
-		</band>
-	</columnHeader>
-	<detail>
-		<band height="30" splitType="Stretch">
-			<textField>
-				<reportElement x="0" y="0" width="100" height="30" uuid="7774eb51-c01b-4ea2-92fd-0cdd79f6c09e">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5c26eefe-bd51-4a88-8cc2-92d6244e37f8"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{PREGNANCY_NUM}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="100" y="0" width="100" height="30" uuid="63ef4503-a860-4a33-a23f-60f67b9543c8">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b952e546-755f-4db7-a526-68302398600f"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{PRGV_DATE}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="200" y="0" width="100" height="30" uuid="4da2f2da-ea30-4df7-bd65-fa204c80c0a8">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c25f14f6-aa8d-41f4-afed-d84d900ecef1"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{PRGV_TYPE}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="300" y="0" width="100" height="30" uuid="a4eb987c-89be-4d11-b639-015cc1588044">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7b2386ba-8225-434e-8448-772581747887"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{LAB_NOTE}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="400" y="0" width="100" height="30" uuid="7459fcfb-1c61-49e5-aa95-146c734933e5">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="1499f0ec-b2db-42a1-92a3-1e085b14a542"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{LAB_RES}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="500" y="0" width="64" height="30" uuid="7d29daa9-9786-4a81-adbb-c373ed1c5418">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6b8f6b1d-1ee7-47ba-9425-74fd26751b85"/>
-				</reportElement>
-				<box padding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</box>
-				<textFieldExpression><![CDATA[$F{EXA_DESC}]]></textFieldExpression>
-			</textField>
-		</band>
-	</detail>
-	<columnFooter>
-		<band height="80" splitType="Stretch"/>
-	</columnFooter>
-	<pageFooter>
-		<band height="20" splitType="Stretch">
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="0" y="0" width="100" height="14" uuid="a206c1ce-94e4-4507-b6f9-a5c2f7196cce"/>
-				<box leftPadding="2">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
+				<reportElement x="15" y="16" width="365" height="14" uuid="b0000001-0001-0001-0001-000000000051"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="535" y="0" width="20" height="20" uuid="3570c64f-fe03-452e-997d-f2b36e466dce"/>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				<reportElement x="0" y="30" width="380" height="16" uuid="b0000001-0001-0001-0001-000000000052"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="0" width="380" height="16" uuid="b0000001-0001-0001-0001-000000000053"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="16" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000054"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="30" width="380" height="16" uuid="b0000001-0001-0001-0001-000000000055"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="52" width="782" height="22" uuid="b0000001-0001-0001-0001-000000000056"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="80" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000057"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="94" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000058"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="80" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000059"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="94" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000060"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="108" width="380" height="14" uuid="b0000001-0001-0001-0001-000000000061"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="128" width="782" height="1" uuid="b0000001-0001-0001-0001-000000000062"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{PRGV_ID} != null]]></printWhenExpression>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="0" y="0" width="50" height="18" uuid="b0000001-0001-0001-0001-000000000070"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VISIT_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="50" y="0" width="60" height="18" uuid="b0000001-0001-0001-0001-000000000071"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VISIT_DATE_STR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="110" y="0" width="45" height="18" uuid="b0000001-0001-0001-0001-000000000072"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{GESTATIONAL_AGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="155" y="0" width="40" height="18" uuid="b0000001-0001-0001-0001-000000000073"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{MATERNAL_WEIGHT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="195" y="0" width="50" height="18" uuid="b0000001-0001-0001-0001-000000000074"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BLOOD_PRESSURE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="245" y="0" width="40" height="18" uuid="b0000001-0001-0001-0001-000000000075"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FUNDAL_HEIGHT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="285" y="0" width="45" height="18" uuid="b0000001-0001-0001-0001-000000000076"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FETAL_HEART_RATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="330" y="0" width="55" height="18" uuid="b0000001-0001-0001-0001-000000000077"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{URINE_TEST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="385" y="0" width="60" height="18" uuid="b0000001-0001-0001-0001-000000000078"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NEXT_APP_STR}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="445" y="0" width="337" height="18" uuid="b0000001-0001-0001-0001-000000000079"/>
+				<box topPadding="2" leftPadding="4" bottomPadding="2" rightPadding="4">
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CLINICAL_NOTES}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="b0000001-0001-0001-0001-000000000080"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="4" width="300" height="14" uuid="b0000001-0001-0001-0001-000000000081"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="582" y="4" width="150" height="14" uuid="b0000001-0001-0001-0001-000000000082"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{on}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="732" y="4" width="50" height="14" uuid="b0000001-0001-0001-0001-000000000083"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
-	<summary>
-		<band height="42" splitType="Stretch"/>
-	</summary>
 </jasperReport>
