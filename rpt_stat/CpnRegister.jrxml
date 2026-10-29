@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="CpnRegister" 
+              pageWidth="842" 
+              pageHeight="595" 
+              orientation="Landscape" 
+              whenNoDataType="NoDataSection" 
+              columnWidth="782" 
+              leftMargin="30" 
+              rightMargin="30" 
+              topMargin="20" 
+              bottomMargin="20" 
+              isFloatColumnFooter="true" 
+              resourceBundle="CpnRegister" 
+              whenResourceMissingType="Key" 
+              uuid="c4000001-0001-0001-0001-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<import value="java.util.Date"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Currency" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT
+	pv.PRGV_ID AS VISIT_ID,
+	DATE_FORMAT(pv.PRGV_DATE, '%d/%m/%Y') AS VISIT_DATE_STR,
+	COALESCE(ty.TYPO_DESCRIPTION, pv.PRGV_TYPE_ID) AS VISIT_TYPE,
+	IF(pr.PRG_LMP IS NOT NULL, CONCAT(TIMESTAMPDIFF(WEEK, pr.PRG_LMP, pv.PRGV_DATE), ' SA'), '-') AS GESTATIONAL_AGE,
+	IF(pv.PRGV_MATERNAL_WEIGHT IS NOT NULL, CONCAT(ROUND(pv.PRGV_MATERNAL_WEIGHT, 1), ' kg'), '-') AS MATERNAL_WEIGHT,
+	IF(pv.PRGV_SYSTOLIC_BP IS NOT NULL AND pv.PRGV_DIASTOLIC_BP IS NOT NULL, CONCAT(pv.PRGV_SYSTOLIC_BP, '/', pv.PRGV_DIASTOLIC_BP), '-') AS BLOOD_PRESSURE,
+	IF(pv.PRGV_FUNDAL_HEIGHT IS NOT NULL, CONCAT(ROUND(pv.PRGV_FUNDAL_HEIGHT, 0), ' cm'), '-') AS FUNDAL_HEIGHT,
+	IF(pv.PRGV_FETAL_HEART_RATE IS NOT NULL, CONCAT(pv.PRGV_FETAL_HEART_RATE, ' bpm'), '-') AS FETAL_HEART_RATE,
+	COALESCE(pv.PRGV_FETAL_PRESENTATION, '-') AS FETAL_PRESENTATION,
+	CONCAT(COALESCE(pv.PRGV_URINE_PROTEIN, '-'), ' / ', COALESCE(pv.PRGV_URINE_GLUCOSE, '-')) AS URINE_TEST,
+	DATE_FORMAT(pv.PRGV_NEXT_APPOINTMENT_DATE, '%d/%m/%Y') AS NEXT_APP_STR,
+	COALESCE(pv.PRGV_CLINICAL_NOTES, '-') AS CLINICAL_NOTES,
+	pv.PRGV_SYSTOLIC_BP,
+	pv.PRGV_DIASTOLIC_BP,
+	pv.PRGV_URINE_PROTEIN,
+	pr.PRG_ID AS PREGNANCY_ID,
+	DATE_FORMAT(pr.PRG_DATE, '%d/%m/%Y') AS PRG_DATE_STR,
+	DATE_FORMAT(pr.PRG_LMP, '%d/%m/%Y') AS PRG_LMP_STR,
+	DATE_FORMAT(COALESCE(pr.PRG_EDD_LMP, pr.PRG_EDD_SCAN), '%d/%m/%Y') AS PRG_EDD_STR,
+	CONCAT('G', COALESCE(pr.PRG_GRAVIDITY, 0), ' P', COALESCE(pr.PRG_PARITY, 0), ' A', COALESCE(pr.PRG_MISSCARRIAGES, 0), ' EV', COALESCE(pr.PRG_LIVING_CHILDREN, 0)) AS OBS_FORMULA,
+	COALESCE(pr.PRG_RISK_LEVEL, 'LOW') AS PRG_RISK_LEVEL,
+	pat.PAT_ID AS PATIENT_ID,
+	pat.PAT_NAME AS PATIENT_NAME,
+	IF(pat.PAT_BDATE IS NOT NULL, TIMESTAMPDIFF(YEAR, pat.PAT_BDATE, pv.PRGV_DATE), pat.PAT_AGE) AS PATIENT_AGE,
+	COALESCE(pat.PAT_TELE, '-') AS PATIENT_TELEPHONE,
+	COALESCE(pat.PAT_CITY, '-') AS PATIENT_CITY
+FROM OH_PREGNANCYVISIT pv
+JOIN OH_PREGNANCY pr ON pr.PRG_ID = pv.PRGV_PRG_ID
+JOIN OH_PATIENT pat ON pat.PAT_ID = pr.PRG_PAT_ID
+LEFT JOIN OH_TYPOLOGIES ty ON ty.TYPO_CODE = pv.PRGV_TYPE_ID
+WHERE (pv.PRGV_ACTIVE = 1 OR pv.PRGV_ACTIVE IS TRUE)
+	AND DATE(pv.PRGV_DATE) >= DATE($P{fromdate})
+	AND DATE(pv.PRGV_DATE) <= DATE($P{todate})
+ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
+	</queryString>
+	<field name="VISIT_ID" class="java.lang.Integer"/>
+	<field name="VISIT_DATE_STR" class="java.lang.String"/>
+	<field name="VISIT_TYPE" class="java.lang.String"/>
+	<field name="GESTATIONAL_AGE" class="java.lang.String"/>
+	<field name="MATERNAL_WEIGHT" class="java.lang.String"/>
+	<field name="BLOOD_PRESSURE" class="java.lang.String"/>
+	<field name="FUNDAL_HEIGHT" class="java.lang.String"/>
+	<field name="FETAL_HEART_RATE" class="java.lang.String"/>
+	<field name="FETAL_PRESENTATION" class="java.lang.String"/>
+	<field name="URINE_TEST" class="java.lang.String"/>
+	<field name="NEXT_APP_STR" class="java.lang.String"/>
+	<field name="CLINICAL_NOTES" class="java.lang.String"/>
+	<field name="PRGV_SYSTOLIC_BP" class="java.lang.Integer"/>
+	<field name="PRGV_DIASTOLIC_BP" class="java.lang.Integer"/>
+	<field name="PRGV_URINE_PROTEIN" class="java.lang.String"/>
+	<field name="PREGNANCY_ID" class="java.lang.Integer"/>
+	<field name="PRG_DATE_STR" class="java.lang.String"/>
+	<field name="PRG_LMP_STR" class="java.lang.String"/>
+	<field name="PRG_EDD_STR" class="java.lang.String"/>
+	<field name="OBS_FORMULA" class="java.lang.String"/>
+	<field name="PRG_RISK_LEVEL" class="java.lang.String"/>
+	<field name="PATIENT_ID" class="java.lang.Integer"/>
+	<field name="PATIENT_NAME" class="java.lang.String"/>
+	<field name="PATIENT_AGE" class="java.lang.Integer"/>
+	<field name="PATIENT_TELEPHONE" class="java.lang.String"/>
+	<field name="PATIENT_CITY" class="java.lang.String"/>
+	<variable name="TOTAL_COUNT" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{VISIT_ID}]]></variableExpression>
+	</variable>
+	<variable name="DISTINCT_PATIENTS" class="java.lang.Integer" calculation="DistinctCount">
+		<variableExpression><![CDATA[$F{PATIENT_ID}]]></variableExpression>
+	</variable>
+	<variable name="COUNT_CPN1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("1") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN1") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC1"))) ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_CPN2" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("2") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN2") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC2"))) ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_CPN3" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("3") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN3") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC3"))) ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_CPN4_PLUS" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("4") || $F{VISIT_TYPE}.contains("5") || $F{VISIT_TYPE}.contains("6") || $F{VISIT_TYPE}.contains("7") || $F{VISIT_TYPE}.contains("8") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN4") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC4"))) ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_HTA" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[(($F{PRGV_SYSTOLIC_BP} != null && $F{PRGV_SYSTOLIC_BP} >= 140) || ($F{PRGV_DIASTOLIC_BP} != null && $F{PRGV_DIASTOLIC_BP} >= 90)) ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_PROTEINURIA" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[($F{PRGV_URINE_PROTEIN} != null && !$F{PRGV_URINE_PROTEIN}.trim().isEmpty() && !$F{PRGV_URINE_PROTEIN}.equalsIgnoreCase("Négatif") && !$F{PRGV_URINE_PROTEIN}.equalsIgnoreCase("Negative") && !$F{PRGV_URINE_PROTEIN}.equalsIgnoreCase("Negatif") && !$F{PRGV_URINE_PROTEIN}.equalsIgnoreCase("Norm") && !$F{PRGV_URINE_PROTEIN}.equals("-")) ? 1 : 0]]></variableExpression>
+	</variable>
+	<group name="PregnancyGroup">
+		<groupExpression><![CDATA[$F{PREGNANCY_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="48" splitType="Prevent">
+				<!-- Master Patient Card -->
+				<rectangle>
+					<reportElement mode="Opaque" x="0" y="2" width="782" height="26" backcolor="#EAF0F6" uuid="c4000001-0001-0001-0001-000000000080"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+					</graphicElement>
+				</rectangle>
+				<textField isBlankWhenNull="true">
+					<reportElement x="5" y="4" width="385" height="12" forecolor="#1E3A8A" uuid="c4000001-0001-0001-0001-000000000081"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_patiente} + " [" + $R{label_dossier} + " " + $F{PATIENT_ID} + "]  " + $F{PATIENT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="395" y="4" width="115" height="12" uuid="c4000001-0001-0001-0001-000000000082"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_age} + " " + ($F{PATIENT_AGE} != null ? $F{PATIENT_AGE} + " " + $R{label_ans} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="515" y="4" width="125" height="12" uuid="c4000001-0001-0001-0001-000000000083"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_tel} + " " + $F{PATIENT_TELEPHONE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="645" y="4" width="132" height="12" uuid="c4000001-0001-0001-0001-000000000084"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_ville} + " " + $F{PATIENT_CITY}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="5" y="16" width="180" height="11" uuid="c4000001-0001-0001-0001-000000000085"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_grossesse} + " " + ($F{PRG_DATE_STR} != null ? $F{PRG_DATE_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="190" y="16" width="115" height="11" uuid="c4000001-0001-0001-0001-000000000086"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_ddr} + " " + ($F{PRG_LMP_STR} != null ? $F{PRG_LMP_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="310" y="16" width="120" height="11" uuid="c4000001-0001-0001-0001-000000000087"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_dpa} + " " + ($F{PRG_EDD_STR} != null ? $F{PRG_EDD_STR} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="435" y="16" width="195" height="11" uuid="c4000001-0001-0001-0001-000000000088"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_formule} + " " + ($F{OBS_FORMULA} != null ? $F{OBS_FORMULA} : "-")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="635" y="16" width="142" height="11" uuid="c4000001-0001-0001-0001-000000000089"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label_risque} + " " + ($F{PRG_RISK_LEVEL}.equals("HIGH") ? $R{risk_high} : ($F{PRG_RISK_LEVEL}.equals("MEDIUM") ? $R{risk_medium} : $R{risk_low}))]]></textFieldExpression>
+				</textField>
+				<!-- Detail Sub-table Columns Header -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="28" width="50" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000101"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="50" y="28" width="55" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000102"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_visit_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="105" y="28" width="45" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000103"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_ga}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="150" y="28" width="45" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000104"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_weight}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="195" y="28" width="52" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000105"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_bp}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="247" y="28" width="45" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000106"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_fh}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="292" y="28" width="48" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000107"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_fhr}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="340" y="28" width="58" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000108"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_pres}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="398" y="28" width="54" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000109"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_urine}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="452" y="28" width="55" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000110"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_next_app}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="507" y="28" width="275" height="20" backcolor="#F4F6F9" uuid="c4000001-0001-0001-0001-000000000111"/>
+					<box leftPadding="4">
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_notes}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="8" splitType="Stretch">
+				<line>
+					<reportElement x="0" y="4" width="782" height="1" uuid="c4000001-0001-0001-0001-000000000190"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#CBD5E1"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000010"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="16" width="365" height="14" uuid="c4000001-0001-0001-0001-000000000011"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000012"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="0" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="16" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="30" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="52" width="782" height="22" uuid="c4000001-0001-0001-0001-000000000016"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="74" width="782" height="16" uuid="c4000001-0001-0001-0001-000000000017"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="94" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000018"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="108" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000019"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="94" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000020"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="108" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000021"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="122" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000022"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="782" height="1" uuid="c4000001-0001-0001-0001-000000000023"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="16" splitType="Prevent">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="50" height="16" uuid="c4000001-0001-0001-0001-000000000201"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VISIT_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="55" height="16" uuid="c4000001-0001-0001-0001-000000000202"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VISIT_DATE_STR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="105" y="0" width="45" height="16" uuid="c4000001-0001-0001-0001-000000000203"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{GESTATIONAL_AGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="150" y="0" width="45" height="16" uuid="c4000001-0001-0001-0001-000000000204"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{MATERNAL_WEIGHT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="195" y="0" width="52" height="16" uuid="c4000001-0001-0001-0001-000000000205"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BLOOD_PRESSURE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="247" y="0" width="45" height="16" uuid="c4000001-0001-0001-0001-000000000206"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FUNDAL_HEIGHT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="292" y="0" width="48" height="16" uuid="c4000001-0001-0001-0001-000000000207"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FETAL_HEART_RATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="340" y="0" width="58" height="16" uuid="c4000001-0001-0001-0001-000000000208"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FETAL_PRESENTATION}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="398" y="0" width="54" height="16" uuid="c4000001-0001-0001-0001-000000000209"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{URINE_TEST}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="452" y="0" width="55" height="16" uuid="c4000001-0001-0001-0001-000000000210"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NEXT_APP_STR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="507" y="0" width="275" height="16" uuid="c4000001-0001-0001-0001-000000000211"/>
+				<box leftPadding="4">
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CLINICAL_NOTES}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="c4000001-0001-0001-0001-000000000301"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="4" width="300" height="14" uuid="c4000001-0001-0001-0001-000000000302"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="582" y="4" width="150" height="14" uuid="c4000001-0001-0001-0001-000000000303"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="732" y="4" width="50" height="14" uuid="c4000001-0001-0001-0001-000000000304"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="110" splitType="Stretch">
+			<!-- Statistics Box -->
+			<rectangle>
+				<reportElement x="0" y="8" width="475" height="96" backcolor="#FAFAFA" uuid="c4000001-0001-0001-0001-000000000401"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement mode="Opaque" x="0" y="8" width="475" height="18" backcolor="#EAEAEA" uuid="c4000001-0001-0001-0001-000000000402"/>
+				<box leftPadding="8">
+					<bottomPen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="30" width="230" height="14" uuid="c4000001-0001-0001-0001-000000000403"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="245" y="30" width="220" height="14" uuid="c4000001-0001-0001-0001-000000000404"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_distinct_patients} + " " + ($V{DISTINCT_PATIENTS} != null ? $V{DISTINCT_PATIENTS} : 0)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="47" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000405"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_cpn_breakdown} + " CPN 1: " + ($V{COUNT_CPN1} != null ? $V{COUNT_CPN1} : 0) + "  |  CPN 2: " + ($V{COUNT_CPN2} != null ? $V{COUNT_CPN2} : 0) + "  |  CPN 3: " + ($V{COUNT_CPN3} != null ? $V{COUNT_CPN3} : 0) + "  |  CPN 4+: " + ($V{COUNT_CPN4_PLUS} != null ? $V{COUNT_CPN4_PLUS} : 0)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="64" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000406"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_hta} + " " + ($V{COUNT_HTA} != null ? $V{COUNT_HTA} : 0)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="81" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000407"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_proteinuria} + " " + ($V{COUNT_PROTEINURIA} != null ? $V{COUNT_PROTEINURIA} : 0)]]></textFieldExpression>
+			</textField>
+			<!-- Signature Box -->
+			<rectangle>
+				<reportElement x="495" y="8" width="287" height="96" backcolor="#FFFFFF" uuid="c4000001-0001-0001-0001-000000000410"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="495" y="12" width="287" height="16" uuid="c4000001-0001-0001-0001-000000000411"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{signature_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="505" y="82" width="267" height="14" uuid="c4000001-0001-0001-0001-000000000412"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{signature_date}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+	<noData>
+		<band height="180" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000510"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="16" width="365" height="14" uuid="c4000001-0001-0001-0001-000000000511"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000512"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="0" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000513"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="16" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000514"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="30" width="380" height="16" uuid="c4000001-0001-0001-0001-000000000515"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="52" width="782" height="22" uuid="c4000001-0001-0001-0001-000000000516"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="74" width="782" height="16" uuid="c4000001-0001-0001-0001-000000000517"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="94" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000518"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="108" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000519"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="94" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000520"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="108" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000521"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="122" width="380" height="14" uuid="c4000001-0001-0001-0001-000000000522"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="782" height="1" uuid="c4000001-0001-0001-0001-000000000523"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="155" width="782" height="20" uuid="c4000001-0001-0001-0001-000000000530"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{nodata}]]></textFieldExpression>
+			</textField>
+		</band>
+	</noData>
+</jasperReport>
