@@ -23,6 +23,7 @@ package org.isf.exa.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.EventListener;
@@ -120,6 +121,20 @@ public class ExamEdit extends JDialog {
      * because we need to update them
 	 */
 	public ExamEdit(JFrame owner, Exam old, boolean inserting) {
+		super(owner, true);
+		insert = inserting;
+		exam = old;        // exam will be used for every operation
+		initialize();
+	}
+
+	/**
+	 * Constructor used when the edit dialog is opened from a picker hosted in a
+	 * {@link JDialog} rather than a {@link JFrame}, so the real owner window can
+	 * be set instead of {@code null}. A {@code null} owner falls back to a hidden
+	 * shared frame and breaks keyboard focus restoration on the real owner once
+	 * this dialog is disposed.
+	 */
+	public ExamEdit(Dialog owner, Exam old, boolean inserting) {
 		super(owner, true);
 		insert = inserting;
 		exam = old;        // exam will be used for every operation
