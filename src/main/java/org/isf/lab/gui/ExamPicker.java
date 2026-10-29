@@ -293,7 +293,7 @@ public class ExamPicker extends JPanel implements ExamEdit.ExamListener {
 		jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.exa.newexam.btn.key"));
 		jButtonNew.addActionListener(actionEvent -> {
 			Exam exam = new Exam("", "", new ExamType("", ""), 0, "");
-			ExamEdit examEdit = new ExamEdit(null, exam, true);
+			ExamEdit examEdit = new ExamEdit(this.getParentFrame(), exam, true);
 			examEdit.addExamListener(this);
 			examEdit.setVisible(true);
 		});
