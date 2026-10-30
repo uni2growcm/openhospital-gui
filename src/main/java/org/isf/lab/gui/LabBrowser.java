@@ -920,8 +920,14 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				patientFilterActive = true;
 				return true;
 			}
-			MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
-			return false;
+			SelectPatient selectPatient = new SelectPatient(this, input, false, false);
+			selectPatient.setVisible(true);
+			pPatient = selectPatient.getPatient();
+			if (pPatient == null) {
+				return false;
+			}
+			patientFilterActive = true;
+			return true;
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 			return false;
