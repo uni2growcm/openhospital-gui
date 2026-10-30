@@ -114,6 +114,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JButton buttonClose;
 	private JButton printTableButton;
 	private JButton filterButton;
+	private JButton resetFilterButton;
 	private JPanel jSelectionPanel;
 	private JTable jTable;
 	private JComboBox comboExams;
@@ -502,6 +503,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			}
 			jSelectionPanel.add(getDateFilterPanel());
 			jSelectionPanel.add(getFilterButton());
+			jSelectionPanel.add(getResetFilterButton());
 		}
 		return jSelectionPanel;
 	}
@@ -642,6 +644,41 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			});
 		}
 		return filterButton;
+	}
+
+	/**
+	 * This method initializes resetFilterButton, which clears all the filters
+	 * back to their default values and reloads the table
+	 *
+	 * @return resetFilterButton (JButton)
+	 */
+	private JButton getResetFilterButton() {
+		if (resetFilterButton == null) {
+			resetFilterButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+			resetFilterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
+			resetFilterButton.addActionListener(actionEvent -> {
+				patientCodeField.setText("");
+				comboExams.setSelectedIndex(0);
+				comboResultFilter.setSelectedIndex(0);
+				comboPrescriber.setSelectedIndex(0);
+				if (withPaid) {
+					paidComboBox.setSelectedIndex(0);
+				}
+				dateFrom.setDate(LocalDate.now().minusWeeks(1));
+				dateTo.setDate(LocalDate.now());
+
+				typeSelected = null;
+				pPatient = null;
+				patientFilterActive = false;
+				currentPage = 0;
+				loadCurrentPage();
+
+				if (withPaid) {
+					updateTotals();
+				}
+			});
+		}
+		return resetFilterButton;
 	}
 
 	/**
@@ -883,8 +920,14 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				patientFilterActive = true;
 				return true;
 			}
-			MessageDialog.error(null, "angal.lab.insertvalidpatientid.msg");
-			return false;
+			SelectPatient selectPatient = new SelectPatient(this, input, false, false);
+			selectPatient.setVisible(true);
+			pPatient = selectPatient.getPatient();
+			if (pPatient == null) {
+				return false;
+			}
+			patientFilterActive = true;
+			return true;
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 			return false;
