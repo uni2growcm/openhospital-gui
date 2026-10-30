@@ -54,6 +54,8 @@ import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
 import org.isf.generaldata.MessageBundle;
+import org.isf.hospital.manager.HospitalBrowsingManager;
+import org.isf.hospital.model.Hospital;
 import org.isf.lab.gui.elements.ExamComboBox;
 import org.isf.lab.gui.elements.ExamRowComboBox;
 import org.isf.lab.gui.elements.MatComboBox;
@@ -62,6 +64,7 @@ import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
+import org.isf.lab.model.PatientAnalysisRow;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
@@ -534,28 +537,139 @@ public class LabEditExtended extends ModalJFrame {
 		if (printButton == null) {
 			printButton = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
 			printButton.setMnemonic(MessageBundle.getMnemonic("angal.common.print.btn.key"));
-			printButton.addActionListener(actionEvent -> {
-				try {
-					List<LaboratoryForPrint> labs = new ArrayList<>();
-
-					labs.add(new LaboratoryForPrint(
-							lab.getCode(),
-							lab.getExam(),
-							lab.getLabDate(),
-							lab.getResult(),
-							lab.getPatName(),
-							lab.getPrescriber(),
-							lab.getPaidStatus()));
-					Map<String, Object> extraParameters = new HashMap<>();
-					DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-					extraParameters.put("PeriodLabel", lab.getLabDate().toLocalDate().format(periodFormatter));
-					printManager.print("Laboratory", labs, extraParameters, 0);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-			});
+			printButton.addActionListener(actionEvent -> printPatientAnalysisReport());
 		}
 		return printButton;
+	}
+
+	private void printPatientAnalysisReport() {
+		try {
+			Map<String, Object> extraParameters = new HashMap<>();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+			DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+			LocalDateTime examDate = null;
+			if (examDateFieldCal != null) {
+				try {
+					examDate = examDateFieldCal.getLocalDateTime();
+				} catch (Exception ignored) {
+				}
+			}
+			if (examDate == null) {
+				examDate = lab.getLabDate();
+			}
+			if (examDate != null) {
+				extraParameters.put("examDate", examDate.format(formatter));
+				extraParameters.put("PeriodLabel", examDate.toLocalDate().format(periodFormatter));
+			} else {
+				extraParameters.put("examDate", "");
+				extraParameters.put("PeriodLabel", "");
+			}
+
+			try {
+				Hospital hosp = Context.getApplicationContext().getBean(HospitalBrowsingManager.class).getHospital();
+				if (hosp != null) {
+					extraParameters.put("Hospital", hosp.getDescription() != null ? hosp.getDescription() : "");
+					extraParameters.put("Address", hosp.getAddress() != null ? hosp.getAddress() : "");
+					extraParameters.put("City", hosp.getCity() != null ? hosp.getCity() : "");
+					extraParameters.put("Telephone", hosp.getTelephone() != null ? hosp.getTelephone() : "");
+					extraParameters.put("Email", hosp.getEmail() != null ? hosp.getEmail() : "");
+				}
+			} catch (Exception ignored) {
+			}
+
+			Exam exam = examSelected != null ? examSelected : lab.getExam();
+			extraParameters.put("examName", exam != null ? exam.getDescription() : "");
+
+			String material = null;
+			if (matComboBox != null && matComboBox.getSelectedItem() != null) {
+				material = matComboBox.getSelectedItem().toString();
+			} else {
+				material = lab.getMaterial();
+			}
+			if (material != null && MessageBundle.getMessage("angal.lab.undefined.txt").equals(material)) {
+				material = "";
+			}
+			extraParameters.put("material", material != null ? material : "");
+
+			String prescriber = prescriberTextField != null && !prescriberTextField.getText().trim().isEmpty() ?
+					prescriberTextField.getText().trim() : lab.getPrescriber();
+			extraParameters.put("prescriber", prescriber != null ? prescriber : "");
+
+			String note = noteTextArea != null ? noteTextArea.getText().trim() : lab.getNote();
+			extraParameters.put("note", note != null ? note : "");
+
+			String patName = labPat != null ? labPat.getName() : lab.getPatName();
+			extraParameters.put("patientName", patName != null ? patName : "");
+
+			String patCode = "";
+			if (labPat != null && labPat.getCode() != null) {
+				patCode = String.valueOf(labPat.getCode());
+			} else if (lab.getPatient() != null && lab.getPatient().getCode() != null) {
+				patCode = String.valueOf(lab.getPatient().getCode());
+			}
+			extraParameters.put("patientCode", patCode);
+
+			Integer age = labPat != null ? labPat.getAge() : lab.getAge();
+			extraParameters.put("patientAge", age != null ? String.valueOf(age) : "");
+
+			String sex = labPat != null ? String.valueOf(labPat.getSex()) : lab.getSex();
+			extraParameters.put("patientSex", sex != null ? sex : "");
+
+			String inOut = inPatientCheckBox != null ? (inPatientCheckBox.isSelected() ? "I" : "R") : lab.getInOutPatient();
+			extraParameters.put("patientType", inOut != null ? inOut : "");
+
+			List<PatientAnalysisRow> rows = new ArrayList<>();
+			int proc = exam != null && exam.getProcedure() != null ? exam.getProcedure() : 1;
+
+			if (proc == 2) {
+				if (procedure2RowsComponents != null && !procedure2RowsComponents.isEmpty()) {
+					for (EditProcedure2RowPanel rowPanel : procedure2RowsComponents) {
+						if (rowPanel.isChecked()) {
+							rows.add(new PatientAnalysisRow(rowPanel.getLabRowDescription(), rowPanel.getValueText()));
+						}
+					}
+				}
+				if (rows.isEmpty() && !insert && lab.getCode() != null) {
+					try {
+						List<LaboratoryRow> dbRows = labRowManager.getLabRowByLabId(lab.getCode());
+						if (dbRows != null) {
+							for (LaboratoryRow lr : dbRows) {
+								String desc = lr.getDescription();
+								String val = lr.getResValue();
+								if (desc != null && desc.contains("$")) {
+									int idx = desc.indexOf("$");
+									val = desc.substring(idx + 1);
+									desc = desc.substring(0, idx);
+								}
+								rows.add(new PatientAnalysisRow(desc, val != null ? val : ""));
+							}
+						}
+					} catch (OHServiceException e) {
+						OHServiceExceptionUtil.showMessages(e);
+					}
+				}
+			} else if (proc == 1) {
+				String res = examRowComboBox != null && examRowComboBox.getSelectedItem() != null ?
+						examRowComboBox.getSelectedItem().toString() : lab.getResult();
+				String desc = exam != null ? exam.getDescription() : "";
+				rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+			} else {
+				String res = examTextField != null ? examTextField.getText().trim() : lab.getResult();
+				String desc = exam != null ? exam.getDescription() : "";
+				rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+			}
+
+			if (rows.isEmpty()) {
+				String desc = exam != null ? exam.getDescription() : "";
+				String res = lab.getResult() != null ? lab.getResult() : "";
+				rows.add(new PatientAnalysisRow(desc, res));
+			}
+
+			printManager.print("PatientAnalysisReport", rows, extraParameters, 0);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
 	}
 
 	private JButton getCancelButton() {
