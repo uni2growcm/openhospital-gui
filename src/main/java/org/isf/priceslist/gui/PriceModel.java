@@ -66,6 +66,7 @@ import java.util.List;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.priceslist.model.Price;
+import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.treetable.AbstractTreeTableModel;
 import org.isf.utils.treetable.TreeTableModel;
 
@@ -114,7 +115,12 @@ public class PriceModel extends AbstractTreeTableModel {
 	@Override
 	public void setValueAt(Object aValue, Object node, int column) {
 		if (column == 1) {
-			((PriceNode) node).getPrice().setPrice((Double) aValue);
+			Double newPrice = (Double) aValue;
+			if (newPrice != null && newPrice < 0) {
+				MessageDialog.error(null, "angal.priceslist.negativepricenotallowed.msg");
+				return;
+			}
+			((PriceNode) node).getPrice().setPrice(newPrice);
 		}
 		if (column == 2) {
 			((PriceNode) node).getPrice().setVariable((Boolean) aValue);
