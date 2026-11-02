@@ -1121,7 +1121,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private String formatTotalStockValue() {
 		DecimalFormat format = new DecimalFormat("#,##0.00");
-		return (!currencyCod.isEmpty() ? currencyCod + " " : "") + format.format(totalStockValue);
+		return format.format(totalStockValue) + (!currencyCod.isEmpty() ? " " + currencyCod : "");
 	}
 
 	private JPanel getPaginationPanel() {
