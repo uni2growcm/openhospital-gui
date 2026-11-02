@@ -236,7 +236,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		topPanel.add(searchBoxButton);
 		searchBoxButton.addActionListener(actionEvent -> {
 			applyFilter();
-			updatePageCombo();
 		});
 		return topPanel;
 	}
@@ -514,7 +513,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 					int key = e.getKeyCode();
 					if (key == KeyEvent.VK_ENTER) {
 						applyFilter();
-						updatePageCombo();
 					}
 				}
 				@Override
@@ -822,9 +820,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		activeComboBox.addActionListener(actionEvent -> {
 			activeSelection = activeComboBox.getSelectedItem().toString();
 			applyFilter();
-			updatePageCombo();
-			CURRENT_PAGE = 0;
-			loadCurrentPage();
 		});
 		return activeComboBox;
 	}
@@ -846,11 +841,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			pbox.setSelectedItem(STR_ALL);
 		}
 		pbox.addActionListener(actionEvent -> {
-			pSelection = pbox.getSelectedItem().toString();
 			applyFilter();
-			updatePageCombo();
-			CURRENT_PAGE = 0;
-			loadCurrentPage();
 		});
 		return pbox;
 	}
@@ -1175,32 +1166,27 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 		boolean hasMultiplePages = PAGES > 1;
 
-		if (hasMultiplePages && pagesCombo.getItemCount() != PAGES && PAGES > 0) {
-			updatingPageCombo = true;
+		updatingPageCombo = true;
+		if (pagesCombo.getItemCount() != PAGES) {
 			pagesCombo.removeAllItems();
 			for (int i = 1; i <= PAGES; i++) {
 				pagesCombo.addItem(i);
 			}
-			updatingPageCombo = false;
 		}
 
-		if (hasMultiplePages && PAGES > 0) {
-			updatingPageCombo = true;
+		if (PAGES > 0) {
 			pagesCombo.setSelectedItem(CURRENT_PAGE + 1);
-			updatingPageCombo = false;
 		}
+		updatingPageCombo = false;
 
 		prevButton.setEnabled(CURRENT_PAGE > 0 && hasMultiplePages);
 		nextButton.setEnabled(CURRENT_PAGE < PAGES - 1 && hasMultiplePages);
 		pagesCombo.setEnabled(hasMultiplePages);
 
 		if (PAGES <= 0) {
-			underLabel.setText("/ 0 Pages");
-			pagesCombo.setEnabled(false);
-			prevButton.setEnabled(false);
-			nextButton.setEnabled(false);
+			underLabel.setText("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
 		} else {
-			underLabel.setText("/ " + PAGES + " Pages");
+			underLabel.setText("/ " + PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 		}
 
 		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + TOTAL_PAGES);
@@ -1353,10 +1339,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	public void initializeCombo(int page) {
 		if (pagesCombo != null) {
+			updatingPageCombo = true;
 			pagesCombo.removeAllItems();
 			for (int i = 0; i < page; i++) {
 				pagesCombo.addItem(i + 1);
 			}
+			updatingPageCombo = false;
 		}
 	}
 
@@ -1378,9 +1366,6 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	}
 
 	private void applyFilter() {
-		if ((pSelection == null) || (pSelection.compareTo(STR_ALL) == 0)) {
-			pSelection = "";
-		}
 		CURRENT_PAGE = 0;
 		loadCurrentPage();
 	}

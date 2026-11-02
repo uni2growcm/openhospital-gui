@@ -21,6 +21,7 @@
  */
 package org.isf.lab.gui;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -50,16 +51,25 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 
+import org.isf.exa.gui.ExamEdit;
+import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
+import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
+import org.isf.menu.gui.MainMenu;
+import org.isf.menu.manager.Context;
 import org.isf.priceslist.model.Price;
+import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.OhDefaultCellRenderer;
 import org.isf.utils.jobjects.OhTableModelExam;
 
 /**
  * @author julio
  */
-public class ExamPicker extends JPanel {
+public class ExamPicker extends JPanel implements ExamEdit.ExamListener {
+
+	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 
 	private JTable jTableData;
 	private JTextField jTextFieldFind;
@@ -279,6 +289,15 @@ public class ExamPicker extends JPanel {
 		JPanel jPanel2 = new JPanel();
 		jPanel2.setBackground(new Color(240, 240, 240));
 
+		JButton jButtonNew = new JButton(MessageBundle.getMessage("angal.exa.newexam.btn"));
+		jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.exa.newexam.btn.key"));
+		jButtonNew.addActionListener(actionEvent -> {
+			Exam exam = new Exam("", "", new ExamType("", ""), 0, "");
+			ExamEdit examEdit = new ExamEdit(this.getParentFrame(), exam, true);
+			examEdit.addExamListener(this);
+			examEdit.setVisible(true);
+		});
+
 		JButton jButtonSelect = new JButton(MessageBundle.getMessage("angal.common.select.btn"));
 		jButtonSelect.setMnemonic(MessageBundle.getMnemonic("angal.common.select.btn.key"));
 		jButtonSelect.addMouseListener(new MouseAdapter() {
@@ -302,6 +321,9 @@ public class ExamPicker extends JPanel {
 
 		add(jPanel2, BorderLayout.SOUTH);
 		jPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		if (MainMenu.checkUserGrants("btnlabnewexam")) {
+			jPanel2.add(jButtonNew);
+		}
 		jPanel2.add(jButtonSelect);
 		jPanel2.add(jButtonCancel);
 	}
@@ -329,6 +351,20 @@ public class ExamPicker extends JPanel {
 		this.setVisible(false);
 		this.getParentFrame().dispose();
 	}
+
+	@Override
+	public void examInserted(AWTEvent e) {
+		try {
+			List<Exam> exams = examBrowsingManager.getExams();
+			jTableData.setModel(new OhTableModelExam<Price>(exams));
+			jTextFieldFind.setText("");
+		} catch (OHServiceException ohServiceException) {
+			OHServiceExceptionUtil.showMessages(ohServiceException);
+		}
+	}
+
+	@Override
+	public void examUpdated(AWTEvent e) {}
 
 	public List<Exam> getAllSelectedObject() {
 		OhTableModelExam<?> model = (OhTableModelExam<?>) jTableData.getModel();
