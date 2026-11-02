@@ -113,6 +113,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JButton buttonDelete;
 	private JButton buttonClose;
 	private JButton printTableButton;
+	private JButton printPatientAnalysisButton;
 	private JButton filterButton;
 	private JPanel jSelectionPanel;
 	private JTable jTable;
@@ -246,12 +247,32 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			if (MainMenu.checkUserGrants("btnlaboratorydel")) {
 				buttonPanel.add(getButtonDelete(), null);
 			}
+			buttonPanel.add(getPrintPatientAnalysisButton(), null);
 			buttonPanel.add(getPrintTableButton(), null);
 			buttonPanel.add(getDoctorPrescriptionButton(), null);
 			buttonPanel.add(getCloseButton(), null);
 			jButtonPanel.add(buttonPanel, BorderLayout.SOUTH);
 		}
 		return jButtonPanel;
+	}
+
+	private JButton getPrintPatientAnalysisButton() {
+		if (printPatientAnalysisButton == null) {
+			printPatientAnalysisButton = new JButton(MessageBundle.getMessage("angal.lab.patientanalysisreport.btn"));
+			printPatientAnalysisButton.setMnemonic(MessageBundle.getMnemonic("angal.lab.patientanalysisreport.btn.key"));
+			printPatientAnalysisButton.addActionListener(actionEvent -> {
+				selectedrow = jTable.getSelectedRow();
+				if (selectedrow < 0) {
+					MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				laboratory = (Laboratory) model.getValueAt(selectedrow, -1);
+				if (laboratory != null) {
+					PatientAnalysisReportLauncher.print(laboratory);
+				}
+			});
+		}
+		return printPatientAnalysisButton;
 	}
 
 	private JButton getPrintTableButton() {
