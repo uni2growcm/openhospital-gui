@@ -73,7 +73,7 @@ ORDER BY lab.LAB_DATE]]>
 				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="547" y="16" width="240" height="14" uuid="d0000001-0000-0000-0000-000000000014"/>
+				<reportElement x="540" y="16" width="240" height="14" uuid="d0000001-0000-0000-0000-000000000014"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
