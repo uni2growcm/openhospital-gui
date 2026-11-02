@@ -463,131 +463,70 @@ public class LabEdit extends ModalJFrame {
 	}
 
 	private void printPatientAnalysisReport() {
-		try {
-			Map<String, Object> extraParameters = new HashMap<>();
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-			DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		Map<String, Object> customParams = new HashMap<>();
 
-			LocalDateTime examDate = null;
-			if (examDateFieldCal != null) {
-				try {
-					examDate = examDateFieldCal.getLocalDateTime();
-				} catch (Exception ignored) {
-				}
-			}
-			if (examDate == null) {
-				examDate = lab.getLabDate();
-			}
-			if (examDate != null) {
-				extraParameters.put("examDate", examDate.format(formatter));
-				extraParameters.put("PeriodLabel", examDate.toLocalDate().format(periodFormatter));
-			} else {
-				extraParameters.put("examDate", "");
-				extraParameters.put("PeriodLabel", "");
-			}
-
+		if (examDateFieldCal != null) {
 			try {
-				Hospital hosp = Context.getApplicationContext().getBean(HospitalBrowsingManager.class).getHospital();
-				if (hosp != null) {
-					extraParameters.put("Hospital", hosp.getDescription() != null ? hosp.getDescription() : "");
-					extraParameters.put("Address", hosp.getAddress() != null ? hosp.getAddress() : "");
-					extraParameters.put("City", hosp.getCity() != null ? hosp.getCity() : "");
-					extraParameters.put("Telephone", hosp.getTelephone() != null ? hosp.getTelephone() : "");
-					extraParameters.put("Email", hosp.getEmail() != null ? hosp.getEmail() : "");
+				LocalDateTime examDate = examDateFieldCal.getLocalDateTime();
+				if (examDate != null) {
+					customParams.put("examDate", examDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+					customParams.put("PeriodLabel", examDate.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 				}
 			} catch (Exception ignored) {
 			}
+		}
 
-			Exam exam = examSelected != null ? examSelected : lab.getExam();
-			extraParameters.put("examName", exam != null ? exam.getDescription() : "");
+		Exam exam = examSelected != null ? examSelected : lab.getExam();
+		if (exam != null) {
+			customParams.put("examName", exam.getDescription());
+		}
 
-			String material = null;
-			if (matComboBox != null && matComboBox.getSelectedItem() != null) {
-				material = matComboBox.getSelectedItem().toString();
-			} else {
-				material = lab.getMaterial();
-			}
-			if (material != null && MessageBundle.getMessage("angal.lab.undefined.txt").equals(material)) {
+		if (matComboBox != null && matComboBox.getSelectedItem() != null) {
+			String material = matComboBox.getSelectedItem().toString();
+			if (MessageBundle.getMessage("angal.lab.undefined.txt").equals(material)) {
 				material = "";
 			}
-			extraParameters.put("material", material != null ? material : "");
-
-			extraParameters.put("prescriber", lab.getPrescriber() != null ? lab.getPrescriber() : "");
-
-			String note = noteTextArea != null ? noteTextArea.getText().trim() : lab.getNote();
-			extraParameters.put("note", note != null ? note : "");
-
-			String patName = patSelected != null ? patSelected.getName() : lab.getPatName();
-			extraParameters.put("patientName", patName != null ? patName : "");
-
-			String patCode = "";
-			if (patSelected != null && patSelected.getCode() != null) {
-				patCode = String.valueOf(patSelected.getCode());
-			} else if (lab.getPatient() != null && lab.getPatient().getCode() != null) {
-				patCode = String.valueOf(lab.getPatient().getCode());
-			}
-			extraParameters.put("patientCode", patCode);
-
-			Integer age = patSelected != null ? patSelected.getAge() : lab.getAge();
-			extraParameters.put("patientAge", age != null ? String.valueOf(age) : "");
-
-			String sex = patSelected != null ? String.valueOf(patSelected.getSex()) : lab.getSex();
-			extraParameters.put("patientSex", sex != null ? sex : "");
-
-			String inOut = inPatientCheckBox != null ? (inPatientCheckBox.isSelected() ? "I" : "R") : lab.getInOutPatient();
-			extraParameters.put("patientType", inOut != null ? inOut : "");
-
-			List<PatientAnalysisRow> rows = new ArrayList<>();
-			int proc = exam != null && exam.getProcedure() != null ? exam.getProcedure() : 1;
-
-			if (proc == 2) {
-				if (procedure2RowsComponents != null && !procedure2RowsComponents.isEmpty()) {
-					for (EditProcedure2RowPanel rowPanel : procedure2RowsComponents) {
-						if (rowPanel.isChecked()) {
-							rows.add(new PatientAnalysisRow(rowPanel.getLabRowDescription(), rowPanel.getValueText()));
-						}
-					}
-				}
-				if (rows.isEmpty() && !insert && lab.getCode() != null) {
-					try {
-						List<LaboratoryRow> dbRows = labRowManager.getLabRowByLabId(lab.getCode());
-						if (dbRows != null) {
-							for (LaboratoryRow lr : dbRows) {
-								String desc = lr.getDescription();
-								String val = lr.getResValue();
-								if (desc != null && desc.contains("$")) {
-									int idx = desc.indexOf("$");
-									val = desc.substring(idx + 1);
-									desc = desc.substring(0, idx);
-								}
-								rows.add(new PatientAnalysisRow(desc, val != null ? val : ""));
-							}
-						}
-					} catch (OHServiceException e) {
-						OHServiceExceptionUtil.showMessages(e);
-					}
-				}
-			} else if (proc == 1) {
-				String res = examRowComboBox != null && examRowComboBox.getSelectedItem() != null ?
-						examRowComboBox.getSelectedItem().toString() : lab.getResult();
-				String desc = exam != null ? exam.getDescription() : "";
-				rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
-			} else {
-				String res = examRowTextField != null ? examRowTextField.getText().trim() : lab.getResult();
-				String desc = exam != null ? exam.getDescription() : "";
-				rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
-			}
-
-			if (rows.isEmpty()) {
-				String desc = exam != null ? exam.getDescription() : "";
-				String res = lab.getResult() != null ? lab.getResult() : "";
-				rows.add(new PatientAnalysisRow(desc, res));
-			}
-
-			printManager.print("PatientAnalysisReport", rows, extraParameters, 0);
-		} catch (OHServiceException e) {
-			OHServiceExceptionUtil.showMessages(e);
+			customParams.put("material", material);
 		}
+
+		if (noteTextArea != null) {
+			customParams.put("note", noteTextArea.getText().trim());
+		}
+
+		if (patSelected != null) {
+			customParams.put("patientName", patSelected.getName());
+			customParams.put("patientCode", patSelected.getCode() != null ? String.valueOf(patSelected.getCode()) : "");
+			customParams.put("patientAge", String.valueOf(patSelected.getAge()));
+			customParams.put("patientSex", String.valueOf(patSelected.getSex()));
+		}
+
+		if (inPatientCheckBox != null) {
+			customParams.put("patientType", inPatientCheckBox.isSelected() ? "I" : "R");
+		}
+
+		List<PatientAnalysisRow> rows = new ArrayList<>();
+		int proc = exam != null && exam.getProcedure() != null ? exam.getProcedure() : 1;
+
+		if (proc == 2) {
+			if (procedure2RowsComponents != null && !procedure2RowsComponents.isEmpty()) {
+				for (EditProcedure2RowPanel rowPanel : procedure2RowsComponents) {
+					if (rowPanel.isChecked()) {
+						rows.add(new PatientAnalysisRow(rowPanel.getLabRowDescription(), rowPanel.getValueText()));
+					}
+				}
+			}
+		} else if (proc == 1) {
+			String res = examRowComboBox != null && examRowComboBox.getSelectedItem() != null ?
+					examRowComboBox.getSelectedItem().toString() : lab.getResult();
+			String desc = exam != null ? exam.getDescription() : "";
+			rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+		} else {
+			String res = examRowTextField != null ? examRowTextField.getText().trim() : lab.getResult();
+			String desc = exam != null ? exam.getDescription() : "";
+			rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+		}
+
+		PatientAnalysisReportLauncher.print(lab, customParams, rows);
 	}
 
 	private JButton getCancelButton() {
