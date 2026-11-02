@@ -131,7 +131,7 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 					<textElement verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label_patiente} + " [" + $R{label_dossier} + " " + $F{PATIENT_ID} + "]  " + $F{PATIENT_NAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{label_patiente} + " " + ($F{PATIENT_NAME} != null ? $F{PATIENT_NAME} : "") + "  [" + $R{label_dossier} + " " + ($F{PATIENT_ID} != null ? $F{PATIENT_ID} : "") + "]"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="395" y="4" width="115" height="12" uuid="c4000001-0001-0001-0001-000000000082"/>
