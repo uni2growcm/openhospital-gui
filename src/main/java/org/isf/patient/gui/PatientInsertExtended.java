@@ -2705,7 +2705,7 @@ public class PatientInsertExtended extends JDialog {
 			JPanel verticalPanel = new JPanel();
 			verticalPanel.setLayout(new BoxLayout(verticalPanel, BoxLayout.Y_AXIS));
 
-			if (GeneralData.PARTNERSMODULEENABLED) {
+			if (!insert && GeneralData.PARTNERSMODULEENABLED) {
 				verticalPanel.add(getJPartnerPanel());
 			}
 
