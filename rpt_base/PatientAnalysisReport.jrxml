@@ -88,7 +88,7 @@
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{PeriodLabel} != null && !$P{PeriodLabel}.isEmpty() ? ($R{label_periode} + " " + $P{PeriodLabel}) : ($P{examDate} != null && !$P{examDate}.isEmpty() ? ($R{label_date} + " " + $P{examDate}) : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{PeriodLabel} != null && !$P{PeriodLabel}.isEmpty() ? ($R{label_date} + " " + $P{PeriodLabel}) : ($P{examDate} != null && !$P{examDate}.isEmpty() ? ($R{label_date} + " " + $P{examDate}) : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="95" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000018"/>

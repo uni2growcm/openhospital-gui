@@ -161,7 +161,6 @@ public class LabEdit extends ModalJFrame {
 
 	private boolean examChanged;
 
-	// Liste locale stockant l'état des sous-résultats pour la procédure 2
 	private List<EditProcedure2RowPanel> procedure2RowsComponents = new ArrayList<>();
 
 	private GoodDateTimeSpinnerChooser examDateFieldCal;
