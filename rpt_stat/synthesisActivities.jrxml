@@ -29,6 +29,9 @@
 	<parameter name="vaccineDtc3" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="vaccineVar" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="vaccineVat2" class="java.lang.Long" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT 1]]>
+	</queryString>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
