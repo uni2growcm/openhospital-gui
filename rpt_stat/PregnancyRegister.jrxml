@@ -201,9 +201,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 	<columnHeader>
 		<band height="26" splitType="Stretch">
 			<textField>
-				<reportElement mode="Opaque" x="0" y="0" width="22" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000101"/>
+				<reportElement mode="Opaque" x="0" y="0" width="22" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000101"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -211,9 +211,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_num}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="22" y="0" width="45" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000102"/>
+				<reportElement mode="Opaque" x="22" y="0" width="45" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000102"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -221,9 +221,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_pat_id}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="67" y="0" width="105" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000103"/>
+				<reportElement mode="Opaque" x="67" y="0" width="105" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000103"/>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -231,9 +231,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_pat_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="172" y="0" width="28" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000104"/>
+				<reportElement mode="Opaque" x="172" y="0" width="28" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000104"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -241,9 +241,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_age}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="200" y="0" width="75" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000105"/>
+				<reportElement mode="Opaque" x="200" y="0" width="75" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000105"/>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -251,9 +251,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_contact}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="275" y="0" width="50" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000106"/>
+				<reportElement mode="Opaque" x="275" y="0" width="50" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000106"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -261,9 +261,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_prg_date}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="325" y="0" width="50" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000107"/>
+				<reportElement mode="Opaque" x="325" y="0" width="50" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000107"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -271,9 +271,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_lmp}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="375" y="0" width="50" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000108"/>
+				<reportElement mode="Opaque" x="375" y="0" width="50" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000108"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -281,9 +281,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_edd}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="425" y="0" width="60" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000109"/>
+				<reportElement mode="Opaque" x="425" y="0" width="60" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000109"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -291,9 +291,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_obs}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="485" y="0" width="45" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000110"/>
+				<reportElement mode="Opaque" x="485" y="0" width="45" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000110"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -301,9 +301,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_risk}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="530" y="0" width="28" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000111"/>
+				<reportElement mode="Opaque" x="530" y="0" width="28" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000111"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -311,9 +311,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_cpn}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="558" y="0" width="50" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000112"/>
+				<reportElement mode="Opaque" x="558" y="0" width="50" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000112"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -321,9 +321,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_last_cpn}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="608" y="0" width="50" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000113"/>
+				<reportElement mode="Opaque" x="608" y="0" width="50" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000113"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -331,9 +331,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_next_app}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="658" y="0" width="54" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000114"/>
+				<reportElement mode="Opaque" x="658" y="0" width="54" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000114"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -341,9 +341,9 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				<textFieldExpression><![CDATA[$R{col_status}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Opaque" x="712" y="0" width="70" height="26" backcolor="#EAEAEA" uuid="c3000001-0001-0001-0001-000000000115"/>
+				<reportElement mode="Opaque" x="712" y="0" width="70" height="26" backcolor="#EAF0F6" uuid="c3000001-0001-0001-0001-000000000115"/>
 				<box leftPadding="2">
-					<pen lineWidth="0.5" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
@@ -357,7 +357,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="22" height="18" uuid="c3000001-0001-0001-0001-000000000201"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -367,7 +367,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="22" y="0" width="45" height="18" uuid="c3000001-0001-0001-0001-000000000202"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -377,7 +377,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="67" y="0" width="105" height="18" uuid="c3000001-0001-0001-0001-000000000203"/>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8"/>
@@ -387,7 +387,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="172" y="0" width="28" height="18" uuid="c3000001-0001-0001-0001-000000000204"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -397,7 +397,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="0" width="75" height="18" uuid="c3000001-0001-0001-0001-000000000205"/>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8"/>
@@ -407,7 +407,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="275" y="0" width="50" height="18" uuid="c3000001-0001-0001-0001-000000000206"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -417,7 +417,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="325" y="0" width="50" height="18" uuid="c3000001-0001-0001-0001-000000000207"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -427,7 +427,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="375" y="0" width="50" height="18" uuid="c3000001-0001-0001-0001-000000000208"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -437,7 +437,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="425" y="0" width="60" height="18" uuid="c3000001-0001-0001-0001-000000000209"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="7"/>
@@ -447,7 +447,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="485" y="0" width="45" height="18" uuid="c3000001-0001-0001-0001-000000000210"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -457,7 +457,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="530" y="0" width="28" height="18" uuid="c3000001-0001-0001-0001-000000000211"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -467,7 +467,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="558" y="0" width="50" height="18" uuid="c3000001-0001-0001-0001-000000000212"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -477,7 +477,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="608" y="0" width="50" height="18" uuid="c3000001-0001-0001-0001-000000000213"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -487,7 +487,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="658" y="0" width="54" height="18" uuid="c3000001-0001-0001-0001-000000000214"/>
 				<box>
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
@@ -497,7 +497,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="712" y="0" width="70" height="18" uuid="c3000001-0001-0001-0001-000000000215"/>
 				<box leftPadding="2">
-					<pen lineWidth="0.5" lineColor="#B0B0B0"/>
+					<pen lineWidth="0.5" lineColor="#999999"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="7"/>
