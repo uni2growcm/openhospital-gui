@@ -274,18 +274,6 @@ public class ExamPicker extends JPanel implements ExamEdit.ExamListener {
 
 		});
 
-		jTextFieldFind.addKeyListener(new KeyAdapter() {
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					validateSelection();
-				}
-				super.keyPressed(e);
-			}
-		});
-
 		JPanel jPanel2 = new JPanel();
 		jPanel2.setBackground(new Color(240, 240, 240));
 
