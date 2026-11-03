@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="synthesisActivities" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="synthesisActivities" uuid="7c2a4e6b-1d3f-4a5c-9b6d-2e4f6a8c0b1d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="year" class="java.lang.String"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="opdNew" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="opdOld" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="opdTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="admissionsCount" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="avgLengthOfStay" class="java.lang.Double" isForPrompting="false"/>
+	<parameter name="totalBeds" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="deliveriesCount" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="labTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="labTbcPositive" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="labHivPositive" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="operationsMinor" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="operationsMajor" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="operationsTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="vaccineBcg" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="vaccinePolio3" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="vaccineDtc3" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="vaccineVar" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="vaccineVat2" class="java.lang.Long" isForPrompting="false"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="160" splitType="Prevent">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-1" x="0" y="0" width="390" height="16" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"/>
+				<textElement>
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-2" x="30" y="16" width="360" height="14" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"/>
+				<textElement>
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-3" x="0" y="30" width="390" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f"/>
+				<textElement>
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-4" x="392" y="0" width="390" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-5" x="411" y="16" width="360" height="14" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-6" x="392" y="30" width="390" height="16" uuid="6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-7" x="0" y="55" width="782" height="30" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-header-8" x="0" y="90" width="782" height="16" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_year} + " " + $P{year}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-header-9" x="0" y="110" width="390" height="14" uuid="9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f"/>
+				<textElement>
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-header-10" x="0" y="124" width="390" height="14" uuid="0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a"/>
+				<textElement>
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + $P{Address}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-header-11" x="392" y="110" width="390" height="14" uuid="1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + $P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-header-12" x="392" y="124" width="390" height="14" uuid="2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + $P{Telephone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-header-13" x="392" y="138" width="390" height="14" uuid="3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7d"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + $P{Email}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-header-1" mode="Opaque" x="0" y="155" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="4b5c6d7e-8f9a-4b0c-1d2e-3f4a5b6c7d8e"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="0" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="240" splitType="Stretch">
+			<!-- Left column -->
+			<rectangle radius="0">
+				<reportElement x="0" y="0" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e9f"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="4" y="0" width="386" height="18" forecolor="#FFFFFF" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f0a"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_opd}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="18" width="240" height="16" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a1b"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_opd_new}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="18" width="145" height="16" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b2c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{opdNew}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="34" width="240" height="16" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c3d"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_opd_old}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="34" width="145" height="16" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d4e"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{opdOld}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="50" width="240" height="16" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_opd_total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="50" width="145" height="16" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{opdTotal}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="0">
+				<reportElement x="0" y="70" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="4" y="70" width="386" height="18" forecolor="#FFFFFF" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b8c"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_admission}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="88" width="240" height="16" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_admissions}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="88" width="145" height="16" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0e"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{admissionsCount}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="104" width="240" height="16" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_avg_stay}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false" pattern="#,##0.0">
+				<reportElement x="245" y="104" width="145" height="16" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{avgLengthOfStay}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="120" width="240" height="16" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3b"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_beds}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="120" width="145" height="16" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{totalBeds}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="0">
+				<reportElement x="0" y="140" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="4" y="140" width="386" height="18" forecolor="#FFFFFF" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_delivery}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="158" width="240" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e70"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_deliveries}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="245" y="158" width="145" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f81"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{deliveriesCount}]]></textFieldExpression>
+			</textField>
+
+			<!-- Right column -->
+			<rectangle radius="0">
+				<reportElement x="392" y="0" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a92"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="396" y="0" width="386" height="18" forecolor="#FFFFFF" uuid="6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b03"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_lab}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="18" width="240" height="16" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c14"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_lab_total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="18" width="145" height="16" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d25"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{labTotal}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="34" width="240" height="16" uuid="9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e36"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_lab_tbc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="34" width="145" height="16" uuid="0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f47"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{labTbcPositive}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="50" width="240" height="16" uuid="1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a58"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_lab_hiv}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="50" width="145" height="16" uuid="2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b69"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{labHivPositive}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="0">
+				<reportElement x="392" y="70" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7e"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="396" y="70" width="386" height="18" forecolor="#FFFFFF" uuid="4b5c6d7e-8f9a-4b0c-1d2e-3f4a5b6c7d8f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_operation}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="88" width="240" height="16" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e90"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_operations_minor}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="88" width="145" height="16" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f01"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{operationsMinor}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="104" width="240" height="16" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a12"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_operations_major}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="104" width="145" height="16" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b23"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{operationsMajor}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="120" width="240" height="16" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c34"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_operations_total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="120" width="145" height="16" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d45"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{operationsTotal}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="0">
+				<reportElement x="392" y="140" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e56"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="396" y="140" width="386" height="18" forecolor="#FFFFFF" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f67"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_vaccination}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="158" width="240" height="16" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a78"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_vaccine_bcg}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="158" width="145" height="16" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b89"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{vaccineBcg}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="174" width="240" height="16" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9a"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_vaccine_polio3}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="174" width="145" height="16" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0b"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{vaccinePolio3}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="190" width="240" height="16" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1c"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_vaccine_dtc3}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="190" width="145" height="16" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{vaccineDtc3}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="206" width="240" height="16" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3e"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_vaccine_var}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="206" width="145" height="16" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4f"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{vaccineVar}]]></textFieldExpression>
+			</textField>
+
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="222" width="240" height="16" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c50"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_vaccine_vat2}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="637" y="222" width="145" height="16" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d61"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{vaccineVat2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="0" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="200" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e72"/>
+				<textElement><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="632" y="0" width="100" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f83"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="736" y="0" width="46" height="16" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a94"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
