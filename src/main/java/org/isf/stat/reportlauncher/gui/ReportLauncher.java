@@ -51,6 +51,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
@@ -64,6 +65,7 @@ import org.isf.stat.gui.report.GenericReportMY;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.isf.xmpp.gui.CommunicationFrame;
@@ -462,10 +464,16 @@ public class ReportLauncher extends ModalJFrame {
 
 				String state;
 				String state2;
+				Boolean balanceZero = null;
 				switch (jStatusComboBox.getSelectedIndex()) {
 					case 1:
 						state = "O";
 						state2 = "O";
+						int balanceAnswer = MessageDialog.yesNo(this, "angal.stat.incomespersurgeryact.balancezero.msg");
+						if (balanceAnswer == JOptionPane.CLOSED_OPTION) {
+							return;
+						}
+						balanceZero = balanceAnswer == JOptionPane.YES_OPTION;
 						break;
 					case 2:
 						state = "C";
@@ -482,7 +490,8 @@ public class ReportLauncher extends ModalJFrame {
 				String operationTypeLabel = selectedOperationType instanceof OperationType ? ((OperationType) selectedOperationType).getDescription()
 								: MessageBundle.getMessage("angal.common.all.txt");
 
-				new GenericReportFromDateToDate(year, state, state2, operationTypeCode, operationTypeLabel, jRptComboBox.getSelectedItem().toString(), toExcel);
+				new GenericReportFromDateToDate(year, state, state2, operationTypeCode, operationTypeLabel, balanceZero, jRptComboBox.getSelectedItem().toString(),
+								toExcel);
 			} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
 								folderNameFileNameMap.get("rpt_stat").contains(
