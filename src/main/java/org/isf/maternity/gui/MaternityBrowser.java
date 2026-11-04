@@ -522,7 +522,26 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JScrollPane getVisitListPanel() {
-        visitTable = new JTable(new MaternityVisitsTableModel());
+        visitTable = new JTable(new MaternityVisitsTableModel()) {
+            @Serial
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                int row = rowAtPoint(e.getPoint());
+                int col = columnAtPoint(e.getPoint());
+                if (row > -1 && col == 2) {
+                    int modelRow = convertRowIndexToModel(row);
+                    if (modelRow >= 0 && modelRow < visitList.size()) {
+                        PregnancyVisit visit = visitList.get(modelRow);
+                        if (visit != null && visit.getClinicalNotes() != null && !visit.getClinicalNotes().trim().isEmpty()) {
+                            return visit.getClinicalNotes().trim();
+                        }
+                    }
+                }
+                return super.getToolTipText(e);
+            }
+        };
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         visitTable.getSelectionModel().addListSelectionListener(e -> {
@@ -1181,8 +1200,8 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
                 return visit.getVisitType() != null ? visit.getVisitType().getDescription() : "";
             } else if (c == 2) {
                 String notes = visit.getClinicalNotes();
-                if (notes != null && notes.length() > 50) {
-                    notes = notes.substring(0, 50) + "...";
+                if (notes != null) {
+                    notes = notes.replace("\r\n", " ").replace('\n', ' ').replace('\r', ' ').trim();
                 }
                 return notes != null ? notes : "";
             }
