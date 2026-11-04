@@ -76,16 +76,36 @@ jobs:
           if [ -n "${{ secrets.GH_TOKEN }}" ]; then
             CLONE_URL="https://${{ secrets.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git"
           fi
-          git clone --depth=1 --no-single-branch "$CLONE_URL" openhospital-core
-          pushd openhospital-core
-          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout develop || git checkout main || true
+          git clone --depth=1 --no-single-branch "$CLONE_URL" ../openhospital-core
+          ln -s ../openhospital-core openhospital-core || true
+          ln -s ../openhospital-core u2g-openhospital-core || true
+
+          pushd ../openhospital-core
+          TARGET_BRANCH=""
+          if git rev-parse --verify "origin/${{ env.BRANCH_NAME }}" >/dev/null 2>&1; then
+            TARGET_BRANCH="${{ env.BRANCH_NAME }}"
+          elif [ -n "${{ github.base_ref }}" ] && git rev-parse --verify "origin/${{ github.base_ref }}" >/dev/null 2>&1; then
+            TARGET_BRANCH="${{ github.base_ref }}"
+          elif git rev-parse --verify "origin/feature/OH-568-mada-enhancement" >/dev/null 2>&1; then
+            TARGET_BRANCH="feature/OH-568-mada-enhancement"
+          elif git rev-parse --verify "origin/develop" >/dev/null 2>&1; then
+            TARGET_BRANCH="develop"
+          elif git rev-parse --verify "origin/main" >/dev/null 2>&1; then
+            TARGET_BRANCH="main"
+          fi
+
+          if [ -n "$TARGET_BRANCH" ]; then
+            echo "Checking out core branch: $TARGET_BRANCH"
+            git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+          else
+            echo "Using default checked out branch in core"
+          fi
+          git log -n 1 --oneline
           popd
-          ln -s openhospital-core ../openhospital-core || true
-          ln -s openhospital-core u2g-openhospital-core || true
         
       - name: Install core
         run: |
-          pushd openhospital-core
+          pushd ../openhospital-core
           mvn install -DskipTests=true
           popd
 
