@@ -30,25 +30,27 @@ jobs:
           # Set default FORK_REPO and BRANCH_NAME values.
           BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
           
-          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REPOSITORY" == "uni2growcm/u2g-openhospital-gui" ]]; then
-            # For pushes to the main repository, default to the main core repo
-            FORK_REPO="uni2growcm/u2g-openhospital-core"
-          else
-            # For pull requests or other pushes, use the contributor fork if applicable
-            if [[ -n "$GITHUB_HEAD_REPOSITORY" ]]; then
-              FORK_REPO="$GITHUB_HEAD_REPOSITORY"
-            else
-              # Check if the actor's repo exists with the branch
-              FORK_REPO="${GITHUB_ACTOR}/u2g-openhospital-core"
-              CHECK_BRANCH_URL="https://github.com/$FORK_REPO/tree/$BRANCH_NAME"
-              echo "Checking branch existence with: curl -s -o /dev/null -w \"%{http_code}\" $CHECK_BRANCH_URL"
+          MAIN_CORE_REPO="uni2growcm/openhospital-core"
+          if [[ "$GITHUB_REPOSITORY" == "informatici/"* ]]; then
+            MAIN_CORE_REPO="informatici/openhospital-core"
+          fi
 
-              if curl -s -o /dev/null -w "%{http_code}" "$CHECK_BRANCH_URL" | grep -q "200"; then
-                echo "Branch $BRANCH_NAME exists in $FORK_REPO."
-              else
-                # Fallback to the main repository if the branch doesn’t exist in the fork
-                FORK_REPO="uni2growcm/u2g-openhospital-core"
-              fi
+          # Default to main core repo
+          FORK_REPO="$MAIN_CORE_REPO"
+
+          # If it's a pull request or a feature branch, check if the contributor's fork has a matching branch
+          if [[ "$BRANCH_NAME" != "develop" && "$BRANCH_NAME" != "main" ]]; then
+            ACTOR_CORE_REPO="${GITHUB_ACTOR}/openhospital-core"
+            CHECK_BRANCH_URL="https://github.com/$ACTOR_CORE_REPO/tree/$BRANCH_NAME"
+            echo "Checking branch existence with: curl -s -L -o /dev/null -w \"%{http_code}\" $CHECK_BRANCH_URL"
+
+            HTTP_CODE=$(curl -s -L -o /dev/null -w "%{http_code}" "$CHECK_BRANCH_URL")
+            if [[ "$HTTP_CODE" == "200" ]]; then
+              echo "Branch $BRANCH_NAME exists in $ACTOR_CORE_REPO."
+              FORK_REPO="$ACTOR_CORE_REPO"
+            else
+              echo "Branch $BRANCH_NAME not found in $ACTOR_CORE_REPO (HTTP $HTTP_CODE), fallback to $MAIN_CORE_REPO."
+              FORK_REPO="$MAIN_CORE_REPO"
             fi
           fi
           
@@ -70,14 +72,20 @@ jobs:
 
       - name: Checkout core
         run: |
-          git clone --depth=1 --no-single-branch https://${{ secrets.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git u2g-openhospital-core
-          pushd u2g-openhospital-core
-          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout main
+          CLONE_URL="https://github.com/${{ env.FORK_REPO }}.git"
+          if [ -n "${{ secrets.GH_TOKEN }}" ]; then
+            CLONE_URL="https://${{ secrets.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git"
+          fi
+          git clone --depth=1 --no-single-branch "$CLONE_URL" openhospital-core
+          pushd openhospital-core
+          git checkout -B ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }} || git checkout develop || git checkout main || true
           popd
+          ln -s openhospital-core ../openhospital-core || true
+          ln -s openhospital-core u2g-openhospital-core || true
         
       - name: Install core
         run: |
-          pushd u2g-openhospital-core
+          pushd openhospital-core
           mvn install -DskipTests=true
           popd
 
