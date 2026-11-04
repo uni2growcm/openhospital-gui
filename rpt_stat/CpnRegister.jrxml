@@ -427,7 +427,7 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PregnancyGroup_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="30" y="0" width="75" height="16" uuid="c4000001-0001-0001-0001-000000000201"/>
