@@ -96,7 +96,9 @@ import org.isf.priceslist.model.Price;
 import org.isf.priceslist.model.PriceList;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
+import org.isf.reductionplan.manager.PatientReductionPlanManager;
 import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.AppliedReduction;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.utils.exception.OHException;
@@ -501,7 +503,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	 * thisObject
 	 */
 	private Bill thisBill;
-    private int pbiID = 0;
+    private List<ReductionPlan> applicablePlans = new ArrayList<>();
+    private final PatientReductionPlanManager patientReductionPlanManager =
+            Context.getApplicationContext().getBean(PatientReductionPlanManager.class);
 
 	// Tables
 	private Object[] billClasses = { Price.class, Integer.class, Double.class };
@@ -571,8 +575,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	public PatientBillEdit(JFrame owner, Patient patient) {
 		super(owner, true);
 		thisBill = new Bill();
-		ReductionPlan reductionPlan = patient != null ? patient.getReductionPlan() : null;
-		this.pbiID = (reductionPlan != null && reductionPlan.getId() != 0) ? reductionPlan.getId() : 0;
+		loadApplicablePlans(patient);
 		loadDataset();
 		initData(thisBill, true);
 		initComponents();
@@ -647,7 +650,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
     private void applyReductionToBillItems() {
 
-        if (pbiID == 0 || billItems == null) return;
+        if (applicablePlans.isEmpty() || billItems == null) return;
 
         for (BillItems item : billItems) {
 
@@ -691,26 +694,53 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     }
 
     private Price applyReduction(Price price) {
-
-        if (price == null || pbiID == 0) return price;
-
-        try {
-            Price priceCopy = createPriceCopy(price);
-            switch (priceCopy.getGroup()) {
-                case "MED":
-                    return reductionPlanManager.getMedicalPrice(priceCopy, pbiID);
-                case "EXA":
-                    return reductionPlanManager.getExamPrice(priceCopy, pbiID);
-                case "OPE":
-                    return reductionPlanManager.getOperationPrice(priceCopy, pbiID);
-                case "OTH":
-                    return reductionPlanManager.getOtherPrice(priceCopy, pbiID);
-                default:
-                    return priceCopy;
-            }
-        } catch (OHServiceException e) {
-            throw new RuntimeException(e);
+        if (price == null || applicablePlans.isEmpty()) {
+            return price;
         }
+        // returns a reduced copy: the prices of the list are never modified
+        return patientReductionPlanManager.getReducedPrice(price, applicablePlans);
+    }
+
+    /**
+     * Loads the reduction plans of the patient that apply at the bill date.
+     */
+    private void loadApplicablePlans(Patient patient) {
+        applicablePlans = new ArrayList<>();
+        if (patient == null || patient.getCode() == null || patient.getCode() == 0) {
+            return;
+        }
+        try {
+            applicablePlans = patientReductionPlanManager.getApplicableReductionPlans(patient.getCode(),
+                    thisBill != null ? thisBill.getDate() : null);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e, this);
+        }
+    }
+
+    /**
+     * @return the reduction plan that gave the biggest reduction on the bill items, stored on the bill
+     *         ({@code null} if no plan applies)
+     */
+    private ReductionPlan getMainReductionPlan() {
+        if (applicablePlans.isEmpty() || billItems == null) {
+            return null;
+        }
+        java.util.Map<ReductionPlan, Double> discounts = new java.util.HashMap<>();
+        for (BillItems item : billItems) {
+            Price price = getPriceFromBillItem(item);
+            if (price == null) {
+                continue;
+            }
+            AppliedReduction reduction = patientReductionPlanManager.resolveReduction(applicablePlans, price.getGroup(), price.getItem());
+            if (reduction != null && price.getPrice() != null) {
+                double discount = (price.getPrice() - reduction.apply(price.getPrice())) * item.getItemQuantity();
+                discounts.merge(reduction.reductionPlan(), discount, Double::sum);
+            }
+        }
+        return discounts.entrySet().stream()
+                .max(java.util.Map.Entry.comparingByValue())
+                .map(java.util.Map.Entry::getKey)
+                .orElse(null);
     }
 
     private BillItems buildBillItem(
@@ -1681,11 +1711,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 	private void setPatientSelected(Patient patientSelected) {
 		thisBill.setIsPatient(true);
-        ReductionPlan reductionPlan = patientSelected.getReductionPlan();
-
-        if (reductionPlan != null && reductionPlan.getId() != 0) {
-            this.pbiID = reductionPlan.getId();
-        }
+        loadApplicablePlans(patientSelected);
 		thisBill.setBillPatient(patientSelected);
 		thisBill.setPatName(patientSelected.getName());
         selectedPatient = patientSelected;
@@ -2075,7 +2101,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                         0,// Balance
                         user, // User
                         thisBill.getAdmission(),
-                        pbiID != 0 ? thisBill.getBillPatient().getReductionPlan() : null,
+                        getMainReductionPlan(),
                         (Ward) wardComboBox.getSelectedItem()
 					);
 
@@ -2130,7 +2156,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						thisBill.getLock(),
                         user, // User
                         thisBill.getAdmission(),
-                        pbiID != 0 ? thisBill.getBillPatient().getReductionPlan() : null,
+                        getMainReductionPlan(),
                         (Ward) wardComboBox.getSelectedItem()
                     ); // Admission
 
@@ -2528,13 +2554,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                         icon
                 );
 
-                if (pbiID != 0 && oth != null) {
-                    try {
-                        oth = reductionPlanManager.getOtherPrice(oth, pbiID);
-                    } catch (OHServiceException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                oth = applyReduction(oth);
 
                 if (oth != null) {
 
@@ -2630,13 +2650,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     icon
                 );
 
-                if (pbiID != 0 && exam != null) {
-                    try {
-                        exam = reductionPlanManager.getExamPrice(exam, pbiID);
-                    } catch (OHServiceException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                exam = applyReduction(exam);
 
                 if (exam != null) {
                     int qty = 1;
@@ -2681,13 +2695,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     icon
                 );
 
-                if (pbiID != 0 && operation != null) {
-                    try {
-                        operation = reductionPlanManager.getOperationPrice(operation, pbiID);
-                    } catch (OHServiceException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                operation = applyReduction(operation);
 
                 if (operation != null) {
                     addItem(operation, 1, true);
@@ -2782,13 +2790,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     }
                 }
 
-                if (pbiID != 0) {
-                    try {
-                        medical = reductionPlanManager.getMedicalPrice(medical, pbiID);
-                    } catch (OHServiceException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
+                medical = applyReduction(medical);
 
                 int qty = 1;
                 String quantity = (String) JOptionPane.showInputDialog(

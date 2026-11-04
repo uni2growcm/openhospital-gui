@@ -22,7 +22,6 @@
 package org.isf.accounting.gui;
 
 import java.awt.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -44,6 +43,8 @@ import org.isf.operation.model.OperationRow;
 import org.isf.patient.model.Patient;
 import org.isf.priceslist.model.ItemGroup;
 import org.isf.priceslist.model.Price;
+import org.isf.reductionplan.manager.PatientReductionPlanManager;
+import org.isf.reductionplan.model.AppliedReduction;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.therapy.manager.TherapyManager;
 import org.isf.therapy.model.TherapyRow;
@@ -265,6 +266,7 @@ public class SelectPrescriptions extends JDialog {
 
     private void fireSelectedPrescription() {
         List<BillItems> prescriptions = new ArrayList<>();
+        List<ReductionPlan> reductionPlans = loadApplicableReductionPlans();
 
         // Add selected therapies
         if (tableTherapy != null) {
@@ -285,10 +287,7 @@ public class SelectPrescriptions extends JDialog {
                         double priceBrut = getTherapyPrice(therapy, false);
                         double priceWithReduction = priceBrut;
 
-                        if (patient.getReductionPlan() != null) {
-                            ReductionPlan reductionPlan = patient.getReductionPlan();
-                            priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getOperationRate());
-                        }
+                        priceWithReduction = applyReductionPlan(priceBrut, reductionPlans, PatientReductionPlanManager.GROUP_MEDICAL, String.valueOf(therapy.getMedicalId()));
 
                         item.setItemAmount(priceWithReduction);
                         item.setItemAmountBrut(priceBrut);
@@ -318,10 +317,7 @@ public class SelectPrescriptions extends JDialog {
                     double priceBrut = getExamPrice(lab, false);
                     double priceWithReduction = priceBrut;
 
-                    if (patient.getReductionPlan() != null) {
-                        ReductionPlan reductionPlan = patient.getReductionPlan();
-                        priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getExamRate());
-                    }
+                    priceWithReduction = applyReductionPlan(priceBrut, reductionPlans, PatientReductionPlanManager.GROUP_EXAM, lab.getExam().getCode());
 
                     item.setItemAmount(priceWithReduction);
                     item.setItemAmountBrut(priceBrut);
@@ -350,10 +346,7 @@ public class SelectPrescriptions extends JDialog {
                     double priceBrut = getOperationPrice(op, false);
                     double priceWithReduction = priceBrut;
 
-                    if (patient.getReductionPlan() != null) {
-                        ReductionPlan reductionPlan = patient.getReductionPlan();
-                        priceWithReduction = applyReductionPlan(priceBrut, reductionPlan.getOperationRate());
-                    }
+                    priceWithReduction = applyReductionPlan(priceBrut, reductionPlans, PatientReductionPlanManager.GROUP_OPERATION, op.getOperation().getCode());
 
                     item.setItemAmount(priceWithReduction);
                     item.setItemAmountBrut(priceBrut);
@@ -382,15 +375,20 @@ public class SelectPrescriptions extends JDialog {
         }
     }
 
-    private double applyReductionPlan(double initialPrice, BigDecimal reductionPlanPercentage) {
-
-        if (reductionPlanPercentage != null && reductionPlanPercentage.compareTo(BigDecimal.ZERO) > 0) {
-            double percentage = reductionPlanPercentage.doubleValue();
-            double reductionAmount = initialPrice * (percentage / 100);
-            return initialPrice - reductionAmount;
+    private List<ReductionPlan> loadApplicableReductionPlans() {
+        try {
+            return Context.getApplicationContext().getBean(PatientReductionPlanManager.class)
+                    .getApplicableReductionPlans(patient.getCode(), null);
+        } catch (OHServiceException e) {
+            OHServiceExceptionUtil.showMessages(e);
+            return new ArrayList<>();
         }
+    }
 
-        return initialPrice;
+    private double applyReductionPlan(double initialPrice, List<ReductionPlan> reductionPlans, String group, String item) {
+        AppliedReduction reduction = Context.getApplicationContext().getBean(PatientReductionPlanManager.class)
+                .resolveReduction(reductionPlans, group, item);
+        return reduction == null ? initialPrice : reduction.apply(initialPrice);
     }
 
     private void initComponents() {
