@@ -19,8 +19,6 @@
 	<parameter name="totalBeds" class="java.lang.Integer" isForPrompting="false"/>
 	<parameter name="deliveriesCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="labTotal" class="java.lang.Long" isForPrompting="false"/>
-	<parameter name="labTbcPositive" class="java.lang.Long" isForPrompting="false"/>
-	<parameter name="labHivPositive" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="operationsMinor" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="operationsMajor" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="operationsTotal" class="java.lang.Long" isForPrompting="false"/>
@@ -29,6 +27,16 @@
 	<parameter name="vaccineDtc3" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="vaccineVar" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="vaccineVat2" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="tbTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="tbNew" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="hivInfantsFollowed" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="hivPcrNegative" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="hivPcrPositive" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="deathsCount" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="referralsOutCount" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="malariaCount" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="homeVisitsTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="homeVisitsCompleted" class="java.lang.Long" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT 1]]>
 	</queryString>
@@ -140,259 +148,378 @@
 		<band height="0" splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="240" splitType="Stretch">
-			<!-- Left column -->
-			<rectangle radius="0">
-				<reportElement x="0" y="0" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e9f"/>
+		<band height="250" splitType="Stretch">
+			<!-- Column 1: x=0 -->
+			<rectangle radius="2">
+				<reportElement x="0" y="0" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e9f"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="4" y="0" width="386" height="18" forecolor="#FFFFFF" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f0a"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="4" y="0" width="250" height="16" forecolor="#1E3A8A" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f0a"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_opd}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="18" width="240" height="16" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a1b"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="16" width="165" height="14" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a1b"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_opd_new}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="18" width="145" height="16" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b2c"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="16" width="85" height="14" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b2c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{opdNew}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="34" width="240" height="16" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c3d"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="30" width="165" height="14" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c3d"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_opd_old}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="34" width="145" height="16" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d4e"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="30" width="85" height="14" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d4e"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{opdOld}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="50" width="240" height="16" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="0" y="44" width="165" height="14" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_opd_total}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="50" width="145" height="16" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="44" width="85" height="14" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{opdTotal}]]></textFieldExpression>
 			</textField>
 
-			<rectangle radius="0">
-				<reportElement x="0" y="70" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"/>
+			<rectangle radius="2">
+				<reportElement x="0" y="62" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="4" y="70" width="386" height="18" forecolor="#FFFFFF" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b8c"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="4" y="62" width="250" height="16" forecolor="#1E3A8A" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b8c"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_admission}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="88" width="240" height="16" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="78" width="165" height="14" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_admissions}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="88" width="145" height="16" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0e"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="78" width="85" height="14" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0e"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{admissionsCount}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="104" width="240" height="16" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1f"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="92" width="165" height="14" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_avg_stay}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false" pattern="#,##0.0">
-				<reportElement x="245" y="104" width="145" height="16" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2a"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="92" width="85" height="14" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{avgLengthOfStay}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="120" width="240" height="16" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3b"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="106" width="165" height="14" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3b"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_beds}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="120" width="145" height="16" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="106" width="85" height="14" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{totalBeds}]]></textFieldExpression>
 			</textField>
 
-			<rectangle radius="0">
-				<reportElement x="0" y="140" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e"/>
+			<rectangle radius="2">
+				<reportElement x="0" y="124" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="4" y="140" width="386" height="18" forecolor="#FFFFFF" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6f"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="4" y="124" width="250" height="16" forecolor="#1E3A8A" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6f"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_delivery}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="158" width="240" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e70"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="0" y="140" width="165" height="14" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e70"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_deliveries}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="245" y="158" width="145" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f81"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="170" y="140" width="85" height="14" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f81"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{deliveriesCount}]]></textFieldExpression>
 			</textField>
 
-			<!-- Right column -->
-			<rectangle radius="0">
-				<reportElement x="392" y="0" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a92"/>
+			<!-- Column 2: x=263 -->
+			<rectangle radius="2">
+				<reportElement x="263" y="0" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a92"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="396" y="0" width="386" height="18" forecolor="#FFFFFF" uuid="6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b03"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="267" y="0" width="250" height="16" forecolor="#1E3A8A" uuid="6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b03"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_lab}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="18" width="240" height="16" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c14"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="16" width="165" height="14" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c14"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_lab_total}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="18" width="145" height="16" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d25"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="16" width="85" height="14" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d25"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{labTotal}]]></textFieldExpression>
 			</textField>
 
-			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="34" width="240" height="16" uuid="9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e36"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
-				<textFieldExpression><![CDATA[$R{label_lab_tbc}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="34" width="145" height="16" uuid="0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f47"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
-				<textFieldExpression><![CDATA[$P{labTbcPositive}]]></textFieldExpression>
-			</textField>
-
-			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="50" width="240" height="16" uuid="1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a58"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
-				<textFieldExpression><![CDATA[$R{label_lab_hiv}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="50" width="145" height="16" uuid="2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b69"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
-				<textFieldExpression><![CDATA[$P{labHivPositive}]]></textFieldExpression>
-			</textField>
-
-			<rectangle radius="0">
-				<reportElement x="392" y="70" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7e"/>
+			<rectangle radius="2">
+				<reportElement x="263" y="34" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a58"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="396" y="70" width="386" height="18" forecolor="#FFFFFF" uuid="4b5c6d7e-8f9a-4b0c-1d2e-3f4a5b6c7d8f"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="267" y="34" width="250" height="16" forecolor="#1E3A8A" uuid="2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b69"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_operation}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="88" width="240" height="16" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e90"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="50" width="165" height="14" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e90"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_operations_minor}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="88" width="145" height="16" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f01"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="50" width="85" height="14" uuid="6d7e8f9a-0b1c-4d2e-3f4a-5b6c7d8e9f01"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{operationsMinor}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="104" width="240" height="16" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a12"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="64" width="165" height="14" uuid="7e8f9a0b-1c2d-4e3f-4a5b-6c7d8e9f0a12"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_operations_major}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="104" width="145" height="16" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b23"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="64" width="85" height="14" uuid="8f9a0b1c-2d3e-4f4a-5b6c-7d8e9f0a1b23"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{operationsMajor}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="120" width="240" height="16" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c34"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="263" y="78" width="165" height="14" uuid="9a0b1c2d-3e4f-4a5b-6c7d-8e9f0a1b2c34"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_operations_total}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="120" width="145" height="16" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d45"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="78" width="85" height="14" uuid="0b1c2d3e-4f5a-4b6c-7d8e-9f0a1b2c3d45"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{operationsTotal}]]></textFieldExpression>
 			</textField>
 
-			<rectangle radius="0">
-				<reportElement x="392" y="140" width="390" height="18" mode="Opaque" forecolor="#000099" backcolor="#000099" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e56"/>
+			<rectangle radius="2">
+				<reportElement x="263" y="96" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e56"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement x="396" y="140" width="386" height="18" forecolor="#FFFFFF" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f67"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="267" y="96" width="250" height="16" forecolor="#1E3A8A" uuid="2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f67"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{section_vaccination}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="158" width="240" height="16" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a78"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="112" width="165" height="14" uuid="3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a78"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_vaccine_bcg}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="158" width="145" height="16" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b89"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="112" width="85" height="14" uuid="4f5a6b7c-8d9e-4f0a-1b2c-3d4e5f6a7b89"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{vaccineBcg}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="174" width="240" height="16" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9a"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="126" width="165" height="14" uuid="5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9a"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_vaccine_polio3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="174" width="145" height="16" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0b"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="126" width="85" height="14" uuid="6b7c8d9e-0f1a-4b2c-3d4e-5f6a7b8c9d0b"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{vaccinePolio3}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="190" width="240" height="16" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1c"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="140" width="165" height="14" uuid="7c8d9e0f-1a2b-4c3d-4e5f-6a7b8c9d0e1c"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_vaccine_dtc3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="190" width="145" height="16" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2d"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="140" width="85" height="14" uuid="8d9e0f1a-2b3c-4d4e-5f6a-7b8c9d0e1f2d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{vaccineDtc3}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="206" width="240" height="16" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3e"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="154" width="165" height="14" uuid="9e0f1a2b-3c4d-4e5f-6a7b-8c9d0e1f2a3e"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_vaccine_var}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="206" width="145" height="16" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4f"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="154" width="85" height="14" uuid="0f1a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4f"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{vaccineVar}]]></textFieldExpression>
 			</textField>
-
 			<textField isBlankWhenNull="false">
-				<reportElement x="392" y="222" width="240" height="16" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c50"/>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+				<reportElement x="263" y="168" width="165" height="14" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c50"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_vaccine_vat2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="637" y="222" width="145" height="16" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d61"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<reportElement x="433" y="168" width="85" height="14" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d61"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{vaccineVat2}]]></textFieldExpression>
+			</textField>
+
+			<!-- Column 3: x=526 -->
+			<rectangle radius="2">
+				<reportElement x="526" y="0" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="aa1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c01"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="530" y="0" width="250" height="16" forecolor="#1E3A8A" uuid="aa2b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c02"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_tuberculosis}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="16" width="165" height="14" uuid="aa3b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c03"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_tb_total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="16" width="85" height="14" uuid="aa4b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c04"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{tbTotal}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="30" width="165" height="14" uuid="aa5b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c05"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_tb_new}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="30" width="85" height="14" uuid="aa6b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c06"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{tbNew}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="2">
+				<reportElement x="526" y="48" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="aa7b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c07"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="530" y="48" width="250" height="16" forecolor="#1E3A8A" uuid="aa8b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c08"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_hiv}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="64" width="165" height="14" uuid="aa9b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c09"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_hiv_infants}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="64" width="85" height="14" uuid="ab0b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c10"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{hivInfantsFollowed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="78" width="165" height="14" uuid="ab1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c11"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_hiv_pcr_neg}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="78" width="85" height="14" uuid="ab2b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{hivPcrNegative}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="92" width="165" height="14" uuid="ab3b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c13"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_hiv_pcr_pos}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="92" width="85" height="14" uuid="ab4b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c14"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{hivPcrPositive}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="2">
+				<reportElement x="526" y="110" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="ab5b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c15"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="530" y="110" width="250" height="16" forecolor="#1E3A8A" uuid="ab6b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c16"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_deaths_referrals}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="126" width="165" height="14" uuid="ab7b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c17"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_deaths}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="126" width="85" height="14" uuid="ab8b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c18"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{deathsCount}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="140" width="165" height="14" uuid="ab9b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c19"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_referrals_out}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="140" width="85" height="14" uuid="ac0b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{referralsOutCount}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="2">
+				<reportElement x="526" y="158" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="ac1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c21"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="530" y="158" width="250" height="16" forecolor="#1E3A8A" uuid="ac2b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c22"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_malaria}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="174" width="165" height="14" uuid="ac3b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c23"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_malaria_cases}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="174" width="85" height="14" uuid="ac4b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c24"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{malariaCount}]]></textFieldExpression>
+			</textField>
+
+			<rectangle radius="2">
+				<reportElement x="526" y="192" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="ac5b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c25"/>
+				<graphicElement><pen lineWidth="0.5" lineColor="#B0C4DE"/></graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement x="530" y="192" width="250" height="16" forecolor="#1E3A8A" uuid="ac6b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c26"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_homevisit}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="208" width="165" height="14" uuid="ac7b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c27"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_homevisit_total}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="208" width="85" height="14" uuid="ac8b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c28"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{homeVisitsTotal}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="222" width="165" height="14" uuid="ac9b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c29"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_homevisit_completed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="222" width="85" height="14" uuid="ad0b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c30"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{homeVisitsCompleted}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
