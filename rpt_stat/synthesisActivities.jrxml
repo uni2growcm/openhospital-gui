@@ -17,6 +17,7 @@
 	<parameter name="admissionsCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="avgLengthOfStay" class="java.lang.Double" isForPrompting="false"/>
 	<parameter name="totalBeds" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="pregnanciesCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="deliveriesCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="labTotal" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="operationsMinor" class="java.lang.Long" isForPrompting="false"/>
@@ -36,7 +37,10 @@
 	<parameter name="referralsOutCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="malariaCount" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="homeVisitsTotal" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="homeVisitsPlanned" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="homeVisitsCompleted" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="homeVisitsCancelled" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="homeVisitsPostponed" class="java.lang.Long" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT 1]]>
 	</queryString>
@@ -148,7 +152,7 @@
 		<band height="0" splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="250" splitType="Stretch">
+		<band height="290" splitType="Stretch">
 			<!-- Column 1: x=0 -->
 			<rectangle radius="2">
 				<reportElement x="0" y="0" width="256" height="16" mode="Opaque" backcolor="#EAF0F6" uuid="5c6d7e8f-9a0b-4c1d-2e3f-4a5b6c7d8e9f"/>
@@ -242,10 +246,20 @@
 			<textField isBlankWhenNull="false">
 				<reportElement x="0" y="140" width="165" height="14" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e70"/>
 				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$R{label_deliveries}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_pregnancies}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement x="170" y="140" width="85" height="14" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f81"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{pregnanciesCount}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="154" width="165" height="14" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e71"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_deliveries}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="170" y="154" width="85" height="14" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f82"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{deliveriesCount}]]></textFieldExpression>
 			</textField>
@@ -514,12 +528,42 @@
 			<textField isBlankWhenNull="false">
 				<reportElement x="526" y="222" width="165" height="14" uuid="ac9b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c29"/>
 				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$R{label_homevisit_completed}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_homevisit_planned}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement x="696" y="222" width="85" height="14" uuid="ad0b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c30"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{homeVisitsPlanned}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="236" width="165" height="14" uuid="ad1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c31"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_homevisit_completed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="236" width="85" height="14" uuid="ad2b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c32"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{homeVisitsCompleted}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="250" width="165" height="14" uuid="ad3b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c33"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_homevisit_cancelled}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="250" width="85" height="14" uuid="ad4b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c34"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{homeVisitsCancelled}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="526" y="264" width="165" height="14" uuid="ad5b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c35"/>
+				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_homevisit_postponed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="696" y="264" width="85" height="14" uuid="ad6b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c36"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{homeVisitsPostponed}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
