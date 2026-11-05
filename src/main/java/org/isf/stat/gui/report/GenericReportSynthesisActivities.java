@@ -34,6 +34,9 @@ public class GenericReportSynthesisActivities extends DisplayReport {
 
 	private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 
+
+
+
 	public GenericReportSynthesisActivities(Integer year, String jasperFileFolder, String jasperFileName, boolean toExcel) {
 		if (year == null) {
 			return;

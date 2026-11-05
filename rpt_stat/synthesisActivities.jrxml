@@ -584,7 +584,7 @@
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="736" y="0" width="46" height="16" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a94"/>
-				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textElement textAlignment="Left"><font fontName="SansSerif" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
