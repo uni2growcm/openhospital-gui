@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -64,6 +64,7 @@ import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.service.DeathIoOperations;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -79,7 +80,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
+	private final int[] pColumnWidth = { 30, 100, 40, 100, 100, 95, 95, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.patient.col").toUpperCase(),
@@ -453,6 +454,15 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (jRapportButton == null) {
 			jRapportButton = new JButton(MessageBundle.getMessage("angal.mortuary.rapport.btn"));
 			jRapportButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.rapport.btn.key"));
+			jRapportButton.addActionListener(actionEvent -> {
+				LocalDate from = dateFrom.getDate();
+				LocalDate to = dateTo.getDate();
+				if (from.isAfter(to)) {
+					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+					return;
+				}
+				new GenericReportFromDateToDate(from, to, "rpt_stat", "CorpsesLiftedPerPeriodTime", MessageBundle.getMessage("angal.stat.corpsesliftedperperiod"), false);
+			});
 		}
 		return jRapportButton;
 	}
@@ -632,7 +642,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JLabel getUnderLabel() {
 		if (underLabel == null) {
 			underLabel = new JLabel("/ " + (TOTAL_PAGES + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			underLabel.setPreferredSize(new Dimension(60, 30));
+			underLabel.setPreferredSize(new Dimension(90, 30));
 		}
 		return underLabel;
 	}
