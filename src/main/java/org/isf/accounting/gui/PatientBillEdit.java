@@ -2101,8 +2101,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						}
 					}
 					if (balance.doubleValue() == 0 && !paid) {
-						int result = MessageDialog.yesNo(this, "angal.newbill.billsave.msg");
-						newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : newBill.getStatus());
+						if (GeneralData.ALLOWOPENBILLWITHZEROBALANCE) {
+							int result = MessageDialog.yesNo(this, "angal.newbill.billsave.msg");
+							newBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : newBill.getStatus());
+						} else {
+							newBill.setStatus("C");
+						}
 					}
 					try {
 						billBrowserManager.newBill(newBill, billItems, payItems);
@@ -2133,6 +2137,15 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                         pbiID != 0 ? thisBill.getBillPatient().getReductionPlan() : null,
                         (Ward) wardComboBox.getSelectedItem()
                     ); // Admission
+
+					if (balance.doubleValue() == 0 && !paid) {
+						if (GeneralData.ALLOWOPENBILLWITHZEROBALANCE) {
+							int result = MessageDialog.yesNo(this, "angal.newbill.billsave.msg");
+							updateBill.setStatus(result == JOptionPane.YES_OPTION ? "C" : updateBill.getStatus());
+						} else {
+							updateBill.setStatus("C");
+						}
+					}
 
                    if (hasBillGuarantor()) {
 						User guarantor = (User) jComboBoxGuarantor.getSelectedItem();

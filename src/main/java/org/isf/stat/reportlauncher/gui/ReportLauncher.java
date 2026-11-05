@@ -469,11 +469,15 @@ public class ReportLauncher extends ModalJFrame {
 					case 1:
 						state = "O";
 						state2 = "O";
-						int balanceAnswer = MessageDialog.yesNo(this, "angal.stat.incomespersurgeryact.balancezero.msg");
-						if (balanceAnswer == JOptionPane.CLOSED_OPTION) {
-							return;
+						// A pending bill can only have a zero balance when ALLOWOPENBILLWITHZEROBALANCE allows
+						// it to stay open instead of auto-closing; otherwise the distinction is moot.
+						if (GeneralData.ALLOWOPENBILLWITHZEROBALANCE) {
+							int balanceAnswer = MessageDialog.yesNo(this, "angal.stat.incomespersurgeryact.balancezero.msg");
+							if (balanceAnswer == JOptionPane.CLOSED_OPTION) {
+								return;
+							}
+							balanceZero = balanceAnswer == JOptionPane.YES_OPTION;
 						}
-						balanceZero = balanceAnswer == JOptionPane.YES_OPTION;
 						break;
 					case 2:
 						state = "C";
