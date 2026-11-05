@@ -20,6 +20,27 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<import value="java.text.SimpleDateFormat"/>
 	<import value="java.util.Date"/>
+	<subDataset name="VisitTypeDataset" uuid="c4000001-0001-0001-0001-000000000501">
+		<parameter name="fromdate" class="java.util.Date"/>
+		<parameter name="todate" class="java.util.Date"/>
+		<parameter name="TOTAL_COUNT" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT
+	COALESCE(ty.TYPO_DESCRIPTION, pv.PRGV_TYPE_ID, '-') AS VISIT_TYPE_NAME,
+	COUNT(pv.PRGV_ID) AS VISIT_TYPE_COUNT
+FROM OH_PREGNANCYVISIT pv
+JOIN OH_PREGNANCY pr ON pr.PRG_ID = pv.PRGV_PRG_ID
+JOIN OH_PATIENT pat ON pat.PAT_ID = pr.PRG_PAT_ID
+LEFT JOIN OH_TYPOLOGIES ty ON ty.TYPO_CODE = pv.PRGV_TYPE_ID
+WHERE (pv.PRGV_ACTIVE = 1 OR pv.PRGV_ACTIVE IS TRUE)
+	AND DATE(pv.PRGV_DATE) >= DATE($P{fromdate})
+	AND DATE(pv.PRGV_DATE) <= DATE($P{todate})
+GROUP BY COALESCE(ty.TYPO_DESCRIPTION, pv.PRGV_TYPE_ID, '-')
+ORDER BY VISIT_TYPE_COUNT DESC, VISIT_TYPE_NAME ASC]]>
+		</queryString>
+		<field name="VISIT_TYPE_NAME" class="java.lang.String"/>
+		<field name="VISIT_TYPE_COUNT" class="java.lang.Long"/>
+	</subDataset>
 	<parameter name="fromdate" class="java.util.Date"/>
 	<parameter name="todate" class="java.util.Date"/>
 	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
@@ -96,18 +117,6 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 	</variable>
 	<variable name="DISTINCT_PATIENTS" class="java.lang.Integer" calculation="DistinctCount">
 		<variableExpression><![CDATA[$F{PATIENT_ID}]]></variableExpression>
-	</variable>
-	<variable name="COUNT_CPN1" class="java.lang.Integer" calculation="Sum">
-		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("1") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN1") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC1"))) ? 1 : 0]]></variableExpression>
-	</variable>
-	<variable name="COUNT_CPN2" class="java.lang.Integer" calculation="Sum">
-		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("2") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN2") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC2"))) ? 1 : 0]]></variableExpression>
-	</variable>
-	<variable name="COUNT_CPN3" class="java.lang.Integer" calculation="Sum">
-		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("3") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN3") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC3"))) ? 1 : 0]]></variableExpression>
-	</variable>
-	<variable name="COUNT_CPN4_PLUS" class="java.lang.Integer" calculation="Sum">
-		<variableExpression><![CDATA[($F{VISIT_TYPE} != null && ($F{VISIT_TYPE}.contains("4") || $F{VISIT_TYPE}.contains("5") || $F{VISIT_TYPE}.contains("6") || $F{VISIT_TYPE}.contains("7") || $F{VISIT_TYPE}.contains("8") || $F{VISIT_TYPE}.equalsIgnoreCase("CPN4") || $F{VISIT_TYPE}.equalsIgnoreCase("ANC4"))) ? 1 : 0]]></variableExpression>
 	</variable>
 	<variable name="COUNT_HTA" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[(($F{PRGV_SYSTOLIC_BP} != null && $F{PRGV_SYSTOLIC_BP} >= 140) || ($F{PRGV_DIASTOLIC_BP} != null && $F{PRGV_DIASTOLIC_BP} >= 90)) ? 1 : 0]]></variableExpression>
@@ -563,80 +572,151 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="110" splitType="Stretch">
+		<band height="165" splitType="Prevent">
 			<!-- Statistics Box -->
-			<rectangle>
-				<reportElement x="0" y="8" width="475" height="96" backcolor="#FAFAFA" uuid="c4000001-0001-0001-0001-000000000401"/>
-				<graphicElement>
-					<pen lineWidth="0.5" lineColor="#999999"/>
-				</graphicElement>
-			</rectangle>
-			<textField>
-				<reportElement mode="Opaque" x="0" y="8" width="475" height="18" backcolor="#EAEAEA" uuid="c4000001-0001-0001-0001-000000000402"/>
-				<box leftPadding="8">
-					<bottomPen lineWidth="0.5" lineColor="#999999"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="8" y="30" width="230" height="14" uuid="c4000001-0001-0001-0001-000000000403"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="245" y="30" width="220" height="14" uuid="c4000001-0001-0001-0001-000000000404"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_distinct_patients} + " " + ($V{DISTINCT_PATIENTS} != null ? $V{DISTINCT_PATIENTS} : 0)]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="8" y="47" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000405"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_cpn_breakdown} + " CPN 1: " + ($V{COUNT_CPN1} != null ? $V{COUNT_CPN1} : 0) + "  |  CPN 2: " + ($V{COUNT_CPN2} != null ? $V{COUNT_CPN2} : 0) + "  |  CPN 3: " + ($V{COUNT_CPN3} != null ? $V{COUNT_CPN3} : 0) + "  |  CPN 4+: " + ($V{COUNT_CPN4_PLUS} != null ? $V{COUNT_CPN4_PLUS} : 0)]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="8" y="64" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000406"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_hta} + " " + ($V{COUNT_HTA} != null ? $V{COUNT_HTA} : 0)]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="8" y="81" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000407"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_proteinuria} + " " + ($V{COUNT_PROTEINURIA} != null ? $V{COUNT_PROTEINURIA} : 0)]]></textFieldExpression>
-			</textField>
+			<elementGroup>
+				<rectangle>
+					<reportElement positionType="Float" stretchType="ElementGroupHeight" x="0" y="8" width="475" height="150" backcolor="#FAFAFA" uuid="c4000001-0001-0001-0001-000000000401"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</graphicElement>
+				</rectangle>
+				<textField>
+					<reportElement mode="Opaque" x="0" y="8" width="475" height="18" backcolor="#EAEAEA" uuid="c4000001-0001-0001-0001-000000000402"/>
+					<box leftPadding="8">
+						<bottomPen lineWidth="0.5" lineColor="#999999"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="8" y="30" width="230" height="14" uuid="c4000001-0001-0001-0001-000000000403"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="245" y="30" width="220" height="14" uuid="c4000001-0001-0001-0001-000000000404"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_distinct_patients} + " " + ($V{DISTINCT_PATIENTS} != null ? $V{DISTINCT_PATIENTS} : 0)]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="8" y="46" width="460" height="13" uuid="c4000001-0001-0001-0001-000000000406"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_hta} + " " + ($V{COUNT_HTA} != null ? $V{COUNT_HTA} : 0)]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="8" y="60" width="460" height="13" uuid="c4000001-0001-0001-0001-000000000407"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_proteinuria} + " " + ($V{COUNT_PROTEINURIA} != null ? $V{COUNT_PROTEINURIA} : 0)]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="8" y="75" width="460" height="1" forecolor="#D0D0D0" uuid="c4000001-0001-0001-0001-000000000408"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement x="8" y="78" width="460" height="13" forecolor="#1E3A8A" uuid="c4000001-0001-0001-0001-000000000405"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_cpn_breakdown}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="16" y="93" width="285" height="12" forecolor="#555555" uuid="c4000001-0001-0001-0001-000000000511"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_visit_type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="305" y="93" width="65" height="12" forecolor="#555555" uuid="c4000001-0001-0001-0001-000000000512"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_visit_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="375" y="93" width="70" height="12" forecolor="#555555" uuid="c4000001-0001-0001-0001-000000000513"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_visit_pct}]]></textFieldExpression>
+				</textField>
+				<componentElement>
+					<reportElement positionType="Float" x="8" y="107" width="460" height="14" uuid="c4000001-0001-0001-0001-000000000520"/>
+					<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+						<datasetRun subDataset="VisitTypeDataset" uuid="c4000001-0001-0001-0001-000000000521">
+							<datasetParameter name="fromdate">
+								<datasetParameterExpression><![CDATA[$P{fromdate}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="todate">
+								<datasetParameterExpression><![CDATA[$P{todate}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="TOTAL_COUNT">
+								<datasetParameterExpression><![CDATA[$V{TOTAL_COUNT}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:listContents height="14" width="460">
+							<textField textAdjust="StretchHeight">
+								<reportElement x="8" y="0" width="285" height="13" uuid="c4000001-0001-0001-0001-000000000522"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA["• " + $F{VISIT_TYPE_NAME}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="297" y="0" width="65" height="13" uuid="c4000001-0001-0001-0001-000000000523"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{VISIT_TYPE_COUNT}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="367" y="0" width="70" height="13" uuid="c4000001-0001-0001-0001-000000000524"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[($P{TOTAL_COUNT} != null && $P{TOTAL_COUNT}.intValue() > 0 && $F{VISIT_TYPE_COUNT} != null) ? String.format("%.1f %%", ($F{VISIT_TYPE_COUNT}.doubleValue() / $P{TOTAL_COUNT}.doubleValue()) * 100.0) : "-"]]></textFieldExpression>
+							</textField>
+						</jr:listContents>
+					</jr:list>
+				</componentElement>
+			</elementGroup>
 			<!-- Signature Box -->
-			<rectangle>
-				<reportElement x="495" y="8" width="287" height="96" backcolor="#FFFFFF" uuid="c4000001-0001-0001-0001-000000000410"/>
-				<graphicElement>
-					<pen lineWidth="0.5" lineColor="#999999"/>
-				</graphicElement>
-			</rectangle>
-			<textField>
-				<reportElement x="495" y="12" width="287" height="16" uuid="c4000001-0001-0001-0001-000000000411"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{signature_title}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="505" y="82" width="267" height="14" uuid="c4000001-0001-0001-0001-000000000412"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{signature_date}]]></textFieldExpression>
-			</textField>
+			<elementGroup>
+				<rectangle>
+					<reportElement positionType="Float" stretchType="ElementGroupHeight" x="495" y="8" width="287" height="150" backcolor="#FFFFFF" uuid="c4000001-0001-0001-0001-000000000410"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#999999"/>
+					</graphicElement>
+				</rectangle>
+				<textField>
+					<reportElement x="495" y="12" width="287" height="16" uuid="c4000001-0001-0001-0001-000000000411"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{signature_title}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="505" y="136" width="267" height="14" uuid="c4000001-0001-0001-0001-000000000412"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{signature_date}]]></textFieldExpression>
+				</textField>
+			</elementGroup>
 		</band>
 	</summary>
 	<noData>
