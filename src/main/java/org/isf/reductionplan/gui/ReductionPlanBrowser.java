@@ -59,11 +59,17 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
             MessageBundle.getMessage("angal.reductionplan.medicalrate.col"),
             MessageBundle.getMessage("angal.reductionplan.examrate.col"),
             MessageBundle.getMessage("angal.reductionplan.operationrate.col"),
-            MessageBundle.getMessage("angal.reductionplan.otherrate.col")
+            MessageBundle.getMessage("angal.reductionplan.otherrate.col"),
+            MessageBundle.getMessage("angal.reductionplan.partner.col"),
+            MessageBundle.getMessage("angal.reductionplan.expirationdate.col"),
+            MessageBundle.getMessage("angal.reductionplan.patients.col")
     };
-    private final int[] columnsWidth = { 80, 200, 90, 90, 90, 90 };
+    private final int[] columnsWidth = { 80, 200, 90, 90, 90, 90, 140, 110, 90 };
+    private final org.isf.reductionplan.manager.PatientReductionPlanManager patientReductionPlanManager =
+            Context.getApplicationContext().getBean(org.isf.reductionplan.manager.PatientReductionPlanManager.class);
     private final ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
     List<ReductionPlan> reductionplansList;
+    private final java.util.Map<Integer, Long> patientCounts = new java.util.HashMap<>();
     private ReductionPlan reductionPlan;
 
     /**
@@ -274,6 +280,16 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
                 return reductionplansList.get(r).getOperationRate();
             } else if (c == 5) {
                 return reductionplansList.get(r).getOtherRate();
+            } else if (c == 6) {
+                ReductionPlan plan = reductionplansList.get(r);
+                return plan.isHospitalPlan() ? MessageBundle.getMessage("angal.reductionplan.hospitalplan.txt") : plan.getPartner().getName();
+            } else if (c == 7) {
+                java.time.LocalDateTime expiration = reductionplansList.get(r).getExpirationDate();
+                return expiration == null ? "" : expiration.toLocalDate().toString();
+            } else if (c == 8) {
+                ReductionPlan plan = reductionplansList.get(r);
+                long count = patientCounts.getOrDefault(plan.getId(), 0L);
+                return plan.getMaxPatients() == null ? String.valueOf(count) : count + " / " + plan.getMaxPatients();
             }
 
             return null;
@@ -300,6 +316,10 @@ public class ReductionPlanBrowser extends ModalJFrame implements ReductionPlanLi
                         .collect(java.util.stream.Collectors.toList());
             }
             reductionplansList = filteredList;
+            patientCounts.clear();
+            for (ReductionPlan plan : filteredList) {
+                patientCounts.put(plan.getId(), patientReductionPlanManager.getPatientCount(plan));
+            }
             ((ReductionPlanModel) table.getModel()).fireTableDataChanged();
             table.updateUI();
 

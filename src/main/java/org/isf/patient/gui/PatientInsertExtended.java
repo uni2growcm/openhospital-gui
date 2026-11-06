@@ -95,6 +95,8 @@ import org.isf.patient.model.Patient;
 import org.isf.patient.model.PatientProfilePhoto;
 import org.isf.priceslist.manager.PriceListManager;
 import org.isf.priceslist.model.PriceList;
+import org.isf.reductionplan.manager.PatientReductionPlanManager;
+import org.isf.reductionplan.gui.ReductionPlanChooser;
 import org.isf.reductionplan.manager.ReductionPlanManager;
 import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
@@ -117,6 +119,8 @@ public class PatientInsertExtended extends JDialog {
 	private PatientHistoryManager patientHistoryManager = Context.getApplicationContext().getBean(PatientHistoryManager.class);
 	private PatientConsensusBrowserManager patientConsensusManager = Context.getApplicationContext().getBean(PatientConsensusBrowserManager.class);
     private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
+    private PatientReductionPlanManager patientReductionPlanManager = Context.getApplicationContext().getBean(PatientReductionPlanManager.class);
+    private final javax.swing.DefaultListModel<ReductionPlan> hospitalPlansModel = new javax.swing.DefaultListModel<>();
     private PriceListManager priceListManager = Context.getApplicationContext().getBean(PriceListManager.class);
 
 	private final EventListenerList patientListeners = new EventListenerList();
@@ -373,7 +377,7 @@ public class PatientInsertExtended extends JDialog {
 	private PatientPhotoPanel photoPanel;
 
     private JPanel billingPanel;
-    JComboBox<Object> reductionPlanComboBox;
+    private JButton hospitalPlansButton;
     JComboBox<Object> priceListComboBox;
 
 	private final int HGAP = 5;
@@ -515,6 +519,7 @@ public class PatientInsertExtended extends JDialog {
 			String[] columns = {
 					MessageBundle.getMessage("angal.patient.partner.name"),
 					MessageBundle.getMessage("angal.patient.partner.type"),
+					MessageBundle.getMessage("angal.patient.partner.reductionplans"),
 					"ID"
 			};
 
@@ -528,9 +533,9 @@ public class PatientInsertExtended extends JDialog {
 			partnerTable = new JTable(partnerTableModel);
 			partnerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-			partnerTable.getColumnModel().getColumn(2).setMinWidth(0);
-			partnerTable.getColumnModel().getColumn(2).setMaxWidth(0);
-			partnerTable.getColumnModel().getColumn(2).setWidth(0);
+			partnerTable.getColumnModel().getColumn(3).setMinWidth(0);
+			partnerTable.getColumnModel().getColumn(3).setMaxWidth(0);
+			partnerTable.getColumnModel().getColumn(3).setWidth(0);
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			addPartnerButton = new JButton(MessageBundle.getMessage("angal.patient.partner.add.btn"));
@@ -538,9 +543,12 @@ public class PatientInsertExtended extends JDialog {
 
 			addPartnerButton.addActionListener(e -> showAddMultiplePartnersDialog());
 			removePartnerButton.addActionListener(e -> removeSelectedPartner());
+			JButton partnerPlansButton = new JButton(MessageBundle.getMessage("angal.patient.partner.reductionplans.btn"));
+			partnerPlansButton.addActionListener(e -> editSelectedPartnerPlans());
 
 			buttonPanel.add(addPartnerButton);
 			buttonPanel.add(removePartnerButton);
+			buttonPanel.add(partnerPlansButton);
 
 			partnerScrollPane = new JScrollPane(partnerTable);
 			partnerScrollPane.setPreferredSize(new Dimension(180, 120));
@@ -557,9 +565,18 @@ public class PatientInsertExtended extends JDialog {
 			Set<Partner> partners = patient.getPartners();
 			for (Partner p : partners) {
 				String typeDesc = p.getType() != null ? p.getType().getDescription() : "";
+				String plans = "";
+				try {
+					plans = patientReductionPlanManager.getPatientPartnerPlans(patient.getCode(), p.getCode()).stream()
+							.map(ReductionPlan::getDescription)
+							.collect(java.util.stream.Collectors.joining(", "));
+				} catch (OHServiceException e) {
+					LOGGER.error(e.getMessage(), e);
+				}
 				partnerTableModel.addRow(new Object[]{
 						p.getName(),
 						typeDesc,
+						plans,
 						p.getCode()
 				});
 			}
@@ -577,7 +594,7 @@ public class PatientInsertExtended extends JDialog {
 		}
 
 		String partnerName = (String) partnerTableModel.getValueAt(row, 0);
-		int partnerId = (int) partnerTableModel.getValueAt(row, 2);
+		int partnerId = (int) partnerTableModel.getValueAt(row, 3);
 
 		Partner partnerToRemove = null;
 		for (Partner p : patient.getPartners()) {
@@ -593,9 +610,11 @@ public class PatientInsertExtended extends JDialog {
 					MessageBundle.getMessage("angal.common.delete"));
 
 			if (confirm == JOptionPane.YES_OPTION) {
-				patient.removePartner(partnerToRemove);
 				try {
+					patient.removePartner(partnerToRemove);
 					patient = patientBrowserManager.savePatient(patient);
+					// the reduction plans of the partner do not apply anymore to the patient
+					patientReductionPlanManager.removePatientPartnerPlans(patient, partnerToRemove);
 					patient = patientBrowserManager.getPatientWithPartnersById(patient.getCode());
 					loadPatientPartners();
 					MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.partner.removed.success", partnerName));
@@ -605,6 +624,44 @@ public class PatientInsertExtended extends JDialog {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Lets the user choose the reduction plans of a partner that apply to the patient.
+	 */
+	private void choosePartnerPlans(Partner partner) {
+		try {
+			List<ReductionPlan> available = patientReductionPlanManager.getAssignablePartnerPlans(partner.getCode(), patient.getCode());
+			List<ReductionPlan> current = patientReductionPlanManager.getPatientPartnerPlans(patient.getCode(), partner.getCode());
+			if (available.isEmpty() && current.isEmpty()) {
+				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.partner.noreductionplan.fmt.msg", partner.getName()));
+				return;
+			}
+			List<ReductionPlan> chosen = ReductionPlanChooser.choose(this,
+					MessageBundle.formatMessage("angal.patient.partner.reductionplans.fmt.title", partner.getName()),
+					available, current, patientReductionPlanManager);
+			if (chosen != null) {
+				patientReductionPlanManager.setPatientPartnerPlans(patient, partner, chosen);
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private void editSelectedPartnerPlans() {
+		int row = partnerTable.getSelectedRow();
+		if (row < 0) {
+			MessageDialog.info(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+			return;
+		}
+		int partnerId = (int) partnerTableModel.getValueAt(row, 3);
+		patient.getPartners().stream()
+				.filter(p -> p.getCode() == partnerId)
+				.findFirst()
+				.ifPresent(partner -> {
+					choosePartnerPlans(partner);
+					loadPatientPartners();
+				});
 	}
 
 	/**
@@ -658,7 +715,7 @@ public class PatientInsertExtended extends JDialog {
 		for (Partner partner : allPartners) {
 			String typeDesc = partner.getType() != null ? partner.getType().getDescription() : "";
 			boolean alreadyAssociated = currentPartners.contains(partner);
-			tableModel.addRow(new Object[]{!alreadyAssociated, partner.getName(), typeDesc});
+			tableModel.addRow(new Object[]{alreadyAssociated, partner.getName(), typeDesc});
 		}
 
 		JTable partnerTable = new JTable(tableModel);
@@ -677,38 +734,52 @@ public class PatientInsertExtended extends JDialog {
 		JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
 
 		okButton.addActionListener(e -> {
-			List<Partner> selectedPartners = new ArrayList<>();
+			if (partnerTable.isEditing()) {
+				partnerTable.getCellEditor().stopCellEditing();
+			}
+			// the rows of the table are in the same order as allPartners
+			List<Partner> newPartners = new ArrayList<>();
+			List<Partner> removedPartners = new ArrayList<>();
 			for (int i = 0; i < tableModel.getRowCount(); i++) {
-				Boolean selected = (Boolean) tableModel.getValueAt(i, 0);
-				if (selected != null && selected) {
-					String partnerName = (String) tableModel.getValueAt(i, 1);
-					for (Partner p : allPartners) {
-						if (p.getName().equals(partnerName)) {
-							selectedPartners.add(p);
-							break;
-						}
-					}
+				Partner partner = allPartners.get(i);
+				boolean selected = Boolean.TRUE.equals(tableModel.getValueAt(i, 0));
+				boolean associated = patient.getPartners().contains(partner);
+				if (selected && !associated) {
+					newPartners.add(partner);
+				} else if (!selected && associated) {
+					removedPartners.add(partner);
 				}
 			}
 
-			if (selectedPartners.isEmpty()) {
-				MessageDialog.info(dialog, MessageBundle.getMessage("angal.patient.partner.select.atleastone"));
+			if (newPartners.isEmpty() && removedPartners.isEmpty()) {
+				dialog.dispose();
 				return;
 			}
 
-			for (Partner partner : selectedPartners) {
-				if (!patient.getPartners().contains(partner)) {
-					patient.addPartner(partner);
-				}
-			}
+			newPartners.forEach(patient::addPartner);
+			removedPartners.forEach(patient::removePartner);
 
 			try {
 				patient = patientBrowserManager.savePatient(patient);
+				// the reduction plans of the removed partners do not apply anymore to the patient
+				for (Partner partner : removedPartners) {
+					patientReductionPlanManager.removePatientPartnerPlans(patient, partner);
+				}
 				patient = patientBrowserManager.getPatientWithPartnersById(patient.getCode());
-				loadPatientPartners();
 				dialog.dispose();
-				MessageDialog.info(this, MessageBundle.formatMessage(
-						"angal.patient.partner.added.success", selectedPartners.size()));
+				// choose, for each newly associated partner, the plans of that partner that apply to the patient
+				for (Partner partner : newPartners) {
+					choosePartnerPlans(partner);
+				}
+				loadPatientPartners();
+				if (!newPartners.isEmpty()) {
+					MessageDialog.info(this, MessageBundle.formatMessage(
+							"angal.patient.partner.added.success", newPartners.size()));
+				}
+				if (!removedPartners.isEmpty()) {
+					MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.partner.removed.success",
+							removedPartners.stream().map(Partner::getName).collect(java.util.stream.Collectors.joining(", "))));
+				}
 			} catch (OHServiceException ex) {
 				OHServiceExceptionUtil.showMessages(ex);
 			}
@@ -898,14 +969,6 @@ public class PatientInsertExtended extends JDialog {
 							}
 						}
 
-						if (!Objects.equals(reductionPlanComboBox.getSelectedItem(), MessageBundle.getMessage("angal.patient.selectareductionplan"))) {
-							ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
-							if (reductionPlan != null && reductionPlan.getId() != 0) {
-								patient.setReductionPlan(reductionPlan);
-							} else {
-								patient.setReductionPlan(null);
-							}
-						}
 
 						patient.setBloodType(jBloodTypeComboBox.getSelectedItem().toString());
 						patient.setMaritalStatus(patientBrowserManager.getMaritalKey(jMaritalStatusComboBox.getSelectedItem().toString()));
@@ -930,13 +993,6 @@ public class PatientInsertExtended extends JDialog {
 							}
 						}
 
-                        ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
-
-                        if (reductionPlan != null && reductionPlan.getId() != 0) {
-                            patient.setReductionPlan(reductionPlan);
-                        } else {
-                            patient.setReductionPlan(null);
-                        }
 
                         PriceList priceList = (PriceList) priceListComboBox.getSelectedItem();
 
@@ -976,6 +1032,7 @@ public class PatientInsertExtended extends JDialog {
 
 						try {
 							patient = patientBrowserManager.savePatient(patient);
+							saveHospitalPlans();
 							consensus.setPatient(patient);
 							patientConsensusManager.updatePatientConsensus(consensus);
 							if (patientHistory != null) {
@@ -1040,13 +1097,6 @@ public class PatientInsertExtended extends JDialog {
 						}
 					}
 
-                    ReductionPlan reductionPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
-
-                    if (reductionPlan != null && reductionPlan.getId() != 0) {
-                        patient.setReductionPlan(reductionPlan);
-                    } else {
-                        patient.setReductionPlan(null);
-                    }
 
                     PriceList priceList = (PriceList) priceListComboBox.getSelectedItem();
 
@@ -1110,6 +1160,7 @@ public class PatientInsertExtended extends JDialog {
 
 					try {
 						patient = patientBrowserManager.savePatient(patient);
+						saveHospitalPlans();
 						consensus.setPatient(patient);
 						patientConsensusManager.updatePatientConsensus(consensus);
 						if (patientHistory != null) {
@@ -2833,12 +2884,6 @@ public class PatientInsertExtended extends JDialog {
         addReductionSection();
         addPriceListSection();
 
-        if (!insert) {
-            if (patient.getReductionPlan() != null) {
-                reductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
-            }
-        }
-
         return billingPanel;
     }
 
@@ -2849,35 +2894,54 @@ public class PatientInsertExtended extends JDialog {
     }
 
     private void addReductionSection() {
-        JLabel reductionPlanLabel = new JLabel(MessageBundle.getMessage("angal.patient.reductionplan.label"));
-
+        JLabel reductionPlanLabel = new JLabel(MessageBundle.getMessage("angal.patient.hospitalreductionplans.label"));
         billingPanel.add(centeredPanel(reductionPlanLabel));
 
-        reductionPlanComboBox = new JComboBox<>();
-
-        ReductionPlan emptyReductionPlan = new ReductionPlan();
-        emptyReductionPlan.setId(0);
-        emptyReductionPlan.setDescription(MessageBundle.getMessage("angal.patient.selectareductionplan.msg"));
-
-        reductionPlanComboBox.addItem(emptyReductionPlan);
-
-        try {
-            List<ReductionPlan> reductions = reductionPlanManager.getAll();
-
-            for (ReductionPlan reduction : reductions) {
-                reductionPlanComboBox.addItem(reduction);
+        if (!insert) {
+            try {
+                for (ReductionPlan plan : patientReductionPlanManager.getPatientHospitalPlans(patient.getCode())) {
+                    hospitalPlansModel.addElement(plan);
+                }
+            } catch (OHServiceException e) {
+                OHServiceExceptionUtil.showMessages(e);
             }
+        }
+
+        javax.swing.JList<ReductionPlan> hospitalPlansList = new javax.swing.JList<>(hospitalPlansModel);
+        hospitalPlansList.setVisibleRowCount(3);
+        hospitalPlansList.setEnabled(false);
+        JScrollPane scrollPane = new JScrollPane(hospitalPlansList);
+        scrollPane.setPreferredSize(new Dimension(180, 60));
+        billingPanel.add(centeredPanel(scrollPane));
+
+        hospitalPlansButton = new JButton(MessageBundle.getMessage("angal.patient.choosereductionplans.btn"));
+        hospitalPlansButton.addActionListener(e -> {
+            try {
+                List<ReductionPlan> current = java.util.Collections.list(hospitalPlansModel.elements());
+                List<ReductionPlan> chosen = ReductionPlanChooser.choose(this,
+                        MessageBundle.getMessage("angal.patient.hospitalreductionplans.label"),
+                        patientReductionPlanManager.getAssignableHospitalPlans(insert ? null : patient.getCode()),
+                        current, patientReductionPlanManager);
+                if (chosen != null) {
+                    hospitalPlansModel.clear();
+                    chosen.forEach(hospitalPlansModel::addElement);
+                }
+            } catch (OHServiceException ex) {
+                OHServiceExceptionUtil.showMessages(ex);
+            }
+        });
+        billingPanel.add(centeredPanel(hospitalPlansButton));
+    }
+
+    /**
+     * Saves the hospital reduction plans chosen in the billing panel (the patient must be saved).
+     */
+    private void saveHospitalPlans() {
+        try {
+            patientReductionPlanManager.setPatientHospitalPlans(patient, java.util.Collections.list(hospitalPlansModel.elements()));
         } catch (OHServiceException e) {
-            throw new RuntimeException(e);
+            OHServiceExceptionUtil.showMessages(e);
         }
-
-        if (!insert && patient.getReductionPlan() != null) {
-            reductionPlanComboBox.setSelectedItem(patient.getReductionPlan());
-        } else {
-            reductionPlanComboBox.setSelectedIndex(0);
-        }
-
-        billingPanel.add(reductionPlanComboBox);
     }
 
     private void addPriceListSection() {
