@@ -58,8 +58,10 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ListSelectionModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -530,12 +532,15 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             public String getToolTipText(MouseEvent e) {
                 int row = rowAtPoint(e.getPoint());
                 int col = columnAtPoint(e.getPoint());
-                if (row > -1 && col == 2) {
-                    int modelRow = convertRowIndexToModel(row);
-                    if (modelRow >= 0 && modelRow < visitList.size()) {
-                        PregnancyVisit visit = visitList.get(modelRow);
-                        if (visit != null && visit.getClinicalNotes() != null && !visit.getClinicalNotes().trim().isEmpty()) {
-                            return visit.getClinicalNotes().trim();
+                if (row > -1 && col > -1) {
+                    int modelCol = convertColumnIndexToModel(col);
+                    if (modelCol == 2) {
+                        int modelRow = convertRowIndexToModel(row);
+                        if (modelRow >= 0 && modelRow < visitList.size()) {
+                            PregnancyVisit visit = visitList.get(modelRow);
+                            if (visit != null && visit.getClinicalNotes() != null && !visit.getClinicalNotes().trim().isEmpty()) {
+                                return formatTooltip(visit.getClinicalNotes());
+                            }
                         }
                     }
                 }
@@ -554,9 +559,44 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
             visitTable.getColumnModel().getColumn(i).setPreferredWidth(vColumnWidths[i]);
         }
 
+        visitTable.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                int modelRow = table.convertRowIndexToModel(row);
+                if (modelRow >= 0 && modelRow < visitList.size()) {
+                    PregnancyVisit visit = visitList.get(modelRow);
+                    if (visit != null && visit.getClinicalNotes() != null && !visit.getClinicalNotes().trim().isEmpty()) {
+                        c.setToolTipText(formatTooltip(visit.getClinicalNotes()));
+                    } else {
+                        c.setToolTipText(null);
+                    }
+                } else {
+                    c.setToolTipText(null);
+                }
+                return c;
+            }
+        });
+
+        ToolTipManager.sharedInstance().registerComponent(visitTable);
+
         JScrollPane visitScrollPane = new JScrollPane(visitTable);
         visitScrollPane.setPreferredSize(new Dimension(600, 300));
         return visitScrollPane;
+    }
+
+    private String formatTooltip(String notes) {
+        if (notes == null || notes.trim().isEmpty()) {
+            return null;
+        }
+        String sanitized = notes.trim()
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\r\n", "<br>")
+                .replace("\n", "<br>")
+                .replace("\r", "<br>");
+        return "<html><div style=\"width: 350px;\">" + sanitized + "</div></html>";
     }
 
     private JPanel getButtonPanel() {
