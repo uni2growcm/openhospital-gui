@@ -58,6 +58,7 @@ import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
+import org.isf.stat.gui.report.GenericReportSynthesisActivities;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
@@ -349,8 +350,9 @@ public class ReportLauncher extends ModalJFrame {
 					jToDateLabel.setVisible(true);
 					jToDateField.setVisible(true);
 				} else if (userInputParamNames.contains("month") || userInputParamNames.contains("year")) {
-					jMonthComboBox.setVisible(true);
-					jMonthLabel.setVisible(true);
+					boolean hasMonth = userInputParamNames.contains("month");
+					jMonthComboBox.setVisible(hasMonth);
+					jMonthLabel.setVisible(hasMonth);
 					jYearComboBox.setVisible(true);
 					jYearLabel.setVisible(true);
 					jFromDateLabel.setVisible(false);
@@ -402,9 +404,23 @@ public class ReportLauncher extends ModalJFrame {
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
-					frame.sendMessage("011100100110010101110000011011110111001001110100 " +
+					frame.sendMessage("report " +
 									TimeTools.formatDateTime(jFromDateField.getDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY) + ' ' +
 									TimeTools.formatDateTime(jToDateField.getDate().atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY) + ' ' +
+									jRptComboBox.getSelectedItem().toString(), user, false);
+				}
+			} else if (userInputParamNames.contains("year") && !userInputParamNames.contains("month")) {
+				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+
+				new GenericReportSynthesisActivities(year,
+								folderNameFileNameMap.get("rpt_stat").contains(
+												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+																: "rpt_extra",
+								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""), toExcel);
+				if (GeneralData.XMPPMODULEENABLED) {
+					String user = (String) shareWith.getSelectedItem();
+					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
+					frame.sendMessage("report " + year + ' ' +
 									jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			} else {
@@ -420,7 +436,7 @@ public class ReportLauncher extends ModalJFrame {
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
-					frame.sendMessage("011100100110010101110000011011110111001001110100 " + month + ' ' + year + ' ' +
+					frame.sendMessage("report " + month + ' ' + year + ' ' +
 									jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			}
