@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+	name="AdmissionPatient_Register" pageWidth="842" pageHeight="595" orientation="Landscape"
+	whenNoDataType="NoPages" columnWidth="782" leftMargin="30" rightMargin="30"
+	topMargin="20" bottomMargin="20" isFloatColumnFooter="true"
+	resourceBundle="AdmissionPatient_Register">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="phone_lenght" class="java.lang.Integer" isForPrompting="false">
+		<defaultValueExpression><![CDATA[9]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+			a.ADM_ID,
+			a.ADM_YPROG AS ADM_MPROG,
+			DATE(a.ADM_DATE_ADM) AS ADM_DATE_ADM,
+			DATE(a.ADM_DATE_DIS) AS ADM_DATE_DIS,
+			a.ADM_NOTE,
+			IFNULL(di.DIS_DESC, '') AS disease_in,
+			IFNULL(do1.DIS_DESC, '') AS disease_out_1,
+			IFNULL(do2.DIS_DESC, '') AS disease_out_2,
+			IFNULL(do3.DIS_DESC, '') AS disease_out_3,
+			IFNULL(dt.DIST_DESC, '') AS DIST_DESC,
+			p.PAT_ID,
+			p.PAT_NAME,
+			IFNULL(p.PAT_MAR_STAT, '') AS PAT_STATUS,
+			IFNULL(p.PAT_NEXT_KIN, '') AS PAT_NEXT_KIN,
+			IFNULL(p.PAT_CITY, '') AS PAT_CITY,
+			IFNULL(p.PAT_ADDR, '') AS PAT_ADDR,
+			IFNULL(p.PAT_PROFESSION, '') AS PAT_OCCUPATION,
+			IF(LENGTH(p.PAT_TELE) >= $P{phone_lenght},
+				RIGHT(p.PAT_TELE, $P{phone_lenght}), IFNULL(p.PAT_TELE, '')) AS PAT_TELE,
+			p.PAT_SEX,
+			IF(p.PAT_BDATE IS NOT NULL, TIMESTAMPDIFF(YEAR, p.PAT_BDATE, CURDATE()), p.PAT_AGE) AS age,
+			(SELECT GROUP_CONCAT(DISTINCT l.LAB_EXA_ID_A ORDER BY l.LAB_DATE SEPARATOR ', ')
+				FROM OH_LABORATORY l
+				WHERE l.LAB_PAT_ID = p.PAT_ID
+					AND DATE(l.LAB_DATE) BETWEEN DATE(a.ADM_DATE_ADM)
+					AND IF(a.ADM_DATE_DIS IS NULL, CURDATE(), DATE(a.ADM_DATE_DIS))) AS exams_requested,
+			(SELECT GROUP_CONCAT(DISTINCT m.MDSR_DESC ORDER BY m.MDSR_DESC SEPARATOR ', ')
+				FROM OH_THERAPIES t
+				JOIN OH_MEDICALDSR m ON m.MDSR_ID = t.THR_MDSR_ID
+				WHERE t.THR_PAT_ID = p.PAT_ID
+					AND DATE(t.THR_CREATED_DATE) BETWEEN DATE(a.ADM_DATE_ADM)
+					AND IF(a.ADM_DATE_DIS IS NULL, CURDATE(), DATE(a.ADM_DATE_DIS))) AS treatment,
+			GREATEST(DATEDIFF(IF(a.ADM_DATE_DIS IS NULL, CURDATE(), DATE(a.ADM_DATE_DIS)),
+				DATE(a.ADM_DATE_ADM)), 1) AS duration
+		FROM OH_ADMISSION a
+		JOIN OH_PATIENT p ON p.PAT_ID = a.ADM_PAT_ID
+		LEFT JOIN OH_DISEASE di ON di.DIS_ID_A = a.ADM_IN_DIS_ID_A
+		LEFT JOIN OH_DISEASE do1 ON do1.DIS_ID_A = a.ADM_OUT_DIS_ID_A
+		LEFT JOIN OH_DISEASE do2 ON do2.DIS_ID_A = a.ADM_OUT_DIS_ID_A_2
+		LEFT JOIN OH_DISEASE do3 ON do3.DIS_ID_A = a.ADM_OUT_DIS_ID_A_3
+		LEFT JOIN OH_DISCHARGETYPE dt ON dt.DIST_ID_A = a.ADM_DIST_ID_A
+		WHERE a.ADM_DELETED = 'N'
+			AND DATE(a.ADM_DATE_ADM) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+		ORDER BY a.ADM_ID]]>
+	</queryString>
+	<field name="ADM_ID" class="java.lang.Integer"/>
+	<field name="ADM_MPROG" class="java.lang.Integer"/>
+	<field name="ADM_DATE_ADM" class="java.sql.Date"/>
+	<field name="ADM_DATE_DIS" class="java.sql.Date"/>
+	<field name="ADM_NOTE" class="java.lang.String"/>
+	<field name="disease_in" class="java.lang.String"/>
+	<field name="disease_out_1" class="java.lang.String"/>
+	<field name="disease_out_2" class="java.lang.String"/>
+	<field name="disease_out_3" class="java.lang.String"/>
+	<field name="DIST_DESC" class="java.lang.String"/>
+	<field name="PAT_ID" class="java.lang.Integer"/>
+	<field name="PAT_NAME" class="java.lang.String"/>
+	<field name="PAT_STATUS" class="java.lang.String"/>
+	<field name="PAT_NEXT_KIN" class="java.lang.String"/>
+	<field name="PAT_CITY" class="java.lang.String"/>
+	<field name="PAT_ADDR" class="java.lang.String"/>
+	<field name="PAT_OCCUPATION" class="java.lang.String"/>
+	<field name="PAT_TELE" class="java.lang.String"/>
+	<field name="PAT_SEX" class="java.lang.String"/>
+	<field name="age" class="java.lang.Integer"/>
+	<field name="exams_requested" class="java.lang.String"/>
+	<field name="treatment" class="java.lang.String"/>
+	<field name="duration" class="java.lang.Integer"/>
+	<variable name="TOTAL" class="java.lang.Long" calculation="Count">
+		<variableExpression><![CDATA[$F{ADM_ID}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="160" splitType="Prevent">
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="0" width="390" height="16"/>
+				<textElement><font fontName="SansSerif" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="30" y="16" width="360" height="14"/>
+				<textElement><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="30" width="390" height="16"/>
+				<textElement><font fontName="SansSerif" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="0" width="390" height="16"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="411" y="16" width="360" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="392" y="30" width="390" height="16"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="55" width="782" height="30"/>
+				<textElement textAlignment="Center"><font fontName="SansSerif" size="15" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="0" y="90" width="782" height="16"/>
+				<textElement textAlignment="Center"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{header} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{toDate} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="110" width="390" height="14"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + $P{City}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="124" width="390" height="14"/>
+				<textElement><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + $P{Address}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="110" width="390" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + $P{Hospital}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="124" width="390" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + $P{Telephone}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="138" width="390" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="9"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + $P{Email}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="155" width="782" height="1" forecolor="#000000"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="58" splitType="Stretch">
+			<textField><reportElement mode="Opaque" x="0" y="0" width="24" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colNumber}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="24" y="0" width="148" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colPatient}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="172" y="0" width="48" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colAdmissionDate}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="220" y="0" width="75" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colAdmissionDiagnosis}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="295" y="0" width="70" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colExams}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="365" y="0" width="80" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colTreatment}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="445" y="0" width="40" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colDuration}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="485" y="0" width="48" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colDischargeDate}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="533" y="0" width="75" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colDischargeDiagnosis}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="608" y="0" width="60" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colOutcome}]]></textFieldExpression></textField>
+			<textField><reportElement mode="Opaque" x="668" y="0" width="114" height="58" backcolor="#EAF0F6" forecolor="#1E3A8A"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{colObservation}]]></textFieldExpression></textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="62" splitType="Stretch">
+			<textField isBlankWhenNull="true"><reportElement x="0" y="0" width="24" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_MPROG}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="24" y="0" width="148" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{PAT_NAME} + "\n" + $R{patientCode} + ": " + $F{PAT_ID} + " | " + $R{sex} + ": " + $F{PAT_SEX} + " | " + $R{age} + ": " + $F{age} + "\n" + $R{status} + ": " + $F{PAT_STATUS} + " | " + $R{profession} + ": " + $F{PAT_OCCUPATION} + "\n" + $R{residence} + ": " + $F{PAT_ADDR} + " / " + $F{PAT_CITY} + "\n" + $R{contact} + ": " + $F{PAT_TELE} + " / " + $F{PAT_NEXT_KIN}]]></textFieldExpression></textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement x="172" y="0" width="48" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_DATE_ADM}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="220" y="0" width="75" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{disease_in}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="295" y="0" width="70" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{exams_requested}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="365" y="0" width="80" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{treatment}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="445" y="0" width="40" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{duration} + " " + $R{days}]]></textFieldExpression></textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement x="485" y="0" width="48" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_DATE_DIS}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="533" y="0" width="75" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{disease_out_1} + ($F{disease_out_2}.isEmpty() ? "" : ", " + $F{disease_out_2}) + ($F{disease_out_3}.isEmpty() ? "" : ", " + $F{disease_out_3})]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="608" y="0" width="60" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{DIST_DESC}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="668" y="0" width="114" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_NOTE}]]></textFieldExpression></textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="22" splitType="Stretch">
+			<textField><reportElement x="624" y="2" width="158" height="18"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement><textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " " + $V{PAGE_COUNT}]]></textFieldExpression></textField>
+			<textField pattern="dd/MM/yyyy"><reportElement x="0" y="2" width="150" height="18"/><textElement verticalAlignment="Middle"><font fontName="SansSerif" size="8"/></textElement><textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression></textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="28" splitType="Stretch">
+			<textField><reportElement x="0" y="4" width="500" height="20" forecolor="#1E3A8A"/><textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + $V{TOTAL}]]></textFieldExpression></textField>
+		</band>
+	</summary>
+</jasperReport>
