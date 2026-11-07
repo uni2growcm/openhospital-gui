@@ -33,6 +33,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.MouseAdapter;
@@ -44,12 +47,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
@@ -65,6 +71,7 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.BorderFactory;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.JRadioButton;
 import javax.swing.WindowConstants;
@@ -72,15 +79,21 @@ import javax.swing.ListSelectionModel;
 import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.hospital.manager.HospitalBrowsingManager;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
 import org.isf.medicalstock.manager.MovBrowserManager;
+import org.isf.medicalstock.manager.MovStockInsertingManager;
 import org.isf.medicalstock.model.Movement;
 import org.isf.medicalstockward.gui.WardPharmacyRectify.MovementWardListeners;
 import org.isf.medicalstockward.manager.MovWardBrowserManager;
@@ -204,10 +217,12 @@ public class WardPharmacy extends ModalJFrame implements
 			MessageBundle.getMessage("angal.wardpharmacy.medical.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.quantity.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.units.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.medicals.averagecostprice.col").toUpperCase(),
+			MessageBundle.getMessage("angal.medicals.totalcost.col").toUpperCase(),
 			"" //$NON-NLS-1$
 	};
-	private boolean[] columnsResizableDrugs = { true, true, true, true };
-	private int[] columnWidthDrugs = { 150, 50, 50, 50 };
+	private boolean[] columnsResizableDrugs = { true, true, true, true, true, true };
+	private int[] columnWidthDrugs = { 200, 60, 60, 90, 90, 60 };
 	private String rowCounterText = MessageBundle.getMessage("angal.medicalstockward.count") + ": "; //$NON-NLS-1$ //$NON-NLS-2$
 	private int ageFrom;
 	private int ageTo;
@@ -249,11 +264,18 @@ public class WardPharmacy extends ModalJFrame implements
 	private JLabel jPageLabelDrugs;
 	private JLabel jElementsLabelDrugs;
 	private JComboBox<Integer> jPageComboBoxDrugs;
+	private double totalWardStockValue = 0.0;
+	private String currencyCod = "";
+	private Map<Integer, Double> averageCostCache = new HashMap<>();
+	private JTable jTableTotalDrugs;
+	private JScrollPane scrollPaneTotalDrugs;
 
 	/*
 	 * Managers and datas
 	 */
 	private MovBrowserManager movBrowserManager = Context.getApplicationContext().getBean(MovBrowserManager.class);
+	private MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
+	private HospitalBrowsingManager hospitalBrowsingManager = Context.getApplicationContext().getBean(HospitalBrowsingManager.class);
 	private PrintManager printManager = Context.getApplicationContext().getBean(PrintManager.class);
 	private WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
@@ -301,10 +323,19 @@ public class WardPharmacy extends ModalJFrame implements
 	}
 
 	private void initComponents() {
+		try {
+			currencyCod = hospitalBrowsingManager.getHospitalCurrencyCod();
+			if (currencyCod == null) {
+				currencyCod = "";
+			}
+		} catch (Exception e) {
+			currencyCod = "";
+		}
 		add(getJPanelWardAndRange(), BorderLayout.NORTH);
 		add(getJPanelButtons(), BorderLayout.SOUTH);
 		setTitle(MessageBundle.getMessage("angal.medicalstock.wardpharmacy.title"));
-		setSize(800, 450);
+		setSize(1024, 450);
+		setMinimumSize(new Dimension(1024, 425));
 	}
 
 	private JPanel getJPanelButtons() {
@@ -555,6 +586,16 @@ public class WardPharmacy extends ModalJFrame implements
 							TitledBorder.LEFT,
 							TitledBorder.TOP));
 			jScrollPaneDrugs.setViewportView(getJTableDrugs());
+			jScrollPaneDrugs.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					syncTotalTableColumnWidths();
+				}
+			});
+			if (scrollPaneTotalDrugs != null) {
+				scrollPaneTotalDrugs.getHorizontalScrollBar().setModel(jScrollPaneDrugs.getHorizontalScrollBar().getModel());
+				syncTotalTableColumnWidths();
+			}
 		}
 		return jScrollPaneDrugs;
 	}
@@ -564,14 +605,48 @@ public class WardPharmacy extends ModalJFrame implements
 			DefaultTableModel modelDrugs = new DrugsModel();
 			jTableDrugs = new JTable(modelDrugs);
 			jTableDrugs.setAutoCreateColumnsFromModel(false);
+
+			DrugsTableCellRenderer drugsRenderer = new DrugsTableCellRenderer();
+			jTableDrugs.setDefaultRenderer(Object.class, drugsRenderer);
+			jTableDrugs.setDefaultRenderer(Double.class, drugsRenderer);
+			jTableDrugs.setDefaultRenderer(String.class, drugsRenderer);
+			jTableDrugs.setDefaultRenderer(Integer.class, drugsRenderer);
+
 			TableCellRenderer buttonRenderer = new JTableButtonRenderer();
-			jTableDrugs.getColumn("").setCellRenderer(buttonRenderer);
+			jTableDrugs.getColumnModel().getColumn(columnsDrugs.length - 1).setCellRenderer(buttonRenderer);
 			for (int i = 0; i < columnWidthDrugs.length; i++) {
+				jTableDrugs.getColumnModel().getColumn(i).setPreferredWidth(columnWidthDrugs[i]);
 				jTableDrugs.getColumnModel().getColumn(i).setMinWidth(columnWidthDrugs[i]);
 				if (!columnsResizableDrugs[i]) {
 					jTableDrugs.getColumnModel().getColumn(i).setMaxWidth(columnWidthDrugs[i]);
 				}
 			}
+
+			jTableDrugs.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+				@Override
+				public void columnMarginChanged(ChangeEvent e) {
+					syncTotalTableColumnWidths();
+				}
+
+				@Override
+				public void columnMoved(TableColumnModelEvent e) {}
+
+				@Override
+				public void columnAdded(TableColumnModelEvent e) {}
+
+				@Override
+				public void columnRemoved(TableColumnModelEvent e) {}
+
+				@Override
+				public void columnSelectionChanged(ListSelectionEvent e) {}
+			});
+
+			jTableDrugs.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					syncTotalTableColumnWidths();
+				}
+			});
 
 			jTableDrugs.addMouseListener(new MouseAdapter() {
 
@@ -598,6 +673,160 @@ public class WardPharmacy extends ModalJFrame implements
 			});
 		}
 		return jTableDrugs;
+	}
+
+	private JScrollPane getTableTotalDrugs() {
+		if (scrollPaneTotalDrugs == null) {
+			scrollPaneTotalDrugs = new JScrollPane(getJTableTotalDrugs());
+			int totWidth = 0;
+			for (int colWidth : columnWidthDrugs) {
+				totWidth += colWidth;
+			}
+			scrollPaneTotalDrugs.setPreferredSize(new Dimension(totWidth, 24));
+			scrollPaneTotalDrugs.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+			scrollPaneTotalDrugs.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPaneTotalDrugs.setOpaque(false);
+			scrollPaneTotalDrugs.getViewport().setBackground(Color.WHITE);
+			if (jScrollPaneDrugs != null && jScrollPaneDrugs.getBorder() != null) {
+				Insets insets = jScrollPaneDrugs.getBorder().getBorderInsets(jScrollPaneDrugs);
+				scrollPaneTotalDrugs.setBorder(BorderFactory.createEmptyBorder(0, insets.left, 0, insets.right));
+			} else {
+				scrollPaneTotalDrugs.setBorder(BorderFactory.createEmptyBorder());
+			}
+			if (jScrollPaneDrugs != null) {
+				scrollPaneTotalDrugs.getHorizontalScrollBar().setModel(jScrollPaneDrugs.getHorizontalScrollBar().getModel());
+			}
+		}
+		return scrollPaneTotalDrugs;
+	}
+
+	private JTable getJTableTotalDrugs() {
+		if (jTableTotalDrugs == null) {
+			jTableTotalDrugs = new JTable();
+			jTableTotalDrugs.setModel(new DefaultTableModel(
+				new Object[][] {
+					{ "<html><b>" + MessageBundle.getMessage("angal.medicals.totalstockvalue.label") + ": " + formatTotalStockValue() + "</b></html>", "" }
+				},
+				new String[] { "", "" }
+			) {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			});
+			jTableTotalDrugs.setTableHeader(null);
+			jTableTotalDrugs.setShowVerticalLines(false);
+			jTableTotalDrugs.setShowHorizontalLines(false);
+			jTableTotalDrugs.setRowSelectionAllowed(false);
+			jTableTotalDrugs.setCellSelectionEnabled(false);
+			jTableTotalDrugs.setColumnSelectionAllowed(false);
+			jTableTotalDrugs.setFocusable(false);
+			jTableTotalDrugs.setBackground(Color.WHITE);
+			jTableTotalDrugs.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			jTableTotalDrugs.setRowHeight(jTableDrugs != null ? jTableDrugs.getRowHeight() : 20);
+
+			for (int i = 0; i < 2; i++) {
+				jTableTotalDrugs.getColumnModel().getColumn(i).setCellRenderer(new TotalTableCellRenderer());
+			}
+			syncTotalTableColumnWidths();
+		}
+		return jTableTotalDrugs;
+	}
+
+	private void syncTotalTableColumnWidths() {
+		if (jTableTotalDrugs == null || jTableDrugs == null || scrollPaneTotalDrugs == null) {
+			return;
+		}
+
+		if (jScrollPaneDrugs != null && jScrollPaneDrugs.getBorder() != null) {
+			Insets insets = jScrollPaneDrugs.getBorder().getBorderInsets(jScrollPaneDrugs);
+			int scrollBarWidth = (jScrollPaneDrugs.getVerticalScrollBar() != null && jScrollPaneDrugs.getVerticalScrollBar().isVisible())
+					? jScrollPaneDrugs.getVerticalScrollBar().getWidth() : 0;
+			scrollPaneTotalDrugs.setBorder(BorderFactory.createEmptyBorder(0, insets.left, 0, insets.right + scrollBarWidth));
+		}
+
+		if (jTableTotalDrugs.getColumnModel().getColumnCount() != 2) {
+			return;
+		}
+
+		int colCount = jTableDrugs.getColumnModel().getColumnCount();
+		int w0to4 = 0;
+		for (int i = 0; i <= 4 && i < colCount; i++) {
+			int w = jTableDrugs.getColumnModel().getColumn(i).getWidth();
+			if (w <= 0 && i < columnWidthDrugs.length) {
+				w = columnWidthDrugs[i];
+			}
+			w0to4 += w;
+		}
+		jTableTotalDrugs.getColumnModel().getColumn(0).setPreferredWidth(w0to4);
+		jTableTotalDrugs.getColumnModel().getColumn(0).setWidth(w0to4);
+
+		if (colCount > 5) {
+			int w5 = jTableDrugs.getColumnModel().getColumn(5).getWidth();
+			if (w5 <= 0 && 5 < columnWidthDrugs.length) {
+				w5 = columnWidthDrugs[5];
+			}
+			jTableTotalDrugs.getColumnModel().getColumn(1).setPreferredWidth(w5);
+			jTableTotalDrugs.getColumnModel().getColumn(1).setWidth(w5);
+		}
+
+		jTableTotalDrugs.revalidate();
+		jTableTotalDrugs.repaint();
+	}
+
+	public void updateTotalsDrugs() {
+		if (jTableTotalDrugs == null || jTableTotalDrugs.getModel() == null) {
+			return;
+		}
+		jTableTotalDrugs.getModel().setValueAt("<html><b>" + MessageBundle.getMessage("angal.medicals.totalstockvalue.label") + ": " + formatTotalStockValue() + "</b></html>", 0, 0);
+		((DefaultTableModel) jTableTotalDrugs.getModel()).fireTableDataChanged();
+		syncTotalTableColumnWidths();
+	}
+
+	private String formatTotalStockValue() {
+		DecimalFormat format = new DecimalFormat("#,##0.00");
+		return format.format(totalWardStockValue) + (!currencyCod.isEmpty() ? " " + currencyCod : "");
+	}
+
+	class TotalTableCellRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+													   boolean hasFocus, int row, int column) {
+			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			cell.setBackground(Color.WHITE);
+			cell.setForeground(Color.BLACK);
+			if (column == 0) {
+				setHorizontalAlignment(SwingConstants.RIGHT);
+				cell.setFont(cell.getFont().deriveFont(Font.BOLD));
+			} else {
+				setHorizontalAlignment(SwingConstants.LEFT);
+			}
+			return cell;
+		}
+	}
+
+	class DrugsTableCellRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 1L;
+		private final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+													   boolean hasFocus, int row, int column) {
+			if ((column == 3 || column == 4) && value instanceof Number) {
+				value = decimalFormat.format(value);
+			}
+			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (column == 1 || column == 3 || column == 4) {
+				setHorizontalAlignment(SwingConstants.RIGHT);
+			} else {
+				setHorizontalAlignment(SwingConstants.LEFT);
+			}
+			return cell;
+		}
 	}
 
 	private static class JTableButtonRenderer implements TableCellRenderer {
@@ -1129,8 +1358,13 @@ public class WardPharmacy extends ModalJFrame implements
 
 	private JPanel getDrugsPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
+
+		JPanel bottomPanel = new JPanel(new BorderLayout());
+		bottomPanel.add(getTableTotalDrugs(), BorderLayout.NORTH);
+		bottomPanel.add(getPaginationPanelDrugs(), BorderLayout.SOUTH);
+
 		panel.add(getJScrollPaneDrugs(), BorderLayout.CENTER);
-		panel.add(getPaginationPanelDrugs(), BorderLayout.SOUTH);
+		panel.add(bottomPanel, BorderLayout.SOUTH);
 		return panel;
 	}
 
@@ -1379,10 +1613,24 @@ public class WardPharmacy extends ModalJFrame implements
 
 		new SwingWorker<Page<MedicalWard>, Void>() {
 
+			private Double totalVal = 0.0;
+			private Map<Integer, Double> avgCosts = new HashMap<>();
+
 			@Override
 			protected Page<MedicalWard> doInBackground() throws Exception {
 				Page<MedicalWard> result = movWardBrowserManager
 						.getMedicalsWardTotalQuantity(wardSelected.getCode(), page, GeneralData.PAGINATIONPAGESIZE);
+
+				List<Integer> codes = new ArrayList<>();
+				for (MedicalWard mw : result.getContent()) {
+					if (mw.getMedical() != null) {
+						codes.add(mw.getMedical().getCode());
+					}
+				}
+				if (!codes.isEmpty()) {
+					avgCosts = movStockInsertingManager.getAverageCostPricesByMedicals(codes);
+				}
+				totalVal = movWardBrowserManager.getTotalWardStockValue(wardSelected.getCode());
 				return result;
 			}
 
@@ -1393,6 +1641,8 @@ public class WardPharmacy extends ModalJFrame implements
 					currentPageDrugs = result.getNumber();
 					totalPagesDrugs = result.getTotalPages();
 					totalElementsDrugs = result.getTotalElements();
+					averageCostCache = avgCosts;
+					totalWardStockValue = totalVal != null ? totalVal : 0.0;
 
 					jTableDrugs.setModel(new DrugsModel(new ArrayList<>(result.getContent())));
 					jTableDrugs.revalidate();
@@ -1403,6 +1653,7 @@ public class WardPharmacy extends ModalJFrame implements
 							jPageComboBoxDrugs, jPageLabelDrugs,
 							jElementsLabelDrugs,
 							currentPageDrugs, totalPagesDrugs, totalElementsDrugs);
+					updateTotalsDrugs();
 
 				} catch (Exception e) {
 					OHServiceExceptionUtil.showMessages((OHServiceException) e.getCause());
@@ -1727,14 +1978,27 @@ public class WardPharmacy extends ModalJFrame implements
 		}
 
 		@Override
+		public Class<?> getColumnClass(int c) {
+			if (c == 0) return String.class;
+			if (c == 1) return Double.class;
+			if (c == 2) return String.class;
+			if (c == 3) return Double.class;
+			if (c == 4) return Double.class;
+			if (c == 5) return JButton.class;
+			return Object.class;
+		}
+
+		@Override
 		public Object getValueAt(final int r, int c) {
+			if (tableModel == null || r >= tableModel.size()) {
+				return null;
+			}
 			final MedicalWard wardDrug = tableModel.get(r);
 			if (c == -1) {
 				return wardDrug;
 			}
 			if (c == 0) {
-				wardDrug.getMedical();
-				return wardDrug.getMedical().getDescription();
+				return wardDrug.getMedical() != null ? wardDrug.getMedical().getDescription() : "";
 			}
 			if (c == 1) {
 				return wardDrug.getQty();
@@ -1743,6 +2007,21 @@ public class WardPharmacy extends ModalJFrame implements
 				return MessageBundle.getMessage("angal.medicalstockward.pieces"); //$NON-NLS-1$
 			}
 			if (c == 3) {
+				if (wardDrug.getMedical() != null) {
+					Double avgCost = averageCostCache.get(wardDrug.getMedical().getCode());
+					return avgCost != null ? avgCost : 0.0;
+				}
+				return 0.0;
+			}
+			if (c == 4) {
+				if (wardDrug.getMedical() != null) {
+					Double avgCost = averageCostCache.get(wardDrug.getMedical().getCode());
+					double qty = wardDrug.getQty() != null ? wardDrug.getQty() : 0.0;
+					return (avgCost != null && qty > 0) ? qty * avgCost : 0.0;
+				}
+				return 0.0;
+			}
+			if (c == 5) {
 				final JButton button = new JButton(MessageBundle.getMessage("angal.medicalstockward.rectify.btn"));
 				button.setMnemonic(MessageBundle.getMnemonic("angal.medicalstockward.rectify.btn.key"));
 				button.addActionListener(actionEvent -> {
