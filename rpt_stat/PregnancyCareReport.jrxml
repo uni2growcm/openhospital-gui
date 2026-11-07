@@ -7,67 +7,79 @@
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
+	<import value="java.text.SimpleDateFormat"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="fromdate" class="java.util.Date"/>
 	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT '1/PRENATAL VISITS' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC 
+		<![CDATA[SELECT 'metric.prenatal_visits' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC 
 
 UNION ALL
 
 SELECT 
-    'Number of first prenatal visits' AS METRIC,
+    'metric.first_prenatal_visit' AS METRIC,
     '' AS DES, 
     COUNT(DISTINCT PRGV_PRG_ID) AS COUNT, 
     ROUND(
         (
             COUNT(DISTINCT PRGV_PRG_ID) * 100.0
         ) / 
-        (
-            SELECT COUNT(DISTINCT PAT)
-            FROM (
-                SELECT ADM_PAT_ID AS PAT
-                FROM OH_ADMISSION
-                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-                UNION
+                    UNION
 
-                SELECT PRG_PAT_ID
-                FROM OH_PREGNANCY
-            ) AS T
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
         ),
         2
     ) AS PERC
 FROM OH_PREGNANCYVISIT
 JOIN OH_PREGNANCY
     ON PRG_ID = PRGV_PRG_ID
-JOIN OH_PREGNANCYDELIVERY
+LEFT JOIN OH_PREGNANCYDELIVERY
     ON PRG_ID = PRGDLV_PRG_ID 
 WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-AND PRGV_DATE <= PRGDLV_DATE
+AND (PRGDLV_DATE IS NULL OR PRGV_DATE <= PRGDLV_DATE)
 
 UNION ALL
 
 SELECT 
-    'Number of second prenatal visits' AS METRIC,
+    'metric.second_prenatal_visit' AS METRIC,
     '' AS DES,
     COUNT(*) AS COUNT, 
     ROUND(
         (
             COUNT(*) * 100.0
         ) /
-        (
-            SELECT COUNT(DISTINCT PAT)
-            FROM (
-                SELECT ADM_PAT_ID AS PAT
-                FROM OH_ADMISSION
-                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-                UNION
+                    UNION
 
-                SELECT PRG_PAT_ID
-                FROM OH_PREGNANCY
-            ) AS T
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
         ),
         2
     ) AS PERC 
@@ -76,10 +88,10 @@ FROM (
     FROM OH_PREGNANCYVISIT
     JOIN OH_PREGNANCY
         ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY
+    LEFT JOIN OH_PREGNANCYDELIVERY
         ON PRG_ID = PRGDLV_PRG_ID  
     WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-    AND PRGV_DATE <= PRGDLV_DATE
+    AND (PRGDLV_DATE IS NULL OR PRGV_DATE <= PRGDLV_DATE)
     GROUP BY PRGV_PRG_ID 
     HAVING COUNT(*) > 1 
 ) AS C
@@ -87,25 +99,28 @@ FROM (
 UNION ALL
 
 SELECT 
-    'Number of third prenatal visits' AS METRIC,
+    'metric.third_prenatal_visit' AS METRIC,
     '' AS DES,
     COUNT(*) AS COUNT, 
     ROUND(
         (
             COUNT(*) * 100.0
         ) /
-        (
-            SELECT COUNT(DISTINCT PAT)
-            FROM (
-                SELECT ADM_PAT_ID AS PAT
-                FROM OH_ADMISSION
-                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-                UNION
+                    UNION
 
-                SELECT PRG_PAT_ID
-                FROM OH_PREGNANCY
-            ) AS T
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
         ),
         2
     ) AS PERC 
@@ -114,10 +129,10 @@ FROM (
     FROM OH_PREGNANCYVISIT 
     JOIN OH_PREGNANCY
         ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY
+    LEFT JOIN OH_PREGNANCYDELIVERY
         ON PRG_ID = PRGDLV_PRG_ID 
     WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-    AND PRGV_DATE <= PRGDLV_DATE
+    AND (PRGDLV_DATE IS NULL OR PRGV_DATE <= PRGDLV_DATE)
     GROUP BY PRGV_PRG_ID 
     HAVING COUNT(*) > 2 
 ) AS C
@@ -125,25 +140,28 @@ FROM (
 UNION ALL
 
 SELECT 
-    'Number of forth prenatal visits' AS METRIC,
+    'metric.fourth_prenatal_visit' AS METRIC,
     '' AS DES,
     COUNT(*) AS COUNT, 
     ROUND(
         (
             COUNT(*) * 100.0
         ) /
-        (
-            SELECT COUNT(DISTINCT PAT)
-            FROM (
-                SELECT ADM_PAT_ID AS PAT
-                FROM OH_ADMISSION
-                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-                UNION
+                    UNION
 
-                SELECT PRG_PAT_ID
-                FROM OH_PREGNANCY
-            ) AS T
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
         ),
         2
     ) AS PERC 
@@ -152,38 +170,51 @@ FROM (
     FROM OH_PREGNANCYVISIT 
     JOIN OH_PREGNANCY
         ON PRG_ID = PRGV_PRG_ID
-    JOIN OH_PREGNANCYDELIVERY
+    LEFT JOIN OH_PREGNANCYDELIVERY
         ON PRG_ID = PRGDLV_PRG_ID 
     WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-    AND PRGV_DATE <= PRGDLV_DATE
+    AND (PRGDLV_DATE IS NULL OR PRGV_DATE <= PRGDLV_DATE)
     GROUP BY PRGV_PRG_ID 
     HAVING COUNT(*) > 3 
 ) AS C
 
 UNION ALL
 
-SELECT '2/DELIVERIES' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC
+SELECT 'metric.deliveries' AS METRIC, '' AS DES, '' AS COUNT, '' AS PERC
 
 UNION ALL
 
 SELECT  
-    DLT_DESC AS METRIC,
-    DRT_DESC AS DES,
+    COALESCE(TYPO_DESCRIPTION, PRGDLV_TYPE_ID, 'metric.delivery') AS METRIC,
+    COALESCE(PRGDLV_DELIVERYMODE, '') AS DES,
     COUNT(*) AS COUNT,
-    '' AS PERC
-FROM OH_ADMISSION 
-JOIN OH_DELIVERYTYPE
-    ON ADM_PRG_DLT_ID_A = DLT_ID_A 
-JOIN OH_DELIVERYRESULTTYPE
-    ON ADM_PRG_DRT_ID_A = DRT_ID_A 
-JOIN OH_PATIENT
-    ON ADM_PAT_ID = PAT_ID 
-JOIN OH_PREGNANCY
-    ON PRG_PAT_ID = PAT_ID 
-JOIN OH_PREGNANCYDELIVERY
-    ON PRGDLV_PRG_ID = PRG_ID     
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                    UNION
+
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
+        ),
+        2
+    ) AS PERC
+FROM OH_PREGNANCYDELIVERY
+LEFT JOIN OH_TYPOLOGIES
+    ON PRGDLV_TYPE_ID = TYPO_CODE
 WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
-GROUP BY DLT_ID_A, DRT_DESC, DLT_DESC
+GROUP BY PRGDLV_TYPE_ID, TYPO_DESCRIPTION, PRGDLV_DELIVERYMODE
 
 UNION ALL
 
@@ -191,30 +222,33 @@ SELECT '', '', '', ''
 
 UNION ALL
 
-SELECT '3/POSTNATAL VISITS', '', '', ''
+SELECT 'metric.postnatal_visits', '', '', ''
 
 UNION ALL
 
 SELECT 
-    'Postnatal visits ' AS METRIC,
+    'metric.postnatal_visits_count' AS METRIC,
     '' AS DES,
     COUNT(*) AS COUNT,  
     ROUND(
         (
             COUNT(*) * 100.0
         ) /
-        (
-            SELECT COUNT(DISTINCT PAT)
-            FROM (
-                SELECT ADM_PAT_ID AS PAT
-                FROM OH_ADMISSION
-                WHERE ADM_PRG_DATE_DEL IS NOT NULL
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
 
-                UNION
+                    UNION
 
-                SELECT PRG_PAT_ID
-                FROM OH_PREGNANCY
-            ) AS T
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
         ),
         2
     ) AS PERC
@@ -224,7 +258,7 @@ JOIN OH_PREGNANCY
 JOIN OH_PREGNANCYDELIVERY
     ON PRG_ID = PRGDLV_PRG_ID 
 WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate}
-AND PRGV_DATE <= PRGDLV_DATE
+AND PRGV_DATE > PRGDLV_DATE
 
 UNION ALL
 
@@ -232,25 +266,67 @@ SELECT '', '', '', ''
 
 UNION ALL
 
-SELECT '4/TOTAL', '', '', ''
+SELECT 'metric.total', '', '', ''
 
 UNION ALL 
 
 SELECT 
-    'Number of deliveries' AS METRIC,
+    'metric.number_of_deliveries' AS METRIC,
     '' AS DES,
     COUNT(*) AS COUNT,
-    '' AS PERC
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                    UNION
+
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
+        ),
+        2
+    ) AS PERC
 FROM OH_PREGNANCYDELIVERY 
 WHERE PRGDLV_DATE BETWEEN $P{fromdate} AND $P{todate}
 
 UNION ALL
 
 SELECT 
-    'Total number of pregnancy visits' AS METRIC,
+    'metric.total_pregnancy_visits' AS METRIC,
     '' AS DES,
-    COUNT(*) AS COUNT,
-    '' AS PERC 
+    COUNT(*) AS COUNT, 
+    ROUND(
+        (
+            COUNT(*) * 100.0
+        ) /
+        NULLIF(
+            (
+                SELECT COUNT(DISTINCT PAT)
+                FROM (
+                    SELECT ADM_PAT_ID AS PAT
+                    FROM OH_ADMISSION
+                    WHERE ADM_PRG_DATE_DEL IS NOT NULL
+
+                    UNION
+
+                    SELECT PRG_PAT_ID
+                    FROM OH_PREGNANCY
+                ) AS T
+            ),
+            0
+        ),
+        2
+    ) AS PERC 
 FROM OH_PREGNANCYVISIT
 WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 	</queryString>
@@ -274,61 +350,113 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="92" splitType="Stretch">
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="140" y="78" width="73" height="14" uuid="55e5b9ae-2077-4963-b741-1d4075baa87e"/>
-				<box leftPadding="1">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Bottom">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="280" height="16" uuid="c0000001-0000-0000-0000-000000000010"/>
+				<textElement>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-12" x="40" y="78" width="73" height="14" uuid="3a719cc4-9861-44c8-9f41-599411e8d6fd"/>
-				<box padding="0">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Bottom">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="true" pdfFontName="Helvetica-Bold"/>
+			<textField>
+				<reportElement x="15" y="16" width="265" height="14" uuid="c0000001-0000-0000-0000-000000000011"/>
+				<textElement>
+					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-15" mode="Opaque" x="120" y="0" width="294" height="28" forecolor="#FFFFFF" backcolor="#000000" uuid="d99abea8-5b06-4d41-936b-8a1f8100585a"/>
+			<textField>
+				<reportElement x="0" y="30" width="280" height="16" uuid="c0000001-0000-0000-0000-000000000012"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="0" width="255" height="16" uuid="c0000001-0000-0000-0000-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="16" width="240" height="14" uuid="c0000001-0000-0000-0000-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="30" width="255" height="16" uuid="c0000001-0000-0000-0000-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="55" width="535" height="20" uuid="c0000001-0000-0000-0000-000000000016"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1250"/>
+					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pregnancyCareStat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="-2" y="74" width="42" height="18" uuid="67e03470-f387-4dea-b5e4-eefd9a474b3b"/>
-				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
-				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
+				<reportElement x="0" y="75" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{to} + " " + new SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="113" y="74" width="27" height="18" uuid="9875e15a-831f-4266-bddc-c522a06389eb"/>
-				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
-				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="95" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000018"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="109" width="280" height="14" uuid="c0000001-0000-0000-0000-000000000019"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="95" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000001"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="109" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000002"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="123" width="255" height="14" uuid="c000000a-0000-0000-0000-000000000003"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="535" height="1" uuid="c000000a-0000-0000-0000-000000000004"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
 		</band>
-	</title>
-	<pageHeader>
-		<band height="13" splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="38" splitType="Stretch">
+		<band height="25" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-16" x="0" y="0" width="354" height="38" uuid="d5a83029-9cef-4a71-b898-fa28ca03e148"/>
+				<reportElement key="textField-16" x="0" y="0" width="345" height="25" uuid="d5a83029-9cef-4a71-b898-fa28ca03e148"/>
 				<box>
 					<pen lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -337,12 +465,12 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{metric}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-17" x="354" y="0" width="88" height="38" uuid="bfd8de71-5f2a-45e5-a082-f62708a56092"/>
+				<reportElement key="textField-17" x="345" y="0" width="85" height="25" uuid="bfd8de71-5f2a-45e5-a082-f62708a56092"/>
 				<box>
 					<pen lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -351,12 +479,12 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totalAccount}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-18" x="442" y="0" width="88" height="38" uuid="268cd5c6-78b6-4131-83eb-49653ffc9434"/>
+				<reportElement key="textField-18" x="430" y="0" width="105" height="25" uuid="268cd5c6-78b6-4131-83eb-49653ffc9434"/>
 				<box>
 					<pen lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -365,17 +493,17 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{percentage}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="13" splitType="Stretch">
+		<band height="14" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="0" y="0" width="183" height="13" uuid="8a665c25-e272-4b4c-ae17-1b45cb992668"/>
-				<box leftPadding="2">
+				<reportElement key="textField-1" x="0" y="0" width="180" height="14" uuid="8a665c25-e272-4b4c-ae17-1b45cb992668"/>
+				<box leftPadding="4">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -383,12 +511,12 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+					<font size="8" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{METRIC}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[( $F{METRIC} == null || $F{METRIC}.isEmpty() ) ? "" : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey($F{METRIC}) ? $P{REPORT_RESOURCE_BUNDLE}.getString($F{METRIC}) : $F{METRIC} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-2" x="354" y="0" width="88" height="13" uuid="6b892e22-cfd7-46f8-931f-3183cdc5fa57"/>
+				<reportElement key="textField-14" x="180" y="0" width="165" height="14" uuid="af033a8a-e3d0-4f6f-bec4-ce021a76d682"/>
 				<box leftPadding="2">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -397,26 +525,12 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+					<font size="8" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[( $F{COUNT}.toString().equals("0") ? "" : $F{COUNT}.toString())]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
-				<reportElement key="textField-13" x="442" y="0" width="88" height="13" uuid="a8214354-6cbf-4662-a93d-c182b58e4b22"/>
-				<box leftPadding="2">
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{PERC}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[( $F{DES} == null || $F{DES}.trim().isEmpty() ) ? "" : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey("delivery.mode." + $F{DES}.trim()) ? $P{REPORT_RESOURCE_BUNDLE}.getString("delivery.mode." + $F{DES}.trim()) : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey($F{DES}) ? $P{REPORT_RESOURCE_BUNDLE}.getString($F{DES}) : $F{DES} ) )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-14" x="183" y="0" width="171" height="13" uuid="af033a8a-e3d0-4f6f-bec4-ce021a76d682"/>
+				<reportElement key="textField-2" x="345" y="0" width="85" height="14" uuid="6b892e22-cfd7-46f8-931f-3183cdc5fa57"/>
 				<box leftPadding="2">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -425,44 +539,58 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" pdfEncoding="Cp1250" isPdfEmbedded="true"/>
+					<font size="8" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{DES}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-13" x="430" y="0" width="105" height="14" uuid="a8214354-6cbf-4662-a93d-c182b58e4b22"/>
+				<box leftPadding="2">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[( $F{PERC} == null || $F{PERC}.trim().isEmpty() ? "" : $F{PERC} )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<columnFooter>
-		<band height="30" splitType="Stretch"/>
+		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="50" splitType="Stretch">
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="0" y="7" width="100" height="18" uuid="75ef6f64-b876-42e1-8264-9dc8d0c78ecf"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+		<band height="30" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="535" height="1" uuid="c000000c-0000-0000-0000-000000000001"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="0" y="5" width="250" height="20" uuid="c000000c-0000-0000-0000-000000000003"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="5" width="120" height="20" uuid="c000000c-0000-0000-0000-000000000002"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="500" y="5" width="35" height="20" uuid="c000000c-0000-0000-0000-000000000004"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
-	<lastPageFooter>
-		<band height="50" splitType="Stretch">
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="0" y="13" width="100" height="18" uuid="6fa4e298-e927-40ac-b3e7-9b40eb3bcf54"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
-			</textField>
-		</band>
-	</lastPageFooter>
-	<summary>
-		<band height="50" splitType="Stretch"/>
-	</summary>
 </jasperReport>
