@@ -110,10 +110,12 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JButton jCertificateButton;
 	private JButton jMortuaryStayButton;
 	private JButton filterButton;
+	private JButton resetFilterButton;
 	private JButton jRapportButton;
 	private JButton jCloseButton;
 	private JButton pickPatientButton;
 	private JButton removePatientButton;
+	private JRadioButton inputRadioButton;
 	private JRadioButton outputRadioButton;
 	private JPanel inOutPanel;
 	private JComboBox<Object> provenanceCombo;
@@ -272,7 +274,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (inOutPanel == null) {
 			inOutPanel = new JPanel();
 			ButtonGroup group = new ButtonGroup();
-			JRadioButton inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
+			inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
 			outputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.output.txt"));
 			inputRadioButton.setSelected(true);
 			group.add(inputRadioButton);
@@ -333,7 +335,32 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JPanel getFilterButtonPanel() {
 		JPanel jFilterButtonPanel = new JPanel();
 		jFilterButtonPanel.add(getFilterButton());
+		jFilterButtonPanel.add(getResetFilterButton());
 		return jFilterButtonPanel;
+	}
+
+	private JButton getResetFilterButton() {
+		if (resetFilterButton == null) {
+			resetFilterButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+			resetFilterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
+			resetFilterButton.addActionListener(actionEvent -> {
+				patientParent = null;
+				patientTextField.setText("");
+				if (provenanceCombo.getItemCount() > 0) {
+					provenanceCombo.setSelectedIndex(0);
+				}
+				if (deathReasonCombo.getItemCount() > 0) {
+					deathReasonCombo.setSelectedIndex(0);
+				}
+				if (inputRadioButton != null) {
+					inputRadioButton.setSelected(true);
+				}
+				dateFrom.setDate(LocalDate.now().minusWeeks(1));
+				dateTo.setDate(LocalDate.now());
+				applyFilter(false);
+			});
+		}
+		return resetFilterButton;
 	}
 
 	private JButton getFilterButton() {
@@ -446,6 +473,14 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (jMortuaryStayButton == null) {
 			jMortuaryStayButton = new JButton(MessageBundle.getMessage("angal.mortuary.mortuarystay.btn"));
 			jMortuaryStayButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.mortuarystay.btn.key"));
+			jMortuaryStayButton.addActionListener(actionEvent -> {
+				if (deathTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				death = (Death) model.getValueAt(deathTable.getSelectedRow(), -1);
+				MortuaryStayReportLauncher.print(death);
+			});
 		}
 		return jMortuaryStayButton;
 	}
