@@ -465,6 +465,14 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (jCertificateButton == null) {
 			jCertificateButton = new JButton(MessageBundle.getMessage("angal.mortuary.certificate.btn"));
 			jCertificateButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.certificate.btn.key"));
+			jCertificateButton.addActionListener(actionEvent -> {
+				if (deathTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				death = (Death) model.getValueAt(deathTable.getSelectedRow(), -1);
+				DeathCertificateReportLauncher.print(death);
+			});
 		}
 		return jCertificateButton;
 	}

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+	name="certificateOfDeath" pageWidth="595" pageHeight="842" whenNoDataType="NoPages"
+	columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20"
+	resourceBundle="certificateOfDeath" whenResourceMissingType="Key">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.time.format.DateTimeFormatter"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="CertificateDate" class="java.lang.String"/>
+	<field name="id" class="java.lang.Integer"/>
+	<field name="date" class="java.time.LocalDateTime"/>
+	<field name="place" class="java.lang.String"/>
+	<field name="patient" class="org.isf.patient.model.Patient"/>
+	<field name="deathReason" class="org.isf.mortuary.model.DeathReason"/>
+	<field name="declaringName" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="139" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="300" height="15"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="14" width="300" height="11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="300" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="355" y="0" width="180" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="355" y="17" width="180" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="355" y="30" width="180" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="42" width="515" height="24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cert_title}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="88" width="300" height="14"/>
+				<textElement><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="300" y="90" width="235" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="104" width="300" height="14"/>
+				<textElement><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="300" y="104" width="235" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="300" y="120" width="235" height="14"/>
+				<textElement textAlignment="Right"><font fontName="SansSerif" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="136" width="535" height="1"/>
+				<graphicElement><pen lineWidth="1.5"/></graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="590" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="5" width="440" height="28"/>
+				<textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{cert_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="440" y="5" width="95" height="28"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{label_number} + " " + $F{id}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="40" width="535" height="260" forecolor="#A0A0A0"/>
+				<graphicElement><pen lineWidth="0.7"/></graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="12" y="48" width="511" height="22"/>
+				<textElement verticalAlignment="Middle"><font size="12" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{section_patient}]]></textFieldExpression>
+			</textField>
+			<line><reportElement x="12" y="73" width="511" height="1"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+			<textField><reportElement x="12" y="82" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_surname}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="82" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getSecondName() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="82" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_firstname}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="82" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getFirstName() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="109" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_age}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="109" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getAge() + " " + $R{years} : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="109" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_sex}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="109" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? ($F{patient}.getSex() == 'F' ? $R{female} : $R{male}) : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="136" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_birthplace}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="136" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getBirthPlace() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="136" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_address}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="136" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getAddress() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="163" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_occupation}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="163" width="416" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getProfession() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="190" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{father_name}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="190" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getFatherName() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="190" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{mother_name}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="190" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getMotherName() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="217" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{parent_residence}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="107" y="217" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getParentsResidence() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="217" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{patient_status}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="217" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null ? $F{patient}.getMaritalStatus() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="244" width="160" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{children_number}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="172" y="244" width="150" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{patient} != null && $F{patient}.getNumberOfChildren() != null ? String.valueOf($F{patient}.getNumberOfChildren()) : ""]]></textFieldExpression></textField>
+			<rectangle><reportElement x="0" y="310" width="535" height="105" forecolor="#A0A0A0"/><graphicElement><pen lineWidth="0.7"/></graphicElement></rectangle>
+			<textField><reportElement x="12" y="318" width="511" height="22"/><textElement verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{section_death}]]></textFieldExpression></textField>
+			<line><reportElement x="12" y="343" width="511" height="1"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+			<textField><reportElement x="12" y="352" width="115" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{death_date}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="127" y="352" width="140" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{date} != null ? $F{date}.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="273" y="352" width="95" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{death_place}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="368" y="352" width="155" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{place}]]></textFieldExpression></textField>
+			<textField><reportElement x="12" y="379" width="115" height="18"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{declarer}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="127" y="379" width="396" height="18"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$F{declaringName}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="0" y="425" width="535" height="85" forecolor="#A0A0A0"/><graphicElement><pen lineWidth="0.7"/></graphicElement></rectangle>
+			<textField><reportElement x="12" y="433" width="511" height="22"/><textElement verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{death_cause}]]></textFieldExpression></textField>
+			<line><reportElement x="12" y="458" width="511" height="1"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true"><reportElement x="12" y="466" width="511" height="36"/><textElement verticalAlignment="Top"><font size="11"/></textElement><textFieldExpression><![CDATA[$F{deathReason} != null ? $F{deathReason}.getDescription() : ""]]></textFieldExpression></textField>
+			<textField><reportElement x="290" y="520" width="245" height="18"/><textElement textAlignment="Right"><font size="10"/></textElement><textFieldExpression><![CDATA[$R{certificate_date} + " " + $P{CertificateDate}]]></textFieldExpression></textField>
+			<textField><reportElement x="0" y="560" width="220" height="18"/><textElement textAlignment="Center"><font size="10"/></textElement><textFieldExpression><![CDATA[$R{doctor_stamp}]]></textFieldExpression></textField>
+			<textField><reportElement x="315" y="560" width="220" height="18"/><textElement textAlignment="Center"><font size="10"/></textElement><textFieldExpression><![CDATA[$R{doctor_signature}]]></textFieldExpression></textField>
+			<line><reportElement x="40" y="555" width="140" height="1"/><graphicElement><pen lineWidth="0.7"/></graphicElement></line>
+			<line><reportElement x="355" y="555" width="140" height="1"/><graphicElement><pen lineWidth="0.7"/></graphicElement></line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>
