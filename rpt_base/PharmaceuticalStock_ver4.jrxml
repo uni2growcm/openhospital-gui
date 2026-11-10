@@ -42,8 +42,8 @@
     MDSR_DESC,
     MDSR_MIN_STOCK_QTI,
     SUM(QTY_INPUT - QTY_OUTPUT) AS STOCK,
-    COALESCE(SUM(CHARGE - DISCHARGE), 0.0) AS VALUE,
-    COALESCE(SUM(CHARGE - DISCHARGE) / NULLIF(SUM(QTY_INPUT - QTY_OUTPUT), 0), 0.0) AS AVG_COST
+    COALESCE(SUM(CHARGE - DISCHARGE) / NULLIF(SUM(QTY_INPUT - QTY_OUTPUT), 0), 0.0) AS AVG_COST,
+    COALESCE(SUM(CHARGE - DISCHARGE), 0.0) AS TOTAL
 FROM (
     
     SELECT 
@@ -133,8 +133,8 @@ SELECT
     MDSR_DESC,
     MDSR_MIN_STOCK_QTI,
     0 AS STOCK,
-    0 AS VALUE,
-    0.0 AS AVG_COST
+    0.0 AS AVG_COST,
+    0 AS TOTAL
     
 FROM OH_MEDICALDSR
 
@@ -156,16 +156,16 @@ ORDER BY $P!{sortBy}]]>
 	<field name="MDSR_DESC" class="java.lang.String"/>
 	<field name="MDSR_MIN_STOCK_QTI" class="java.lang.Float"/>
 	<field name="STOCK" class="java.lang.Double"/>
-	<field name="VALUE" class="java.lang.Double"/>
 	<field name="AVG_COST" class="java.lang.Double"/>
+	<field name="TOTAL" class="java.lang.Double"/>
 	<variable name="TOTAL_VALUE" class="java.lang.Double" calculation="Sum">
-		<variableExpression><![CDATA[$F{VALUE}]]></variableExpression>
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_QTY" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{STOCK}]]></variableExpression>
 	</variable>
 	<variable name="GROUP_VALUE" class="java.lang.Double" resetType="Group" resetGroup="MEDICALTYPE" calculation="Sum">
-		<variableExpression><![CDATA[$F{VALUE}]]></variableExpression>
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
 	</variable>
 	<variable name="GROUP_QTY" class="java.lang.Double" resetType="Group" resetGroup="MEDICALTYPE" calculation="Sum">
 		<variableExpression><![CDATA[$F{STOCK}]]></variableExpression>
@@ -465,7 +465,7 @@ ORDER BY $P!{sortBy}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{VALUE} != null ? $F{VALUE} : Double.valueOf(0.0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{TOTAL} != null ? $F{TOTAL} : Double.valueOf(0.0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -528,7 +528,7 @@ ORDER BY $P!{sortBy}]]>
 	<summary>
 		<band height="22" splitType="Stretch">
 			<textField>
-				<reportElement key="staticText-13" x="50" y="2" width="240" height="18" uuid="ba51f8bb-60d0-475a-8105-82a9b7214b07"/>
+				<reportElement key="staticText-13" x="50" y="2" width="380" height="18" uuid="ba51f8bb-60d0-475a-8105-82a9b7214b07"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -539,32 +539,6 @@ ORDER BY $P!{sortBy}]]>
 					<font fontName="DejaVu Sans" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalValue}]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-totalqty" x="290" y="2" width="60" height="18" uuid="3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_QTY} != null ? $V{TOTAL_QTY} : Double.valueOf(0.0)]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-totalavgcost" x="350" y="2" width="85" height="18" uuid="4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[new Double($V{TOTAL_QTY} != null && $V{TOTAL_QTY}.doubleValue() > 0 && $V{TOTAL_VALUE} != null ? $V{TOTAL_VALUE}.doubleValue() / $V{TOTAL_QTY}.doubleValue() : 0.0)]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-29" x="435" y="2" width="100" height="18" uuid="220503b6-789d-4667-a268-35840562e0b7"/>
