@@ -256,6 +256,10 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		buttonPanel.add(buttonClose);
 		add(buttonPanel, BorderLayout.SOUTH);
 
+		// Load the list on open so pOperation never stays null
+		// (otherwise operationInserted/operationUpdated throw a NullPointerException).
+		filterOperations("");
+
 		setVisible(true);
 	}
 
@@ -270,14 +274,23 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 	@Override
 	public void operationInserted(AWTEvent e) {
-		pOperation.add(0, operation);
-		((OperationBrowserModel) table.getModel()).fireTableDataChanged();
+		if (pOperation == null) {
+			// list not loaded yet: reload from the database
+			filterOperations(searchField.getText());
+		} else {
+			pOperation.add(0, operation);
+			((OperationBrowserModel) table.getModel()).fireTableDataChanged();
+		}
 		if (table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
 		}
 	}
 	@Override
 	public void operationUpdated(AWTEvent e) {
+		if (pOperation == null) {
+			filterOperations(searchField.getText());
+			return;
+		}
 		pOperation.set(selectedrow, operation);
 		((OperationBrowserModel) table.getModel()).fireTableDataChanged();
 		table.updateUI();
