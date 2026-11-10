@@ -3057,6 +3057,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			try {
                 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
 				item.setItemGroup(prc.getGroup());
+                item.setItemId(prc.getItem());
 				item.setPriceID(prc.getItem());
 				billItems.add(item);
                 modified = true;
