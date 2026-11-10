@@ -515,7 +515,6 @@ public class TuberculosisTreatmentEdit extends JDialog
         diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabetes"));
         panel.add(diabetesCheck, gbc);
 
-        // Vertical filler so rows stay at the top
         GridBagConstraints filler = new GridBagConstraints();
         filler.gridx = 0;
         filler.gridy = ++row;
@@ -562,7 +561,6 @@ public class TuberculosisTreatmentEdit extends JDialog
         hivTestDateField.setMaxDate(LocalDate.now());
         panel.add(hivTestDateField, gbc);
 
-        // Vertical filler so rows stay at the top
         GridBagConstraints filler = new GridBagConstraints();
         filler.gridx = 0;
         filler.gridy = ++row;
