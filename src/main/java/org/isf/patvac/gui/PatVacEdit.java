@@ -46,6 +46,7 @@ import javax.swing.WindowConstants;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
+import org.isf.patient.gui.SelectPatientComponent;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.manager.PatVacManager;
@@ -78,10 +79,9 @@ public class PatVacEdit extends JDialog {
 
 	private JButton okButton;
 	private JButton cancelButton;
-	private JButton jButtonPickPatient;
+	private SelectPatientComponent selectPatientComponent;
 
 	private JComboBox<Vaccine> vaccineComboBox;
-	private JTextField jTextFieldPatient;
 	private JComboBox<VaccineType> vaccineTypeComboBox;
 
 	private VoLimitedTextField patTextField;
@@ -177,24 +177,14 @@ public class PatVacEdit extends JDialog {
 			gbcPatientLabel.gridy = 1;
 			dataPanel.add(patientLabel, gbcPatientLabel);
 
-			GridBagConstraints gbcTextFieldPatient = new GridBagConstraints();
-			gbcTextFieldPatient.fill = GridBagConstraints.HORIZONTAL;
-			gbcTextFieldPatient.insets = new Insets(5, 5, 5, 5);
-			gbcTextFieldPatient.gridx = 1;
-			gbcTextFieldPatient.gridy = 1;
-			dataPanel.add(getJTextFieldPatient(), gbcTextFieldPatient);
-
-			GridBagConstraints gbcPickPatientButton = new GridBagConstraints();
-			gbcPickPatientButton.insets = new Insets(5, 5, 5, 5);
-			gbcPickPatientButton.anchor = GridBagConstraints.WEST;
-			gbcPickPatientButton.gridx = 2;
-			gbcPickPatientButton.gridy = 1;
-			dataPanel.add(getJButtonPickPatient(), gbcPickPatientButton);
-
-			if (!insert) {
-				jTextFieldPatient.setEnabled(false);
-				getJButtonPickPatient().setEnabled(false);
-			}
+			GridBagConstraints gbcPatientComponent = new GridBagConstraints();
+			gbcPatientComponent.fill = GridBagConstraints.HORIZONTAL;
+			gbcPatientComponent.anchor = GridBagConstraints.WEST;
+			gbcPatientComponent.insets = new Insets(5, 5, 5, 5);
+			gbcPatientComponent.gridwidth = 2;
+			gbcPatientComponent.gridx = 1;
+			gbcPatientComponent.gridy = 1;
+			dataPanel.add(getSelectPatientComponent(), gbcPatientComponent);
 
 			// vaccine date
 			JLabel vaccineDateLabel = new JLabel(MessageBundle.getMessage("angal.common.date.txt"));
@@ -298,61 +288,31 @@ public class PatVacEdit extends JDialog {
 		return villageTextField;
 	}
 
-	private JTextField getJTextFieldPatient() {
-		if (jTextFieldPatient == null) {
-			jTextFieldPatient = new JTextField();
-			jTextFieldPatient.setText(selectedPatient != null ? selectedPatient.getName() : "");
-			jTextFieldPatient.setPreferredSize(new Dimension(250, 20));
-			
-			jTextFieldPatient.addActionListener(actionEvent -> {
-				String text = jTextFieldPatient.getText().trim();
-				
-				if (!text.isEmpty()) {
-					SelectPatient dialog = new SelectPatient(
-						PatVacEdit.this,
-						text
-					);
-					
-					dialog.setVisible(true);
-					
-					Patient selected = dialog.getPatient();
-					
-					if (selected != null) {
-						selectedPatient = selected;
-						jTextFieldPatient.setText(selectedPatient.getName());
-						setPatient(selectedPatient);
-					}
-				}
-			});
-		}
-		return jTextFieldPatient;
-	}
-
-	private JButton getJButtonPickPatient() {
-		if (jButtonPickPatient == null) {
-			jButtonPickPatient = new JButton(MessageBundle.getMessage("angal.common.searchpatient.txt"));
-			jButtonPickPatient.setMnemonic(MessageBundle.getMnemonic("angal.common.pick.btn.key"));
-			jButtonPickPatient.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
-			jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.patvac.selectapatient"));
-			
-			jButtonPickPatient.addActionListener(actionEvent -> {
-				SelectPatient dialog = new SelectPatient(
-					PatVacEdit.this,
-					selectedPatient
-				);
-				
-				dialog.setVisible(true);
-				
-				Patient selected = dialog.getPatient();
-				
-				if (selected != null) {
-					selectedPatient = selected;
-					jTextFieldPatient.setText(selectedPatient.getName());
+	private SelectPatientComponent getSelectPatientComponent() {
+		if (selectPatientComponent == null) {
+			selectPatientComponent = new SelectPatientComponent();
+			selectPatientComponent.setFieldWidth(220);
+			if (selectedPatient != null) {
+				selectPatientComponent.setPatient(selectedPatient);
+				setPatient(selectedPatient);
+			}
+			if (!insert) {
+				selectPatientComponent.setEnabled(false);
+			}
+			selectPatientComponent.addPatientSelectionListener(new SelectPatientComponent.PatientSelectionListener() {
+				@Override
+				public void patientSelected(Patient patient) {
+					selectedPatient = patient;
 					setPatient(selectedPatient);
 				}
+
+				@Override
+				public void patientCleared() {
+					resetPatVacPat();
+				}
 			});
 		}
-		return jButtonPickPatient;
+		return selectPatientComponent;
 	}
 
 	/**
