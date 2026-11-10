@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio using JasperReports Library version 6.21.3 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CorpsesLiftedPerPeriodTime" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="CorpsesLiftedPerPeriodTime" whenResourceMissingType="Key">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="IMAGE_PATH" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT	1 AS DEATH_COUNT,
+	DATE_FORMAT(D.DTH_DISCHARGE_DATE, '%T') AS TIME, 
+	P.PAT_FNAME, 
+	P.PAT_SNAME,  
+	D.DTH_ADMISSION_DATE AS DECES_DATE_ENTREE,
+	DATE(D.DTH_DISCHARGE_DATE) AS DECES_DATE_SORTIE,
+	D.DTH_DECLARING_NAME AS DECES_NOM_DECLARANT,
+	D.DTH_FAMILY_NAME AS DECES_NOM_FAMILLE
+FROM OH_DEATH D
+LEFT JOIN OH_PATIENT P ON D.DTH_PAT_ID = P.PAT_ID
+LEFT JOIN OH_DEATHREASON M ON D.DTH_DTHR_ID = M.DTHR_ID
+WHERE D.DTH_DELETED = 0
+  AND DATE(D.DTH_DISCHARGE_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+ORDER BY D.DTH_DISCHARGE_DATE ASC]]>
+	</queryString>
+	<field name="DEATH_COUNT" class="java.lang.Integer"/>
+	<field name="TIME" class="java.lang.String"/>
+	<field name="PAT_FNAME" class="java.lang.String"/>
+	<field name="PAT_SNAME" class="java.lang.String"/>
+	<field name="DECES_DATE_ENTREE" class="java.sql.Timestamp"/>
+	<field name="DECES_DATE_SORTIE" class="java.util.Date"/>
+	<field name="DECES_NOM_DECLARANT" class="java.lang.String"/>
+	<field name="DECES_NOM_FAMILLE" class="java.lang.String"/>
+	<variable name="DEATH_COUNT_TOTAL" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEATH_COUNT}]]></variableExpression>
+	</variable>
+	<variable name="GRP_TOTAL" class="java.lang.Integer" resetType="Group" resetGroup="BELIFTED_GROUP" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEATH_COUNT}]]></variableExpression>
+	</variable>
+	<group name="BELIFTED_GROUP">
+		<groupExpression><![CDATA[$F{DECES_DATE_SORTIE}]]></groupExpression>
+		<groupHeader>
+			<band height="44" splitType="Stretch">
+				<rectangle>
+					<reportElement key="rectangle-2" x="0" y="1" width="535" height="20" forecolor="#9999FF" backcolor="#6699FF"/>
+					<graphicElement/>
+				</rectangle>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-28" x="5" y="2" width="30" height="18" forecolor="#FFFFFF"/>
+					<box/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.on")]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField-29" x="35" y="2" width="240" height="18" forecolor="#FFFFFF"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-18" x="0" y="24" width="125" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.died")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-19" x="125" y="24" width="80" height="18"/>
+					<box/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.entrancedate")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-30" x="205" y="24" width="55" height="18"/>
+					<box/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.mortuary.time")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-21" x="260" y="24" width="135" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.declarer")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-22" x="395" y="24" width="140" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.family")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="25" splitType="Stretch">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-16" x="0" y="2" width="420" height="20"/>
+					<box leftPadding="2"/>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.medicalstock.totalm")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="BELIFTED_GROUP">
+					<reportElement key="textField-17" x="420" y="2" width="115" height="20"/>
+					<box rightPadding="4"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{GRP_TOTAL}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement key="textField-camerounf" x="0" y="0" width="280" height="16"/>
+				<textElement textAlignment="Left">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-patrief" x="15" y="16" width="265" height="14"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-santef" x="0" y="30" width="280" height="16"/>
+				<textElement textAlignment="Left">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-cameroune" x="280" y="0" width="255" height="16"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-patriee" x="280" y="16" width="240" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-santee" x="280" y="30" width="255" height="16"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-titre" x="0" y="55" width="535" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-periode" x="0" y="75" width="535" height="16"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-district" x="0" y="95" width="280" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-adresse" x="0" y="109" width="280" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-structure" x="280" y="95" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-telephone" x="280" y="109" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-email" x="280" y="123" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-header" x="0" y="140" width="535" height="1"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-23" x="0" y="2" width="125" height="15"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAT_FNAME} + " " + $F{PAT_SNAME}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-24" x="125" y="2" width="80" height="15"/>
+				<box/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DECES_DATE_ENTREE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="205" y="2" width="55" height="15"/>
+				<box/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TIME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-25" x="260" y="2" width="135" height="15"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DECES_NOM_DECLARANT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-26" x="395" y="2" width="140" height="15"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DECES_NOM_FAMILLE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="35" splitType="Stretch">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-5" x="0" y="14" width="247" height="20"/>
+				<box leftPadding="2"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-14" x="390" y="14" width="120" height="20"/>
+				<box/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.diseaseslist.page") + " " + $V{PAGE_NUMBER} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.diseaseslist.of")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false" evaluationTime="Report">
+				<reportElement key="textField-15" x="510" y="14" width="25" height="20"/>
+				<box/>
+				<textElement verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-10" mode="Opaque" x="0" y="3" width="420" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
+				<box leftPadding="5"/>
+				<textElement verticalAlignment="Middle">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalliftedfrom") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + "  " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.prescriberexams.to") + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Report">
+				<reportElement key="textField-2" mode="Opaque" x="420" y="3" width="115" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
+				<box rightPadding="5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DEATH_COUNT_TOTAL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

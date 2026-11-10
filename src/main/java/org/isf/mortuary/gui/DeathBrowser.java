@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -64,6 +64,7 @@ import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.service.DeathIoOperations;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
+import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -79,7 +80,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int[] pColumnWidth = { 30, 80, 30, 100, 100, 75, 75, 150 };
+	private final int[] pColumnWidth = { 30, 100, 40, 100, 100, 95, 95, 150 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.patient.col").toUpperCase(),
@@ -109,10 +110,12 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JButton jCertificateButton;
 	private JButton jMortuaryStayButton;
 	private JButton filterButton;
+	private JButton resetFilterButton;
 	private JButton jRapportButton;
 	private JButton jCloseButton;
 	private JButton pickPatientButton;
 	private JButton removePatientButton;
+	private JRadioButton inputRadioButton;
 	private JRadioButton outputRadioButton;
 	private JPanel inOutPanel;
 	private JComboBox<Object> provenanceCombo;
@@ -271,7 +274,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (inOutPanel == null) {
 			inOutPanel = new JPanel();
 			ButtonGroup group = new ButtonGroup();
-			JRadioButton inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
+			inputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.input.txt"));
 			outputRadioButton = new JRadioButton(MessageBundle.getMessage("angal.mortuary.output.txt"));
 			inputRadioButton.setSelected(true);
 			group.add(inputRadioButton);
@@ -332,7 +335,32 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JPanel getFilterButtonPanel() {
 		JPanel jFilterButtonPanel = new JPanel();
 		jFilterButtonPanel.add(getFilterButton());
+		jFilterButtonPanel.add(getResetFilterButton());
 		return jFilterButtonPanel;
+	}
+
+	private JButton getResetFilterButton() {
+		if (resetFilterButton == null) {
+			resetFilterButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+			resetFilterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
+			resetFilterButton.addActionListener(actionEvent -> {
+				patientParent = null;
+				patientTextField.setText("");
+				if (provenanceCombo.getItemCount() > 0) {
+					provenanceCombo.setSelectedIndex(0);
+				}
+				if (deathReasonCombo.getItemCount() > 0) {
+					deathReasonCombo.setSelectedIndex(0);
+				}
+				if (inputRadioButton != null) {
+					inputRadioButton.setSelected(true);
+				}
+				dateFrom.setDate(LocalDate.now().minusWeeks(1));
+				dateTo.setDate(LocalDate.now());
+				applyFilter(false);
+			});
+		}
+		return resetFilterButton;
 	}
 
 	private JButton getFilterButton() {
@@ -445,6 +473,14 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (jMortuaryStayButton == null) {
 			jMortuaryStayButton = new JButton(MessageBundle.getMessage("angal.mortuary.mortuarystay.btn"));
 			jMortuaryStayButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.mortuarystay.btn.key"));
+			jMortuaryStayButton.addActionListener(actionEvent -> {
+				if (deathTable.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				death = (Death) model.getValueAt(deathTable.getSelectedRow(), -1);
+				MortuaryStayReportLauncher.print(death);
+			});
 		}
 		return jMortuaryStayButton;
 	}
@@ -453,6 +489,15 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		if (jRapportButton == null) {
 			jRapportButton = new JButton(MessageBundle.getMessage("angal.mortuary.rapport.btn"));
 			jRapportButton.setMnemonic(MessageBundle.getMnemonic("angal.mortuary.rapport.btn.key"));
+			jRapportButton.addActionListener(actionEvent -> {
+				LocalDate from = dateFrom.getDate();
+				LocalDate to = dateTo.getDate();
+				if (from.isAfter(to)) {
+					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
+					return;
+				}
+				new GenericReportFromDateToDate(from, to, "rpt_stat", "CorpsesLiftedPerPeriodTime", MessageBundle.getMessage("angal.stat.corpsesliftedperperiod"), false);
+			});
 		}
 		return jRapportButton;
 	}
@@ -632,7 +677,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JLabel getUnderLabel() {
 		if (underLabel == null) {
 			underLabel = new JLabel("/ " + (TOTAL_PAGES + 1) + " " + MessageBundle.getMessage("angal.common.pages.txt"));
-			underLabel.setPreferredSize(new Dimension(60, 30));
+			underLabel.setPreferredSize(new Dimension(90, 30));
 		}
 		return underLabel;
 	}
