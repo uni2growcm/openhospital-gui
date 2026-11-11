@@ -215,9 +215,11 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getConditioningTextField());
 			dataPanel.add(dosingLabel);
 			dataPanel.add(getDosingTextField());
-			dataPanel.add(activeLabel);
-			dataPanel.add(getActiveField());
-			SpringUtilities.makeCompactGrid(dataPanel, 10, 2, 5, 5, 5, 5);
+			if (!insert) {
+				dataPanel.add(activeLabel);
+				dataPanel.add(getActiveField());
+			}
+			SpringUtilities.makeCompactGrid(dataPanel, insert ? 9 : 10, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
@@ -310,7 +312,7 @@ public class MedicalEdit extends JDialog {
 							newMedical.setConditioning(conditioningTextField.getText());
 							newMedical.setShape(shapeTextField.getText());
 							newMedical.setDosing(dosingTextField.getText());
-							newMedical.setDeleted(activeCheckbox.isSelected() ? 'N' : 'Y');
+							newMedical.setDeleted('N');
 						} catch (CloneNotSupportedException cloneNotSupportedException) {
 							LOGGER.error(cloneNotSupportedException.getMessage(), cloneNotSupportedException);
 						}
