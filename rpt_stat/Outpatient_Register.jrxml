@@ -89,6 +89,7 @@
 	p.PAT_NAME,
 	p.PAT_MAR_STAT AS PAT_STATUS,
 	p.PAT_NEXT_KIN,
+	p.PAT_BLAMA,
 	p.PAT_CITY,
 	p.PAT_ADDR,
 	p.PAT_GEO_POS,
@@ -202,6 +203,7 @@ ORDER BY o.OPD_ID]]>
 	<field name="PAT_NAME" class="java.lang.String"/>
 	<field name="PAT_STATUS" class="java.lang.String"/>
 	<field name="PAT_NEXT_KIN" class="java.lang.String"/>
+	<field name="PAT_BLAMA" class="java.lang.String"/>
 	<field name="PAT_CITY" class="java.lang.String"/>
 	<field name="PAT_ADDR" class="java.lang.String"/>
 	<field name="PAT_GEO_POS" class="java.lang.String"/>
@@ -342,37 +344,37 @@ ORDER BY o.OPD_ID]]>
 				<textFieldExpression><![CDATA[$R{colCase}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="51" y="0" width="90" height="100" uuid="09011223-0435-4657-6879-800112233445" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="71" y="0" width="90" height="100" uuid="09011223-0435-4657-6879-800112233445" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colName}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="141" y="0" width="15" height="100" uuid="11223344-0546-4768-7980-011223344556" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="161" y="0" width="15" height="100" uuid="11223344-0546-4768-7980-011223344556" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colSex}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="156" y="0" width="15" height="100" uuid="22334455-0657-4879-8091-122334455667" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="176" y="0" width="15" height="100" uuid="22334455-0657-4879-8091-122334455667" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colAge}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="171" y="0" width="16" height="100" uuid="33445566-0768-4980-9112-233445566778" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="191" y="0" width="16" height="100" uuid="33445566-0768-4980-9112-233445566778" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colStatus}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="187" y="0" width="15" height="100" uuid="44556677-0879-4091-1223-344556677889" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="207" y="0" width="15" height="100" uuid="44556677-0879-4091-1223-344556677889" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colPregnant}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="202" y="0" width="20" height="100" uuid="55667788-0980-4112-2334-455667788990" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
+				<reportElement x="51" y="0" width="20" height="100" uuid="55667788-0980-4112-2334-455667788990" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
 				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{colPatientCode}]]></textFieldExpression>
@@ -474,41 +476,41 @@ ORDER BY o.OPD_ID]]>
 			<textField isBlankWhenNull="true">
 				<reportElement x="40" y="0" width="11" height="37" uuid="c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f"/>
 				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
-				<textFieldExpression><![CDATA["N".equals($F{OPD_NEW_PAT}) ? $R{newPatient} : ($F{OPD_NEW_PAT} == null ? $R{notAvailable} : $R{returningPatient})]]></textFieldExpression>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7"/></textElement>
+				<textFieldExpression><![CDATA["N".equals($F{OPD_NEW_PAT}) ? $R{newPatient} : ("R".equals($F{OPD_NEW_PAT}) ? $R{returningPatient} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="51" y="0" width="90" height="37" uuid="d3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f70"/>
+				<reportElement x="71" y="0" width="90" height="37" uuid="d3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f70"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{PAT_NAME} == null ? "" : $F{PAT_NAME}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="141" y="0" width="15" height="37" uuid="e4f5a6b7-8c9d-4e0f-1a2b-3c4d5e6f7081"/>
+				<reportElement x="161" y="0" width="15" height="37" uuid="e4f5a6b7-8c9d-4e0f-1a2b-3c4d5e6f7081"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{OPD_SEX}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="156" y="0" width="15" height="37" uuid="f5a6b7c8-9d0e-4f1a-2b3c-4d5e6f708192"/>
+				<reportElement x="176" y="0" width="15" height="37" uuid="f5a6b7c8-9d0e-4f1a-2b3c-4d5e6f708192"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{OPD_AGE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="171" y="0" width="16" height="37" uuid="a6b7c8d9-0e1f-4a2b-3c4d-5e6f708192a3"/>
+				<reportElement x="191" y="0" width="16" height="37" uuid="a6b7c8d9-0e1f-4a2b-3c4d-5e6f708192a3"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{PAT_STATUS}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="187" y="0" width="15" height="37" uuid="b7c8d9e0-1f2a-4b3c-4d5e-6f708192a3b4"/>
+				<reportElement x="207" y="0" width="15" height="37" uuid="b7c8d9e0-1f2a-4b3c-4d5e-6f708192a3b4"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA["yes".equals($F{PAT_PREGNANT}) ? $R{yes} : ("no".equals($F{PAT_PREGNANT}) ? $R{no} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="202" y="0" width="20" height="37" uuid="c8d9e0f1-2a3b-4c4d-5e6f-708192a3b4c5"/>
+				<reportElement x="51" y="0" width="20" height="37" uuid="c8d9e0f1-2a3b-4c4d-5e6f-708192a3b4c5"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ID}]]></textFieldExpression>
@@ -535,7 +537,7 @@ ORDER BY o.OPD_ID]]>
 				<reportElement x="299" y="0" width="37" height="37" uuid="a2b3c4d5-6e7f-4081-92a3-b4c5d6e7f809"/>
 				<box><pen lineWidth="0.25"/></box>
 				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
-				<textFieldExpression><![CDATA[($F{PAT_TELE} == null ? "" : $F{PAT_TELE}) + ($F{PAT_TELE} != null && $F{PAT_NEXT_KIN} != null ? " / " : "") + ($F{PAT_NEXT_KIN} == null ? "" : $F{PAT_NEXT_KIN})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PAT_BLAMA}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="336" y="0" width="100" height="37" uuid="b3c4d5e6-7f80-4192-a3b4-c5d6e7f80910"/>
