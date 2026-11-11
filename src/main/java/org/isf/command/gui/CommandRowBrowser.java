@@ -241,6 +241,7 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 		Supplier globalSupplier = (Supplier) globalSupplierCombo.getSelectedItem();
 
 		List<String> missingInfo = new ArrayList<>();
+		LocalDate today = TimeTools.getNow().toLocalDate();
 		for (int i = 0; i < pCommandRow.size(); i++) {
 			CommandRow row = pCommandRow.get(i);
 			if (row.getOrderQty() == null || row.getOrderQty() <= 0) {
@@ -249,6 +250,11 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 			if (row.getLot() == null) {
 				missingInfo.add(row.getMedicalDescription() + ": " +
 						MessageBundle.getMessage("angal.command.row.nolot.fmt.msg"));
+				continue;
+			}
+			if (row.getLot().getDueDate() == null || !row.getLot().getDueDate().toLocalDate().isAfter(today)) {
+				missingInfo.add(row.getMedicalDescription() + ": " +
+						MessageBundle.getMessage("angal.medicalstock.duedatemustbeaftertoday.msg"));
 				continue;
 			}
 			Supplier rowSupplier = row.getSupplier() != null ? row.getSupplier() : globalSupplier;
@@ -546,6 +552,10 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 
 					if (prepDate == null || expDate == null) {
 						MessageDialog.error(this, "angal.medicalstock.insertavalidpreparationdate.msg");
+						return;
+					}
+					if (!expDate.isAfter(TimeTools.getNow().toLocalDate())) {
+						MessageDialog.error(this, "angal.medicalstock.duedatemustbeaftertoday.msg");
 						return;
 					}
 					if (prepDate.isAfter(expDate)) {
