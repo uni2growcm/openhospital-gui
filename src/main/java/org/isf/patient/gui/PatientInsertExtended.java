@@ -2756,7 +2756,7 @@ public class PatientInsertExtended extends JDialog {
 			JPanel verticalPanel = new JPanel();
 			verticalPanel.setLayout(new BoxLayout(verticalPanel, BoxLayout.Y_AXIS));
 
-			if (GeneralData.PARTNERSMODULEENABLED) {
+			if (GeneralData.PARTNERSMODULEENABLED && !insert) {
 				verticalPanel.add(getJPartnerPanel());
 			}
 
@@ -2912,9 +2912,11 @@ public class PatientInsertExtended extends JDialog {
         hospitalPlansList.setEnabled(false);
         JScrollPane scrollPane = new JScrollPane(hospitalPlansList);
         scrollPane.setPreferredSize(new Dimension(180, 60));
-        billingPanel.add(centeredPanel(scrollPane));
+        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        billingPanel.add(scrollPane);
 
         hospitalPlansButton = new JButton(MessageBundle.getMessage("angal.patient.choosereductionplans.btn"));
+        hospitalPlansButton.setMargin(new Insets(8, 40, 8, 40));
         hospitalPlansButton.addActionListener(e -> {
             try {
                 List<ReductionPlan> current = java.util.Collections.list(hospitalPlansModel.elements());

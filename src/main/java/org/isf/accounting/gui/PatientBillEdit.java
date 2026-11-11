@@ -631,6 +631,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 if (thisBill.getBillPatient() != null && thisBill.getBillPatient().getCode() != 0) {
                     updatePrescriptionButtonVisibility();
                 }
+                loadApplicablePlans(thisBill.getBillPatient());
                 try {
                     billItems = billBrowserManager.bundleBillItems(thisBill.getId());
                     payItems = billBrowserManager.getPayments(thisBill.getId());
@@ -672,8 +673,23 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     }
 
     private Price getPriceFromBillItem(BillItems item) {
-        if (item == null || item.getPriceID() == null || item.getPriceID().isEmpty()) {
+        if (item == null) {
             return null;
+        }
+
+        String itemCode = item.getItemId();
+        if (itemCode == null || itemCode.isEmpty()) {
+            itemCode = item.getPriceID();
+        }
+        if (itemCode == null || itemCode.isEmpty()) {
+            return null;
+        }
+
+        if (item.getItemGroup() != null) {
+            Price price = getPrice(itemCode, item.getItemGroup());
+            if (price != null) {
+                return price;
+            }
         }
         return getPrice(item.getPriceID());
     }
@@ -936,7 +952,16 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		List<String> changedPriceList = new ArrayList<>();
 		for (BillItems item : billItems) {
 			if (item.isPrice()) {
-				Price p = getPrice(item.getPriceID());
+				String itemCode = item.getItemId();
+				if (itemCode == null || itemCode.isEmpty()) {
+					itemCode = item.getPriceID();
+				}
+				Price p = item.getPriceID() == null || item.getPriceID().isEmpty()
+						? null
+						: getPrice(item.getPriceID());
+				if (p == null && item.getItemGroup() != null && itemCode != null) {
+					p = getPrice(itemCode, item.getItemGroup());
+				}
 				if (p == null) {
 					notFoundPriceList.add(item.getItemDescription());
 					item.setPriceID("");
@@ -3060,6 +3085,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
 				item.setItemGroup(prc.getGroup());
 				item.setPriceID(prc.getItem());
+				item.setItemId(prc.getItem());
+				if (isPrice) {
+					Price originalPrice = getPrice(prc.getItem(), prc.getGroup());
+					item.setItemAmountBrut(originalPrice != null && originalPrice.getPrice() != null
+							? originalPrice.getPrice()
+							: amount);
+				}
 				billItems.add(item);
                 modified = true;
                 updateTotals();
