@@ -69,6 +69,7 @@ import org.isf.supplier.model.Supplier;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.JLabelRequired;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
@@ -500,7 +501,7 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 				LocalDateTime preparationDate = TimeTools.getNow().truncatedTo(ChronoUnit.MINUTES);
 				JTextField lotCodeTextField = new JTextField(15);
 				GoodDateChooser preparationDateChooser = new GoodDateChooser(preparationDate.toLocalDate());
-				GoodDateChooser expireDateChooser = new GoodDateChooser(preparationDate.toLocalDate().plusYears(1));
+				GoodDateChooser expireDateChooser = new GoodDateChooser(preparationDate.toLocalDate());
 
 				if (!isNewLot) {
 					lotCodeTextField.setText(existingLot.getCode());
@@ -531,11 +532,16 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 				});
 
 				JPanel panel = new JPanel(new GridLayout(4, 2, 5, 5));
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.lotnumberabb")));
+				String lotNumberLabel = MessageBundle.getMessage("angal.medicalstock.multiplecharging.lotnumberabb") + ':';
+				panel.add(GeneralData.AUTOMATICLOT_IN
+						? new JLabel(lotNumberLabel)
+						: new JLabelRequired(lotNumberLabel));
 				panel.add(lotCodeTextField);
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.preparationdate")));
+				panel.add(new JLabelRequired(
+						MessageBundle.getMessage("angal.medicalstock.multiplecharging.preparationdate") + ':'));
 				panel.add(preparationDateChooser);
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.expiringdate")));
+				panel.add(new JLabelRequired(
+						MessageBundle.getMessage("angal.medicalstock.multiplecharging.expiringdate") + ':'));
 				panel.add(expireDateChooser);
 				panel.add(new JLabel(MessageBundle.getMessage("angal.command.row.perrowsupplier.label")));
 				panel.add(rowSupplierCombo);
