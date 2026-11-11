@@ -324,7 +324,10 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 				}
 
 				try {
-					movStockInsertingManager.newMultipleChargingMovements(movements, null);
+					String batchRefNo = command.getRefNo() != null && !command.getRefNo().isBlank()
+							? command.getRefNo()
+							: "CMD-" + command.getId();
+					movStockInsertingManager.newMultipleChargingMovements(movements, batchRefNo);
 
 					for (int i = 0; i < movements.size(); i++) {
 						Movement m = movements.get(i);
