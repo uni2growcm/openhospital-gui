@@ -69,6 +69,7 @@ import org.isf.supplier.model.Supplier;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.JLabelRequired;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
@@ -241,6 +242,7 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 		Supplier globalSupplier = (Supplier) globalSupplierCombo.getSelectedItem();
 
 		List<String> missingInfo = new ArrayList<>();
+		LocalDate today = TimeTools.getNow().toLocalDate();
 		for (int i = 0; i < pCommandRow.size(); i++) {
 			CommandRow row = pCommandRow.get(i);
 			if (row.getOrderQty() == null || row.getOrderQty() <= 0) {
@@ -249,6 +251,11 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 			if (row.getLot() == null) {
 				missingInfo.add(row.getMedicalDescription() + ": " +
 						MessageBundle.getMessage("angal.command.row.nolot.fmt.msg"));
+				continue;
+			}
+			if (row.getLot().getDueDate() == null || !row.getLot().getDueDate().toLocalDate().isAfter(today)) {
+				missingInfo.add(row.getMedicalDescription() + ": " +
+						MessageBundle.getMessage("angal.medicalstock.duedatemustbeaftertoday.msg"));
 				continue;
 			}
 			Supplier rowSupplier = row.getSupplier() != null ? row.getSupplier() : globalSupplier;
@@ -494,7 +501,7 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 				LocalDateTime preparationDate = TimeTools.getNow().truncatedTo(ChronoUnit.MINUTES);
 				JTextField lotCodeTextField = new JTextField(15);
 				GoodDateChooser preparationDateChooser = new GoodDateChooser(preparationDate.toLocalDate());
-				GoodDateChooser expireDateChooser = new GoodDateChooser(preparationDate.toLocalDate().plusYears(1));
+				GoodDateChooser expireDateChooser = new GoodDateChooser(preparationDate.toLocalDate());
 
 				if (!isNewLot) {
 					lotCodeTextField.setText(existingLot.getCode());
@@ -525,11 +532,16 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 				});
 
 				JPanel panel = new JPanel(new GridLayout(4, 2, 5, 5));
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.lotnumberabb")));
+				String lotNumberLabel = MessageBundle.getMessage("angal.medicalstock.multiplecharging.lotnumberabb") + ':';
+				panel.add(GeneralData.AUTOMATICLOT_IN
+						? new JLabel(lotNumberLabel)
+						: new JLabelRequired(lotNumberLabel));
 				panel.add(lotCodeTextField);
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.preparationdate")));
+				panel.add(new JLabelRequired(
+						MessageBundle.getMessage("angal.medicalstock.multiplecharging.preparationdate") + ':'));
 				panel.add(preparationDateChooser);
-				panel.add(new JLabel(MessageBundle.getMessage("angal.medicalstock.multiplecharging.expiringdate")));
+				panel.add(new JLabelRequired(
+						MessageBundle.getMessage("angal.medicalstock.multiplecharging.expiringdate") + ':'));
 				panel.add(expireDateChooser);
 				panel.add(new JLabel(MessageBundle.getMessage("angal.command.row.perrowsupplier.label")));
 				panel.add(rowSupplierCombo);
@@ -546,6 +558,10 @@ public class CommandRowBrowser extends ModalJFrame implements CommandRowListener
 
 					if (prepDate == null || expDate == null) {
 						MessageDialog.error(this, "angal.medicalstock.insertavalidpreparationdate.msg");
+						return;
+					}
+					if (!expDate.isAfter(TimeTools.getNow().toLocalDate())) {
+						MessageDialog.error(this, "angal.medicalstock.duedatemustbeaftertoday.msg");
 						return;
 					}
 					if (prepDate.isAfter(expDate)) {
