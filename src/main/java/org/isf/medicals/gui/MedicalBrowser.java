@@ -1015,6 +1015,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		                                               boolean hasFocus, int row, int column) {
 			if ((column == 6 || column == 7) && value instanceof Number) {
 				value = decimalFormat.format(value);
+			} else if (value instanceof Boolean) {
+				value = (Boolean) value
+						? MessageBundle.getMessage("angal.medicals.outofstock.true")
+						: MessageBundle.getMessage("angal.medicals.outofstock.false");
 			}
 			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			((JLabel) cell).setOpaque(true);

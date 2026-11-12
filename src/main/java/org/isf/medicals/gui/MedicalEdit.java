@@ -186,9 +186,9 @@ public class MedicalEdit extends JDialog {
 		if (dataPanel == null) {
 			dataPanel = new JPanel(new SpringLayout());
 
-			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.type") + ':');
-			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.code.txt") + ':');
-			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.common.description.txt") + ':');
+			JLabel typeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.typestar") + ':');
+			JLabel codeLabel = new JLabel(MessageBundle.getMessage("angal.common.codestar") + ':');
+			JLabel descLabel = new JLabel(MessageBundle.getMessage("angal.medicals.descriptionstar") + ':');
 			JLabel pcsperpckLabel = new JLabel(MessageBundle.getMessage("angal.medicals.pcsperpck.txt") + ':');
 			JLabel criticLabel = new JLabel(MessageBundle.getMessage("angal.medicals.criticallevel.txt") + ':');
 			JLabel activeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.active.txt") + ':');
@@ -196,6 +196,7 @@ public class MedicalEdit extends JDialog {
 			JLabel shapeLabel = new JLabel(MessageBundle.getMessage("angal.medicals.shape.label") + ':');
 			JLabel dosingLabel = new JLabel(MessageBundle.getMessage("angal.medicals.dosing.label") + ':');
 			JLabel familyLabel = new JLabel(MessageBundle.getMessage("angal.exam.articlefamily.col") + ':');
+			JLabel requiredLabel = new JLabel(MessageBundle.getMessage("angal.common.requiredfields"));
 
 			dataPanel.add(typeLabel);
 			dataPanel.add(getTypeComboBox());
@@ -217,7 +218,9 @@ public class MedicalEdit extends JDialog {
 			dataPanel.add(getDosingTextField());
 			dataPanel.add(activeLabel);
 			dataPanel.add(getActiveField());
-			SpringUtilities.makeCompactGrid(dataPanel, 10, 2, 5, 5, 5, 5);
+			dataPanel.add(requiredLabel);
+			dataPanel.add(new JLabel(""));
+			SpringUtilities.makeCompactGrid(dataPanel, 11, 2, 5, 5, 5, 5);
 		}
 		return dataPanel;
 	}
