@@ -442,9 +442,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		if (MainMenu.checkUserGrants("btnpharmaceuticaldel")) {
 			buttonPanel.add(getJButtonDelete());
 		}
-		buttonPanel.add(getJButtonDetails());
 		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonOrderList());
+		}
+		buttonPanel.add(getJButtonDetails());
+		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonPharmaceuticalOrder());
 		}
 		buttonPanel.add(getJButtonReport());
