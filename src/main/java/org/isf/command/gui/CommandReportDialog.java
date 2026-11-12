@@ -113,7 +113,6 @@ public class CommandReportDialog extends JDialog {
 		c.insets = new Insets(6, 6, 6, 6);
 		c.fill = GridBagConstraints.HORIZONTAL;
 
-		// Row 0: Date interval
 		c.gridx = 0;
 		c.gridy = 0;
 		c.weightx = 0.0;
@@ -136,7 +135,6 @@ public class CommandReportDialog extends JDialog {
 		dateTo = new GoodDateChooser(LocalDate.now());
 		panel.add(dateTo, c);
 
-		// Row 1: Supplier
 		c.gridx = 0;
 		c.gridy = 1;
 		c.weightx = 0.0;

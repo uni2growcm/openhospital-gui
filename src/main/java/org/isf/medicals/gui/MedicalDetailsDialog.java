@@ -28,8 +28,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Window;
@@ -39,7 +37,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -103,7 +100,6 @@ public class MedicalDetailsDialog extends JDialog {
 	private final Medical medical;
 	private String currencyCod = "";
 
-	// Data
 	private List<Lot> allLots = new ArrayList<>();
 	private List<Lot> filteredLots = new ArrayList<>();
 	private List<WardStockRow> allWardStockRows = new ArrayList<>();
@@ -111,14 +107,12 @@ public class MedicalDetailsDialog extends JDialog {
 	private Map<String, Double> wardStockTotals = new HashMap<>();
 	private List<Ward> activeWards = new ArrayList<>();
 
-	// Aggregated quantities
 	private int totalMainStoreQty = 0;
 	private double totalWardsQty = 0.0;
 	private double totalOverallQty = 0.0;
 	private double totalExpiredQty = 0.0;
 	private double totalValidQty = 0.0;
 
-	// UI Components
 	private JPanel headerPanel;
 	private JPanel badgesContainer;
 	private JPanel wardsChipsPanel;
@@ -126,14 +120,12 @@ public class MedicalDetailsDialog extends JDialog {
 	private JLabel critLevelTitleLabel;
 	private JLabel critLevelValueLabel;
 
-	// Lots Tab UI
 	private JComboBox<String> lotStatusFilterCombo;
 	private JCheckBox lotHideZeroCheck;
 	private JTextField lotSearchField;
 	private JTable lotsTable;
 	private LotsTableModel lotsTableModel;
 
-	// Services Tab UI
 	private JComboBox<Object> wardFilterCombo;
 	private JCheckBox wardHideZeroCheck;
 	private JTable wardStockTable;
@@ -220,7 +212,6 @@ public class MedicalDetailsDialog extends JDialog {
 						}
 					}
 				} catch (OHServiceException ex) {
-					// Ward without records or error
 				}
 				wardStockTotals.put(ward.getCode(), wardTotal);
 			}
@@ -265,17 +256,14 @@ public class MedicalDetailsDialog extends JDialog {
 				new EmptyBorder(10, 12, 10, 12)
 		));
 
-		// 1. Header Panel
 		contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
 
-		// 2. Tabbed Pane
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setFont(new Font("SansSerif", Font.BOLD, 13));
 		tabbedPane.addTab("  " + MessageBundle.getMessage("angal.medicals.details.tab.lots") + "  ", createLotsTab());
 		tabbedPane.addTab("  " + MessageBundle.getMessage("angal.medicals.details.tab.wards") + "  ", createWardsTab());
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
 
-		// 3. Bottom Action Panel
 		contentPane.add(createBottomActionPanel(), BorderLayout.SOUTH);
 
 		setContentPane(contentPane);
@@ -290,7 +278,6 @@ public class MedicalDetailsDialog extends JDialog {
 					new EmptyBorder(10, 14, 10, 14)
 			));
 
-			// Meta Info
 			JPanel infoPanel = new JPanel(new GridLayout(2, 4, 15, 6));
 			infoPanel.setOpaque(false);
 
@@ -315,7 +302,6 @@ public class MedicalDetailsDialog extends JDialog {
 			updateCriticalLevelDisplay();
 			infoPanel.add(critPanel);
 
-			// Average cost / total
 			Double avgCostVal = null;
 			try {
 				Map<Integer, Double> avgCostMap = movStockInsertingManager
@@ -324,7 +310,6 @@ public class MedicalDetailsDialog extends JDialog {
 					avgCostVal = avgCostMap.get(medical.getCode());
 				}
 			} catch (Exception e) {
-				// Keep default zero if calculation fails
 			}
 			BigDecimal avgCost = avgCostVal != null ? BigDecimal.valueOf(avgCostVal) : BigDecimal.ZERO;
 			String avgCostStr = avgCost.setScale(2, RoundingMode.HALF_UP) + " " + currencyCod;
@@ -337,7 +322,6 @@ public class MedicalDetailsDialog extends JDialog {
 
 			headerPanel.add(infoPanel, BorderLayout.NORTH);
 
-			// Stats container (Badges row + Wards chips row)
 			JPanel statsContainer = new JPanel(new BorderLayout(0, 6));
 			statsContainer.setOpaque(false);
 
@@ -488,16 +472,11 @@ public class MedicalDetailsDialog extends JDialog {
 		return chip;
 	}
 
-	// ==========================================
-	// LOTS TAB
-	// ==========================================
-
 	private JPanel createLotsTab() {
 		JPanel panel = new JPanel(new BorderLayout(5, 8));
 		panel.setBackground(Color.WHITE);
 		panel.setBorder(new EmptyBorder(8, 8, 8, 8));
 
-		// Filter bar
 		JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 4));
 		filterBar.setOpaque(false);
 
@@ -537,7 +516,6 @@ public class MedicalDetailsDialog extends JDialog {
 
 		panel.add(filterBar, BorderLayout.NORTH);
 
-		// Table
 		lotsTableModel = new LotsTableModel();
 		lotsTable = new JTable(lotsTableModel);
 		lotsTable.setRowHeight(30);
