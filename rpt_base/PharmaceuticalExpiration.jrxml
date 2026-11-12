@@ -28,10 +28,14 @@ JOIN OH_MEDICALDSR ON MMV_MDSR_ID = MDSR_ID
 JOIN OH_MEDICALDSRLOT ON MMV_LT_ID_A = LT_ID_A
 JOIN OH_MEDICALDSRSTOCKMOVTYPE ON MMV_MMVT_ID_A = MMVT_ID_A
 JOIN OH_MEDICALDSRTYPE ON MDSR_MDSRT_ID_A = MDSRT_ID_A
-WHERE MMV_LT_ID_A IN (
-SELECT LT_ID_A
-FROM OH_MEDICALDSRLOT
+WHERE MMV_MDSR_ID IN (
+SELECT MMV_MDSR_ID
+FROM OH_MEDICALDSRSTOCKMOV
+JOIN OH_MEDICALDSRLOT ON MMV_LT_ID_A = LT_ID_A
+JOIN OH_MEDICALDSRSTOCKMOVTYPE ON MMV_MMVT_ID_A = MMVT_ID_A
 WHERE DATE(LT_DUE_DATE) between DATE($P{fromdate}) and DATE($P{todate})
+GROUP BY MMV_MDSR_ID, MMV_LT_ID_A
+HAVING SUM(CASE WHEN MMVT_TYPE LIKE '+%' then MMV_QTY else -MMV_QTY end) > 0
 )
 GROUP BY MMV_MDSR_ID, MMV_LT_ID_A
 ORDER BY MDSRT_DESC, MDSR_DESC, LT_DUE_DATE ASC
@@ -238,8 +242,14 @@ WHERE QTY > 0]]>
 	</columnHeader>
 	<detail>
 		<band height="17" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Opaque" x="0" y="0" width="5" height="17" forecolor="#FF0000" backcolor="#FF0000">
+					<printWhenExpression><![CDATA[$F{LT_DUE_DATE} != null && $F{LT_DUE_DATE}.toLocalDateTime().toLocalDate().isBefore(java.time.LocalDate.now())]]></printWhenExpression>
+				</reportElement>
+				<graphicElement><pen lineWidth="0.0"/></graphicElement>
+			</rectangle>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="71" y="0" width="139" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="7c48c14b-6ba5-4da4-aea6-6fc756677a39"/>
+				<reportElement key="textField" x="76" y="0" width="134" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="7c48c14b-6ba5-4da4-aea6-6fc756677a39"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -253,7 +263,7 @@ WHERE QTY > 0]]>
 				<textFieldExpression><![CDATA["[" + $F{MMV_LT_ID_A}.toUpperCase() + "]"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText" positionType="Float" x="0" y="0" width="67" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="38ae8abd-c8a5-4acb-866b-b1c291eea007"/>
+				<reportElement key="staticText" positionType="Float" x="6" y="0" width="61" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="38ae8abd-c8a5-4acb-866b-b1c291eea007"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
