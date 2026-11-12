@@ -142,12 +142,6 @@ public class WardPharmacy extends ModalJFrame implements
 		loadPageDrugs(0);
 	}
 
-	/**
-	 * (Re)loads the ward drugs used by the "new movement" dialog.
-	 * The list is reset to {@code null} after each movement to free memory, so it
-	 * must be reloaded before being used again (otherwise WardPharmacyNew throws a
-	 * NullPointerException).
-	 */
 	private void reloadWardDrugs() {
 		if (wardSelected == null) {
 			wardDrugs = new ArrayList<>();
