@@ -482,6 +482,18 @@ public class PatientInsertExtended extends JDialog {
 		}
 	}
 
+	private String buildPhoneNumber(String phoneCode, String localNumber) {
+		String normalizedCode = "+".equals(phoneCode) ? "" : phoneCode;
+		String normalizedLocalNumber = localNumber.replace(" ", "");
+		if (normalizedLocalNumber.isEmpty()) {
+			return "";
+		}
+		if (normalizedCode.isEmpty()) {
+			return normalizedLocalNumber;
+		}
+		return normalizedCode + " " + normalizedLocalNumber;
+	}
+
 	private boolean isKnownPhoneCode(String candidate) {
 		if (jCountryComboBox == null) {
 			return false;
@@ -814,11 +826,6 @@ public class PatientInsertExtended extends JDialog {
 				String phoneCode = jPhoneCodeTextField.getText().trim();
 				String localNumber = jLocalNumberTextField.getText().trim();
 
-				if (phoneCode.isEmpty() || phoneCode.equals("+")) {
-					MessageDialog.warning(this, MessageBundle.getMessage("angal.patient.phone.code.required.msg"));
-					return;
-				}
-
 				if (localNumber.isEmpty()) {
 					int answer = MessageDialog.yesNo(this,
 							MessageBundle.getMessage("angal.patient.phone.local.empty.msg"));
@@ -875,8 +882,7 @@ public class PatientInsertExtended extends JDialog {
 						patient.setCity(jCityTextField.getText().trim());
 						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
-						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
-						patient.setTelephone(fullPhoneNumber);
+						patient.setTelephone(buildPhoneNumber(phoneCode, localNumber));
 						patient.setMotherName(jMotherNameTextField.getText().trim());
 						if (jMotherAlive.isSelected()) {
 							patient.setMother('A');
@@ -1016,8 +1022,7 @@ public class PatientInsertExtended extends JDialog {
 					patient.setCity(jCityTextField.getText().trim());
 					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
-					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
-					patient.setTelephone(fullPhoneNumber);
+					patient.setTelephone(buildPhoneNumber(phoneCode, localNumber));
 					patient.setMotherName(jMotherNameTextField.getText().trim());
 
 					if (jMotherAlive.isSelected()) {
