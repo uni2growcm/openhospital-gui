@@ -51,7 +51,7 @@ GROUP BY MMV_MDSR_ID, MMV_LT_ID_A
 HAVING SUM(CASE WHEN MMVT_TYPE LIKE '+%' then MMV_QTY else -MMV_QTY end) > 0
 )
 GROUP BY MMV_MDSR_ID, MMV_LT_ID_A
-ORDER BY MDSRT_DESC, MDSR_DESC, LT_DUE_DATE ASC
+ORDER BY MDSRT_DESC, MDSR_DESC, MMV_MDSR_ID, LT_DUE_DATE ASC
 ) AS EXPIRING_MEDICALS
 WHERE QTY > 0]]>
 	</queryString>
@@ -84,6 +84,18 @@ WHERE QTY > 0]]>
 		<property name="com.jaspersoft.studio.field.name" value="QTY"/>
 		<property name="com.jaspersoft.studio.field.label" value="QTY"/>
 	</field>
+	<group name="MEDICAL" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="86">
+		<groupExpression><![CDATA[$F{MMV_MDSR_ID}]]></groupExpression>
+		<groupHeader>
+			<band height="58" splitType="Prevent">
+				<textField isBlankWhenNull="true"><reportElement x="0" y="0" width="530" height="20" forecolor="#1E3A8A"/><textElement verticalAlignment="Middle"><font fontName="SansSerif" size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression></textField>
+				<textField isBlankWhenNull="true"><reportElement x="530" y="0" width="252" height="20" forecolor="#1E3A8A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="9" isItalic="true"/></textElement><textFieldExpression><![CDATA[$F{MDSRT_DESC}]]></textFieldExpression></textField>
+				<textField><reportElement style="ExpirationTableHeader" x="0" y="26" width="350" height="32"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{LotId}]]></textFieldExpression></textField>
+				<textField><reportElement style="ExpirationTableHeader" x="350" y="26" width="180" height="32"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression></textField>
+				<textField><reportElement style="ExpirationTableHeader" x="530" y="26" width="252" height="32"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{ExpDate}]]></textFieldExpression></textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -109,21 +121,13 @@ WHERE QTY > 0]]>
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="34" splitType="Stretch">
-			<textField><reportElement style="ExpirationTableHeader" x="0" y="0" width="145" height="34"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{MedicalType}]]></textFieldExpression></textField>
-			<textField><reportElement style="ExpirationTableHeader" x="145" y="0" width="225" height="34"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{Medical}]]></textFieldExpression></textField>
-			<textField><reportElement style="ExpirationTableHeader" x="370" y="0" width="170" height="34"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{LotId}]]></textFieldExpression></textField>
-			<textField><reportElement style="ExpirationTableHeader" x="540" y="0" width="100" height="34"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression></textField>
-			<textField><reportElement style="ExpirationTableHeader" x="640" y="0" width="142" height="34"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$R{ExpDate}]]></textFieldExpression></textField>
-		</band>
+		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
 		<band height="28" splitType="Stretch">
-			<textField isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="0" y="0" width="145" height="28"/><box leftPadding="4" rightPadding="4"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{MDSRT_DESC}]]></textFieldExpression></textField>
-			<textField isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="145" y="0" width="225" height="28"/><box leftPadding="4" rightPadding="4"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression></textField>
-			<textField isBlankWhenNull="true"><reportElement style="ExpiredLotCode" x="370" y="0" width="170" height="28"/><box leftPadding="4" rightPadding="4"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{MMV_LT_ID_A}.toUpperCase()]]></textFieldExpression></textField>
-			<textField pattern="#,##0.##" isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="540" y="0" width="100" height="28"/><textElement textAlignment="Right" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{QTY}]]></textFieldExpression></textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="640" y="0" width="142" height="28"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{LT_DUE_DATE}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement style="ExpiredLotCode" x="0" y="0" width="350" height="28"/><box leftPadding="4" rightPadding="4"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{MMV_LT_ID_A}.toUpperCase()]]></textFieldExpression></textField>
+			<textField pattern="#,##0.##" isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="350" y="0" width="180" height="28"/><textElement textAlignment="Right" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{QTY}]]></textFieldExpression></textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement style="ExpirationTableCell" x="530" y="0" width="252" height="28"/><textElement textAlignment="Center" verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{LT_DUE_DATE}]]></textFieldExpression></textField>
 		</band>
 	</detail>
 	<columnFooter>
