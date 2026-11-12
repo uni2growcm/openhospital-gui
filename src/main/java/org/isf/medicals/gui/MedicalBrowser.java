@@ -854,6 +854,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		options.add(MessageBundle.getMessage("angal.medicals.nexttwomonths"));
 		options.add(MessageBundle.getMessage("angal.medicals.nextthreemonths"));
 		options.add(MessageBundle.getMessage("angal.medicals.othermonth"));
+		options.add(MessageBundle.getMessage("angal.medicals.expiredanyperiod"));
 
 		Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png");
 		String option = (String) MessageDialog.inputDialog(this, icon, options.toArray(), options.get(0), "angal.medicals.pleaseselectperiod.msg");
@@ -899,6 +900,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				LocalDate end = selectedMonth.with(TemporalAdjusters.lastDayOfMonth());
 				from = format(start.atStartOfDay());
 				to = format(end.atTime(LocalTime.MAX));
+				break;
+			case 6:
+				from = format(LocalDate.of(1000, 1, 1).atStartOfDay());
+				to = format(today.minusDays(1).atTime(LocalTime.MAX));
 				break;
 		}
 		new GenericReportFromDateToDate(from, to, "rpt_base", "PharmaceuticalExpiration", MessageBundle.getMessage("angal.medicals.expiringreport"), false);
