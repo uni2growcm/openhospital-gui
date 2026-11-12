@@ -967,7 +967,9 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-						patient.setBlama(jBlamaTextField.getText().trim());
+						if (GeneralData.BLAMAFIELDENABLED) {
+							patient.setBlama(jBlamaTextField.getText().trim());
+						}
 						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 						if (selectedCountry != null) {
@@ -1100,7 +1102,9 @@ public class PatientInsertExtended extends JDialog {
 					}
 
 					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-					patient.setBlama(jBlamaTextField.getText().trim());
+					if (GeneralData.BLAMAFIELDENABLED) {
+						patient.setBlama(jBlamaTextField.getText().trim());
+					}
 					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 
 					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
@@ -1678,7 +1682,9 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJParentsResidencePanel(), null);
-			jAnagraphPanel.add(getJBlamaPanel(), null);
+			if (GeneralData.BLAMAFIELDENABLED) {
+				jAnagraphPanel.add(getJBlamaPanel(), null);
+			}
 			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
 			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
