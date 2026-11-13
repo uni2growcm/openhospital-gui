@@ -205,20 +205,17 @@ public class TuberculosisTreatmentEdit extends JDialog
         } else {
             setTitle(MessageBundle.getMessage("angal.tb.treatment.edittitle"));
         }
-        setMinimumSize(new Dimension(700, 600));
-        setPreferredSize(new Dimension(800, 650));
+        setMinimumSize(new Dimension(700, 480));
+        setPreferredSize(new Dimension(800, 520));
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(getPatientPanel());
+        add(getPatientPanel(), BorderLayout.NORTH);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.generaltab"), getGeneralPanel());
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.hivtab"), getHivPanel());
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.outcometab"), getOutcomePanel());
-        mainPanel.add(tabbedPane);
+        add(tabbedPane, BorderLayout.CENTER);
 
-        add(mainPanel, BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
 
@@ -357,7 +354,7 @@ public class TuberculosisTreatmentEdit extends JDialog
         gbc.gridx = 1;
         gbc.gridwidth = 2;
         patientSearchField = new JTextField(30);
-        patientSearchField.setPreferredSize(new Dimension(250, 20));
+        patientSearchField.setPreferredSize(new Dimension(250, 25));
         patientSearchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -515,8 +512,16 @@ public class TuberculosisTreatmentEdit extends JDialog
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0.0;
-diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabetes"));
-            panel.add(diabetesCheck, gbc);
+        diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabetes"));
+        panel.add(diabetesCheck, gbc);
+
+        GridBagConstraints filler = new GridBagConstraints();
+        filler.gridx = 0;
+        filler.gridy = ++row;
+        filler.gridwidth = 2;
+        filler.weighty = 1.0;
+        filler.fill = GridBagConstraints.VERTICAL;
+        panel.add(new JPanel(), filler);
 
         return panel;
     }
@@ -555,6 +560,14 @@ diabetesCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.treatment.diabe
         hivTestDateField = new GoodDateChooser((LocalDate) null);
         hivTestDateField.setMaxDate(LocalDate.now());
         panel.add(hivTestDateField, gbc);
+
+        GridBagConstraints filler = new GridBagConstraints();
+        filler.gridx = 0;
+        filler.gridy = ++row;
+        filler.gridwidth = 2;
+        filler.weighty = 1.0;
+        filler.fill = GridBagConstraints.VERTICAL;
+        panel.add(new JPanel(), filler);
 
         return panel;
     }
