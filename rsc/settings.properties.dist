@@ -57,6 +57,13 @@ RECEIPTPRINTER=yes
 STOCKMVTONBILLSAVE=yes
 ALLOWBILLGUARANTOR=no
 ENABLEMEDICALREFUND=no
+# reduction plans collision (same item covered by several plans of a patient)
+# yes = apply the highest reduction rate, no = apply the lowest one
+REDUCTIONHIGHESTRATEFIRST=yes
+# on equal rates: yes = prefer partner plans, no = prefer hospital plans
+REDUCTIONPARTNERFIRST=yes
+# on equal rates between partner plans: yes = most priority (priority 1), no = least priority
+REDUCTIONPARTNERPRIORITYFIRST=yes
 
 # pharmacy
 AUTOMATICLOT_IN=no
@@ -74,7 +81,7 @@ PHARMACEUTICALSTOCKLOT=PharmaceuticalStock_ver5
 PHARMACEUTICALAMC=PharmaceuticalAMC_ver2
 REFERENCE_AUTOMATIC = yes
 REFERENCE_PREFIX_CHARGE =REF+Charge
-REFERENCE_PREFIX_DISCHARGE = REF-Dischrge
+REFERENCE_PREFIX_DISCHARGE = REF-Discharge
 REFERENCE_PREFIX_INVENTORY = invt
 REFERENCE_TIMESTAMP_FORMAT = ddMMyyyy'T'HHmmss
 COMMANDMODULEENABLED=yes
