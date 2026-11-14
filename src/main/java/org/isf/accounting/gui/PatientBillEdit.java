@@ -155,7 +155,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 	@Override
 	public void patientSelected(Patient patient) {
-		setPatientSelected(patient);
 		List<Bill> patientPendingBills = new ArrayList<>();
 		Admission patientAdmission = admissionBrowserManager.getCurrentAdmission(patient);
 
@@ -171,6 +170,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			thisBill.setIsPatient(true);
 			thisBill.setPatName(patient.getName());
 			thisBill.setAdmission(patientAdmission);
+			setPatientSelected(patient);
 			modified = true;
 		} else {
 			if (patientPendingBills.size() == 1) {
@@ -182,12 +182,17 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						thisBill.setIsPatient(true);
 						thisBill.setPatName(patient.getName());
 						thisBill.setAdmission(patientAdmission);
+						setPatientSelected(patient);
 						modified = true;
-					} else {
+					} else if (response == JOptionPane.NO_OPTION) {
+						setPatientSelected(patient);
 						initData(patientPendingBills.get(0), false);
+					} else {
+						return;
 					}
 				} else {
 					MessageDialog.error(null, "angal.newbill.thispatienthasapendingbill.msg");
+					setPatientSelected(patient);
 					initData(patientPendingBills.get(0), false);
 				}
 			} else {
@@ -199,16 +204,16 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						thisBill.setIsPatient(true);
 						thisBill.setPatName(patient.getName());
 						thisBill.setAdmission(patientAdmission);
+						setPatientSelected(patient);
 						modified = true;
 					} else if (response == JOptionPane.NO_OPTION) {
 						Bill selectedBill = selectPendingBill(patientPendingBills);
 						if (selectedBill != null) {
+							setPatientSelected(patient);
 							initData(selectedBill, false);
 							/* ****** Check if it is same month ************** */
 							// checkIfSameMonth();
 							/* *********************************************** */
-						} else {
-							dispose();
 						}
 					} else {
 						return;
@@ -216,9 +221,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 				} else {
 					Bill selectedBill = selectPendingBill(patientPendingBills);
 					if (selectedBill != null) {
+						setPatientSelected(patient);
 						initData(selectedBill, false);
-					} else {
-						dispose();
 					}
 				}
 			}
@@ -1461,14 +1465,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
                     dialog.setVisible(true);
 
-                    selectedPatient = dialog.getPatient();
+                    Patient patient = dialog.getPatient();
 
-                    if (selectedPatient != null) {
-                        jTextFieldPatient.setText(selectedPatient.getName());
-                        patientSelected(selectedPatient);
-                        thisBill.setBillPatient(selectedPatient);
-                        if (jButtonTrashPatient != null) {
-                            jButtonTrashPatient.setEnabled(true);
+                    if (patient != null) {
+                        patientSelected(patient);
+                        if (!thisBill.isPatient()) {
+                            jTextFieldPatient.setText("");
                         }
                     }
 
