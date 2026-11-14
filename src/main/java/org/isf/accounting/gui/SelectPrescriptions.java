@@ -136,7 +136,7 @@ public class SelectPrescriptions extends JDialog {
             for (TherapyRow therapy : allTherapies) {
                 double totalPrescribed = calculateTotalQuantity(
                         therapy.getStartDate(), therapy.getEndDate(),
-                        therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getQty()
+                        therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getFreqInHour(), therapy.getQty()
                 );
                 double alreadyBought = therapy.getQtyBougth() != null ? therapy.getQtyBougth() : 0.0;
                 double remaining = totalPrescribed - alreadyBought;
@@ -156,10 +156,19 @@ public class SelectPrescriptions extends JDialog {
 
     private double calculateTotalQuantity(LocalDateTime startDate, LocalDateTime endDate,
                                           int freqInPeriod, int freqInDay, double qty) {
+        return calculateTotalQuantity(startDate, endDate, freqInPeriod, freqInDay, 0, qty);
+    }
+
+    private double calculateTotalQuantity(LocalDateTime startDate, LocalDateTime endDate,
+                                          int freqInPeriod, int freqInDay, int freqInHour, double qty) {
+        if (therapyManager != null) {
+            return therapyManager.calculateTotalPrescribedQuantity(startDate, endDate, freqInPeriod, freqInDay, freqInHour, qty);
+        }
         long diffInMillis = java.time.Duration.between(startDate, endDate).toMillis();
         long totalDays = (diffInMillis / (1000 * 60 * 60 * 24)) + 1;
         long effectiveDays = (totalDays + freqInPeriod - 1) / freqInPeriod;
-        return effectiveDays * freqInDay * qty;
+        double dosesPerDay = (freqInHour > 0) ? (24.0 / freqInHour) : freqInDay;
+        return effectiveDays * dosesPerDay * qty;
     }
 
     private void loadLaboratories() {
@@ -508,7 +517,7 @@ public class SelectPrescriptions extends JDialog {
 
             double totalQty = calculateTotalQuantity(
                     therapy.getStartDate(), therapy.getEndDate(),
-                    therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getQty()
+                    therapy.getFreqInPeriod(), therapy.getFreqInDay(), therapy.getFreqInHour(), therapy.getQty()
             );
             double alreadyBought = therapy.getQtyBougth() != null ? therapy.getQtyBougth() : 0.0;
             int remaining = (int) Math.ceil(totalQty - alreadyBought);
