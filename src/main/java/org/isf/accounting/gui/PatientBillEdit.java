@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -154,7 +155,6 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
 	@Override
 	public void patientSelected(Patient patient) {
-		setPatientSelected(patient);
 		List<Bill> patientPendingBills = new ArrayList<>();
 		Admission patientAdmission = admissionBrowserManager.getCurrentAdmission(patient);
 
@@ -170,6 +170,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			thisBill.setIsPatient(true);
 			thisBill.setPatName(patient.getName());
 			thisBill.setAdmission(patientAdmission);
+			setPatientSelected(patient);
 			modified = true;
 		} else {
 			if (patientPendingBills.size() == 1) {
@@ -181,12 +182,17 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						thisBill.setIsPatient(true);
 						thisBill.setPatName(patient.getName());
 						thisBill.setAdmission(patientAdmission);
+						setPatientSelected(patient);
 						modified = true;
-					} else {
+					} else if (response == JOptionPane.NO_OPTION) {
+						setPatientSelected(patient);
 						initData(patientPendingBills.get(0), false);
+					} else {
+						return;
 					}
 				} else {
 					MessageDialog.error(null, "angal.newbill.thispatienthasapendingbill.msg");
+					setPatientSelected(patient);
 					initData(patientPendingBills.get(0), false);
 				}
 			} else {
@@ -198,30 +204,80 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						thisBill.setIsPatient(true);
 						thisBill.setPatName(patient.getName());
 						thisBill.setAdmission(patientAdmission);
+						setPatientSelected(patient);
 						modified = true;
 					} else if (response == JOptionPane.NO_OPTION) {
-						// something must be proposed
-						int resp = MessageDialog.yesNo(this,
-								"angal.newbill.thispatienthasmorethanonependingbilldoyouwanttoopenthelastpendingbill.msg");
-						if (resp == JOptionPane.YES_OPTION) {
-							initData(patientPendingBills.get(0), false);
+						Bill selectedBill = selectPendingBill(patientPendingBills);
+						if (selectedBill != null) {
+							setPatientSelected(patient);
+							initData(selectedBill, false);
 							/* ****** Check if it is same month ************** */
 							// checkIfSameMonth();
 							/* *********************************************** */
-						} else {
-							dispose();
 						}
 					} else {
 						return;
 					}
 				} else {
-					MessageDialog.error(null, "angal.newbill.multipleopenedbillsnotallowedpleasesolve.msg");
-					dispose();
+					Bill selectedBill = selectPendingBill(patientPendingBills);
+					if (selectedBill != null) {
+						setPatientSelected(patient);
+						initData(selectedBill, false);
+					}
 				}
 			}
 		}
 		updateGUI();
 		checkBill();
+	}
+
+	private Bill selectPendingBill(List<Bill> pendingBills) {
+		String[] columnNames = {
+				MessageBundle.getMessage("angal.common.date.txt"),
+				MessageBundle.getMessage("angal.common.id.txt"),
+				MessageBundle.getMessage("angal.common.amount.txt"),
+				MessageBundle.getMessage("angal.billbrowser.balance.col"),
+				MessageBundle.getMessage("angal.billbrowser.user.txt")
+		};
+		Object[][] billRows = pendingBills.stream()
+				.map(bill -> new Object[] {
+						bill.getDate().format(DATE_TIME_FORMATTER),
+						bill.getId(),
+						bill.getAmount(),
+						bill.getBalance(),
+						bill.getUser()
+				})
+				.toArray(Object[][]::new);
+		JTable billTable = new JTable(new DefaultTableModel(billRows, columnNames) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		});
+		billTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		billTable.setRowSelectionInterval(0, 0);
+		int[] preferredWidths = { 140, 70, 110, 110, 160 };
+		for (int column = 0; column < preferredWidths.length; column++) {
+			billTable.getColumnModel().getColumn(column).setPreferredWidth(preferredWidths[column]);
+		}
+
+		JScrollPane billScrollPane = new JScrollPane(billTable);
+		billScrollPane.setPreferredSize(new Dimension(750, 300));
+		JPanel selectionPanel = new JPanel(new BorderLayout(0, 5));
+		selectionPanel.add(new JLabel(MessageBundle.getMessage("angal.billbrowser.pleaseselectabill.msg")), BorderLayout.NORTH);
+		selectionPanel.add(billScrollPane, BorderLayout.CENTER);
+		int response = JOptionPane.showConfirmDialog(
+				this,
+				selectionPanel,
+				MessageBundle.getMessage("angal.billbrowser.bills.title"),
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
+		if (response != JOptionPane.OK_OPTION || billTable.getSelectedRow() < 0) {
+			return null;
+		}
+		return pendingBills.get(billTable.convertRowIndexToModel(billTable.getSelectedRow()));
 	}
 
     @Override
@@ -1409,14 +1465,12 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 
                     dialog.setVisible(true);
 
-                    selectedPatient = dialog.getPatient();
+                    Patient patient = dialog.getPatient();
 
-                    if (selectedPatient != null) {
-                        jTextFieldPatient.setText(selectedPatient.getName());
-                        patientSelected(selectedPatient);
-                        thisBill.setBillPatient(selectedPatient);
-                        if (jButtonTrashPatient != null) {
-                            jButtonTrashPatient.setEnabled(true);
+                    if (patient != null) {
+                        patientSelected(patient);
+                        if (!thisBill.isPatient()) {
+                            jTextFieldPatient.setText("");
                         }
                     }
 
