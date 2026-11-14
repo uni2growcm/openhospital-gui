@@ -3017,7 +3017,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jNumberOfChildrenLabel = new JLabel(MessageBundle.getMessage("angal.patient.numberofchildren"));
 			jNumberOfChildrenPanel = new JPanel();
 			jNumberOfChildrenPanel.setLayout(new BorderLayout());
-			jNumberOfChildrenPanel.add(jNumberOfChildrenLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jNumberOfChildrenLabel);
+			jNumberOfChildrenPanel.add(labelPanel, BorderLayout.WEST);
 			jNumberOfChildrenPanel.add(getJNumberOfChildrenFieldPanel(), BorderLayout.EAST);
 		}
 		return jNumberOfChildrenPanel;
@@ -3079,7 +3081,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
 			jParentsResidencePanel = new JPanel();
 			jParentsResidencePanel.setLayout(new BorderLayout());
-			jParentsResidencePanel.add(jParentsResidenceLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jParentsResidenceLabel);
+			jParentsResidencePanel.add(labelPanel, BorderLayout.WEST);
 			jParentsResidencePanel.add(getJParentsResidenceFieldPanel(), BorderLayout.EAST);
 		}
 		return jParentsResidencePanel;
@@ -3125,7 +3129,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jTransportMeansLabel = new JLabel(MessageBundle.getMessage("angal.patient.transportmeans"));
 			jTransportMeansPanel = new JPanel();
 			jTransportMeansPanel.setLayout(new BorderLayout());
-			jTransportMeansPanel.add(jTransportMeansLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jTransportMeansLabel);
+			jTransportMeansPanel.add(labelPanel, BorderLayout.WEST);
 			jTransportMeansPanel.add(getJTransportMeansFieldPanel(), BorderLayout.EAST);
 		}
 		return jTransportMeansPanel;
