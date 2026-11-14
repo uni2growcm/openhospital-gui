@@ -32,6 +32,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
@@ -117,6 +119,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private long TOTAL_PAGES = 0;
 	private double totalStockValue = 0.0;
 	protected AbstractButton searchBoxButton;
+	private JButton buttonDetails;
 
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
@@ -409,6 +412,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				}
 			});
 
+			table.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2 && table.getSelectedRow() >= 0) {
+						openMedicalDetails();
+					}
+				}
+			});
+
 			updatePageCombo();
 		}
 		return table;
@@ -432,6 +444,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonOrderList());
+		}
+		buttonPanel.add(getJButtonDetails());
+		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonPharmaceuticalOrder());
 		}
 		buttonPanel.add(getJButtonReport());
@@ -806,6 +821,26 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			newrecord.setVisible(true);
 		});
 		return buttonNew;
+	}
+
+	private JButton getJButtonDetails() {
+		if (buttonDetails == null) {
+			buttonDetails = new JButton(MessageBundle.getMessage("angal.medicals.details.btn"));
+			buttonDetails.setMnemonic(MessageBundle.getMnemonic("angal.medicals.details.btn.key"));
+			buttonDetails.addActionListener(actionEvent -> openMedicalDetails());
+		}
+		return buttonDetails;
+	}
+
+	private void openMedicalDetails() {
+		if (table.getSelectedRow() < 0) {
+			MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+		} else {
+			selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
+			medical = (Medical) model.getValueAt(selectedrow, -1);
+			MedicalDetailsDialog detailsDialog = new MedicalDetailsDialog(this, medical);
+			detailsDialog.setVisible(true);
+		}
 	}
 
 	private JComboBox<String> getComboBoxActive() {

@@ -76,6 +76,7 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 	private JButton jEditButton;
 	private JButton jDeleteButton;
 	private JButton jDetailsButton;
+	private JButton jReportButton;
 	private JButton jCloseButton;
 	private JScrollPane jScrollPane;
 	private JTable table;
@@ -276,6 +277,7 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 			jButtonPanel.add(getJEditButton());
 			jButtonPanel.add(getJDeleteButton());
 			jButtonPanel.add(getJDetailsButton());
+			jButtonPanel.add(getJReportButton());
 			jButtonPanel.add(getJCloseButton());
 		}
 		return jButtonPanel;
@@ -352,6 +354,18 @@ public class CommandBrowser extends ModalJFrame implements CommandListener {
 			});
 		}
 		return jDetailsButton;
+	}
+
+	private JButton getJReportButton() {
+		if (jReportButton == null) {
+			jReportButton = new JButton(MessageBundle.getMessage("angal.command.report.btn"));
+			jReportButton.setMnemonic(MessageBundle.getMnemonic("angal.command.report.btn.key"));
+			jReportButton.addActionListener(actionEvent -> {
+				CommandReportDialog reportDialog = new CommandReportDialog(myFrame);
+				reportDialog.setVisible(true);
+			});
+		}
+		return jReportButton;
 	}
 
 	private JButton getJCloseButton() {
