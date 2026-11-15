@@ -461,28 +461,49 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			buttonDelete = new JButton(MessageBundle.getMessage("angal.common.delete.btn"));
 			buttonDelete.setMnemonic(MessageBundle.getMnemonic("angal.common.delete.btn.key"));
 			buttonDelete.addActionListener(actionEvent -> {
-				if (jTable.getSelectedRow() < 0) {
+				int[] selectedRows = jTable.getSelectedRows();
+				if (selectedRows.length == 0) {
 					MessageDialog.error(null, "angal.common.pleaseselectarow.msg");
-				} else {
-					Laboratory lab = (Laboratory) model.getValueAt(jTable.getSelectedRow(), -1);
-					int answer = MessageDialog.yesNo(this, "angal.lab.deletelabexam.fmt.msg",
+					return;
+				}
+
+				List<Laboratory> labsToDelete = new ArrayList<>();
+				for (int row : selectedRows) {
+					int modelRow = jTable.convertRowIndexToModel(row);
+					Laboratory lab = (Laboratory) model.getValueAt(modelRow, -1);
+					if (lab != null) {
+						labsToDelete.add(lab);
+					}
+				}
+				if (labsToDelete.isEmpty()) {
+					return;
+				}
+
+				int answer;
+				if (labsToDelete.size() == 1) {
+					Laboratory lab = labsToDelete.get(0);
+					answer = MessageDialog.yesNo(this, "angal.lab.deletelabexam.fmt.msg",
 							lab.getCreatedDate().format(DATE_TIME_FORMATTER),
 							lab.getLabDate().format(DATE_TIME_FORMATTER),
 							lab.getExam(),
 							lab.getPatName(),
 							lab.getResult());
+				} else {
+					answer = MessageDialog.yesNo(this, "angal.lab.deletelabexams.fmt.msg", labsToDelete.size());
+				}
 
-					if (answer == JOptionPane.YES_OPTION) {
+				if (answer == JOptionPane.YES_OPTION) {
+					for (Laboratory lab : labsToDelete) {
 						try {
 							labManager.deleteLaboratory(lab);
-							if (pLabs.size() == 1 && currentPage > 0) {
-								currentPage--;
-							}
-							loadCurrentPage();
 						} catch (OHServiceException e) {
 							OHServiceExceptionUtil.showMessages(e);
 						}
 					}
+					if (pLabs != null && pLabs.size() <= labsToDelete.size() && currentPage > 0) {
+						currentPage--;
+					}
+					loadCurrentPage();
 				}
 			});
 		}
@@ -542,6 +563,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				updateTotals();
 			}
 			jTable = new JTable(model);
+			jTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			boolean[] resizable = withPaid ? columnsResizableWithPaid : columnsResizable;
 			int[] widths = withPaid ? pColumnWidthWithPaid : pColumnWidth;
 			int[] maxWidths = withPaid ? maxWidthWithPaid : maxWidth;

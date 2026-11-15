@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.EventListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -184,7 +185,31 @@ public class ExamRowEdit extends JDialog {
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
 
-				examRow.setDescription(descriptionTextField.getText().toUpperCase());
+				String description = descriptionTextField.getText().trim().toUpperCase();
+				if (description.isEmpty()) {
+					MessageDialog.error(this, "angal.common.pleaseinsertavaliddescription.msg");
+					return;
+				}
+
+				// prevent creating the same result twice for the same exam
+				try {
+					List<ExamRow> existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
+					if (existingRows != null) {
+						for (ExamRow existing : existingRows) {
+							if (existing.getCode() != examRow.getCode()
+									&& existing.getDescription() != null
+									&& existing.getDescription().equalsIgnoreCase(description)) {
+								MessageDialog.error(this, "angal.exa.resultalreadyexists.fmt.msg", description);
+								return;
+							}
+						}
+					}
+				} catch (OHServiceException ohServiceException) {
+					MessageDialog.showExceptions(ohServiceException);
+					return;
+				}
+
+				examRow.setDescription(description);
 				examRow.setExamCode(exam);
 
 				try {
@@ -210,6 +235,11 @@ public class ExamRowEdit extends JDialog {
 		if (descriptionTextField == null) {
 				descriptionTextField = new VoLimitedTextField(50);
 				descriptionTextField.setColumns(20);
+				// pre-fill with the description carried by the ExamRow (e.g. the
+				// exam default result when creating a new result)
+				if (examRow.getDescription() != null) {
+					descriptionTextField.setText(examRow.getDescription());
+				}
 		}
 		return descriptionTextField;
 	}

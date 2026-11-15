@@ -25,6 +25,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
+import org.isf.lab.model.LaboratoryStatus;
 import org.isf.lab.model.PatientAnalysisRow;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
@@ -306,7 +308,10 @@ public class LabEdit extends ModalJFrame {
 		if (dateIn == null) {
 			dateIn = TimeTools.getNow();
 		}
-		return new GoodDateTimeSpinnerChooser(dateIn);
+		GoodDateTimeSpinnerChooser chooser = new GoodDateTimeSpinnerChooser(dateIn);
+		// results cannot be recorded with a future date
+		chooser.setMaxDate(LocalDate.now());
+		return chooser;
 	}
 
 	private JCheckBox getInPatientCheckBox() {
@@ -348,6 +353,11 @@ public class LabEdit extends ModalJFrame {
 					}
 				}
 			});
+			// the patient of an existing exam cannot be changed
+			if (!insert) {
+				jTextFieldPatient.setEnabled(false);
+				jTextFieldPatient.setToolTipText(MessageBundle.getMessage("angal.lab.patientcannotbechanged.msg"));
+			}
 		}
 		return jTextFieldPatient;
 	}
@@ -561,7 +571,15 @@ public class LabEdit extends ModalJFrame {
 					return;
 				}
 
-				LocalDateTime examDate = TimeTools.getNow();
+				LocalDateTime examDate = examDateFieldCal.getLocalDateTime();
+				if (examDate == null) {
+					MessageDialog.error(this, "angal.lab.pleaseinsertavalidexamdate.msg");
+					return;
+				}
+				if (examDate.isAfter(TimeTools.getNow())) {
+					MessageDialog.error(this, "angal.lab.futuredatenotallowed.msg");
+					return;
+				}
 				List<String> labRow = new ArrayList<>();
 				RememberDates.setLastLabExamDate(examDate);
 
@@ -593,6 +611,9 @@ public class LabEdit extends ModalJFrame {
 				} else if (examSelected.getProcedure() == 3) {
 					lab.setResult(examRowTextField.getText());
 				}
+
+				// results have been entered: the exam request is now completed
+				lab.setStatus(LaboratoryStatus.done.toString());
 
 				if (insert) {
 					lab.setAge(tmpAge);

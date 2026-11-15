@@ -299,6 +299,10 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					MessageDialog.error(this, "angal.lab.pleaseinsertavalidexamdate.msg");
 					return;
 				}
+				if (newDate.isAfter(TimeTools.getNow())) {
+					MessageDialog.error(this, "angal.lab.futuredatenotallowed.msg");
+					return;
+				}
 				RememberDates.setLastLabExamDate(newDate);
 				String inOut = jRadioButtonOPD.isSelected() ? "O" : "I";
 
@@ -310,7 +314,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					lab.setInOutPatient(inOut);
 					lab.setPatient(patientSelected);
 					lab.setPrescriber(prescriber);
-					lab.setStatus(LaboratoryStatus.done.toString());
+					lab.setStatus(LaboratoryStatus.open.toString());
 					int procedure = lab.getExam().getProcedure();
 					row++;
 				}
@@ -706,6 +710,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				labDate = TimeTools.getNow();
 			}
 			jCalendarDate = new GoodDateTimeSpinnerChooser(labDate);
+			// results cannot be recorded with a future date
+			jCalendarDate.setMaxDate(java.time.LocalDate.now());
 		}
 		return jCalendarDate;
 	}
@@ -726,7 +732,9 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelEast.setLayout(new BoxLayout(jPanelEast, BoxLayout.Y_AXIS));
 			jPanelEast.add(getJPanelExamButtons());
 			jPanelEast.add(getJPanelMaterial());
-			jPanelEast.add(getJPanelResults());
+			// Results are no longer entered at prescription time:
+			// New only records the exam request, results are entered later through "Edit".
+			// jPanelEast.add(getJPanelResults());
 		}
 		return jPanelEast;
 	}
@@ -891,12 +899,8 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 						continue;
 					}
 
-					if (exa.getProcedure() == 1 || exa.getProcedure() == 3) {
-						// The exam may not have a default value
-						lab.setResult(exa.getDefaultResult());
-					} else { // exa.getProcedure() == 2
-						lab.setResult(MessageBundle.getMessage("angal.labnew.multipleresults"));
-					}
+					// Prescription only: no result is recorded at this stage
+					lab.setResult("");
 					lab.setExam(exa);
 					lab.setMaterial(labManager.getMaterialKey(mat));
 					addItem(lab);

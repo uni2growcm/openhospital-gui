@@ -64,6 +64,7 @@ import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
+import org.isf.lab.model.LaboratoryStatus;
 import org.isf.lab.model.PatientAnalysisRow;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
@@ -332,6 +333,11 @@ public class LabEditExtended extends ModalJFrame {
                     }
                 }
             });
+            // the patient of an existing exam cannot be changed
+            if (!insert) {
+                jTextFieldPatient.setEnabled(false);
+                jTextFieldPatient.setToolTipText(MessageBundle.getMessage("angal.lab.patientcannotbechanged.msg"));
+            }
         }
         return jTextFieldPatient;
     }
@@ -648,6 +654,11 @@ public class LabEditExtended extends ModalJFrame {
 					return;
 				}
 
+				if (examDate != null && examDate.isAfter(LocalDateTime.now())) {
+					MessageDialog.error(this, "angal.lab.futuredatenotallowed.msg");
+					return;
+				}
+
 				if (!insert && labPat == null) {
 					MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
 					return;
@@ -695,6 +706,8 @@ public class LabEditExtended extends ModalJFrame {
 					}
 					lab.setResult(examTextField.getText());
 				}
+				// results have been entered: the exam request is now completed
+				lab.setStatus(LaboratoryStatus.done.toString());
 				if (insert) {
 					lab.setAge(labPat != null ? labPat.getAge() : 0);
 					try {
