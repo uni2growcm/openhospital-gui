@@ -67,6 +67,9 @@ import org.isf.lab.model.LaboratoryRow;
 import org.isf.lab.model.LaboratoryStatus;
 import org.isf.lab.model.PatientAnalysisRow;
 import org.isf.menu.manager.Context;
+import org.isf.prescriber.gui.PrescriberEdit;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -270,6 +273,22 @@ public class LabEditExtended extends ModalJFrame {
 			} catch (OHServiceException e) {
 				// silently ignored
 			}
+			try {
+				PrescriberBrowserManager prescriberManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
+				for (String name : prescriberManager.getPrescriberNames()) {
+					boolean exists = false;
+					for (int i = 0; i < prescriberComboBox.getItemCount(); i++) {
+						if (name.equals(prescriberComboBox.getItemAt(i))) {
+							exists = true;
+							break;
+						}
+					}
+					if (!exists) {
+						prescriberComboBox.addItem(name);
+					}
+				}
+			} catch (OHServiceException e) {
+			}
 			prescriberComboBox.addActionListener(ae -> {
 				String sel = (String) prescriberComboBox.getSelectedItem();
 				if (sel != null && !sel.equals(placeholder) && !sel.isEmpty()) {
@@ -279,6 +298,29 @@ public class LabEditExtended extends ModalJFrame {
 				}
 			});
 			prescriberComboBox.setBounds(LABEL_WIDTH + 185, 70, 255, 20);
+
+			JButton addPrescriberButton = new JButton("+");
+			addPrescriberButton.setToolTipText(MessageBundle.getMessage("angal.prescriber.add.tooltip"));
+			addPrescriberButton.setBounds(LABEL_WIDTH + 445, 70, 30, 20);
+			addPrescriberButton.addActionListener(ae -> {
+				PrescriberEdit dialog = new PrescriberEdit(this, new Prescriber(), true);
+				dialog.setVisible(true);
+				if (dialog.isSaved() && dialog.getSavedPrescriber() != null) {
+					String name = dialog.getSavedPrescriber().getName();
+					boolean exists = false;
+					for (int i = 0; i < prescriberComboBox.getItemCount(); i++) {
+						if (name.equals(prescriberComboBox.getItemAt(i))) {
+							exists = true;
+							break;
+						}
+					}
+					if (!exists) {
+						prescriberComboBox.addItem(name);
+					}
+					prescriberComboBox.setSelectedItem(name);
+					prescriberTextField.setText(name);
+				}
+			});
 
 			// patient (in or out) data
 			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.common.searchpatient.txt"));
@@ -298,6 +340,7 @@ public class LabEditExtended extends ModalJFrame {
 			dataPanel.add(prescriberLabel, null);
 			dataPanel.add(prescriberTextField, null);
 			dataPanel.add(prescriberComboBox, null);
+			dataPanel.add(addPrescriberButton, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
 			dataPanel.add(jTextFieldPatient, null);
@@ -333,7 +376,6 @@ public class LabEditExtended extends ModalJFrame {
                     }
                 }
             });
-            // the patient of an existing exam cannot be changed
             if (!insert) {
                 jTextFieldPatient.setEnabled(false);
                 jTextFieldPatient.setToolTipText(MessageBundle.getMessage("angal.lab.patientcannotbechanged.msg"));
@@ -706,7 +748,6 @@ public class LabEditExtended extends ModalJFrame {
 					}
 					lab.setResult(examTextField.getText());
 				}
-				// results have been entered: the exam request is now completed
 				lab.setStatus(LaboratoryStatus.done.toString());
 				if (insert) {
 					lab.setAge(labPat != null ? labPat.getAge() : 0);

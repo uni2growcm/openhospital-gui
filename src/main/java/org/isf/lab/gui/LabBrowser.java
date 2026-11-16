@@ -51,6 +51,7 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+import org.isf.accounting.model.Bill;
 import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exatype.model.ExamType;
@@ -158,6 +159,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private static final String FILTER_PAID_SELECT = MessageBundle.getMessage("angal.laboratory.selectpaidstatus");
 	private static final String FILTER_PAID = MessageBundle.getMessage("angal.laboratory.paid");
 	private static final String FILTER_NOT_PAID = MessageBundle.getMessage("angal.laboratory.notpaid");
+	private static final String FILTER_ADVANCE = MessageBundle.getMessage("angal.laboratory.advance");
 	private static final String FILTER_NOT_FACTURED = MessageBundle.getMessage("angal.lab.notfactured");
 	private boolean[] columnsResizable = {false, true, true, true, false};
 	private boolean[] columnsResizableWithPaid = {false, true, true, true, false, false};
@@ -171,6 +173,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 	private JPanel panelTotal;
 	private JLabel totalPaidLabel;
 	private JLabel totalPaidValueLabel;
+	private JLabel totalAdvanceLabel;
+	private JLabel totalAdvanceValueLabel;
 	private JLabel totalNotPaidLabel;
 	private JLabel totalNotPaidValueLabel;
 	private JLabel totalNotFacturedLabel;
@@ -740,7 +744,10 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			return "C";
 		}
 		if (FILTER_NOT_PAID.equals(paidStatus)) {
-			return "O";
+			return "N";
+		}
+		if (FILTER_ADVANCE.equals(paidStatus)) {
+			return "P";
 		}
 		if (FILTER_NOT_FACTURED.equals(paidStatus)) {
 			return "0";
@@ -755,6 +762,7 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			paidComboBox.addItem(FILTER_PAID_SELECT);
 			paidComboBox.addItem(FILTER_PAID);
 			paidComboBox.addItem(FILTER_NOT_PAID);
+			paidComboBox.addItem(FILTER_ADVANCE);
 			paidComboBox.addItem(FILTER_NOT_FACTURED);
 		}
 		return paidComboBox;
@@ -766,6 +774,8 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			panelTotal.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			panelTotal.add(getTotalPaidLabel());
 			panelTotal.add(getTotalPaidValueLabel());
+			panelTotal.add(getTotalAdvanceLabel());
+			panelTotal.add(getTotalAdvanceValueLabel());
 			panelTotal.add(getTotalNotPaidLabel());
 			panelTotal.add(getTotalNotPaidValueLabel());
 			panelTotal.add(getTotalNotFacturedLabel());
@@ -787,6 +797,21 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 			totalPaidValueLabel = new JLabel("");
 		}
 		return totalPaidValueLabel;
+	}
+
+	private JLabel getTotalAdvanceLabel() {
+		if (totalAdvanceLabel == null) {
+			totalAdvanceLabel = new JLabel("  " + MessageBundle.getMessage("angal.lobaratory.totalAdvanceLabel") + ": ");
+			totalAdvanceLabel.setFont(totalAdvanceLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		}
+		return totalAdvanceLabel;
+	}
+
+	private JLabel getTotalAdvanceValueLabel() {
+		if (totalAdvanceValueLabel == null) {
+			totalAdvanceValueLabel = new JLabel("");
+		}
+		return totalAdvanceValueLabel;
 	}
 
 	private JLabel getTotalNotPaidLabel() {
@@ -838,11 +863,14 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 		try {
 			long totalPaid = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
 					patient, "C");
+			long totalAdvance = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
+					patient, "P");
 			long totalNotPaid = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
-					patient, "O");
+					patient, "N");
 			long totalNotFactured = labManager.getLaboratoryCount(type, dateFrom.getDateStartOfDay(), dateTo.getDateEndOfDay(),
 					patient, "0");
 			totalPaidValueLabel.setText(totalPaid + "");
+			totalAdvanceValueLabel.setText(totalAdvance + "");
 			totalNotPaidValueLabel.setText(totalNotPaid + "");
 			totalNotFacturedValueLabel.setText(totalNotFactured + "");
 		} catch (OHServiceException e) {
@@ -906,8 +934,21 @@ public class LabBrowser extends ModalJFrame implements LabListener, LabEditListe
 				if (paidStatus == null) {
 					return FILTER_NOT_FACTURED;
 				}
-				return "C".equals(paidStatus) ? MessageBundle.getMessage("angal.lab.alreadypaid")
-						: MessageBundle.getMessage("angal.lab.notalreadypaid");
+				if ("C".equals(paidStatus)) {
+					return MessageBundle.getMessage("angal.lab.alreadypaid");
+				}
+				Bill bill = lab.getBill();
+				if (bill != null && bill.getBalance() != null && bill.getAmount() != null) {
+					double balance = bill.getBalance();
+					double amount = bill.getAmount();
+					if (balance <= 0) {
+						return MessageBundle.getMessage("angal.lab.alreadypaid");
+					}
+					if (balance < amount) {
+						return MessageBundle.getMessage("angal.laboratory.advance.txt");
+					}
+				}
+				return MessageBundle.getMessage("angal.lab.notalreadypaid");
 			}
 			return null;
 		}

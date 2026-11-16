@@ -46,9 +46,6 @@ import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 
-/**
- * Read-only dialog showing the details of an exam block and its associated exams.
- */
 public class ExamBlocDetails extends JDialog {
 
 	private static final long serialVersionUID = 1L;

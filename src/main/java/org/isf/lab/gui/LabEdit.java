@@ -309,7 +309,6 @@ public class LabEdit extends ModalJFrame {
 			dateIn = TimeTools.getNow();
 		}
 		GoodDateTimeSpinnerChooser chooser = new GoodDateTimeSpinnerChooser(dateIn);
-		// results cannot be recorded with a future date
 		chooser.setMaxDate(LocalDate.now());
 		return chooser;
 	}
@@ -353,7 +352,6 @@ public class LabEdit extends ModalJFrame {
 					}
 				}
 			});
-			// the patient of an existing exam cannot be changed
 			if (!insert) {
 				jTextFieldPatient.setEnabled(false);
 				jTextFieldPatient.setToolTipText(MessageBundle.getMessage("angal.lab.patientcannotbechanged.msg"));
@@ -612,7 +610,6 @@ public class LabEdit extends ModalJFrame {
 					lab.setResult(examRowTextField.getText());
 				}
 
-				// results have been entered: the exam request is now completed
 				lab.setStatus(LaboratoryStatus.done.toString());
 
 				if (insert) {

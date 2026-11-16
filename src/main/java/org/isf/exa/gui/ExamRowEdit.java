@@ -191,7 +191,6 @@ public class ExamRowEdit extends JDialog {
 					return;
 				}
 
-				// prevent creating the same result twice for the same exam
 				try {
 					List<ExamRow> existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
 					if (existingRows != null) {
@@ -235,8 +234,6 @@ public class ExamRowEdit extends JDialog {
 		if (descriptionTextField == null) {
 				descriptionTextField = new VoLimitedTextField(50);
 				descriptionTextField.setColumns(20);
-				// pre-fill with the description carried by the ExamRow (e.g. the
-				// exam default result when creating a new result)
 				if (examRow.getDescription() != null) {
 					descriptionTextField.setText(examRow.getDescription());
 				}
