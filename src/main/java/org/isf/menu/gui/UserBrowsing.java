@@ -24,7 +24,11 @@ package org.isf.menu.gui;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,10 +38,13 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.isf.accounting.manager.BillBrowserManager;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.gui.UserEdit.UserListener;
@@ -57,16 +64,17 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 	private static final long serialVersionUID = 1L;
 	private static final String ALL_STR = MessageBundle.getMessage("angal.common.all.txt").toUpperCase();
 	private final JComboBox<UserGroup> userGroupFilter;
-	private final String[] pColumns = {
-		MessageBundle.getMessage("angal.userbrowser.user.col").toUpperCase(),
-		MessageBundle.getMessage("angal.common.group.txt").toUpperCase(),
-		MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
-		MessageBundle.getMessage("angal.userbrowser.locked.col").toUpperCase(),
-		MessageBundle.getMessage("angal.common.deleted.col").toUpperCase() };
-	private final int[] pColumnWidth = { 70, 70, 150, 20, 20 };
+	private static final boolean SHOW_GUARANTOR_QUOTA = GeneralData.ALLOWBILLGUARANTOR;
+	private static final int GUARANTOR_QUOTA_COLUMN = 5;
+	private static final int GUARANTOR_USED_QUOTA_COLUMN = 6;
+	private final String[] pColumns = buildColumns();
+	private final int[] pColumnWidth = { 70, 70, 150, 20, 20, 60, 60 };
+	private Map<String, Double> guarantorsUsedQuota = new HashMap<>();
+	private final DecimalFormat quotaFormat = new DecimalFormat("#,##0.##");
 	private final JTable table;
 	private final UserBrowsing myFrame;
 	private final UserBrowsingManager userBrowsingManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+	private final BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private int selectedrow;
 	private List<User> userList;
 	private User user;
@@ -80,11 +88,15 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 		model = new UserBrowserModel();
 		table = new JTable(model);
-		table.getColumnModel().getColumn(0).setPreferredWidth(pColumnWidth[0]);
-		table.getColumnModel().getColumn(1).setPreferredWidth(pColumnWidth[1]);
-		table.getColumnModel().getColumn(2).setPreferredWidth(pColumnWidth[2]);
-		table.getColumnModel().getColumn(3).setPreferredWidth(pColumnWidth[3]);
-		table.getColumnModel().getColumn(4).setPreferredWidth(pColumnWidth[4]);
+		for (int i = 0; i < pColumns.length; i++) {
+			table.getColumnModel().getColumn(i).setPreferredWidth(pColumnWidth[i]);
+		}
+		if (SHOW_GUARANTOR_QUOTA) {
+			DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+			rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+			table.getColumnModel().getColumn(GUARANTOR_QUOTA_COLUMN).setCellRenderer(rightRenderer);
+			table.getColumnModel().getColumn(GUARANTOR_USED_QUOTA_COLUMN).setCellRenderer(rightRenderer);
+		}
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		add(scrollPane, BorderLayout.CENTER);
@@ -321,6 +333,51 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 		}
 	}
 
+	private static String[] buildColumns() {
+		List<String> columns = new ArrayList<>(List.of(
+			MessageBundle.getMessage("angal.userbrowser.user.col").toUpperCase(),
+			MessageBundle.getMessage("angal.common.group.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
+			MessageBundle.getMessage("angal.userbrowser.locked.col").toUpperCase(),
+			MessageBundle.getMessage("angal.common.deleted.col").toUpperCase()));
+		if (SHOW_GUARANTOR_QUOTA) {
+			columns.add(MessageBundle.getMessage("angal.userbrowser.guarantorquota.col").toUpperCase());
+			columns.add(MessageBundle.getMessage("angal.userbrowser.guarantorusedquota.col").toUpperCase());
+		}
+		return columns.toArray(new String[0]);
+	}
+
+	/**
+	 * The quota that applies to the user as guarantor: the single quota when BILLGUARANTORSINGLEQUOTA is enabled,
+	 * otherwise the user's own quota. Empty when there is no limit.
+	 */
+	private String getGuarantorQuotaText(User aUser) {
+		Double quota = GeneralData.BILLGUARANTORSINGLEQUOTA ? Double.valueOf(GeneralData.BILLGUARANTORQUOTA) : aUser.getGuarantorQuota();
+		if (quota == null || quota <= 0) {
+			return "";
+		}
+		return quotaFormat.format(quota);
+	}
+
+	/**
+	 * Reload the amount already used by each guarantor (outstanding balance of the open bills they guarantee)
+	 */
+	private void loadGuarantorsUsedQuota() {
+		if (!SHOW_GUARANTOR_QUOTA) {
+			return;
+		}
+		try {
+			guarantorsUsedQuota = billBrowserManager.getGuarantorsUsedQuota();
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
+	private String getGuarantorUsedQuotaText(User aUser) {
+		Double used = guarantorsUsedQuota.get(aUser.getUserName());
+		return quotaFormat.format(used == null ? 0 : used);
+	}
+
 	class UserBrowserModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 1L;
@@ -331,6 +388,7 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
+			loadGuarantorsUsedQuota();
 		}
 
 		public UserBrowserModel() {
@@ -339,6 +397,7 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 			} catch (OHServiceException e) {
 				OHServiceExceptionUtil.showMessages(e);
 			}
+			loadGuarantorsUsedQuota();
 		}
 
 		@Override
@@ -378,6 +437,10 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 				return userList.get(r).isAccountLocked();
 			} else if (c == 4) {
 				return userList.get(r).isDeleted();
+			} else if (c == GUARANTOR_QUOTA_COLUMN) {
+				return getGuarantorQuotaText(userList.get(r));
+			} else if (c == GUARANTOR_USED_QUOTA_COLUMN) {
+				return getGuarantorUsedQuotaText(userList.get(r));
 			}
 			return null;
 		}
