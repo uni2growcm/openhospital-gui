@@ -82,6 +82,8 @@ public class SelectPatientComponent extends JPanel {
         initialize();
     }
 
+    private boolean isSearching = false;
+
     private void initialize() {
         setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
@@ -91,8 +93,14 @@ public class SelectPatientComponent extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && selectedPatient == null && isEnabled()) {
+                    e.consume();
                     openPatientSearch();
                 }
+            }
+        });
+        patientSearchField.addActionListener(e -> {
+            if (selectedPatient == null && isEnabled()) {
+                openPatientSearch();
             }
         });
         add(patientSearchField);
@@ -123,24 +131,29 @@ public class SelectPatientComponent extends JPanel {
     }
 
     public void openPatientSearch() {
-        if (!isEnabled()) {
+        if (!isEnabled() || isSearching) {
             return;
         }
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        String searchText = (selectedPatient != null) ? "" : patientSearchField.getText().trim();
-        SelectPatient sp;
-        if (owner instanceof JDialog dialogOwner) {
-            sp = new SelectPatient(dialogOwner, searchText, enableAddPatient, femaleOnly);
-        } else if (owner instanceof JFrame frameOwner) {
-            sp = new SelectPatient(frameOwner, searchText, enableAddPatient, femaleOnly);
-        } else {
-            sp = new SelectPatient((JFrame) null, searchText, enableAddPatient, femaleOnly);
-        }
-        sp.addSelectionListener(this::setPatientAndNotify);
-        sp.setVisible(true);
-        Patient chosen = sp.getPatient();
-        if (chosen != null && (selectedPatient == null || chosen.getCode() != selectedPatient.getCode())) {
-            setPatientAndNotify(chosen);
+        isSearching = true;
+        try {
+            Window owner = SwingUtilities.getWindowAncestor(this);
+            String searchText = (selectedPatient != null) ? "" : patientSearchField.getText().trim();
+            SelectPatient sp;
+            if (owner instanceof JDialog dialogOwner) {
+                sp = new SelectPatient(dialogOwner, searchText, enableAddPatient, femaleOnly);
+            } else if (owner instanceof JFrame frameOwner) {
+                sp = new SelectPatient(frameOwner, searchText, enableAddPatient, femaleOnly);
+            } else {
+                sp = new SelectPatient((JFrame) null, searchText, enableAddPatient, femaleOnly);
+            }
+            sp.addSelectionListener(this::setPatientAndNotify);
+            sp.setVisible(true);
+            Patient chosen = sp.getPatient();
+            if (chosen != null && (selectedPatient == null || chosen.getCode() != selectedPatient.getCode())) {
+                setPatientAndNotify(chosen);
+            }
+        } finally {
+            isSearching = false;
         }
     }
 
