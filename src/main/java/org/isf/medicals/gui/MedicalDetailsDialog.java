@@ -28,6 +28,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Window;
@@ -149,7 +151,7 @@ public class MedicalDetailsDialog extends JDialog {
 		initComponents();
 		pack();
 		setSize(980, 650);
-		setMinimumSize(new Dimension(850, 550));
+		setMinimumSize(new Dimension(800, 520));
 		setLocationRelativeTo(owner);
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -278,29 +280,57 @@ public class MedicalDetailsDialog extends JDialog {
 					new EmptyBorder(10, 14, 10, 14)
 			));
 
-			JPanel infoPanel = new JPanel(new GridLayout(2, 4, 15, 6));
+			JPanel infoPanel = new JPanel(new GridBagLayout());
 			infoPanel.setOpaque(false);
 
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.insets = new Insets(2, 4, 2, 8);
+
+			double[] colWeights = { 2.2, 0.6, 1.2, 1.0 };
+
+			gbc.gridy = 0;
+
+			gbc.gridx = 0;
+			gbc.weightx = colWeights[0];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.common.description.txt") + " :",
-					medical.getDescription(), true));
+					medical.getDescription(), true), gbc);
+
+			gbc.gridx = 1;
+			gbc.weightx = colWeights[1];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.common.code.txt") + " :",
-					medical.getProdCode(), false));
-			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.medicals.selecttype") + " :",
-					medical.getType() != null ? medical.getType().getDescription() : "", false));
+					medical.getProdCode(), false), gbc);
+
+			gbc.gridx = 2;
+			gbc.weightx = colWeights[2];
+			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.medicals.type") + " :",
+					medical.getType() != null ? medical.getType().getDescription() : "", false), gbc);
+
+			gbc.gridx = 3;
+			gbc.weightx = colWeights[3];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.exam.filter.family") + " :",
-					medical.getArticleFamily() != null ? medical.getArticleFamily().getDescription() : "-", false));
+					medical.getArticleFamily() != null ? medical.getArticleFamily().getDescription() : "-", false), gbc);
 
+			gbc.gridy = 1;
+
+			gbc.gridx = 0;
+			gbc.weightx = colWeights[0];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.medicals.pcsperpck.col") + " :",
-					medical.getPcsperpck() + " " + MessageBundle.getMessage("angal.medicals.pcsperpck.txt"), false));
+					medical.getPcsperpck() + " " + MessageBundle.getMessage("angal.medicals.pcsperpck.txt"), false), gbc);
 
+			gbc.gridx = 1;
+			gbc.weightx = colWeights[1];
 			JPanel critPanel = new JPanel(new BorderLayout(4, 0));
 			critPanel.setOpaque(false);
+			critPanel.setMinimumSize(new Dimension(0, 0));
 			critLevelTitleLabel = new JLabel(MessageBundle.getMessage("angal.medicals.critlevel.col") + " :");
 			critLevelValueLabel = new JLabel();
+			critLevelValueLabel.setMinimumSize(new Dimension(0, 0));
 			critPanel.add(critLevelTitleLabel, BorderLayout.WEST);
 			critPanel.add(critLevelValueLabel, BorderLayout.CENTER);
 			updateCriticalLevelDisplay();
-			infoPanel.add(critPanel);
+			infoPanel.add(critPanel, gbc);
 
 			Double avgCostVal = null;
 			try {
@@ -313,12 +343,18 @@ public class MedicalDetailsDialog extends JDialog {
 			}
 			BigDecimal avgCost = avgCostVal != null ? BigDecimal.valueOf(avgCostVal) : BigDecimal.ZERO;
 			String avgCostStr = avgCost.setScale(2, RoundingMode.HALF_UP) + " " + currencyCod;
+
+			gbc.gridx = 2;
+			gbc.weightx = colWeights[2];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.medicals.averagecostprice.col") + " :",
-					avgCostStr, false));
+					avgCostStr, false), gbc);
 
 			BigDecimal totalCost = avgCost.multiply(BigDecimal.valueOf(totalOverallQty));
+
+			gbc.gridx = 3;
+			gbc.weightx = colWeights[3];
 			infoPanel.add(createMetaField(MessageBundle.getMessage("angal.medicals.totalcost.col") + " :",
-					totalCost.setScale(2, RoundingMode.HALF_UP) + " " + currencyCod, false));
+					totalCost.setScale(2, RoundingMode.HALF_UP) + " " + currencyCod, false), gbc);
 
 			headerPanel.add(infoPanel, BorderLayout.NORTH);
 
@@ -363,6 +399,9 @@ public class MedicalDetailsDialog extends JDialog {
 				critLevelValueLabel.setText(String.valueOf((int) medical.getMinqty()));
 				critLevelValueLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 				critLevelValueLabel.setForeground(new Color(40, 50, 60));
+			}
+			if (critLevelValueLabel.getText() != null && !critLevelValueLabel.getText().isEmpty()) {
+				critLevelValueLabel.setToolTipText(critLevelValueLabel.getText());
 			}
 		}
 	}
@@ -414,8 +453,10 @@ public class MedicalDetailsDialog extends JDialog {
 	}
 
 	private JPanel createMetaField(String label, String value, boolean highlight) {
-		JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		JPanel p = new JPanel(new BorderLayout(4, 0));
 		p.setOpaque(false);
+		p.setMinimumSize(new Dimension(0, 0));
+
 		JLabel l = new JLabel(label);
 		l.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		l.setForeground(new Color(100, 110, 125));
@@ -423,9 +464,13 @@ public class MedicalDetailsDialog extends JDialog {
 		JLabel v = new JLabel(value != null ? value : "");
 		v.setFont(new Font("SansSerif", highlight ? Font.BOLD : Font.PLAIN, 12));
 		v.setForeground(highlight ? new Color(20, 30, 50) : new Color(40, 50, 60));
+		v.setMinimumSize(new Dimension(0, 0));
+		if (value != null && !value.isEmpty()) {
+			v.setToolTipText(value);
+		}
 
-		p.add(l);
-		p.add(v);
+		p.add(l, BorderLayout.WEST);
+		p.add(v, BorderLayout.CENTER);
 		return p;
 	}
 

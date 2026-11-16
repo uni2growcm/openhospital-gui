@@ -325,7 +325,7 @@ public class MedicalOrderDialog extends JDialog {
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		gbc.weightx = 0;
-		refNoLabel = new JLabel(MessageBundle.getMessage("angal.command.refno.col") + " :");
+		refNoLabel = new JLabel(MessageBundle.getMessage("angal.command.refno.col") + " * :");
 		refNoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		form.add(refNoLabel, gbc);
 
@@ -338,7 +338,7 @@ public class MedicalOrderDialog extends JDialog {
 		gbc.gridx = 0;
 		gbc.gridy = 3;
 		gbc.weightx = 0;
-		dateLabel = new JLabel(MessageBundle.getMessage("angal.common.date.txt") + " :");
+		dateLabel = new JLabel(MessageBundle.getMessage("angal.common.date.col") + " :");
 		dateLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		form.add(dateLabel, gbc);
 
