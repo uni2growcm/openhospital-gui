@@ -186,7 +186,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 
 	public WardPharmacyNew(JFrame owner, Ward ward, List<MedicalWard> drugs) {
 		super(owner, true);
-		wardDrugs = drugs;
+		wardDrugs = drugs != null ? drugs : new ArrayList<>();
 		for (MedicalWard elem : wardDrugs) {
 			medArray.add(elem.getMedical());
 		}

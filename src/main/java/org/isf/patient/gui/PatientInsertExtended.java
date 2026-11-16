@@ -973,7 +973,9 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-						patient.setBlama(jBlamaTextField.getText().trim());
+						if (GeneralData.BLAMAFIELDENABLED) {
+							patient.setBlama(jBlamaTextField.getText().trim());
+						}
 						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 						if (selectedCountry != null) {
@@ -1105,7 +1107,9 @@ public class PatientInsertExtended extends JDialog {
 					}
 
 					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-					patient.setBlama(jBlamaTextField.getText().trim());
+					if (GeneralData.BLAMAFIELDENABLED) {
+						patient.setBlama(jBlamaTextField.getText().trim());
+					}
 					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 
 					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
@@ -1683,7 +1687,9 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJParentsResidencePanel(), null);
-			jAnagraphPanel.add(getJBlamaPanel(), null);
+			if (GeneralData.BLAMAFIELDENABLED) {
+				jAnagraphPanel.add(getJBlamaPanel(), null);
+			}
 			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
 			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
@@ -3016,7 +3022,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jNumberOfChildrenLabel = new JLabel(MessageBundle.getMessage("angal.patient.numberofchildren"));
 			jNumberOfChildrenPanel = new JPanel();
 			jNumberOfChildrenPanel.setLayout(new BorderLayout());
-			jNumberOfChildrenPanel.add(jNumberOfChildrenLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jNumberOfChildrenLabel);
+			jNumberOfChildrenPanel.add(labelPanel, BorderLayout.WEST);
 			jNumberOfChildrenPanel.add(getJNumberOfChildrenFieldPanel(), BorderLayout.EAST);
 		}
 		return jNumberOfChildrenPanel;
@@ -3078,7 +3086,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
 			jParentsResidencePanel = new JPanel();
 			jParentsResidencePanel.setLayout(new BorderLayout());
-			jParentsResidencePanel.add(jParentsResidenceLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jParentsResidenceLabel);
+			jParentsResidencePanel.add(labelPanel, BorderLayout.WEST);
 			jParentsResidencePanel.add(getJParentsResidenceFieldPanel(), BorderLayout.EAST);
 		}
 		return jParentsResidencePanel;
@@ -3124,7 +3134,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jTransportMeansLabel = new JLabel(MessageBundle.getMessage("angal.patient.transportmeans"));
 			jTransportMeansPanel = new JPanel();
 			jTransportMeansPanel.setLayout(new BorderLayout());
-			jTransportMeansPanel.add(jTransportMeansLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jTransportMeansLabel);
+			jTransportMeansPanel.add(labelPanel, BorderLayout.WEST);
 			jTransportMeansPanel.add(getJTransportMeansFieldPanel(), BorderLayout.EAST);
 		}
 		return jTransportMeansPanel;
