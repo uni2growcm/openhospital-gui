@@ -453,7 +453,7 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 			<textField evaluationTime="Report" isBlankWhenNull="false">
 				<reportElement key="textField-15" x="510" y="8" width="23" height="20" uuid="5c260682-ec8f-4cc2-9262-483e2fa04120"/>
 				<textElement verticalAlignment="Bottom"/>
-				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
