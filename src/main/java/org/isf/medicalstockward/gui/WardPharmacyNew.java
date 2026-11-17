@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -67,6 +67,7 @@ import org.isf.medicalstockward.model.MovementWard;
 import org.isf.menu.manager.Context;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
+import org.isf.patient.gui.SelectPatientComponent;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -115,11 +116,9 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 	@Override
 	public void patientSelected(Patient patient) {
 		patientSelected = patient;
-		jTextFieldPatient.setText(patientSelected.getName());
-		jTextFieldPatient.setEditable(false);
-		jButtonPickPatient.setText(MessageBundle.getMessage("angal.medicalstockwardedit.changepatient")); //$NON-NLS-1$
-		jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.medicalstockwardedit.changethepatientassociatedwiththismovement")); //$NON-NLS-1$
-		jButtonTrashPatient.setEnabled(true);
+		if (selectPatientComponent != null && selectPatientComponent.getPatient() != patient) {
+			selectPatientComponent.setPatient(patientSelected);
+		}
 
 		try {
 			Optional.ofNullable(examinationBrowserManager.getLastByPatID(patientSelected.getCode()))
@@ -140,9 +139,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 	private MovWardBrowserManager movWardBrowserManager = Context.getApplicationContext().getBean(MovWardBrowserManager.class);
 
 	private JLabel jLabelPatient;
-	private JTextField jTextFieldPatient;
-	private JButton jButtonPickPatient;
-	private JButton jButtonTrashPatient;
+	private SelectPatientComponent selectPatientComponent;
 	private JPanel jPanelPatient;
 	private JPanel jPanelMedicals;
 	private JPanel jPanelButtons;
@@ -186,7 +183,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 
 	public WardPharmacyNew(JFrame owner, Ward ward, List<MedicalWard> drugs) {
 		super(owner, true);
-		wardDrugs = drugs;
+		wardDrugs = drugs != null ? drugs : new ArrayList<>();
 		for (MedicalWard elem : wardDrugs) {
 			medArray.add(elem.getMedical());
 		}
@@ -219,6 +216,14 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			group.add(jRadioPatient);
 			group.add(jRadioUse);
 			group.add(jRadioWard);
+			if (!GeneralData.STOCKDISCHARGETOPATIENT) {
+				jPanelPatient.setVisible(false);
+				jRadioUse.setSelected(true);
+				jTextFieldPatient.setEnabled(false);
+				jButtonPickPatient.setEnabled(false);
+				jButtonTrashPatient.setEnabled(false);
+				jTextFieldUse.setEnabled(true);
+			}
 		}
 		return jPanelNorth;
 	}
@@ -253,9 +258,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 		if (jRadioUse == null) {
 			jRadioUse = new JRadioButton();
 			jRadioUse.addActionListener(actionEvent -> {
-				jTextFieldPatient.setEnabled(false);
-				jButtonPickPatient.setEnabled(false);
-				jButtonTrashPatient.setEnabled(false);
+				getSelectPatientComponent().setEnabled(false);
 				jTextFieldUse.setEnabled(true);
 				wardBox.setEnabled(false);
 			});
@@ -662,9 +665,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			jPanelPatient = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			jPanelPatient.add(getJRadioPatient());
 			jPanelPatient.add(getJLabelPatient());
-			jPanelPatient.add(getJTextFieldPatient());
-			jPanelPatient.add(getJButtonPickPatient());
-			jPanelPatient.add(getJButtonTrashPatient());
+			jPanelPatient.add(getSelectPatientComponent());
 		}
 		return jPanelPatient;
 	}
@@ -675,60 +676,31 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			jRadioPatient.setSelected(true);
 			jRadioPatient.addActionListener(actionEvent -> {
 				jTextFieldUse.setEnabled(false);
-				jTextFieldPatient.setEnabled(true);
-				jButtonPickPatient.setEnabled(true);
+				getSelectPatientComponent().setEnabled(true);
 				wardBox.setEnabled(false);
-				if (patientSelected != null) {
-					jButtonTrashPatient.setEnabled(true);
-				}
 			});
 		}
 		return jRadioPatient;
 	}
 
-	private JButton getJButtonTrashPatient() {
-		if (jButtonTrashPatient == null) {
-			jButtonTrashPatient = new JButton();
-			jButtonTrashPatient.setPreferredSize(new Dimension(25, 25));
-			jButtonTrashPatient.setIcon(new ImageIcon("rsc/icons/remove_patient_button.png"));
-			jButtonTrashPatient.setToolTipText(MessageBundle.getMessage("angal.medicalstockwardedit.tooltip.removepatientassociationwiththismovement"));
-			jButtonTrashPatient.addActionListener(actionEvent -> {
+	private SelectPatientComponent getSelectPatientComponent() {
+		if (selectPatientComponent == null) {
+			selectPatientComponent = new SelectPatientComponent();
+			selectPatientComponent.setFieldWidth(250);
+			selectPatientComponent.addPatientSelectionListener(new SelectPatientComponent.PatientSelectionListener() {
+				@Override
+				public void patientSelected(Patient patient) {
+					WardPharmacyNew.this.patientSelected(patient);
+				}
 
-				patientSelected = null;
-				jTextFieldPatient.setText(""); //$NON-NLS-1$
-				jTextFieldPatient.setEditable(true);
-				jButtonPickPatient.setText(MessageBundle.getMessage("angal.medicalstockwardedit.selectpatient"));
-				jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.medicalstockwardedit.tooltip.associateapatientwiththismovement"));
-				jButtonTrashPatient.setEnabled(false);
-			});
-			jButtonTrashPatient.setEnabled(false);
-		}
-		return jButtonTrashPatient;
-	}
-
-	private JButton getJButtonPickPatient() {
-		if (jButtonPickPatient == null) {
-			jButtonPickPatient = new JButton(MessageBundle.getMessage("angal.medicalstockwardedit.selectpatient.btn"));
-			jButtonPickPatient.setMnemonic(MessageBundle.getMnemonic("angal.medicalstockwardedit.selectpatient.btn.key"));
-			jButtonPickPatient.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png")); //$NON-NLS-1$
-			jButtonPickPatient.setToolTipText(MessageBundle.getMessage("angal.medicalstockwardedit.tooltip.associateapatientwiththismovement"));
-			jButtonPickPatient.addActionListener(actionEvent -> {
-				SelectPatient sp = new SelectPatient(this, patientSelected);
-				sp.addSelectionListener(this);
-				sp.pack();
-				sp.setVisible(true);
+				@Override
+				public void patientCleared() {
+					patientSelected = null;
+					patientWeight = 0;
+				}
 			});
 		}
-		return jButtonPickPatient;
-	}
-
-	private JTextField getJTextFieldPatient() {
-		if (jTextFieldPatient == null) {
-			jTextFieldPatient = new JTextField();
-			jTextFieldPatient.setText(""); //$NON-NLS-1$
-			jTextFieldPatient.setPreferredSize(PatientDimension);
-		}
-		return jTextFieldPatient;
+		return selectPatientComponent;
 	}
 
 	private JLabel getJLabelPatient() {
@@ -820,8 +792,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			jRadioWard.setSelected(false);
 			jRadioWard.addActionListener(actionEvent -> {
 				jTextFieldUse.setEnabled(false);
-				jTextFieldPatient.setEnabled(false);
-				jButtonPickPatient.setEnabled(false);
+				getSelectPatientComponent().setEnabled(false);
 				wardBox.setEnabled(true);
 			});
 			jRadioWard.setMinimumSize(new Dimension(55, 22));
