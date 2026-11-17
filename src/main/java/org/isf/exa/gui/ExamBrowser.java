@@ -374,8 +374,10 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 			} else if (c == 2) {
 				return exam.getDescription();
 			} else if (c == 3) {
-				return exam.getProcedure();
+				return exam.getArticleFamily() != null ? exam.getArticleFamily().toString() : "";
 			} else if (c == 4) {
+				return exam.getProcedure();
+			} else if (c == 5) {
 				return exam.getDefaultResult();
 			}
 			return null;
