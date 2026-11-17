@@ -103,8 +103,15 @@ public class TuberculosisMiniPanel extends JPanel {
             MessageBundle.getMessage("angal.tb.browser.contactnotes.col")
     };
 
+    private boolean showContacts = false;
+
     public TuberculosisMiniPanel(Patient patient) {
+        this(patient, false);
+    }
+
+    public TuberculosisMiniPanel(Patient patient, boolean showContacts) {
         this.patient = patient;
+        this.showContacts = showContacts;
         initManagers();
         initialize();
     }
@@ -120,7 +127,9 @@ public class TuberculosisMiniPanel extends JPanel {
     private void initManagers() {
         treatmentManager = Context.getApplicationContext().getBean(TuberculosisTreatmentManager.class);
         visitManager = Context.getApplicationContext().getBean(TuberculosisVisitManager.class);
-        contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
+        if (showContacts) {
+            contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
+        }
     }
 
     private void initialize() {
@@ -149,7 +158,7 @@ public class TuberculosisMiniPanel extends JPanel {
             treatmentTable.getColumnModel().getColumn(i).setPreferredWidth(150);
         }
         JScrollPane treatmentScroll = new JScrollPane(treatmentTable);
-        treatmentScroll.setPreferredSize(new Dimension(600, 100));
+        treatmentScroll.setPreferredSize(new Dimension(600, showContacts ? 100 : 130));
         tablesPanel.add(treatmentScroll);
 
         tablesPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.visitstab")));
@@ -163,22 +172,24 @@ public class TuberculosisMiniPanel extends JPanel {
             visitTable.getColumnModel().getColumn(i).setPreferredWidth(150);
         }
         JScrollPane visitScroll = new JScrollPane(visitTable);
-        visitScroll.setPreferredSize(new Dimension(600, 100));
+        visitScroll.setPreferredSize(new Dimension(600, showContacts ? 100 : 130));
         tablesPanel.add(visitScroll);
 
-        tablesPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactstab")));
-        contactTable = new JTable(new ContactTableModel());
-        contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        contactTable.setRowHeight(20);
-        contactTable.setFillsViewportHeight(true);
-        contactTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        contactTable.getSelectionModel().addListSelectionListener(new ContactSelectionListener());
-        for (int i = 0; i < contactHeaders.length; i++) {
-            contactTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+        if (showContacts) {
+            tablesPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactstab")));
+            contactTable = new JTable(new ContactTableModel());
+            contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            contactTable.setRowHeight(20);
+            contactTable.setFillsViewportHeight(true);
+            contactTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            contactTable.getSelectionModel().addListSelectionListener(new ContactSelectionListener());
+            for (int i = 0; i < contactHeaders.length; i++) {
+                contactTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+            }
+            JScrollPane contactScroll = new JScrollPane(contactTable);
+            contactScroll.setPreferredSize(new Dimension(600, 100));
+            tablesPanel.add(contactScroll);
         }
-        JScrollPane contactScroll = new JScrollPane(contactTable);
-        contactScroll.setPreferredSize(new Dimension(600, 100));
-        tablesPanel.add(contactScroll);
 
         JScrollPane mainScroll = new JScrollPane(tablesPanel);
         add(mainScroll, BorderLayout.CENTER);
@@ -212,15 +223,17 @@ public class TuberculosisMiniPanel extends JPanel {
         editVisitButton.addActionListener(e -> editVisit());
         buttonPanel.add(editVisitButton);
 
-        newContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.newcontact.btn"));
-        newContactButton.setEnabled(false);
-        newContactButton.addActionListener(e -> newContact());
-        buttonPanel.add(newContactButton);
+        if (showContacts) {
+            newContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.newcontact.btn"));
+            newContactButton.setEnabled(false);
+            newContactButton.addActionListener(e -> newContact());
+            buttonPanel.add(newContactButton);
 
-        editContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.editcontact.btn"));
-        editContactButton.setEnabled(false);
-        editContactButton.addActionListener(e -> editContact());
-        buttonPanel.add(editContactButton);
+            editContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.editcontact.btn"));
+            editContactButton.setEnabled(false);
+            editContactButton.addActionListener(e -> editContact());
+            buttonPanel.add(editContactButton);
+        }
 
         return buttonPanel;
     }
@@ -232,7 +245,7 @@ public class TuberculosisMiniPanel extends JPanel {
             selectedTreatment = null;
             editTreatmentButton.setEnabled(false);
             newVisitButton.setEnabled(false);
-            newContactButton.setEnabled(false);
+            if (newContactButton != null) newContactButton.setEnabled(false);
             visitList = new ArrayList<>();
             contactList = new ArrayList<>();
             if (visitTable != null) ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
@@ -249,7 +262,7 @@ public class TuberculosisMiniPanel extends JPanel {
         selectedTreatment = null;
         editTreatmentButton.setEnabled(false);
         newVisitButton.setEnabled(false);
-        newContactButton.setEnabled(false);
+        if (newContactButton != null) newContactButton.setEnabled(false);
         visitList = new ArrayList<>();
         contactList = new ArrayList<>();
         if (visitTable != null) ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
@@ -481,16 +494,16 @@ public class TuberculosisMiniPanel extends JPanel {
                     selectedTreatment = treatmentList.get(viewRow);
                     editTreatmentButton.setEnabled(true);
                     newVisitButton.setEnabled(true);
-                    newContactButton.setEnabled(true);
+                    if (newContactButton != null) newContactButton.setEnabled(true);
                     loadVisits();
-                    loadContacts();
+                    if (showContacts) loadContacts();
                 } else {
                     selectedTreatment = null;
                     editTreatmentButton.setEnabled(false);
                     newVisitButton.setEnabled(false);
-                    newContactButton.setEnabled(false);
+                    if (newContactButton != null) newContactButton.setEnabled(false);
                     loadVisits();
-                    loadContacts();
+                    if (showContacts) loadContacts();
                 }
             }
         }
