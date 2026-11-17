@@ -408,24 +408,22 @@ public class MedicalDetailsDialog extends JDialog {
 
 	private void rebuildBadges() {
 		badgesContainer.removeAll();
-		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.mainstore"),
-				String.valueOf(totalMainStoreQty), new Color(41, 128, 185), new Color(235, 245, 255)));
-		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.wards"),
-				String.valueOf((int) totalWardsQty), new Color(142, 68, 173), new Color(245, 238, 250)));
+		Color neutralFg = new Color(44, 62, 80);
+		Color neutralBg = new Color(240, 243, 244);
 
-		boolean isCritical = medical.getMinqty() > 0 && totalOverallQty <= medical.getMinqty();
-		Color totalFg = isCritical ? new Color(192, 57, 43) : new Color(39, 174, 96);
-		Color totalBg = isCritical ? new Color(253, 237, 236) : new Color(235, 250, 240);
-		String totalTitle = isCritical ?
-				MessageBundle.getMessage("angal.medicals.details.badges.totalcritical") :
-				MessageBundle.getMessage("angal.medicals.details.badges.total");
+		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.mainstore"),
+				String.valueOf(totalMainStoreQty), neutralFg, neutralBg));
+		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.wards"),
+				String.valueOf((int) totalWardsQty), neutralFg, neutralBg));
+
+		String totalTitle = MessageBundle.getMessage("angal.medicals.details.badges.total");
 		badgesContainer.add(createBadge(totalTitle,
-				String.valueOf((int) totalOverallQty), totalFg, totalBg));
+				String.valueOf((int) totalOverallQty), neutralFg, neutralBg));
 
 		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.expired"),
 				String.valueOf((int) totalExpiredQty), new Color(192, 57, 43), new Color(253, 237, 236)));
 		badgesContainer.add(createBadge(MessageBundle.getMessage("angal.medicals.details.badges.valid"),
-				String.valueOf((int) totalValidQty), new Color(44, 62, 80), new Color(240, 243, 244)));
+				String.valueOf((int) totalValidQty), new Color(39, 174, 96), new Color(235, 250, 240)));
 		badgesContainer.revalidate();
 		badgesContainer.repaint();
 	}
@@ -434,7 +432,7 @@ public class MedicalDetailsDialog extends JDialog {
 		wardsChipsPanel.removeAll();
 		JLabel wardTitle = new JLabel(MessageBundle.getMessage("angal.medicals.details.stockperward.label") + " ");
 		wardTitle.setFont(new Font("SansSerif", Font.BOLD, 12));
-		wardTitle.setForeground(new Color(110, 80, 140));
+		wardTitle.setForeground(new Color(50, 60, 70));
 		wardsChipsPanel.add(wardTitle);
 
 		if (!GeneralData.INTERNALPHARMACIES || activeWards.isEmpty()) {
@@ -498,19 +496,19 @@ public class MedicalDetailsDialog extends JDialog {
 	private JPanel createWardChip(String wardName, int qty) {
 		JPanel chip = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
 		boolean hasStock = qty > 0;
-		chip.setBackground(hasStock ? new Color(245, 240, 252) : new Color(248, 249, 250));
+		chip.setBackground(new Color(248, 249, 250));
 		chip.setBorder(new CompoundBorder(
-				new LineBorder(hasStock ? new Color(190, 160, 220) : new Color(220, 225, 230), 1, true),
+				new LineBorder(hasStock ? new Color(180, 190, 200) : new Color(220, 225, 230), 1, true),
 				new EmptyBorder(2, 6, 2, 6)
 		));
 
 		JLabel nameLabel = new JLabel(wardName + " :");
 		nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
-		nameLabel.setForeground(hasStock ? new Color(60, 40, 80) : new Color(130, 140, 150));
+		nameLabel.setForeground(hasStock ? new Color(40, 50, 60) : new Color(130, 140, 150));
 
 		JLabel qtyLabel = new JLabel(String.valueOf(qty));
 		qtyLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-		qtyLabel.setForeground(hasStock ? new Color(142, 68, 173) : new Color(160, 165, 175));
+		qtyLabel.setForeground(hasStock ? new Color(30, 40, 50) : new Color(160, 165, 175));
 
 		chip.add(nameLabel);
 		chip.add(qtyLabel);
@@ -852,7 +850,7 @@ public class MedicalDetailsDialog extends JDialog {
 		totalPanel.setBackground(new Color(245, 247, 250));
 		wardTotalLabel = new JLabel();
 		wardTotalLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-		wardTotalLabel.setForeground(new Color(142, 68, 173));
+		wardTotalLabel.setForeground(Color.BLACK);
 		totalPanel.add(wardTotalLabel);
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
@@ -963,37 +961,27 @@ public class MedicalDetailsDialog extends JDialog {
 	}
 
 	private JPanel createBottomActionPanel() {
-		JPanel panel = new JPanel(new BorderLayout(10, 5));
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
 		panel.setOpaque(false);
 		panel.setBorder(new EmptyBorder(6, 0, 0, 0));
-
-		JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-		leftPanel.setOpaque(false);
 
 		if (GeneralData.COMMANDMODULEENABLED) {
 			JButton orderButton = new JButton(MessageBundle.getMessage("angal.medicals.details.order.btn"));
 			orderButton.setMnemonic(MessageBundle.getMnemonic("angal.medicals.details.order.btn.key"));
-			orderButton.setFont(new Font("SansSerif", Font.BOLD, 13));
-			orderButton.setBackground(new Color(41, 128, 185));
-			orderButton.setForeground(Color.WHITE);
+			orderButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
 			Dimension prefOrder = orderButton.getPreferredSize();
-			orderButton.setPreferredSize(new Dimension(Math.max(160, prefOrder.width + 24), 32));
+			orderButton.setPreferredSize(new Dimension(Math.max(105, prefOrder.width + 24), 32));
 			orderButton.addActionListener(e -> openOrderDialog());
-			leftPanel.add(orderButton);
+			panel.add(orderButton);
 		}
-
-		JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-		rightPanel.setOpaque(false);
 
 		JButton closeButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 		closeButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		Dimension prefClose = closeButton.getPreferredSize();
 		closeButton.setPreferredSize(new Dimension(Math.max(95, prefClose.width + 20), 32));
 		closeButton.addActionListener(e -> dispose());
-		rightPanel.add(closeButton);
+		panel.add(closeButton);
 
-		panel.add(leftPanel, BorderLayout.WEST);
-		panel.add(rightPanel, BorderLayout.EAST);
 		return panel;
 	}
 
