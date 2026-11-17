@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -1483,7 +1483,7 @@ public class PatientExaminationEdit extends ModalJFrame {
 
 	private void savePatientExamaination(){
 		try {
-			examinationBrowserManager.saveOrUpdate(patex);
+			patex = examinationBrowserManager.saveOrUpdate(patex);
 			modified = false;
 		} catch (OHServiceException ohServiceException) {
 			MessageDialog.showExceptions(ohServiceException);

@@ -482,6 +482,18 @@ public class PatientInsertExtended extends JDialog {
 		}
 	}
 
+	private String buildPhoneNumber(String phoneCode, String localNumber) {
+		String normalizedCode = "+".equals(phoneCode) ? "" : phoneCode;
+		String normalizedLocalNumber = localNumber.replace(" ", "");
+		if (normalizedLocalNumber.isEmpty()) {
+			return "";
+		}
+		if (normalizedCode.isEmpty()) {
+			return normalizedLocalNumber;
+		}
+		return normalizedCode + " " + normalizedLocalNumber;
+	}
+
 	private boolean isKnownPhoneCode(String candidate) {
 		if (jCountryComboBox == null) {
 			return false;
@@ -814,11 +826,6 @@ public class PatientInsertExtended extends JDialog {
 				String phoneCode = jPhoneCodeTextField.getText().trim();
 				String localNumber = jLocalNumberTextField.getText().trim();
 
-				if (phoneCode.isEmpty() || phoneCode.equals("+")) {
-					MessageDialog.warning(this, MessageBundle.getMessage("angal.patient.phone.code.required.msg"));
-					return;
-				}
-
 				if (localNumber.isEmpty()) {
 					int answer = MessageDialog.yesNo(this,
 							MessageBundle.getMessage("angal.patient.phone.local.empty.msg"));
@@ -875,8 +882,7 @@ public class PatientInsertExtended extends JDialog {
 						patient.setCity(jCityTextField.getText().trim());
 						patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 						patient.setNextKin(jNextKinTextField.getText().trim());
-						String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
-						patient.setTelephone(fullPhoneNumber);
+						patient.setTelephone(buildPhoneNumber(phoneCode, localNumber));
 						patient.setMotherName(jMotherNameTextField.getText().trim());
 						if (jMotherAlive.isSelected()) {
 							patient.setMother('A');
@@ -967,7 +973,9 @@ public class PatientInsertExtended extends JDialog {
 						}
 
 						patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-						patient.setBlama(jBlamaTextField.getText().trim());
+						if (GeneralData.BLAMAFIELDENABLED) {
+							patient.setBlama(jBlamaTextField.getText().trim());
+						}
 						patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 						Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
 						if (selectedCountry != null) {
@@ -1016,8 +1024,7 @@ public class PatientInsertExtended extends JDialog {
 					patient.setCity(jCityTextField.getText().trim());
 					patient.setBirthPlace(jBirthPlaceTextField.getText().trim());
 					patient.setNextKin(jNextKinTextField.getText().trim());
-					String fullPhoneNumber = jPhoneCodeTextField.getText().trim() + " " + jLocalNumberTextField.getText().trim().replace(" ", "");
-					patient.setTelephone(fullPhoneNumber);
+					patient.setTelephone(buildPhoneNumber(phoneCode, localNumber));
 					patient.setMotherName(jMotherNameTextField.getText().trim());
 
 					if (jMotherAlive.isSelected()) {
@@ -1100,7 +1107,9 @@ public class PatientInsertExtended extends JDialog {
 					}
 
 					patient.setParentsResidence(jParentsResidenceTextField.getText().trim());
-					patient.setBlama(jBlamaTextField.getText().trim());
+					if (GeneralData.BLAMAFIELDENABLED) {
+						patient.setBlama(jBlamaTextField.getText().trim());
+					}
 					patient.setTransportMeans(jTransportMeansTextField.getText().trim());
 
 					Country selectedCountry = (Country) jCountryComboBox.getSelectedItem();
@@ -1678,7 +1687,9 @@ public class PatientInsertExtended extends JDialog {
 			jAnagraphPanel.add(getJBirthPlace(), null);
 			jAnagraphPanel.add(getJNextKin(), null);
 			jAnagraphPanel.add(getJParentsResidencePanel(), null);
-			jAnagraphPanel.add(getJBlamaPanel(), null);
+			if (GeneralData.BLAMAFIELDENABLED) {
+				jAnagraphPanel.add(getJBlamaPanel(), null);
+			}
 			jAnagraphPanel.add(getJCountryPanel(), null);
 			jAnagraphPanel.add(getJTelephone(), null);
 			jAnagraphPanel.add(getJNumberOfChildrenPanel(), null);
@@ -3011,7 +3022,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jNumberOfChildrenLabel = new JLabel(MessageBundle.getMessage("angal.patient.numberofchildren"));
 			jNumberOfChildrenPanel = new JPanel();
 			jNumberOfChildrenPanel.setLayout(new BorderLayout());
-			jNumberOfChildrenPanel.add(jNumberOfChildrenLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jNumberOfChildrenLabel);
+			jNumberOfChildrenPanel.add(labelPanel, BorderLayout.WEST);
 			jNumberOfChildrenPanel.add(getJNumberOfChildrenFieldPanel(), BorderLayout.EAST);
 		}
 		return jNumberOfChildrenPanel;
@@ -3073,7 +3086,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jParentsResidenceLabel = new JLabel(MessageBundle.getMessage("angal.patient.parentsresidence"));
 			jParentsResidencePanel = new JPanel();
 			jParentsResidencePanel.setLayout(new BorderLayout());
-			jParentsResidencePanel.add(jParentsResidenceLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jParentsResidenceLabel);
+			jParentsResidencePanel.add(labelPanel, BorderLayout.WEST);
 			jParentsResidencePanel.add(getJParentsResidenceFieldPanel(), BorderLayout.EAST);
 		}
 		return jParentsResidencePanel;
@@ -3119,7 +3134,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jTransportMeansLabel = new JLabel(MessageBundle.getMessage("angal.patient.transportmeans"));
 			jTransportMeansPanel = new JPanel();
 			jTransportMeansPanel.setLayout(new BorderLayout());
-			jTransportMeansPanel.add(jTransportMeansLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jTransportMeansLabel);
+			jTransportMeansPanel.add(labelPanel, BorderLayout.WEST);
 			jTransportMeansPanel.add(getJTransportMeansFieldPanel(), BorderLayout.EAST);
 		}
 		return jTransportMeansPanel;

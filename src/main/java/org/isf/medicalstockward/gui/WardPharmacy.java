@@ -130,16 +130,32 @@ public class WardPharmacy extends ModalJFrame implements
 
 	@Override
 	public void movementInserted(AWTEvent e) {
-		wardDrugs = null;
+	    reloadWardDrugs();
 		loadPageOutcomes(0);
 		loadPageDrugs(0);
 	}
 
 	@Override
 	public void movementUpdated(AWTEvent e) {
-		wardDrugs = null;
+		reloadWardDrugs();
 		loadPageOutcomes(0);
 		loadPageDrugs(0);
+	}
+
+	private void reloadWardDrugs() {
+		if (wardSelected == null) {
+			wardDrugs = new ArrayList<>();
+			return;
+		}
+		try {
+			wardDrugs = movWardBrowserManager.getMedicalsWard(wardSelected.getCode(), true);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+			wardDrugs = new ArrayList<>();
+		}
+		if (wardDrugs == null) {
+			wardDrugs = new ArrayList<>();
+		}
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -422,6 +438,9 @@ public class WardPharmacy extends ModalJFrame implements
 			jButtonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			jButtonNew.setVisible(false);
 			jButtonNew.addActionListener(actionEvent -> {
+				if (wardDrugs == null) {
+					reloadWardDrugs();
+				}
 				WardPharmacyNew editor = new WardPharmacyNew(this, wardSelected, wardDrugs);
 				editor.addMovementWardListener(this);
 				editor.setVisible(true);
