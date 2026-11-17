@@ -219,9 +219,7 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			if (!GeneralData.STOCKDISCHARGETOPATIENT) {
 				jPanelPatient.setVisible(false);
 				jRadioUse.setSelected(true);
-				jTextFieldPatient.setEnabled(false);
-				jButtonPickPatient.setEnabled(false);
-				jButtonTrashPatient.setEnabled(false);
+				getSelectPatientComponent().setEnabled(false);
 				jTextFieldUse.setEnabled(true);
 			}
 		}
