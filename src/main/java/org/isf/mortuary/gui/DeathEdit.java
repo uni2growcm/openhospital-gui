@@ -58,6 +58,7 @@ import org.isf.mortuary.model.BodyCompartment;
 import org.isf.mortuary.model.Death;
 import org.isf.mortuary.model.DeathReason;
 import org.isf.patient.gui.SelectPatient;
+import org.isf.patient.gui.SelectPatientComponent;
 import org.isf.patient.model.Patient;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -80,7 +81,6 @@ public class DeathEdit extends JDialog {
 	private JPanel dataPanel;
 	private JButton cancelButton;
 	private JButton okButton;
-	private JButton pickPatientButton;
 	private JComboBox<Object> deathReasonCombo;
 	private JComboBox<Object> provenanceCombo;
 	private JCheckBox bodyLiftCheckBox;
@@ -92,6 +92,7 @@ public class DeathEdit extends JDialog {
 	private JTextField familyNid;
 	private JTextField familyPhoneNumber;
 	private JComboBox<Object> bodyCompartmentCombo;
+	private SelectPatientComponent selectPatientComponent;
 	private JTextField patientTextField;
 	private GoodDateChooser deathDate;
 	private GoodDateChooser admissionDate;
@@ -287,51 +288,35 @@ public class DeathEdit extends JDialog {
 	}
 
 	private JPanel getPatientPanel() {
-		JPanel patientPanel = new JPanel();
-		patientTextField = new JTextField();
-		patientTextField.setPreferredSize(new Dimension(270,27));
-		if (!insert) {
-			patientTextField.setText(death.getPatient().getName());
-			patientTextField.setEnabled(false);
-		}
-		patientPanel.add(patientTextField);
-		patientPanel.add(getPickPatientButton());
-		return patientPanel;
-	}
-
-	private JButton getPickPatientButton() {
-		if (pickPatientButton != null) {
-			return pickPatientButton;
-		}
-
-		pickPatientButton = new JButton();
-		pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
-		pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
-		if (!insert) {
-			pickPatientButton.setEnabled(false);
-		}
-		pickPatientButton.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				SelectPatient selectPatient = new SelectPatient(
-					DeathEdit.this,
-					patientTextField.getText().trim(),
-					true
-				);
-				selectPatient.addSelectionListener(DeathEdit.this);
-				selectPatient.setVisible(true);
-				Patient pat = selectPatient.getPatient();
-				patientSelected(pat);
+		if (selectPatientComponent == null) {
+			selectPatientComponent = new SelectPatientComponent();
+			selectPatientComponent.setFieldWidth(180);
+			patientTextField = selectPatientComponent.getPatientSearchField();
+			if (!insert && death != null && death.getPatient() != null) {
+				patientParent = death.getPatient();
+				selectPatientComponent.setPatient(patientParent);
+				selectPatientComponent.setEnabled(false);
 			}
-		});
+			selectPatientComponent.addPatientSelectionListener(new SelectPatientComponent.PatientSelectionListener() {
+				@Override
+				public void patientSelected(Patient patient) {
+					patientParent = patient;
+				}
 
-		return pickPatientButton;
+				@Override
+				public void patientCleared() {
+					patientParent = null;
+				}
+			});
+		}
+		return selectPatientComponent;
 	}
 
 	public void patientSelected(Patient patient) {
 		patientParent = patient;
-		patientTextField.setText(patientParent != null ? patientParent.getName() : "");
+		if (selectPatientComponent != null) {
+			selectPatientComponent.setPatient(patientParent);
+		}
 	}
 
 	private JComboBox<Object> getProvenanceCombo() {
