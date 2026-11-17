@@ -255,7 +255,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		buttonClose.addActionListener(actionEvent -> dispose());
 		buttonPanel.add(buttonClose);
 		add(buttonPanel, BorderLayout.SOUTH);
-
+		filterOperations("");
 		setVisible(true);
 	}
 
@@ -270,14 +270,22 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 
 	@Override
 	public void operationInserted(AWTEvent e) {
-		pOperation.add(0, operation);
-		((OperationBrowserModel) table.getModel()).fireTableDataChanged();
+		if (pOperation == null) {
+			filterOperations(searchField.getText());
+		} else {
+			pOperation.add(0, operation);
+			((OperationBrowserModel) table.getModel()).fireTableDataChanged();
+		}
 		if (table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
 		}
 	}
 	@Override
 	public void operationUpdated(AWTEvent e) {
+		if (pOperation == null) {
+			filterOperations(searchField.getText());
+			return;
+		}
 		pOperation.set(selectedrow, operation);
 		((OperationBrowserModel) table.getModel()).fireTableDataChanged();
 		table.updateUI();
