@@ -126,42 +126,42 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="280" splitType="Stretch">
+		<band height="238" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="5" width="535" height="18"/>
 				<textElement><font size="10" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$R{label_number} + " " + $F{id} + $R{certificate_suffix}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="31" width="535" height="18"/>
+				<reportElement x="0" y="28" width="535" height="18"/>
 				<textElement><font size="10"/></textElement>
 				<textFieldExpression><![CDATA[$R{certifier_line} + " " + ".".repeat(150)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement x="0" y="56" width="535" height="36"/>
+				<reportElement x="0" y="51" width="535" height="36"/>
 				<textElement markup="styled" verticalAlignment="Top"><font size="9"/></textElement>
 				<textFieldExpression><![CDATA[$R{patient_certify} + " <style isBold=\"true\">" + ($F{patient} != null ? $F{patient}.getSex() == 'F' ? $R{female_prefix} : $R{male_prefix} : "") + " " + ($V{patientFullName}.isEmpty() ? "&#160;&#160;&#160;" : net.sf.jasperreports.engine.util.JRStringUtil.xmlEncode($V{patientFullName})) + "</style> " + $R{born_on} + " <style isBold=\"true\">" + ($V{patientBirthDate}.isEmpty() ? "&#160;&#160;&#160;" : net.sf.jasperreports.engine.util.JRStringUtil.xmlEncode($V{patientBirthDate})) + "</style> " + $R{born_at} + " <style isBold=\"true\">" + ($V{patientBirthPlace}.isEmpty() ? "&#160;&#160;&#160;" : net.sf.jasperreports.engine.util.JRStringUtil.xmlEncode($V{patientBirthPlace})) + "</style>, " + $R{died_on} + " <style isBold=\"true\">" + ($V{deathDate}.isEmpty() ? "&#160;&#160;&#160;" : net.sf.jasperreports.engine.util.JRStringUtil.xmlEncode($V{deathDate})) + "</style> " + $R{died_at} + " <style isBold=\"true\">" + ($V{deathPlace}.isEmpty() ? "&#160;&#160;&#160;" : net.sf.jasperreports.engine.util.JRStringUtil.xmlEncode($V{deathPlace})) + "</style>"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="0" y="108" width="535" height="1"/>
+				<reportElement x="0" y="83" width="535" height="1"/>
 				<graphicElement><pen lineWidth="0.5" lineStyle="Dotted"/></graphicElement>
 			</line>
 			<line>
-				<reportElement x="0" y="131" width="535" height="1"/>
+				<reportElement x="0" y="106" width="535" height="1"/>
 				<graphicElement><pen lineWidth="0.5" lineStyle="Dotted"/></graphicElement>
 			</line>
 			<textField textAdjust="StretchHeight">
-				<reportElement x="0" y="160" width="535" height="30"/>
+				<reportElement x="0" y="120" width="535" height="30"/>
 				<textElement verticalAlignment="Top"><font size="9"/></textElement>
 				<textFieldExpression><![CDATA[$R{closing_sentence}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="320" y="218" width="215" height="18"/>
+				<reportElement x="320" y="176" width="215" height="18"/>
 				<textElement textAlignment="Left"><font size="10"/></textElement>
 				<textFieldExpression><![CDATA[$R{issued_at} + " " + ($P{City} != null ? $P{City} : "") + ", " + $R{on_date} + " " + $P{CertificateDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="320" y="252" width="215" height="18"/>
+				<reportElement x="320" y="210" width="215" height="18"/>
 				<textElement textAlignment="Left"><font size="10"/></textElement>
 				<textFieldExpression><![CDATA[$R{chief_physician}]]></textFieldExpression>
 			</textField>
