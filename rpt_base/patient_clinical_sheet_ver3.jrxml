@@ -24,6 +24,12 @@
 	<parameter name="All" class="java.lang.Boolean"/>
 	<parameter name="Laboratory" class="java.lang.Boolean"/>
 	<parameter name="Operations" class="java.lang.Boolean"/>
+	<parameter name="Vaccines" class="java.lang.Boolean"/>
+	<parameter name="HomeVisit" class="java.lang.Boolean"/>
+	<parameter name="Tuberculosis" class="java.lang.Boolean"/>
+	<parameter name="Maternity" class="java.lang.Boolean"/>
+	<parameter name="FamilyPlanning" class="java.lang.Boolean"/>
+	<parameter name="HIV" class="java.lang.Boolean"/>
 	<parameter name="PATIENT_PHOTO" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
 	</parameter>
@@ -178,6 +184,84 @@ UNION
 	WHERE LAB_PAT_ID = $P{patientID} AND (DATE(LAB_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
     AND EXA_PROC = 3
     
+UNION
+
+	SELECT "Vaccines" AS TYPE,
+	   PAV_DATE AS DATE, CAST(PAV_ID AS CHAR) AS IDS,
+	   (SELECT VAC_DESC FROM OH_VACCINE WHERE VAC_ID_A = PAV_VAC_ID_A) AS DETAILS_1,
+	   IFNULL((SELECT VACT_DESC FROM OH_VACCINETYPE WHERE VACT_ID_A = (SELECT VAC_VACT_ID_A FROM OH_VACCINE WHERE VAC_ID_A = PAV_VAC_ID_A)), "") AS DETAILS_2,
+	   "" AS DETAILS_3,
+	   "" AS DETAILS_4,
+	   "" AS NOTE
+	FROM 
+		OH_PATIENTVACCINE
+	WHERE PAV_ACTIVE = 1 AND PAV_PAT_ID = $P{patientID} AND (DATE(PAV_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
+
+UNION
+
+	SELECT "HomeVisit" AS TYPE,
+	   HV_VISIT_START_DATE AS DATE, CAST(HV_ID AS CHAR) AS IDS,
+	   HV_STATUS AS DETAILS_1,
+	   IFNULL((SELECT CONCAT(STF_FIRST_NAME, ' ', STF_LAST_NAME) FROM OH_STAFF WHERE STF_ID = HV_STAFF_ID), "") AS DETAILS_2,
+	   IFNULL(HV_PURPOSE, "") AS DETAILS_3,
+	   IFNULL(HV_OBSERVATIONS, "") AS DETAILS_4,
+	   IFNULL(HV_CLINICAL_NOTES, "") AS NOTE
+	FROM 
+		OH_HOME_VISIT
+	WHERE HV_DELETE = 1 AND HV_PAT_ID = $P{patientID} AND (DATE(HV_VISIT_START_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
+
+UNION
+
+	SELECT "Tuberculosis" AS TYPE,
+	   TBT_REG_DATE AS DATE, CAST(TBT_ID AS CHAR) AS IDS,
+	   CONCAT("Class: ", TBT_CLASSIFICATION, " - Loc: ", TBT_DISEASE_LOCATION) AS DETAILS_1,
+	   CONCAT("Regimen: ", IFNULL(TBT_REGIMEN_CODE, "-"), " - Status: ", TBT_STATUS) AS DETAILS_2,
+	   IFNULL(CONCAT("Outcome: ", TBT_OUTCOME), "") AS DETAILS_3,
+	   "" AS DETAILS_4,
+	   IFNULL(TBT_NOTES, "") AS NOTE
+	FROM 
+		OH_TB_TREATMENT
+	WHERE TBT_ACTIVE = 1 AND TBT_PAT_ID = $P{patientID} AND (DATE(TBT_REG_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
+
+UNION
+
+	SELECT "Maternity" AS TYPE,
+	   IFNULL(PRG_DATE, PRG_LMP) AS DATE, CAST(PRG_ID AS CHAR) AS IDS,
+	   PRG_STATUS AS DETAILS_1,
+	   CONCAT("LMP: ", IFNULL(DATE_FORMAT(PRG_LMP, '%d/%m/%Y'), "-"), " - EDD: ", IFNULL(DATE_FORMAT(PRG_EDD_LMP, '%d/%m/%Y'), "-")) AS DETAILS_2,
+	   CONCAT("G: ", IFNULL(PRG_GRAVIDITY, 0), " / P: ", IFNULL(PRG_PARITY, 0)) AS DETAILS_3,
+	   IFNULL(CONCAT("Risk: ", PRG_RISK_LEVEL), "") AS DETAILS_4,
+	   "" AS NOTE
+	FROM 
+		OH_PREGNANCY
+	WHERE PRG_ACTIVE = 1 AND PRG_PAT_ID = $P{patientID} AND (DATE(IFNULL(PRG_DATE, PRG_LMP)) BETWEEN $P{Date_from} AND $P{Date_to})
+
+UNION
+
+	SELECT "FamilyPlanning" AS TYPE,
+	   FP_REGISTRATION_DATE AS DATE, CAST(FP_ID AS CHAR) AS IDS,
+	   FP_STATUS AS DETAILS_1,
+	   IFNULL((SELECT TYPO_DESCRIPTION FROM OH_TYPOLOGIES WHERE TYPO_CODE = FP_CURRENT_METHOD_CODE), IFNULL(FP_CURRENT_METHOD_CODE, "-")) AS DETAILS_2,
+	   "" AS DETAILS_3,
+	   "" AS DETAILS_4,
+	   IFNULL(FP_NOTES, "") AS NOTE
+	FROM 
+		OH_FAMILYPLANNING
+	WHERE FP_ACTIVE = 1 AND FP_PAT_ID = $P{patientID} AND (DATE(FP_REGISTRATION_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
+
+UNION
+
+	SELECT "HIV" AS TYPE,
+	   HVI_REG_DATE AS DATE, CAST(HVI_ID AS CHAR) AS IDS,
+	   HVI_STATUS AS DETAILS_1,
+	   CONCAT("Feeding: ", IFNULL(HVI_FEEDING_TYPE, "-"), " - Weight: ", IFNULL(HVI_BIRTH_WEIGHT, "-")) AS DETAILS_2,
+	   CONCAT("Follow-up: ", DATE_FORMAT(HVI_FOLLOWUP_START, '%d/%m/%Y'), IF(HVI_FOLLOWUP_END IS NOT NULL, CONCAT(" to ", DATE_FORMAT(HVI_FOLLOWUP_END, '%d/%m/%Y')), "")) AS DETAILS_3,
+	   "" AS DETAILS_4,
+	   IFNULL(HVI_NOTES, "") AS NOTE
+	FROM 
+		OH_HIV_INFANT
+	WHERE HVI_ACTIVE = 1 AND HVI_PAT_ID = $P{patientID} AND (DATE(HVI_REG_DATE) BETWEEN $P{Date_from} AND $P{Date_to})
+    
 ) 
 AS DETAILS
 
@@ -187,6 +271,12 @@ WHERE TYPE LIKE IF ($P!{Opd},'%Opd%','')
    OR TYPE LIKE IF ($P!{Examination},'%Examination%','') 
    OR TYPE LIKE IF ($P!{Laboratory},'%Laboratory%','') 
    OR TYPE LIKE IF ($P!{Operations},'%Operations%','') 
+   OR TYPE LIKE IF ($P!{Vaccines},'%Vaccines%','') 
+   OR TYPE LIKE IF ($P!{HomeVisit},'%HomeVisit%','') 
+   OR TYPE LIKE IF ($P!{Tuberculosis},'%Tuberculosis%','') 
+   OR TYPE LIKE IF ($P!{Maternity},'%Maternity%','') 
+   OR TYPE LIKE IF ($P!{FamilyPlanning},'%FamilyPlanning%','') 
+   OR TYPE LIKE IF ($P!{HIV},'%HIV%','') 
    OR TYPE LIKE IF ($P!{All}, '%%','')
 ORDER BY DATE DESC]]>
 	</queryString>
@@ -365,7 +455,7 @@ ORDER BY DATE DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="ScaleFont" isBlankWhenNull="false">
 				<reportElement key="textField-2" x="0" y="8" width="70" height="13" uuid="292fe642-de0a-4b47-ac03-8e0a5a2397b8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -376,7 +466,13 @@ ORDER BY DATE DESC]]>
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{TYPE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["HomeVisit".equals($F{TYPE}) ? $R{HomeVisit} :
+"Tuberculosis".equals($F{TYPE}) ? $R{Tuberculosis} :
+"Maternity".equals($F{TYPE}) ? $R{Maternity} :
+"FamilyPlanning".equals($F{TYPE}) ? $R{FamilyPlanning} :
+"HIV".equals($F{TYPE}) ? $R{HIV} :
+"Vaccines".equals($F{TYPE}) ? $R{Vaccines} :
+$F{TYPE}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-3" mode="Transparent" x="80" y="60" width="455" height="13" isRemoveLineWhenBlank="true" uuid="8c6b7e88-2a94-4b49-b949-1b0f9ac14e54"/>
@@ -390,7 +486,30 @@ ORDER BY DATE DESC]]>
 				<textElement>
 					<font fontName="DejaVu Sans" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{DETAILS_1}.equals( "OPD" ) ? $R{OPD} : $F{DETAILS_1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["HomeVisit".equals($F{TYPE}) ? 
+	($R{Status} + 
+		("PLANNED".equals($F{DETAILS_1}) ? $R{Status.planned} :
+		 "COMPLETED".equals($F{DETAILS_1}) ? $R{Status.completed} :
+		 "CANCELLED".equals($F{DETAILS_1}) ? $R{Status.cancelled} :
+		 "POSTPONED".equals($F{DETAILS_1}) ? $R{Status.postponed} : $F{DETAILS_1})) :
+("FamilyPlanning".equals($F{TYPE}) ?
+	($R{Status} + 
+		("ACTIVE".equals($F{DETAILS_1}) ? $R{FP.status.active} :
+		 "STOPPED".equals($F{DETAILS_1}) ? $R{FP.status.stopped} :
+		 "CHANGED".equals($F{DETAILS_1}) ? $R{FP.status.changed} :
+		 "LOST_TO_FOLLOWUP".equals($F{DETAILS_1}) ? $R{FP.status.lost} : $F{DETAILS_1})) :
+("HIV".equals($F{TYPE}) ?
+	($R{Status} + 
+		("ACTIVE".equals($F{DETAILS_1}) ? $R{HIV.status.active} :
+		 "LOST".equals($F{DETAILS_1}) ? $R{HIV.status.lost} :
+		 "DECEASED".equals($F{DETAILS_1}) ? $R{HIV.status.deceased} :
+		 "TRANSFERRED".equals($F{DETAILS_1}) ? $R{HIV.status.transferred} : $F{DETAILS_1})) :
+("Maternity".equals($F{TYPE}) ?
+	($R{Status} + 
+		("ONGOING".equals($F{DETAILS_1}) ? $R{Pregnancy.status.ongoing} :
+		 "COMPLETED".equals($F{DETAILS_1}) ? $R{Pregnancy.status.completed} :
+		 "TERMINATED".equals($F{DETAILS_1}) ? $R{Pregnancy.status.terminated} : $F{DETAILS_1})) :
+("OPD".equals($F{DETAILS_1}) ? $R{OPD} : $F{DETAILS_1}))))]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="80" y="21" width="455" height="13" isRemoveLineWhenBlank="true" uuid="76b9dd4e-f6aa-421a-8577-4792fd3c2100"/>
