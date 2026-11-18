@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +41,9 @@ import javax.swing.JPanel;
 
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.menu.manager.Context;
+import org.isf.patient.manager.PatientBrowserManager;
+import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportPatientVersion2;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -48,6 +52,8 @@ public class PatientFolderReportModal extends ModalJFrame {
 
 	private JFrame parent;
 	private Integer patId;
+	private Patient patient;
+	private PatientBrowserManager patientManager;
 	private JPanel jPanelChooser;
 	private GoodDateChooser jDateChooserDateFrom;
 	private GoodDateChooser jDateChooserDateTo;
@@ -66,6 +72,18 @@ public class PatientFolderReportModal extends ModalJFrame {
 	private JCheckBox laboratoryCheck;
 	private JPanel operationsPanel;
 	private JCheckBox operationCheck;
+	private JPanel vaccinePanel;
+	private JCheckBox vaccineCheck;
+	private JPanel homeVisitPanel;
+	private JCheckBox homeVisitCheck;
+	private JPanel tbPanel;
+	private JCheckBox tbCheck;
+	private JPanel maternityPanel;
+	private JCheckBox maternityCheck;
+	private JPanel fpPanel;
+	private JCheckBox fpCheck;
+	private JPanel hivPanel;
+	private JCheckBox hivCheck;
 	private JPanel allPanel;
 	private JCheckBox allCheck;
 	private JPanel labelPanel;
@@ -75,6 +93,16 @@ public class PatientFolderReportModal extends ModalJFrame {
 	public PatientFolderReportModal(JFrame parent, Integer code, LocalDate fromDate, LocalDate toDate, String selectedReport) {
 		this.parent = parent;
 		this.patId = code;
+		if (Context.getApplicationContext() != null) {
+			this.patientManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
+		}
+		if (this.patientManager != null) {
+			try {
+				this.patient = this.patientManager.getPatientById(code);
+			} catch (Exception e) {
+				this.patient = null;
+			}
+		}
 		this.fromDate = fromDate;
 		this.selectedReport = selectedReport.toUpperCase();
 		switch(this.selectedReport) {
@@ -84,6 +112,12 @@ public class PatientFolderReportModal extends ModalJFrame {
 			case "OPERATION":
 			case "DRUGS":
 			case "EXAMINATION":
+			case "VACCINES":
+			case "HOMEVISIT":
+			case "TUBERCULOSIS":
+			case "MATERNITY":
+			case "FAMILYPLANNING":
+			case "HIV":
 				break;  // valid values
 			default:
 				this.selectedReport = "ALL";
@@ -145,7 +179,8 @@ public class PatientFolderReportModal extends ModalJFrame {
 			
 			GridBagConstraints gbcSliderHeight = new GridBagConstraints();
 			gbcSliderHeight.insets = new Insets(5, 5, 5, 5);
-			gbcSliderHeight.fill = GridBagConstraints.WEST;
+			gbcSliderHeight.fill = GridBagConstraints.HORIZONTAL;
+			gbcSliderHeight.gridwidth = 2;
 			gbcSliderHeight.gridx = 0;
 			gbcSliderHeight.gridy = 2;
 			jPanelChooser.add(getValueReport(), gbcSliderHeight);
@@ -201,6 +236,24 @@ public class PatientFolderReportModal extends ModalJFrame {
 					if (getOperationValue()) {
 						parameterString.append("Operations");
 					}
+					if (getVaccineValue()) {
+						parameterString.append("Vaccines");
+					}
+					if (getHomeVisitValue()) {
+						parameterString.append("HomeVisit");
+					}
+					if (getTuberculosisValue()) {
+						parameterString.append("Tuberculosis");
+					}
+					if (getMaternityValue()) {
+						parameterString.append("Maternity");
+					}
+					if (getFamilyPlanningValue()) {
+						parameterString.append("FamilyPlanning");
+					}
+					if (getHIVValue()) {
+						parameterString.append("HIV");
+					}
 					
 					return parameterString.toString();
 				}
@@ -227,12 +280,32 @@ public class PatientFolderReportModal extends ModalJFrame {
 			
 			choosePanel.add(getPanelLabel());
 			choosePanel.add(getPanelAll());
-			choosePanel.add(getPanelAdmission());
-			choosePanel.add(getPanelOpd());
-			choosePanel.add(getPanelLaboratory());
-			choosePanel.add(getPanelOperations());
-			choosePanel.add(getPanelDrugs());
-			choosePanel.add(getPanelExamination());
+
+			JPanel checkGrid = new JPanel(new GridLayout(0, 2, 5, 0));
+			checkGrid.setAlignmentX(LEFT_ALIGNMENT);
+			checkGrid.add(getPanelAdmission());
+			checkGrid.add(getPanelOpd());
+			checkGrid.add(getPanelLaboratory());
+			checkGrid.add(getPanelOperations());
+			checkGrid.add(getPanelDrugs());
+			checkGrid.add(getPanelExamination());
+			checkGrid.add(getPanelVaccines());
+			if (GeneralData.HOMEVISITMODULEENABLED) {
+				checkGrid.add(getPanelHomeVisit());
+			}
+			if (GeneralData.TUBERCULOSISMODULEENABLED) {
+				checkGrid.add(getPanelTuberculosis());
+			}
+			if (GeneralData.MATERNITYMODULEENABLED && (patient == null || Character.toUpperCase(patient.getSex()) == 'F')) {
+				checkGrid.add(getPanelMaternity());
+			}
+			if (GeneralData.FAMILYPLANNINGMODULEENABLED && (patient == null || Character.toUpperCase(patient.getSex()) == 'F')) {
+				checkGrid.add(getPanelFamilyPlanning());
+			}
+			if (GeneralData.HIVMODULEENABLED) {
+				checkGrid.add(getPanelHIV());
+			}
+			choosePanel.add(checkGrid);
 		}
 		return choosePanel;
 	}
@@ -263,6 +336,24 @@ public class PatientFolderReportModal extends ModalJFrame {
 				opdCheck.setSelected(false);
 				operationCheck.setSelected(false);
 				laboratoryCheck.setSelected(false);
+				if (vaccineCheck != null) {
+					vaccineCheck.setSelected(false);
+				}
+				if (homeVisitCheck != null) {
+					homeVisitCheck.setSelected(false);
+				}
+				if (tbCheck != null) {
+					tbCheck.setSelected(false);
+				}
+				if (maternityCheck != null) {
+					maternityCheck.setSelected(false);
+				}
+				if (fpCheck != null) {
+					fpCheck.setSelected(false);
+				}
+				if (hivCheck != null) {
+					hivCheck.setSelected(false);
+				}
 			});
 		}
 		return allPanel;
@@ -352,28 +443,129 @@ public class PatientFolderReportModal extends ModalJFrame {
 		}
 		return admissionPanel;
 	}
+
+	private JPanel getPanelVaccines() {
+		if (vaccinePanel == null) {
+			vaccinePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			vaccineCheck = new JCheckBox();
+			if ("VACCINES".equals(selectedReport)) {
+				vaccineCheck.setSelected(true);
+			}
+			vaccinePanel.add(vaccineCheck);
+			vaccinePanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.vaccines.txt")), BorderLayout.CENTER);
+			vaccineCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return vaccinePanel;
+	}
+
+	private JPanel getPanelHomeVisit() {
+		if (homeVisitPanel == null) {
+			homeVisitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			homeVisitCheck = new JCheckBox();
+			if ("HOMEVISIT".equals(selectedReport)) {
+				homeVisitCheck.setSelected(true);
+			}
+			homeVisitPanel.add(homeVisitCheck);
+			homeVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.homevisit.txt")), BorderLayout.CENTER);
+			homeVisitCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return homeVisitPanel;
+	}
+
+	private JPanel getPanelTuberculosis() {
+		if (tbPanel == null) {
+			tbPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			tbCheck = new JCheckBox();
+			if ("TUBERCULOSIS".equals(selectedReport)) {
+				tbCheck.setSelected(true);
+			}
+			tbPanel.add(tbCheck);
+			tbPanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.tuberculosis.txt")), BorderLayout.CENTER);
+			tbCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return tbPanel;
+	}
+
+	private JPanel getPanelMaternity() {
+		if (maternityPanel == null) {
+			maternityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			maternityCheck = new JCheckBox();
+			if ("MATERNITY".equals(selectedReport)) {
+				maternityCheck.setSelected(true);
+			}
+			maternityPanel.add(maternityCheck);
+			maternityPanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.maternity.txt")), BorderLayout.CENTER);
+			maternityCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return maternityPanel;
+	}
+
+	private JPanel getPanelFamilyPlanning() {
+		if (fpPanel == null) {
+			fpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			fpCheck = new JCheckBox();
+			if ("FAMILYPLANNING".equals(selectedReport)) {
+				fpCheck.setSelected(true);
+			}
+			fpPanel.add(fpCheck);
+			fpPanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.familyplanning.txt")), BorderLayout.CENTER);
+			fpCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return fpPanel;
+	}
+
+	private JPanel getPanelHIV() {
+		if (hivPanel == null) {
+			hivPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
+			hivCheck = new JCheckBox();
+			if ("HIV".equals(selectedReport)) {
+				hivCheck.setSelected(true);
+			}
+			hivPanel.add(hivCheck);
+			hivPanel.add(new JLabel(MessageBundle.getMessage("angal.admission.patientfolder.hiv.txt")), BorderLayout.CENTER);
+			hivCheck.addActionListener(actionEvent -> allCheck.setSelected(false));
+		}
+		return hivPanel;
+	}
 	
 	public boolean getOperationValue() {
-		return operationCheck.isSelected();
+		return operationCheck != null && operationCheck.isSelected();
 	}
 	public boolean getLaboratoryValue() {
-		return laboratoryCheck.isSelected();
+		return laboratoryCheck != null && laboratoryCheck.isSelected();
 	}
 	public boolean getAdmissionValue() {
-		return admissionCheck.isSelected();
+		return admissionCheck != null && admissionCheck.isSelected();
 	}
 	public boolean getOpdValue() {
-		return opdCheck.isSelected();
+		return opdCheck != null && opdCheck.isSelected();
 	}
 	public boolean getAllValue() {
-		return allCheck.isSelected();
+		return allCheck != null && allCheck.isSelected();
 	}
 	public boolean getDrugsValue() {
-		return drugsCheck.isSelected();
+		return drugsCheck != null && drugsCheck.isSelected();
 	}
-	
 	public boolean getExaminationValue() {
-		return examinationCheck.isSelected();
+		return examinationCheck != null && examinationCheck.isSelected();
+	}
+	public boolean getVaccineValue() {
+		return vaccineCheck != null && vaccineCheck.isSelected();
+	}
+	public boolean getHomeVisitValue() {
+		return homeVisitCheck != null && homeVisitCheck.isSelected();
+	}
+	public boolean getTuberculosisValue() {
+		return tbCheck != null && tbCheck.isSelected();
+	}
+	public boolean getMaternityValue() {
+		return maternityCheck != null && maternityCheck.isSelected();
+	}
+	public boolean getFamilyPlanningValue() {
+		return fpCheck != null && fpCheck.isSelected();
+	}
+	public boolean getHIVValue() {
+		return hivCheck != null && hivCheck.isSelected();
 	}
 
 	private GoodDateChooser getJDateChooserDateFrom() {
