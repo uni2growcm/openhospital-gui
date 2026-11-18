@@ -96,9 +96,9 @@ public class ExamBlocEdit extends JDialog {
 				screensize.width * pfrmWidth / pfrmBase, screensize.height * pfrmHeight / pfrmBase);
 		this.setContentPane(getJContentPane());
 		if (insert) {
-			this.setTitle(MessageBundle.getMessage("angal.exa.neweditresult"));
+			this.setTitle(MessageBundle.getMessage("angal.exa.newbloc.title"));
 		} else {
-			this.setTitle(MessageBundle.getMessage("angal.exa.editexam"));
+			this.setTitle(MessageBundle.getMessage("angal.exa.editbloc.title"));
 		}
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
@@ -195,9 +195,12 @@ public class ExamBlocEdit extends JDialog {
 			okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
-				if (codeTextField.getText().trim().isEmpty() || descriptionTextField.getText().trim().isEmpty()
-						|| jList.getSelectedValuesList().isEmpty()) {
+				if (codeTextField.getText().trim().isEmpty() || descriptionTextField.getText().trim().isEmpty()) {
 					MessageDialog.error(null, "angal.exa.pleaseinsertcodeoranddescription");
+					return;
+				}
+				if (jList.getSelectedValuesList().isEmpty()) {
+					MessageDialog.error(null, "angal.exa.pleaseselectatleastoneexam.msg");
 					return;
 				}
 				String code = codeTextField.getText().toUpperCase();

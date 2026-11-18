@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -32,8 +32,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -61,6 +64,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
@@ -420,14 +424,24 @@ public class MovStockMultipleCharging extends JDialog {
 			suggestion.changeStyle(Font.BOLD + Font.ITALIC);
 
 			jTextFieldSearch.addActionListener(actionEvent -> {
-				String text = jTextFieldSearch.getText();
-				Medical med;
+				String text = jTextFieldSearch.getText().trim();
+				if (text.isEmpty()) {
+					return;
+				}
+				Medical med = null;
 				if (medicalMap.containsKey(text)) {
 					// Medical found
 					med = medicalMap.get(text);
 				} else {
-
-					med = chooseMedical(text.toLowerCase());
+					for (Medical aMed : medicalMap.values()) {
+						if (aMed.getProdCode() != null && aMed.getProdCode().equalsIgnoreCase(text)) {
+							med = aMed;
+							break;
+						}
+					}
+					if (med == null) {
+						med = chooseMedical(text);
+					}
 				}
 
 				if (med != null) {
@@ -481,6 +495,9 @@ public class MovStockMultipleCharging extends JDialog {
 					units.add(PACKETS);
 
 					jTextFieldSearch.setText(""); //$NON-NLS-1$
+					jTextFieldSearch.requestFocus();
+				} else {
+					jTextFieldSearch.selectAll();
 					jTextFieldSearch.requestFocus();
 				}
 			});
@@ -648,7 +665,9 @@ public class MovStockMultipleCharging extends JDialog {
 	protected Medical chooseMedical(String text) {
 		List<Medical> medList = new ArrayList<>();
 		for (Medical aMed : medicalMap.values()) {
-			if (NormalizeString.normalizeContains(aMed.getDescription().toLowerCase(), text.toLowerCase())) {
+			boolean matchDescription = NormalizeString.normalizeContains(aMed.getDescription().toLowerCase(), text.toLowerCase());
+			boolean matchCode = aMed.getProdCode() != null && NormalizeString.normalizeContains(aMed.getProdCode().toLowerCase(), text.toLowerCase());
+			if (matchDescription || matchCode) {
 				medList.add(aMed);
 			}
 		}
@@ -659,6 +678,29 @@ public class MovStockMultipleCharging extends JDialog {
 			JTable medTable = new JTable(new StockMedModel(medList));
 			medTable.getColumnModel().getColumn(0).setMaxWidth(CODE_COLUMN_WIDTH);
 			medTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			medTable.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2 && medTable.getSelectedRow() >= 0) {
+						JOptionPane pane = (JOptionPane) SwingUtilities.getAncestorOfClass(JOptionPane.class, medTable);
+						if (pane != null) {
+							pane.setValue(JOptionPane.OK_OPTION);
+						}
+					}
+				}
+			});
+			medTable.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER && medTable.getSelectedRow() >= 0) {
+						JOptionPane pane = (JOptionPane) SwingUtilities.getAncestorOfClass(JOptionPane.class, medTable);
+						if (pane != null) {
+							pane.setValue(JOptionPane.OK_OPTION);
+							e.consume();
+						}
+					}
+				}
+			});
 			JPanel panel = new JPanel();
 			panel.add(new JScrollPane(medTable));
 
@@ -670,11 +712,15 @@ public class MovStockMultipleCharging extends JDialog {
 
 			if (ok == JOptionPane.OK_OPTION) {
 				int row = medTable.getSelectedRow();
-				med = medList.get(row);
+				if (row >= 0) {
+					med = medList.get(row);
+				}
 			}
 			return med;
+		} else {
+			MessageDialog.error(this, "angal.medicalstock.medicalnotfound.fmt.msg", text);
+			return null;
 		}
-		return null;
 	}
 
 	protected Lot chooseLot(Medical med) {
@@ -703,6 +749,30 @@ public class MovStockMultipleCharging extends JDialog {
 				MessageBundle.getMessage("angal.medicalstock.multiplecharging.selectedlot"),
 				MessageBundle.getMessage("angal.medicalstock.multiplecharging.newlot")
 		};
+
+		lotTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && lotTable.getSelectedRow() >= 0) {
+					JOptionPane pane = (JOptionPane) SwingUtilities.getAncestorOfClass(JOptionPane.class, lotTable);
+					if (pane != null) {
+						pane.setValue(options[0]);
+					}
+				}
+			}
+		});
+		lotTable.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER && lotTable.getSelectedRow() >= 0) {
+					JOptionPane pane = (JOptionPane) SwingUtilities.getAncestorOfClass(JOptionPane.class, lotTable);
+					if (pane != null) {
+						pane.setValue(options[0]);
+						e.consume();
+					}
+				}
+			}
+		});
 
 		int row;
 		do {

@@ -67,7 +67,38 @@ public class GenericReportFromDateToDate extends DisplayReport {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GenericReportFromDateToDate.class);
 	private JasperReportsManager jasperReportsManager = Context.getApplicationContext().getBean(JasperReportsManager.class);
 
-	
+	public GenericReportFromDateToDate(int year, String state, String state2, String operationTypeCode, String operationTypeLabel, Boolean balanceZero,
+			String defaultName, boolean toExcel) {
+		try {
+			File defaultFilename = new File(jasperReportsManager.compileDefaultFilename(defaultName));
+
+			if (toExcel) {
+				JFileChooser fcExcel = ExcelExporter.getJFileChooserExcel(defaultFilename);
+
+				int iRetVal = fcExcel.showSaveDialog(null);
+				if (iRetVal == JFileChooser.APPROVE_OPTION) {
+					File exportFile = fcExcel.getSelectedFile();
+					FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fcExcel.getFileFilter();
+					String extension = selectedFilter.getExtensions()[0];
+					if (!exportFile.getName().endsWith(extension)) {
+						exportFile = new File(exportFile.getAbsoluteFile() + "." + extension);
+					}
+					jasperReportsManager.getIncomesPerSurgeryActExcel(year, state, state2, operationTypeCode, operationTypeLabel, balanceZero,
+									exportFile.getAbsolutePath());
+				}
+			} else {
+				JasperReportResultDto jasperReportResultDto = jasperReportsManager.getIncomesPerSurgeryActPdf(year, state, state2, operationTypeCode,
+								operationTypeLabel, balanceZero);
+				showReport(jasperReportResultDto);
+			}
+		} catch (OHReportException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		} catch (Exception e) {
+			LOGGER.error("", e);
+			MessageDialog.error(null, "angal.stat.reporterror.msg");
+		}
+	}
+
 	public GenericReportFromDateToDate(String fromDate, String toDate, String jasperFileFolder, String jasperFileName, String defaultName, boolean toExcel) {
 		try {
 			File defaultFilename = new File(jasperReportsManager.compileDefaultFilename(defaultName));

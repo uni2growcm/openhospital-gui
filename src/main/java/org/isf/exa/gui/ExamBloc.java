@@ -75,6 +75,7 @@ public class ExamBloc extends ModalJFrame {
 	private final JFrame myFrame;
 	private JButton jButtonNew;
 	private JButton jButtonEdit;
+	private JButton jButtonDetails;
 	private JButton jButtonDelete;
 	private JButton jButtonClose;
 	private JPanel jContentPanel;
@@ -137,9 +138,28 @@ public class ExamBloc extends ModalJFrame {
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		buttonPanel.add(getJButtonNew());
 		buttonPanel.add(getJButtonEdit());
+		buttonPanel.add(getJButtonDetails());
 		buttonPanel.add(getJButtonDelete());
 		buttonPanel.add(getJButtonClose());
 		return buttonPanel;
+	}
+
+	private JButton getJButtonDetails() {
+		if (jButtonDetails == null) {
+			jButtonDetails = new JButton(MessageBundle.getMessage("angal.common.details.btn"));
+			jButtonDetails.addActionListener(actionEvent -> {
+				if (table.getSelectedRow() < 0) {
+					MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+					return;
+				}
+				selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
+				Block selectedBlock = (Block) model.getValueAt(selectedrow, -1);
+				if (selectedBlock != null) {
+					new ExamBlocDetails(myFrame, selectedBlock);
+				}
+			});
+		}
+		return jButtonDetails;
 	}
 
 	private JTable getJTable() {

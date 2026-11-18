@@ -26,6 +26,8 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -44,8 +46,15 @@ import org.isf.accounting.model.Bill;
 import org.isf.accounting.model.BillItems;
 import org.isf.accounting.model.BillPayments;
 import org.isf.accounting.model.ItemPayments;
+import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
+import org.isf.patient.model.Patient;
+import org.isf.priceslist.manager.PriceListManager;
+import org.isf.priceslist.model.Price;
+import org.isf.reductionplan.manager.PatientReductionPlanManager;
+import org.isf.reductionplan.model.AppliedReduction;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.utils.exception.OHServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +74,9 @@ public class BillHistory extends JDialog {
             MessageBundle.getMessage("angal.common.date"),
             MessageBundle.getMessage("angal.billbrowser.description"),
             MessageBundle.getMessage("angal.billbrowser.quantity"),
-            MessageBundle.getMessage("angal.billbrowser.action")
+            MessageBundle.getMessage("angal.billbrowser.action"),
+            MessageBundle.getMessage("angal.billbrowser.auteur"),
+            MessageBundle.getMessage("angal.newbill.appliedreduction.col")
     };
 
     private final String[] paymentsColumnNames = {
@@ -83,33 +94,134 @@ public class BillHistory extends JDialog {
             MessageBundle.getMessage("angal.billbrowser.action")
     };
 
-    private final int[] billItemsColumnWidths = { 120, 250, 80, 100 };
+    private final int[] billItemsColumnWidths = { 120, 250, 80, 100, 100, 300 };
     private final int[] paymentsColumnWidths = { 120, 150, 100, 100 };
     private final int[] itemPaymentsColumnWidths = { 120, 250, 100, 150, 100 };
 
     private final BillBrowserManager billManager;
+    private final PatientReductionPlanManager patientReductionPlanManager =
+            Context.getApplicationContext().getBean(PatientReductionPlanManager.class);
+    private final PriceListManager priceListManager =
+            Context.getApplicationContext().getBean(PriceListManager.class);
     private final List<BillItems> billItems;
     private final List<BillPayments> billPayments;
     private final List<ItemPayments> itemPayments;
+    private final List<ReductionPlan> applicablePlans;
+    private final List<Price> billPrices;
+
+    private final List<BillHistoryRow> billItemRows = new ArrayList<>();
+    private final List<BillHistoryRow> paymentRows = new ArrayList<>();
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
     public BillHistory(JFrame owner, Bill bill) throws OHServiceException {
         super(owner, true);
         this.billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
-        this.billItems = billManager.getAllBillItems(bill);
-        this.billPayments = billManager.getAllBillPayments(bill);
-        this.itemPayments = billManager.getItemPayments(bill.getId());
+        Bill historyBill = loadBill(bill);
+        this.applicablePlans = loadApplicablePlans(historyBill);
+        this.billPrices = loadBillPrices(historyBill);
+        this.billItems = billManager.getAllBillItems(historyBill);
+        this.billPayments = billManager.getAllBillPayments(historyBill);
+        this.itemPayments = billManager.getItemPayments(historyBill.getId());
+        buildHistoryRows();
         initComponents();
     }
 
     public BillHistory(JDialog owner, Bill bill) throws OHServiceException {
         super(owner, true);
         this.billManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
-        this.billItems = billManager.getAllBillItems(bill);
-        this.billPayments = billManager.getAllBillPayments(bill);
-        this.itemPayments = billManager.getItemPayments(bill.getId());
+        Bill historyBill = loadBill(bill);
+        this.applicablePlans = loadApplicablePlans(historyBill);
+        this.billPrices = loadBillPrices(historyBill);
+        this.billItems = billManager.getAllBillItems(historyBill);
+        this.billPayments = billManager.getAllBillPayments(historyBill);
+        this.itemPayments = billManager.getItemPayments(historyBill.getId());
+        buildHistoryRows();
         initComponents();
+    }
+
+    private Bill loadBill(Bill bill) throws OHServiceException {
+        if (bill.getId() > 0) {
+            Bill storedBill = billManager.getBill(bill.getId());
+            if (storedBill != null) {
+                return storedBill;
+            }
+        }
+        return bill;
+    }
+
+    private List<ReductionPlan> loadApplicablePlans(Bill bill) throws OHServiceException {
+        if (!GeneralData.PARTNERSMODULEENABLED) {
+            return List.of();
+        }
+        List<ReductionPlan> plans = new ArrayList<>();
+        Patient patient = bill.getBillPatient();
+        if (patient != null) {
+            plans.addAll(patientReductionPlanManager.getApplicableReductionPlans(patient.getCode(), bill.getDate()));
+        }
+        ReductionPlan recordedPlan = bill.getReductionPlan();
+        if (recordedPlan != null && plans.stream().noneMatch(plan -> plan.getId() == recordedPlan.getId())) {
+            plans.add(recordedPlan);
+        }
+        return plans;
+    }
+
+    private List<Price> loadBillPrices(Bill bill) throws OHServiceException {
+        if (bill.getPriceList() == null) {
+            return List.of();
+        }
+        int priceListId = bill.getPriceList().getId();
+        return priceListManager.getPrices().stream()
+                .filter(price -> price.getList() != null && price.getList().getId() == priceListId)
+                .toList();
+    }
+
+    /**
+     * Builds the history rows. A soft deleted item/payment is displayed twice: once as added at its
+     * creation date and once as removed at its last modification date.
+     */
+    private void buildHistoryRows() {
+        billItemRows.clear();
+        for (BillItems item : billItems) {
+            int quantity = Math.abs(item.getItemQuantity());
+            String addAction = item.getItemQuantity() > 0
+                    ? MessageBundle.getMessage("angal.billbrowser.add")
+                    : MessageBundle.getMessage("angal.billbrowser.retour");
+            boolean removed = item.getActive() == 0;
+            LocalDateTime addDate = removed && item.getCreatedDate() != null
+                    ? item.getCreatedDate()
+                    : item.getItemDate();
+            billItemRows.add(new BillHistoryRow(addDate, item.getItemDescription(), item.getCreatedBy(), quantity, null, addAction, item));
+            if (removed) {
+                LocalDateTime removeDate = item.getLastModifiedDate() != null
+                        ? item.getLastModifiedDate()
+                        : item.getItemDate();
+                billItemRows.add(new BillHistoryRow(removeDate, item.getItemDescription(), item.getLastModifiedBy(), quantity, null,
+                        MessageBundle.getMessage("angal.billbrowser.remove"), item));
+            }
+        }
+        billItemRows.sort(Comparator.comparing(BillHistoryRow::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        paymentRows.clear();
+        for (BillPayments payment : billPayments) {
+            double amount = Math.abs(payment.getAmount());
+            String addAction = payment.getAmount() > 0
+                    ? MessageBundle.getMessage("angal.billbrowser.buy")
+                    : MessageBundle.getMessage("angal.billbrowser.refund");
+            boolean removed = payment.getActive() == 0;
+            LocalDateTime addDate = removed && payment.getCreatedDate() != null
+                    ? payment.getCreatedDate()
+                    : payment.getDate();
+            paymentRows.add(new BillHistoryRow(addDate, null, payment.getUser(), null, amount, addAction, null));
+            if (removed) {
+                LocalDateTime removeDate = payment.getLastModifiedDate() != null
+                        ? payment.getLastModifiedDate()
+                        : payment.getDate();
+                paymentRows.add(new BillHistoryRow(removeDate, null, payment.getLastModifiedBy(), null, amount,
+                        MessageBundle.getMessage("angal.billbrowser.remove"), null));
+            }
+        }
+        paymentRows.sort(Comparator.comparing(BillHistoryRow::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
     }
 
     private void initComponents() {
@@ -291,18 +403,47 @@ public class BillHistory extends JDialog {
         return DATE_FORMATTER.format(dateTime);
     }
 
+    private static final class BillHistoryRow {
+
+        private final LocalDateTime date;
+        private final String description;
+        private final String user;
+        private final Integer quantity;
+        private final Double amount;
+        private final String action;
+        private final BillItems billItem;
+
+        private BillHistoryRow(LocalDateTime date, String description, String user, Integer quantity, Double amount, String action, BillItems billItem) {
+            this.date = date;
+            this.description = description;
+            this.user = user;
+            this.quantity = quantity;
+            this.amount = amount;
+            this.action = action;
+            this.billItem = billItem;
+        }
+
+        private LocalDateTime getDate() {
+            return date;
+        }
+    }
+
     class BillItemRowModel extends DefaultTableModel {
 
         private static final long serialVersionUID = 1L;
 
         @Override
         public int getRowCount() {
-            return billItems == null ? 0 : billItems.size();
+            return billItemRows.size();
         }
 
         @Override
         public int getColumnCount() {
-            return billItemColumnNames.length;
+            int count = billItemColumnNames.length;
+            if (!GeneralData.PARTNERSMODULEENABLED) {
+                count--; // Exclude applied reduction column if partners module is disabled
+            }
+            return count;
         }
 
         @Override
@@ -312,26 +453,20 @@ public class BillHistory extends JDialog {
 
         @Override
         public Object getValueAt(int row, int column) {
-            if (row >= billItems.size()) {
+            if (row >= billItemRows.size()) {
                 return null;
             }
-            BillItems item = billItems.get(row);
-            int qty = item.getItemQuantity();
+            BillHistoryRow historyRow = billItemRows.get(row);
 
-            switch (column) {
-                case 0:
-                    return formatDateTime(item.getItemDate());
-                case 1:
-                    return item.getItemDescription();
-                case 2:
-                    return qty > 0 ? qty : -qty;
-                case 3:
-                    return qty > 0
-                            ? MessageBundle.getMessage("angal.billbrowser.add")
-                            : MessageBundle.getMessage("angal.billbrowser.retour");
-                default:
-                    return null;
-            }
+            return switch (column) {
+                case 0 -> formatDateTime(historyRow.date);
+                case 1 -> historyRow.description;
+                case 2 -> historyRow.quantity;
+                case 3 -> historyRow.action;
+                case 4 -> historyRow.user;
+                case 5 -> GeneralData.PARTNERSMODULEENABLED ? getAppliedReduction(historyRow.billItem) : null;
+                default -> null;
+            };
         }
 
         @Override
@@ -348,13 +483,83 @@ public class BillHistory extends JDialog {
         }
     }
 
+    private String getAppliedReduction(BillItems item) {
+        if (item == null || applicablePlans.isEmpty()) {
+            return "-";
+        }
+        String itemGroup = item.getItemGroup();
+        String itemId = item.getItemId();
+        if (itemGroup == null || itemGroup.isEmpty()) {
+            itemGroup = getItemGroupFromPriceId(item.getPriceID());
+        }
+        if (itemId == null || itemId.isEmpty()) {
+            itemId = item.getPriceID();
+            if (itemId != null && itemGroup != null && itemId.startsWith(itemGroup)) {
+                itemId = itemId.substring(itemGroup.length());
+            }
+        }
+        if (itemGroup == null || itemId == null || itemId.isEmpty()) {
+            Price price = findPriceForBillItem(item, itemGroup);
+            if (price != null) {
+                itemGroup = price.getGroup();
+                itemId = price.getItem();
+            }
+        }
+        if (itemGroup == null || itemId == null || itemId.isEmpty()) {
+            return "-";
+        }
+        AppliedReduction reduction = patientReductionPlanManager.resolveReduction(
+                applicablePlans, itemGroup, itemId);
+        if (reduction == null || reduction.rate() == null || reduction.reductionPlan() == null) {
+            return "-";
+        }
+
+        ReductionPlan plan = reduction.reductionPlan();
+        String partner = plan.isHospitalPlan()
+                ? MessageBundle.getMessage("angal.reductionplan.hospitalplan.txt")
+                : plan.getPartner() == null ? "" : plan.getPartner().getName();
+        double netAmount = Math.abs(item.getItemAmount() * item.getItemQuantity());
+        return MessageBundle.formatMessage("angal.newbill.appliedreduction.value.fmt",
+                reduction.rate().stripTrailingZeros().toPlainString(),
+                plan.getDescription(),
+                partner,
+                netAmount);
+    }
+
+    private Price findPriceForBillItem(BillItems item, String itemGroup) {
+        if (item.getItemDescription() == null) {
+            return null;
+        }
+        List<Price> matchingPrices = billPrices.stream()
+                .filter(price -> itemGroup == null || itemGroup.equals(price.getGroup()))
+                .filter(price -> item.getItemDescription().equalsIgnoreCase(price.getDesc()))
+                .toList();
+        return matchingPrices.size() == 1 ? matchingPrices.get(0) : null;
+    }
+
+    private String getItemGroupFromPriceId(String priceId) {
+        if (priceId == null) {
+            return null;
+        }
+        for (String group : List.of(
+                PatientReductionPlanManager.GROUP_EXAM,
+                PatientReductionPlanManager.GROUP_OPERATION,
+                PatientReductionPlanManager.GROUP_MEDICAL,
+                PatientReductionPlanManager.GROUP_OTHER)) {
+            if (priceId.startsWith(group) && priceId.length() > group.length()) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     class PaymentRowModel extends DefaultTableModel {
 
         private static final long serialVersionUID = 1L;
 
         @Override
         public int getRowCount() {
-            return billPayments == null ? 0 : billPayments.size();
+            return paymentRows.size();
         }
 
         @Override
@@ -369,23 +574,20 @@ public class BillHistory extends JDialog {
 
         @Override
         public Object getValueAt(int row, int column) {
-            if (row >= billPayments.size()) {
+            if (row >= paymentRows.size()) {
                 return null;
             }
-            BillPayments payment = billPayments.get(row);
-            double amount = payment.getAmount();
+            BillHistoryRow payment = paymentRows.get(row);
 
             switch (column) {
                 case 0:
-                    return formatDateTime(payment.getDate());
+                    return formatDateTime(payment.date);
                 case 1:
-                    return payment.getUser() != null ? payment.getUser() : "";
+                    return payment.user != null ? payment.user : "";
                 case 2:
-                    return amount > 0 ? amount : -amount;
+                    return payment.amount;
                 case 3:
-                    return amount > 0
-                            ? MessageBundle.getMessage("angal.billbrowser.buy")
-                            : MessageBundle.getMessage("angal.billbrowser.refund");
+                    return payment.action;
                 default:
                     return null;
             }

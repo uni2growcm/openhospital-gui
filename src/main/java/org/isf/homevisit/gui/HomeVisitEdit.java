@@ -120,10 +120,14 @@ public class HomeVisitEdit extends ModalJFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + " *"), gbc);
 
         gbc.gridx = 1;
         gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         patientField = new JTextField(25);
         patientField.setEditable(true);
         patientField.addActionListener(e -> selectPatientWithSearch(patientField.getText().trim()));
@@ -131,6 +135,9 @@ public class HomeVisitEdit extends ModalJFrame {
 
         gbc.gridx = 3;
         gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
         try {
             ImageIcon searchIcon = new ImageIcon("rsc/icons/pick_patient_button.png");
             selectPatientBtn = new JButton(MessageBundle.getMessage("angal.common.select.btn"), searchIcon);
@@ -144,6 +151,9 @@ public class HomeVisitEdit extends ModalJFrame {
 
         gbc.gridx = 4;
         gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
         try {
             ImageIcon clearIcon = new ImageIcon("rsc/icons/remove_patient_button.png");
             clearPatientBtn = new JButton(clearIcon);
@@ -152,16 +162,24 @@ public class HomeVisitEdit extends ModalJFrame {
             clearPatientBtn = new JButton("X");
             clearPatientBtn.setToolTipText(MessageBundle.getMessage("angal.common.clear.btn"));
         }
+        clearPatientBtn.setPreferredSize(new Dimension(25, 25));
+        clearPatientBtn.setMinimumSize(new Dimension(25, 25));
+        clearPatientBtn.setMaximumSize(new Dimension(25, 25));
+        clearPatientBtn.setEnabled(selectedPatient != null);
         clearPatientBtn.addActionListener(e -> clearPatient());
         mainPanel.add(clearPatientBtn, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.staff.col") + " *"), gbc);
 
         gbc.gridx = 1;
         gbc.gridwidth = 4;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         staffCombo = new JComboBox<>();
         loadStaffList();
         mainPanel.add(staffCombo, gbc);
@@ -349,6 +367,9 @@ public class HomeVisitEdit extends ModalJFrame {
                 contactPhoneField.setText(patient.getTelephone());
                 contactPhoneField.setEditable(true);
             }
+            if (clearPatientBtn != null) {
+                clearPatientBtn.setEnabled(true);
+            }
         });
 
         sp.setVisible(true);
@@ -360,6 +381,9 @@ public class HomeVisitEdit extends ModalJFrame {
         patientField.setText("");
         addressField.setText("");
         contactPhoneField.setText("");
+        if (clearPatientBtn != null) {
+            clearPatientBtn.setEnabled(false);
+        }
     }
 
     private void loadExistingData() {
@@ -367,6 +391,11 @@ public class HomeVisitEdit extends ModalJFrame {
         if (selectedPatient != null) {
             patientField.setText(selectedPatient.getName());
             patientField.setEditable(false);
+            if (clearPatientBtn != null) {
+                clearPatientBtn.setEnabled(true);
+            }
+        } else if (clearPatientBtn != null) {
+            clearPatientBtn.setEnabled(false);
         }
         staffCombo.setSelectedItem(homeVisit.getStaff());
         visitStartDateChooser.setDateTime(homeVisit.getVisitStartDate());
