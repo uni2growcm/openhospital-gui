@@ -753,7 +753,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
     }
 
     private JButton getJReportButton() {
-        JButton button = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+        JButton button = new JButton(MessageBundle.getMessage("angal.maternity.report.btn"));
         button.addActionListener(e -> report());
         return button;
     }
