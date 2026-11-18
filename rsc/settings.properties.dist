@@ -59,9 +59,10 @@ STOCKMVTONBILLSAVE=yes
 ALLOWBILLGUARANTOR=no
 # Guarantor quota (max outstanding balance a guarantor can cover on open bills, used when ALLOWBILLGUARANTOR=yes)
 # yes: the single quota BILLGUARANTORQUOTA applies to all guarantors
-# no: each guarantor has their own quota, set in the user edit window
+# no: each guarantor can have their own quota, set in the user edit window;
+#     guarantors without their own quota use BILLGUARANTORQUOTA as default quota
 BILLGUARANTORSINGLEQUOTA=no
-# Single quota amount (0 = no limit)
+# Single quota amount, or default quota when BILLGUARANTORSINGLEQUOTA=no (0 = no limit)
 BILLGUARANTORQUOTA=0
 ENABLEMEDICALREFUND=no
 

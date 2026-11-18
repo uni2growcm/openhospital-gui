@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -349,11 +349,15 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 	/**
 	 * The quota that applies to the user as guarantor: the single quota when BILLGUARANTORSINGLEQUOTA is enabled,
-	 * otherwise the user's own quota. Empty when there is no limit.
+	 * otherwise the user's own quota, or BILLGUARANTORQUOTA as default when the user has no own quota.
+	 * Empty when there is no limit.
 	 */
 	private String getGuarantorQuotaText(User aUser) {
-		Double quota = GeneralData.BILLGUARANTORSINGLEQUOTA ? Double.valueOf(GeneralData.BILLGUARANTORQUOTA) : aUser.getGuarantorQuota();
+		Double quota = GeneralData.BILLGUARANTORSINGLEQUOTA ? null : aUser.getGuarantorQuota();
 		if (quota == null || quota <= 0) {
+			quota = GeneralData.BILLGUARANTORQUOTA;
+		}
+		if (quota <= 0) {
 			return "";
 		}
 		return quotaFormat.format(quota);

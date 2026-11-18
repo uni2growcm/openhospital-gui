@@ -2061,6 +2061,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 				loadDataset();
 				checkBill();
 				boolean isFullyPaid = balance.doubleValue() == 0;
+				if (!checkRefundBeforeSave()) {
+					return;
+				}
 				if (!isFullyPaid) {
 					Patient currentPatient = thisBill.getBillPatient();
 					if (currentPatient == null || currentPatient.getCode() == 0) {
@@ -2178,7 +2181,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                         thisBill.isPatient(), // is a Patient?
                         thisBill.getBillPatient(), // Patient
                         thisBill.isPatient() ? thisBill.getPatName() : jTextFieldPatient.getText(), // Patient Name
-                        paid ? "C" : "O", // CLOSED or OPEN
+                        paid || ("C".equals(thisBill.getStatus()) && isFullyPaid) ? "C" : "O", // CLOSED or OPEN
                         total.doubleValue(), // Total
                         balance.doubleValue(), // Balance
 						thisBill.getLock(),
@@ -2233,6 +2236,67 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 			});
 		}
 		return jButtonSave;
+	}
+
+	/** Sum of the payments (positive amounts) of the bill. */
+	private BigDecimal getPaidAmount() {
+		BigDecimal paidAmount = BigDecimal.ZERO;
+		for (BillPayments pay : payItems) {
+			if (pay.getAmount() > 0) {
+				paidAmount = paidAmount.add(new BigDecimal(Double.toString(pay.getAmount())));
+			}
+		}
+		return paidAmount;
+	}
+
+	/** Sum of the refunds (negative payments, as a positive amount) of the bill. */
+	private BigDecimal getRefundedAmount() {
+		BigDecimal refundedAmount = BigDecimal.ZERO;
+		for (BillPayments pay : payItems) {
+			if (pay.getAmount() < 0) {
+				refundedAmount = refundedAmount.add(new BigDecimal(Double.toString(pay.getAmount())).negate());
+			}
+		}
+		return refundedAmount;
+	}
+
+	/**
+	 * The amount that must be refunded to the patient: what was paid beyond the bill total
+	 * (e.g. the price of the items removed from an already paid bill).
+	 */
+	private BigDecimal getDueRefund() {
+		return getPaidAmount().subtract(bigTotal).max(BigDecimal.ZERO);
+	}
+
+	/**
+	 * Check that the refunds are exactly what the patient has overpaid (e.g. after removing items from an already
+	 * paid bill) and show a message adapted to the situation: nothing refunded yet, partially refunded, or refunded
+	 * more than due.
+	 *
+	 * @return {@code true} if the save can go on
+	 */
+	private boolean checkRefundBeforeSave() {
+		BigDecimal paidAmount = getPaidAmount();
+		BigDecimal refundedAmount = getRefundedAmount();
+		BigDecimal dueRefund = getDueRefund();
+		if (balance.signum() < 0) {
+			BigDecimal remainingRefund = balance.negate();
+			if (refundedAmount.signum() == 0) {
+				MessageDialog.error(this, "angal.newbill.refund.notdone.fmt.msg",
+					paidAmount.doubleValue(), bigTotal.doubleValue(), remainingRefund.doubleValue());
+			} else {
+				MessageDialog.error(this, "angal.newbill.refund.partial.fmt.msg",
+					dueRefund.doubleValue(), refundedAmount.doubleValue(), remainingRefund.doubleValue());
+			}
+			return false;
+		}
+		BigDecimal excessRefund = refundedAmount.subtract(dueRefund);
+		if (excessRefund.signum() > 0) {
+			MessageDialog.error(this, "angal.newbill.refund.toomuch.fmt.msg",
+				dueRefund.doubleValue(), refundedAmount.doubleValue(), excessRefund.doubleValue());
+			return false;
+		}
+		return true;
 	}
 
 	private boolean hasNewPayments() {
@@ -2374,6 +2438,13 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 						}
 					} catch (Exception eee) {
 						MessageDialog.error(this, "angal.newbill.invalidquantitypleasetryagain.msg");
+						return;
+					}
+					BigDecimal dueRefund = getDueRefund();
+					BigDecimal remainingRefund = dueRefund.subtract(getRefundedAmount()).max(BigDecimal.ZERO);
+					if (amount.negate().compareTo(remainingRefund) > 0) {
+						MessageDialog.error(this, "angal.newbill.refund.morethandue.fmt.msg",
+							amount.negate().doubleValue(), remainingRefund.doubleValue());
 						return;
 					}
 				} else {
