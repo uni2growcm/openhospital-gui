@@ -65,6 +65,7 @@ import org.isf.menu.manager.Context;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
 import org.isf.stat.gui.report.GenericReportWeekWard;
+import org.isf.stat.gui.report.GenericReportYearWard;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
@@ -368,6 +369,23 @@ public class ReportLauncher extends ModalJFrame {
 			jFromDateLabel.setVisible(false);
 			jFromDateField.setVisible(false);
 
+			jWardLabel = new JLabel("  " + MessageBundle.getMessage("angal.common.ward.col"));
+			jWardComboBox = new JComboBox<>();
+			jWardComboBox.addItem(MessageBundle.getMessage("angal.common.all.txt"));
+			try {
+				WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+				List<Ward> wards = wardBrowserManager.getWards();
+				if (wards != null) {
+					for (Ward w : wards) {
+						jWardComboBox.addItem(w);
+					}
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error loading wards for ReportLauncher", e);
+			}
+			jWardLabel.setVisible(false);
+			jWardComboBox.setVisible(false);
+
 			jMonthPanel.add(jRptLabel, null);
 			jMonthPanel.add(jRptComboBox, null);
 			jMonthPanel.add(jMonthLabel, null);
@@ -384,6 +402,8 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthPanel.add(jFromDateField, null);
 			jMonthPanel.add(jToDateLabel, null);
 			jMonthPanel.add(jToDateField, null);
+			jMonthPanel.add(jWardLabel, null);
+			jMonthPanel.add(jWardComboBox, null);
 		}
 		return jMonthPanel;
 
@@ -443,7 +463,6 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
-
 				String jasperFileName = jasperFile.getName().toLowerCase();
 				boolean isWeekWardReport = jasperFileName.contains("week")
 								|| (userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
@@ -457,6 +476,7 @@ public class ReportLauncher extends ModalJFrame {
 					jWeekIndexComboBox.setVisible(true);
 					jWardLabel.setVisible(true);
 					jWardComboBox.setVisible(true);
+					jWardComboBox.setSelectedIndex(0);
 					jStatusLabel.setVisible(true);
 					jStatusComboBox.setVisible(true);
 					jFromDateLabel.setVisible(false);
@@ -464,15 +484,32 @@ public class ReportLauncher extends ModalJFrame {
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
 					updateWeekIndexComboBox();
+				} else if (userInputParamNames.contains("ward_id") || userInputParamNames.contains("ward")) {
+					boolean hasMonth = userInputParamNames.contains("month");
+					jMonthComboBox.setVisible(hasMonth);
+					jMonthLabel.setVisible(hasMonth);
+					jYearComboBox.setVisible(true);
+					jYearLabel.setVisible(true);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jWardLabel.setVisible(true);
+					jWardComboBox.setVisible(true);
+					jWardComboBox.setSelectedIndex(0);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
+					jFromDateLabel.setVisible(false);
+					jFromDateField.setVisible(false);
+					jToDateLabel.setVisible(false);
+					jToDateField.setVisible(false);
 				} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
+					jWardLabel.setVisible(false);
+					jWardComboBox.setVisible(false);
 					jMonthComboBox.setVisible(false);
 					jMonthLabel.setVisible(false);
 					jYearComboBox.setVisible(false);
 					jYearLabel.setVisible(false);
 					jWeekIndexLabel.setVisible(false);
 					jWeekIndexComboBox.setVisible(false);
-					jWardLabel.setVisible(false);
-					jWardComboBox.setVisible(false);
 					jStatusLabel.setVisible(false);
 					jStatusComboBox.setVisible(false);
 					jFromDateLabel.setVisible(true);
@@ -480,22 +517,31 @@ public class ReportLauncher extends ModalJFrame {
 					jToDateLabel.setVisible(true);
 					jToDateField.setVisible(true);
 				} else if (userInputParamNames.contains("month") || userInputParamNames.contains("year")) {
-					jMonthComboBox.setVisible(true);
-					jMonthLabel.setVisible(true);
+					jWardLabel.setVisible(false);
+					jWardComboBox.setVisible(false);
+					boolean hasMonth = userInputParamNames.contains("month");
+					jMonthComboBox.setVisible(hasMonth);
+					jMonthLabel.setVisible(hasMonth);
 					jYearComboBox.setVisible(true);
 					jYearLabel.setVisible(true);
 					jWeekIndexLabel.setVisible(false);
 					jWeekIndexComboBox.setVisible(false);
-					jWardLabel.setVisible(false);
-					jWardComboBox.setVisible(false);
 					jStatusLabel.setVisible(false);
 					jStatusComboBox.setVisible(false);
 					jFromDateLabel.setVisible(false);
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
+				} else {
+					jWardLabel.setVisible(false);
+					jWardComboBox.setVisible(false);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
 				}
 				pack();
+				setLocationRelativeTo(null);
 			} catch (JRException e) {
 				LOGGER.error("Exception in selectAction method.", e);
 			}
@@ -531,8 +577,8 @@ public class ReportLauncher extends ModalJFrame {
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
 			File jasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
-			String jasperFileName = jasperFile != null ? jasperFile.getName().toLowerCase() : "";
-			boolean isWeekWardReport = jasperFileName.contains("week")
+			String checkName = jasperFile != null ? jasperFile.getName().toLowerCase() : "";
+			boolean isWeekWardReport = checkName.contains("week")
 							|| (userInputParamNames != null && userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
 
 			if (isWeekWardReport) {
@@ -590,12 +636,33 @@ public class ReportLauncher extends ModalJFrame {
 				return;
 			}
 
-			if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
+			String folder = folderNameFileNameMap.get("rpt_stat").contains(
+							reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+											: "rpt_extra";
+			String jasperFileName = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "");
+
+			if (userInputParamNames.contains("ward_id") || userInputParamNames.contains("ward")) {
+				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+				Object selectedWardItem = jWardComboBox.getSelectedItem();
+				String wardId = "ALL";
+				String wardName = MessageBundle.getMessage("angal.common.all.txt");
+				if (selectedWardItem instanceof Ward) {
+					Ward ward = (Ward) selectedWardItem;
+					wardId = ward.getCode();
+					wardName = ward.getDescription();
+				}
+
+				new GenericReportYearWard(year, wardId, wardName, folder, jasperFileName, jRptComboBox.getSelectedItem().toString(), toExcel);
+				if (GeneralData.XMPPMODULEENABLED) {
+					String user = (String) shareWith.getSelectedItem();
+					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
+					frame.sendMessage("011100100110010101110000011011110111001001110100 " + year + ' ' + wardId + ' ' +
+									jRptComboBox.getSelectedItem().toString(), user, false);
+				}
+			} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
+								folder,
+								jasperFileName,
 								jRptComboBox.getSelectedItem().toString(), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
@@ -610,10 +677,8 @@ public class ReportLauncher extends ModalJFrame {
 				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
 
 				new GenericReportMY(month, year,
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
+								folder,
+								jasperFileName,
 								jRptComboBox.getSelectedItem().toString(), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
