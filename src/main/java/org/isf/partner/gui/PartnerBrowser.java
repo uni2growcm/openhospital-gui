@@ -47,6 +47,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -64,14 +66,15 @@ public class PartnerBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.partner.name.col"),
             MessageBundle.getMessage("angal.partner.type.col"),
             MessageBundle.getMessage("angal.partner.contactperson.col"),
-            MessageBundle.getMessage("angal.partner.phone.col")};
+            MessageBundle.getMessage("angal.partner.phone.col"),
+            MessageBundle.getMessage("angal.partner.priority.col")};
 
     public PartnerBrowser() {
         this.partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
         initComponents();
         loadPartners(null);
         setTitle(MessageBundle.getMessage("angal.partner.browser.title"));
-        setSize(700, 500);
+        setSize(850, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
@@ -82,7 +85,7 @@ public class PartnerBrowser extends ModalJFrame {
         initComponents();
         loadPartners(null);
         setTitle(MessageBundle.getMessage("angal.partner.browser.title"));
-        setSize(700, 500);
+        setSize(850, 500);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
@@ -130,6 +133,12 @@ public class PartnerBrowser extends ModalJFrame {
         JButton editBtn = new JButton(MessageBundle.getMessage("angal.partner.edit.btn"));
         JButton deleteBtn = new JButton(MessageBundle.getMessage("angal.partner.delete.btn"));
         JButton closeBtn = new JButton(MessageBundle.getMessage("angal.partner.close.btn"));
+        JButton upBtn = new JButton(MessageBundle.getMessage("angal.partner.priorityup.btn"));
+        JButton downBtn = new JButton(MessageBundle.getMessage("angal.partner.prioritydown.btn"));
+        upBtn.setToolTipText(MessageBundle.getMessage("angal.partner.priority.tooltip"));
+        downBtn.setToolTipText(MessageBundle.getMessage("angal.partner.priority.tooltip"));
+        upBtn.addActionListener(e -> moveSelected(-1));
+        downBtn.addActionListener(e -> moveSelected(1));
 
         newBtn.setMnemonic(MessageBundle.getMnemonic("angal.partner.new.btn.key"));
         editBtn.setMnemonic(MessageBundle.getMnemonic("angal.partner.edit.btn.key"));
@@ -147,6 +156,8 @@ public class PartnerBrowser extends ModalJFrame {
         btnPanel.add(newBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
+        btnPanel.add(upBtn);
+        btnPanel.add(downBtn);
         btnPanel.add(closeBtn);
         add(btnPanel, BorderLayout.SOUTH);
 
@@ -163,9 +174,10 @@ public class PartnerBrowser extends ModalJFrame {
         try {
             List<Partner> partners;
             if (filter == null || filter.isEmpty()) {
-                partners = partnerBrowserManager.getPartners();
+                partners = partnerBrowserManager.getPartnersByPriority();
             } else {
-                partners = partnerBrowserManager.searchPartners(filter);
+                partners = new ArrayList<>(partnerBrowserManager.searchPartners(filter));
+                partners.sort(Comparator.comparing(Partner::getPriority, Comparator.nullsLast(Comparator.naturalOrder())));
             }
 
             for (Partner p : partners) {
@@ -176,7 +188,8 @@ public class PartnerBrowser extends ModalJFrame {
                         p.getName(),
                         typeDesc,
                         p.getContactPerson(),
-                        p.getPhone()
+                        p.getPhone(),
+                        p.getPriority()
                 });
             }
         } catch (OHServiceException e) {
@@ -206,6 +219,36 @@ public class PartnerBrowser extends ModalJFrame {
             loadPartners(searchField.getText().trim());
         });
         editor.setVisible(true);
+    }
+
+    /**
+     * Moves the selected partner up (more prioritary) or down (less prioritary) in the priority order.
+     */
+    private void moveSelected(int offset) {
+        Partner selected = getSelectedPartner();
+        if (selected == null) {
+            return;
+        }
+        try {
+            List<Partner> ordered = new ArrayList<>(partnerBrowserManager.getPartnersByPriority());
+            int index = ordered.indexOf(selected);
+            int target = index + offset;
+            if (index < 0 || target < 0 || target >= ordered.size()) {
+                return;
+            }
+            ordered.add(target, ordered.remove(index));
+            partnerBrowserManager.updatePriorities(ordered);
+            loadPartners(searchField.getText().trim());
+            for (int row = 0; row < tableModel.getRowCount(); row++) {
+                if (selected.getCode().equals(tableModel.getValueAt(row, 0))) {
+                    table.setRowSelectionInterval(row, row);
+                    break;
+                }
+            }
+        } catch (OHServiceException e) {
+            MessageDialog.error(this, MessageBundle.getMessage("angal.partner.save.error.msg"));
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     private void deleteSelected() {

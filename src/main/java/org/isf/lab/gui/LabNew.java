@@ -57,6 +57,9 @@ import org.isf.lab.model.LaboratoryRow;
 import org.isf.lab.model.LaboratoryStatus;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.prescriber.gui.PrescriberEdit;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.gui.SelectPatient.SelectionListener;
 import org.isf.patient.model.Patient;
@@ -299,6 +302,10 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					MessageDialog.error(this, "angal.lab.pleaseinsertavalidexamdate.msg");
 					return;
 				}
+				if (newDate.isAfter(TimeTools.getNow())) {
+					MessageDialog.error(this, "angal.lab.futuredatenotallowed.msg");
+					return;
+				}
 				RememberDates.setLastLabExamDate(newDate);
 				String inOut = jRadioButtonOPD.isSelected() ? "O" : "I";
 
@@ -310,7 +317,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 					lab.setInOutPatient(inOut);
 					lab.setPatient(patientSelected);
 					lab.setPrescriber(prescriber);
-					lab.setStatus(LaboratoryStatus.done.toString());
+					lab.setStatus(LaboratoryStatus.open.toString());
 					int procedure = lab.getExam().getProcedure();
 					row++;
 				}
@@ -706,6 +713,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				labDate = TimeTools.getNow();
 			}
 			jCalendarDate = new GoodDateTimeSpinnerChooser(labDate);
+			jCalendarDate.setMaxDate(java.time.LocalDate.now());
 		}
 		return jCalendarDate;
 	}
@@ -726,7 +734,6 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jPanelEast.setLayout(new BoxLayout(jPanelEast, BoxLayout.Y_AXIS));
 			jPanelEast.add(getJPanelExamButtons());
 			jPanelEast.add(getJPanelMaterial());
-			jPanelEast.add(getJPanelResults());
 		}
 		return jPanelEast;
 	}
@@ -772,6 +779,23 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		} catch (OHServiceException e) {
 			LOGGER.error("Error loading prescribers", e);
 		}
+		try {
+			PrescriberBrowserManager prescriberManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
+			for (String name : prescriberManager.getPrescriberNames()) {
+				boolean exists = false;
+				for (int i = 0; i < jComboBoxPrescriber.getItemCount(); i++) {
+					if (name.equals(jComboBoxPrescriber.getItemAt(i))) {
+						exists = true;
+						break;
+					}
+				}
+				if (!exists) {
+					jComboBoxPrescriber.addItem(name);
+				}
+			}
+		} catch (OHServiceException e) {
+			LOGGER.error("Error loading managed prescribers", e);
+		}
 
 		jComboBoxPrescriber.addActionListener(actionEvent -> {
 			String selected = (String) jComboBoxPrescriber.getSelectedItem();
@@ -783,6 +807,29 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 		});
 
 		panel.add(jComboBoxPrescriber);
+
+		JButton addPrescriberButton = new JButton("+");
+		addPrescriberButton.setToolTipText(MessageBundle.getMessage("angal.prescriber.add.tooltip"));
+		addPrescriberButton.addActionListener(actionEvent -> {
+			PrescriberEdit dialog = new PrescriberEdit(this, new Prescriber(), true);
+			dialog.setVisible(true);
+			if (dialog.isSaved() && dialog.getSavedPrescriber() != null) {
+				String name = dialog.getSavedPrescriber().getName();
+				boolean exists = false;
+				for (int i = 0; i < jComboBoxPrescriber.getItemCount(); i++) {
+					if (name.equals(jComboBoxPrescriber.getItemAt(i))) {
+						exists = true;
+						break;
+					}
+				}
+				if (!exists) {
+					jComboBoxPrescriber.addItem(name);
+				}
+				jComboBoxPrescriber.setSelectedItem(name);
+				jTextFieldPrescriber.setText(name);
+			}
+		});
+		panel.add(addPrescriberButton);
 
 		return panel;
 	}
@@ -808,7 +855,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 				}
 			}
 
-			jTableExams.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			jTableExams.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			ListSelectionModel listSelectionModel = jTableExams.getSelectionModel();
 			listSelectionModel.addListSelectionListener(selectionEvent -> {
 				// Check that mouse has been released.
@@ -891,12 +938,7 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 						continue;
 					}
 
-					if (exa.getProcedure() == 1 || exa.getProcedure() == 3) {
-						// The exam may not have a default value
-						lab.setResult(exa.getDefaultResult());
-					} else { // exa.getProcedure() == 2
-						lab.setResult(MessageBundle.getMessage("angal.labnew.multipleresults"));
-					}
+					lab.setResult("");
 					lab.setExam(exa);
 					lab.setMaterial(labManager.getMaterialKey(mat));
 					addItem(lab);
@@ -997,18 +1039,43 @@ public class LabNew extends ModalJFrame implements SelectionListener {
 			jButtonRemoveItem.setIcon(new ImageIcon("rsc/icons/delete_button.png")); //$NON-NLS-1$
 			jButtonRemoveItem.addActionListener(actionEvent -> {
 
-				int selectedRow = jTableExams.getSelectedRow();
-				if (selectedRow < 0) {
+				int[] selectedRows = jTableExams.getSelectedRows();
+				if (selectedRows.length == 0) {
 					MessageDialog.error(this, "angal.lab.pleaseselectanexam.msg");
-				} else {
-					examItems.remove(selectedRow);
-					jPanelResults.removeAll();
-					jTableExams.clearSelection();
-					jTableModel.fireTableDataChanged();
-					jTableExams.updateUI();
-					jComboBoxMaterial.setEnabled(false);
-					repaint();
+					return;
 				}
+
+				if (selectedRows.length > 1) {
+					int confirm = MessageDialog.yesNo(this, "angal.labnew.removeexams.fmt.msg", selectedRows.length);
+					if (confirm != JOptionPane.YES_OPTION) {
+						return;
+					}
+				}
+
+				int[] modelRows = new int[selectedRows.length];
+				for (int i = 0; i < selectedRows.length; i++) {
+					modelRows[i] = jTableExams.convertRowIndexToModel(selectedRows[i]);
+				}
+				java.util.Arrays.sort(modelRows);
+
+				for (int i = modelRows.length - 1; i >= 0; i--) {
+					int modelRow = modelRows[i];
+					if (modelRow >= 0 && modelRow < examItems.size()) {
+						examItems.remove(modelRow);
+					}
+					if (modelRow >= 0 && modelRow < examResults.size()) {
+						examResults.remove(modelRow);
+					}
+				}
+
+				if (jPanelResults != null) {
+					jPanelResults.removeAll();
+				}
+				jTableExams.clearSelection();
+				jTableModel.fireTableDataChanged();
+				jTableExams.updateUI();
+				jComboBoxMaterial.setEnabled(false);
+				repaint();
 			});
 		}
 		return jButtonRemoveItem;
