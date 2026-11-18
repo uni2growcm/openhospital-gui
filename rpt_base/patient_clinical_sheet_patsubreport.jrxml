@@ -385,7 +385,7 @@ WHERE PAT_ID = $P{patientID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{City}+":"]]></textFieldExpression>
 			</textField>
-			<image scaleImage="FillFrame" onErrorType="Icon">
+			<image scaleImage="FillFrame" onErrorType="Blank">
 				<reportElement key="image-1" x="418" y="14" width="107" height="107" uuid="5077d354-6ac1-47ea-bc57-831c44fd41e5"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -393,7 +393,7 @@ WHERE PAT_ID = $P{patientID}]]>
 					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
 					<rightPen lineWidth="0.25" lineStyle="Solid"/>
 				</box>
-				<imageExpression><![CDATA[$F{PAT_PHOTO} != null ? $F{PAT_PHOTO} : $P{PATIENT_PHOTO}]]></imageExpression>
+				<imageExpression><![CDATA[$F{PAT_PHOTO} != null ? $F{PAT_PHOTO} : ($P{PATIENT_PHOTO} != null && new java.io.File($P{PATIENT_PHOTO}).exists() ? $P{PATIENT_PHOTO} : "rsc/images/nophoto.png")]]></imageExpression>
 			</image>
 			<line>
 				<reportElement key="line-1" x="0" y="1" width="535" height="1" uuid="edbf4e23-3e0a-4b7b-a247-5fd68849d3ca"/>

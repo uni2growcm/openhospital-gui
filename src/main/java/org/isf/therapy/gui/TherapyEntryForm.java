@@ -30,6 +30,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -43,6 +46,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -56,6 +60,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.manager.MedicalBrowsingManager;
@@ -107,6 +115,12 @@ public class TherapyEntryForm extends JDialog {
 	private JPanel dayWeeksMonthsPanel;
 	private JPanel frequencyInDayPanel;
 	private JPanel frequencyInPeriodPanel;
+	private JPanel frequencyModePanel;
+	private JRadioButton jRadioButtonDaily;
+	private JRadioButton jRadioButtonHourly;
+	private ButtonGroup frequencyModeGroup;
+	private JPanel frequencyInHourPanel;
+	private JSpinner jSpinnerFreqInHour;
 	private JPanel quantityPanel;
 	private JPanel medicalsPanel;
 	private JPanel therapyPanelWest;
@@ -170,6 +184,7 @@ public class TherapyEntryForm extends JDialog {
 			fillFormWithTherapy(therapy);
 		} else {
 			therapy = new Therapy();
+			setHourlyMode(false);
 			radioButtonSet.get(0).setSelected(true);
 			endDateLabel.setText(dateFormat.format(TimeTools.getNow()));
 		}
@@ -183,7 +198,7 @@ public class TherapyEntryForm extends JDialog {
 			setTitle(MessageBundle.getMessage("angal.therapy.edittherapyentryform.title"));
 			getContentPane().setBackground(Color.RED);
 		}
-		setSize(new Dimension(820, 400));
+		setSize(new Dimension(840, 420));
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		getContentPane().add(getTherapyPanel(), BorderLayout.CENTER);
 		getContentPane().add(getButtonPanel(), BorderLayout.SOUTH);
@@ -203,9 +218,16 @@ public class TherapyEntryForm extends JDialog {
 		jSpinnerQty.setValue(th.getQty());
 
 		/*
-		 * Frequency Within Day
+		 * Frequency Within Day / Hour
 		 */
-		radioButtonSet.get(th.getFreqInDay() - 1).setSelected(true);
+		if (th.getFreqInHour() > 0) {
+			setHourlyMode(true);
+			jSpinnerFreqInHour.setValue(th.getFreqInHour());
+		} else {
+			setHourlyMode(false);
+			int index = Math.max(0, Math.min(th.getFreqInDay() - 1, radioButtonSet.size() - 1));
+			radioButtonSet.get(index).setSelected(true);
+		}
 		
 		/*
 		 * Calendars
@@ -394,6 +416,127 @@ public class TherapyEntryForm extends JDialog {
 			frequencyInPeriodPanel.add(labelSuffix);
 		}
 		return frequencyInPeriodPanel;
+	}
+
+	private JPanel getFrequencyModePanel() {
+		if (frequencyModePanel == null) {
+			frequencyModePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			frequencyModePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			jRadioButtonDaily = new JRadioButton(MessageBundle.getMessage("angal.therapy.mode.daily"));
+			jRadioButtonHourly = new JRadioButton(MessageBundle.getMessage("angal.therapy.mode.hourly"));
+			frequencyModeGroup = new ButtonGroup();
+			frequencyModeGroup.add(jRadioButtonDaily);
+			frequencyModeGroup.add(jRadioButtonHourly);
+			jRadioButtonDaily.setSelected(true);
+			jRadioButtonDaily.addActionListener(e -> setHourlyMode(false));
+			jRadioButtonHourly.addActionListener(e -> setHourlyMode(true));
+			frequencyModePanel.add(jRadioButtonDaily);
+			frequencyModePanel.add(jRadioButtonHourly);
+		}
+		return frequencyModePanel;
+	}
+
+	private JPanel getFrequencyInHourPanel() {
+		if (frequencyInHourPanel == null) {
+			frequencyInHourPanel = new JPanel();
+			frequencyInHourPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			frequencyInHourPanel.setBorder(new TitledBorder(null,
+					MessageBundle.getMessage("angal.therapy.frequencywithinhour"), TitledBorder.LEADING, //$NON-NLS-1$
+					TitledBorder.TOP, null, null));
+
+			JLabel labelPrefix = new JLabel(MessageBundle.getMessage("angal.therapy.every")); //$NON-NLS-1$
+			frequencyInHourPanel.add(labelPrefix);
+
+			frequencyInHourPanel.add(getSpinnerFreqInHour());
+
+			JLabel labelSuffix = new JLabel(MessageBundle.getMessage("angal.therapy.hourhours")); //$NON-NLS-1$
+			frequencyInHourPanel.add(labelSuffix);
+		}
+		return frequencyInHourPanel;
+	}
+
+	private JSpinner getSpinnerFreqInHour() {
+		if (jSpinnerFreqInHour == null) {
+			jSpinnerFreqInHour = new JSpinner(new SpinnerNumberModel(2, 1, 24, 1));
+			jSpinnerFreqInHour.setFont(new Font("Dialog", Font.BOLD, 12));
+			jSpinnerFreqInHour.setPreferredSize(new Dimension(80, ONE_LINE_COMPONENTS_HEIGHT));
+			jSpinnerFreqInHour.setMaximumSize(new Dimension(Short.MAX_VALUE, ONE_LINE_COMPONENTS_HEIGHT));
+
+			JFormattedTextField textField = ((JSpinner.DefaultEditor) jSpinnerFreqInHour.getEditor()).getTextField();
+			((AbstractDocument) textField.getDocument()).setDocumentFilter(new DocumentFilter() {
+				@Override
+				public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+					if (string == null) {
+						return;
+					}
+					if (isValid(fb, string, offset, 0)) {
+						super.insertString(fb, offset, string, attr);
+					}
+				}
+
+				@Override
+				public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+					if (text == null) {
+						return;
+					}
+					if (isValid(fb, text, offset, length)) {
+						super.replace(fb, offset, length, text, attrs);
+					}
+				}
+
+				@Override
+				public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+					super.remove(fb, offset, length);
+				}
+
+				private boolean isValid(FilterBypass fb, String insertedText, int offset, int removeLength) throws BadLocationException {
+					String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+					String newText = current.substring(0, offset) + insertedText + current.substring(offset + removeLength);
+					if (newText.isEmpty()) {
+						return true;
+					}
+					if (!newText.matches("\\d+")) {
+						return false;
+					}
+					try {
+						int val = Integer.parseInt(newText);
+						return val >= 1 && val <= 24;
+					} catch (NumberFormatException e) {
+						return false;
+					}
+				}
+			});
+
+			textField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (textField.getText().trim().isEmpty()) {
+						textField.setValue(jSpinnerFreqInHour.getValue());
+					}
+				}
+			});
+		}
+		return jSpinnerFreqInHour;
+	}
+
+	private void setHourlyMode(boolean hourly) {
+		if (jRadioButtonHourly != null && jRadioButtonDaily != null) {
+			jRadioButtonHourly.setSelected(hourly);
+			jRadioButtonDaily.setSelected(!hourly);
+		}
+		if (frequencyInDayPanel != null) {
+			frequencyInDayPanel.setVisible(!hourly);
+		}
+		if (frequencyInPeriodPanel != null) {
+			frequencyInPeriodPanel.setVisible(!hourly);
+		}
+		if (frequencyInHourPanel != null) {
+			frequencyInHourPanel.setVisible(hourly);
+		}
+		if (frequenciesPanel != null) {
+			frequenciesPanel.revalidate();
+			frequenciesPanel.repaint();
+		}
 	}
 
 	private List<JRadioButton> getRadioButtonSet(int frequencyInDayOptions) {
@@ -645,8 +788,11 @@ public class TherapyEntryForm extends JDialog {
 			frequenciesPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 			frequenciesPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
 			frequenciesPanel.setLayout(new BoxLayout(frequenciesPanel, BoxLayout.Y_AXIS));
+			frequenciesPanel.add(getFrequencyModePanel());
 			frequenciesPanel.add(getFrequencyInDayPanel());
 			frequenciesPanel.add(getFrequencyInPeriodPanel());
+			frequenciesPanel.add(getFrequencyInHourPanel());
+			getFrequencyInHourPanel().setVisible(false);
 		}
 		return frequenciesPanel;
 	}
@@ -714,14 +860,32 @@ public class TherapyEntryForm extends JDialog {
 				}
 				int therapyID = inserting ? 0 : therapy.getTherapyID();
 				int unitID = 0; //TODO: UoM table
-				int freqInDay = getFreqInDay();
-				int freqInPeriod = Integer.parseInt(jSpinnerFreqInPeriod.getValue().toString());
+				int freqInHour = 0;
+				int freqInDay = 0;
+				int freqInPeriod = 1;
+				if (jRadioButtonHourly != null && jRadioButtonHourly.isSelected()) {
+					try {
+						jSpinnerFreqInHour.commitEdit();
+					} catch (ParseException e) {
+						JFormattedTextField textField = ((JSpinner.DefaultEditor) jSpinnerFreqInHour.getEditor()).getTextField();
+						textField.setValue(jSpinnerFreqInHour.getValue());
+					}
+					freqInHour = (Integer) jSpinnerFreqInHour.getValue();
+					if (freqInHour <= 0 || freqInHour > 24) {
+						freqInHour = 2;
+					}
+					freqInDay = (int) Math.round(24.0 / freqInHour);
+					freqInPeriod = 1;
+				} else {
+					freqInDay = getFreqInDay();
+					freqInPeriod = Integer.parseInt(jSpinnerFreqInPeriod.getValue().toString());
+				}
 				String note = noteTextArea.getText();
 				boolean notify = false;
 				boolean sms = false;
 
 				try {
-					thRow = therapyManager.getTherapyRow(therapyID, patID, startDate, endDate, medical, qty, unitID, freqInDay, freqInPeriod, note, notify, sms);
+					thRow = therapyManager.getTherapyRow(therapyID, patID, startDate, endDate, medical, qty, unitID, freqInDay, freqInPeriod, freqInHour, note, notify, sms);
 				} catch (OHServiceException e) {
 					OHServiceExceptionUtil.showMessages(e, this);
 					return;
