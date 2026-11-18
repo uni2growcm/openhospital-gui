@@ -32,9 +32,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,12 +64,13 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.menu.manager.Context;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
+import org.isf.stat.gui.report.GenericReportWeekWard;
 import org.isf.stat.gui.report.GenericReportYearWard;
-import org.isf.ward.manager.WardBrowserManager;
-import org.isf.ward.model.Ward;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
+import org.isf.ward.manager.WardBrowserManager;
+import org.isf.ward.model.Ward;
 import org.isf.xmpp.gui.CommunicationFrame;
 import org.isf.xmpp.manager.Interaction;
 import org.slf4j.Logger;
@@ -100,9 +106,12 @@ public class ReportLauncher extends ModalJFrame {
 	private JLabel jToDateLabel;
 	private GoodDateChooser jToDateField;
 	private GoodDateChooser jFromDateField;
+	private JLabel jWeekIndexLabel;
+	private JComboBox<String> jWeekIndexComboBox;
 	private JLabel jWardLabel;
 	private JComboBox<Object> jWardComboBox;
-
+	private JLabel jStatusLabel;
+	private JComboBox<String> jStatusComboBox;
 	private JComboBox<String> jRptComboBox;
 
 	private Map<String, File> reportNameFileMap;
@@ -299,6 +308,11 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthComboBox.addItem(MessageBundle.getMessage("angal.stat.december"));
 
 			jMonthComboBox.setSelectedIndex(month - 1);
+			jMonthComboBox.addActionListener(actionEvent -> {
+				if (jWeekIndexComboBox != null && jWeekIndexComboBox.isVisible()) {
+					updateWeekIndexComboBox();
+				}
+			});
 
 			// TODO: fix how the layout of the last two fields are done; adding
 			// spaces is a hack
@@ -308,6 +322,41 @@ public class ReportLauncher extends ModalJFrame {
 			for (int i = 0; i < 20; i++) {
 				jYearComboBox.addItem(String.valueOf(year - i));
 			}
+			jYearComboBox.addActionListener(actionEvent -> {
+				if (jWeekIndexComboBox != null && jWeekIndexComboBox.isVisible()) {
+					updateWeekIndexComboBox();
+				}
+			});
+
+			jWeekIndexLabel = new JLabel(" " + MessageBundle.getMessage("angal.stat.weekindex"));
+			jWeekIndexComboBox = new JComboBox<>();
+			jWeekIndexLabel.setVisible(false);
+			jWeekIndexComboBox.setVisible(false);
+
+			jWardLabel = new JLabel(" " + MessageBundle.getMessage("angal.stat.wards"));
+			jWardComboBox = new JComboBox<>();
+			jWardComboBox.addItem(MessageBundle.getMessage("angal.common.all.label"));
+			try {
+				WardBrowserManager wardManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+				List<Ward> wards = wardManager.getWards();
+				if (wards != null) {
+					for (Ward w : wards) {
+						jWardComboBox.addItem(w);
+					}
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error loading wards into combo box", e);
+			}
+			jWardLabel.setVisible(false);
+			jWardComboBox.setVisible(false);
+
+			jStatusLabel = new JLabel(" " + MessageBundle.getMessage("angal.stat.status"));
+			jStatusComboBox = new JComboBox<>();
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.common.all.label"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.pending.title"));
+			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.closed.title"));
+			jStatusLabel.setVisible(false);
+			jStatusComboBox.setVisible(false);
 
 			jFromDateLabel = new JLabel(MessageBundle.getMessage("angal.common.datefrom.label"));
 			LocalDate defaultDate = LocalDate.now().minusDays(8);
@@ -343,6 +392,12 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthPanel.add(jMonthComboBox, null);
 			jMonthPanel.add(jYearLabel, null);
 			jMonthPanel.add(jYearComboBox, null);
+			jMonthPanel.add(jWeekIndexLabel, null);
+			jMonthPanel.add(jWeekIndexComboBox, null);
+			jMonthPanel.add(jWardLabel, null);
+			jMonthPanel.add(jWardComboBox, null);
+			jMonthPanel.add(jStatusLabel, null);
+			jMonthPanel.add(jStatusComboBox, null);
 			jMonthPanel.add(jFromDateLabel, null);
 			jMonthPanel.add(jFromDateField, null);
 			jMonthPanel.add(jToDateLabel, null);
@@ -352,6 +407,50 @@ public class ReportLauncher extends ModalJFrame {
 		}
 		return jMonthPanel;
 
+	}
+
+	private void updateWeekIndexComboBox() {
+		if (jWeekIndexComboBox != null && jYearComboBox != null && jMonthComboBox != null) {
+			int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+			int month = jMonthComboBox.getSelectedIndex() + 1;
+			int weekCount = countMonthWeekNbr(year, Month.of(month));
+			int prevSelectedIndex = jWeekIndexComboBox.getSelectedIndex();
+			jWeekIndexComboBox.removeAllItems();
+			String weekLabel = MessageBundle.getMessage("angal.stat.week");
+			for (int index = 1; index <= weekCount; index++) {
+				jWeekIndexComboBox.addItem(weekLabel + " " + index);
+			}
+			if (prevSelectedIndex >= 0 && prevSelectedIndex < weekCount) {
+				jWeekIndexComboBox.setSelectedIndex(prevSelectedIndex);
+			} else if (weekCount > 0) {
+				jWeekIndexComboBox.setSelectedIndex(0);
+			}
+		}
+	}
+
+	private int countMonthWeekNbr(int targetYear, Month targetMonth) {
+		LocalDate startOfMonth = LocalDate.of(targetYear, targetMonth, 1);
+		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+		int weekCount = 0;
+		int previousWeek = 0;
+		LocalDate currentDate = startOfMonth;
+
+		while (currentDate.isBefore(endOfMonth.plusDays(1))) {
+			int currentWeek = currentDate.get(WeekFields.ISO.weekOfMonth());
+			if (currentDate.getDayOfMonth() == 1 || currentWeek != previousWeek) {
+				weekCount++;
+			}
+			previousWeek = currentWeek;
+			currentDate = currentDate.plusDays(1);
+		}
+
+		return weekCount;
+	}
+
+	private LocalDate getFirstDayOfWeek(int year, int month, int weekNumber, DayOfWeek firstDayOfWeek) {
+		LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+		firstDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(firstDayOfWeek));
+		return firstDayOfMonth.plusWeeks(weekNumber - 1);
 	}
 
 	protected void selectAction() {
@@ -364,19 +463,44 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
-				if (userInputParamNames.contains("ward_id") || userInputParamNames.contains("ward")) {
+				String jasperFileName = jasperFile.getName().toLowerCase();
+				boolean isWeekWardReport = jasperFileName.contains("week")
+								|| (userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
+
+				if (isWeekWardReport) {
+					jMonthComboBox.setVisible(true);
+					jMonthLabel.setVisible(true);
+					jYearComboBox.setVisible(true);
+					jYearLabel.setVisible(true);
+					jWeekIndexLabel.setVisible(true);
+					jWeekIndexComboBox.setVisible(true);
+					jWardLabel.setVisible(true);
+					jWardComboBox.setVisible(true);
+					jWardComboBox.setSelectedIndex(0);
+					jStatusLabel.setVisible(true);
+					jStatusComboBox.setVisible(true);
+					jFromDateLabel.setVisible(false);
+					jFromDateField.setVisible(false);
+					jToDateLabel.setVisible(false);
+					jToDateField.setVisible(false);
+					updateWeekIndexComboBox();
+				} else if (userInputParamNames.contains("ward_id") || userInputParamNames.contains("ward")) {
 					boolean hasMonth = userInputParamNames.contains("month");
 					jMonthComboBox.setVisible(hasMonth);
 					jMonthLabel.setVisible(hasMonth);
 					jYearComboBox.setVisible(true);
 					jYearLabel.setVisible(true);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jWardLabel.setVisible(true);
+					jWardComboBox.setVisible(true);
+					jWardComboBox.setSelectedIndex(0);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
 					jFromDateLabel.setVisible(false);
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
-					jWardLabel.setVisible(true);
-					jWardComboBox.setVisible(true);
-					jWardComboBox.setSelectedIndex(0);
 				} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 					jWardLabel.setVisible(false);
 					jWardComboBox.setVisible(false);
@@ -384,6 +508,10 @@ public class ReportLauncher extends ModalJFrame {
 					jMonthLabel.setVisible(false);
 					jYearComboBox.setVisible(false);
 					jYearLabel.setVisible(false);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
 					jFromDateLabel.setVisible(true);
 					jFromDateField.setVisible(true);
 					jToDateLabel.setVisible(true);
@@ -396,6 +524,10 @@ public class ReportLauncher extends ModalJFrame {
 					jMonthLabel.setVisible(hasMonth);
 					jYearComboBox.setVisible(true);
 					jYearLabel.setVisible(true);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
 					jFromDateLabel.setVisible(false);
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
@@ -403,6 +535,10 @@ public class ReportLauncher extends ModalJFrame {
 				} else {
 					jWardLabel.setVisible(false);
 					jWardComboBox.setVisible(false);
+					jWeekIndexLabel.setVisible(false);
+					jWeekIndexComboBox.setVisible(false);
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
 				}
 				pack();
 				setLocationRelativeTo(null);
@@ -440,6 +576,66 @@ public class ReportLauncher extends ModalJFrame {
 
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
+			File jasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
+			String checkName = jasperFile != null ? jasperFile.getName().toLowerCase() : "";
+			boolean isWeekWardReport = checkName.contains("week")
+							|| (userInputParamNames != null && userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
+
+			if (isWeekWardReport) {
+				int month = jMonthComboBox.getSelectedIndex() + 1;
+				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+				int weekNumber = jWeekIndexComboBox.getSelectedIndex() + 1;
+				if (weekNumber <= 0) {
+					weekNumber = 1;
+				}
+				String weekLabel = MessageBundle.getMessage("angal.stat.week");
+
+				LocalDate mondayDate = getFirstDayOfWeek(year, month, weekNumber, DayOfWeek.MONDAY);
+				LocalDate sundayDate = mondayDate.plusDays(6);
+				DateTimeFormatter dtfIso = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				DateTimeFormatter dtfDisplay = DateTimeFormatter.ofPattern(DATE_FORMAT_DD_MM_YYYY);
+
+				String fromDate = mondayDate.format(dtfIso);
+				String toDate = sundayDate.format(dtfIso);
+
+				String wardId = "ALL";
+				String wardName = MessageBundle.getMessage("angal.common.all.label");
+				Object selectedWard = jWardComboBox.getSelectedItem();
+				if (selectedWard instanceof Ward) {
+					wardId = ((Ward) selectedWard).getCode();
+					wardName = ((Ward) selectedWard).getDescription();
+				}
+
+				String status = "ALL";
+				String statusLabel = MessageBundle.getMessage("angal.common.all.label");
+				int statusIdx = jStatusComboBox.getSelectedIndex();
+				if (statusIdx == 1) {
+					status = "O";
+					statusLabel = MessageBundle.getMessage("angal.billbrowser.pending.title");
+				} else if (statusIdx == 2) {
+					status = "C";
+					statusLabel = MessageBundle.getMessage("angal.billbrowser.closed.title");
+				}
+
+				String periodLabel = weekLabel + " " + weekNumber
+								+ " (" + mondayDate.format(dtfDisplay) + " - " + sundayDate.format(dtfDisplay) + ")";
+
+				String folder = folderNameFileNameMap.get("rpt_stat").contains(jasperFile.getName().replace(".jasper", "")) ? "rpt_stat" : "rpt_extra";
+				String reportFileName = jasperFile.getName().replace(".jasper", "");
+
+				new GenericReportWeekWard(fromDate, toDate, wardId, wardName, status, statusLabel, periodLabel,
+								folder, reportFileName, jRptComboBox.getSelectedItem().toString(), toExcel);
+
+				if (GeneralData.XMPPMODULEENABLED) {
+					String user = (String) shareWith.getSelectedItem();
+					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
+					frame.sendMessage("011100100110010101110000011011110111001001110100 " +
+									fromDate + ' ' + toDate + ' ' +
+									jRptComboBox.getSelectedItem().toString(), user, false);
+				}
+				return;
+			}
+
 			String folder = folderNameFileNameMap.get("rpt_stat").contains(
 							reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
 											: "rpt_extra";
