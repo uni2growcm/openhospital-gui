@@ -70,6 +70,8 @@ REDUCTIONPARTNERPRIORITYFIRST=yes
 AUTOMATICLOT_IN=no
 AUTOMATICLOT_OUT=no
 AUTOMATICLOTWARD_TOWARD=no
+# Enable direct stock discharge to patients (yes/no)
+STOCKDISCHARGETOPATIENT=yes
 LOTWITHCOST=yes
 # Enable/disable expiring medical highlighting (yes/no)
 HIGHLIGHTEXPIRINGMEDICAL=yes

@@ -134,6 +134,9 @@ public class ExamShow extends JDialog implements ExamRowListener {
 			newButton.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
 			newButton.addActionListener(actionEvent -> {
 				examRow = new ExamRow();
+				if (exam.getDefaultResult() != null && !exam.getDefaultResult().isBlank()) {
+					examRow.setDescription(exam.getDefaultResult());
+				}
 				ExamRowEdit newrecord = new ExamRowEdit(myFrame, examRow, exam);
 				newrecord.addExamListener(this);
 				newrecord.setVisible(true);

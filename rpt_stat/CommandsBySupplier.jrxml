@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CommandsBySupplier" pageWidth="595" pageHeight="842" whenNoDataType="NoPages" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="CommandsBySupplier" whenResourceMissingType="Key">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="supplierId" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[Integer.valueOf(-1)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT 
+    COALESCE(S.SUP_NAME, 'Fournisseur non spécifié') AS SUP_NAME,
+    S.SUP_ID,
+    S.SUP_PHONE,
+    S.SUP_EMAIL,
+    C.CMD_ID,
+    C.CMD_REFNO,
+    C.CMD_DATE,
+    CR.CMR_ID,
+    CR.CMR_MDSR_CODE,
+    CR.CMR_MDSR_DESC,
+    CR.CMR_ORDER_QTY,
+    CR.CMR_QTY_IN_STORE,
+    CR.CMR_STILL_QTY,
+    CR.CMR_ACTIVE
+FROM OH_COMMAND C
+JOIN OH_COMMAND_ROW CR ON C.CMD_ID = CR.CMR_CMD_ID
+LEFT JOIN OH_SUPPLIER S ON CR.CMR_SUP_ID = S.SUP_ID
+WHERE (DATE(C.CMD_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}))
+  AND ($P{supplierId} = -1 OR ($P{supplierId} = 0 AND CR.CMR_SUP_ID IS NULL) OR CR.CMR_SUP_ID = $P{supplierId})
+ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
+	</queryString>
+	<field name="SUP_NAME" class="java.lang.String"/>
+	<field name="SUP_ID" class="java.lang.Integer"/>
+	<field name="SUP_PHONE" class="java.lang.String"/>
+	<field name="SUP_EMAIL" class="java.lang.String"/>
+	<field name="CMD_ID" class="java.lang.Integer"/>
+	<field name="CMD_REFNO" class="java.lang.String"/>
+	<field name="CMD_DATE" class="java.util.Date"/>
+	<field name="CMR_ID" class="java.lang.Integer"/>
+	<field name="CMR_MDSR_CODE" class="java.lang.String"/>
+	<field name="CMR_MDSR_DESC" class="java.lang.String"/>
+	<field name="CMR_ORDER_QTY" class="java.lang.Double"/>
+	<field name="CMR_QTY_IN_STORE" class="java.lang.Double"/>
+	<field name="CMR_STILL_QTY" class="java.lang.Double"/>
+	<field name="CMR_ACTIVE" class="java.lang.Integer"/>
+	<variable name="GRP_ORDER_QTY_TOTAL" class="java.lang.Double" resetType="Group" resetGroup="SUPPLIER_GROUP" calculation="Sum">
+		<variableExpression><![CDATA[$F{CMR_ORDER_QTY} != null ? $F{CMR_ORDER_QTY} : Double.valueOf(0.0)]]></variableExpression>
+	</variable>
+	<variable name="GRP_COUNT" class="java.lang.Integer" resetType="Group" resetGroup="SUPPLIER_GROUP" calculation="Count">
+		<variableExpression><![CDATA[$F{CMR_ID}]]></variableExpression>
+	</variable>
+	<variable name="REPORT_ORDER_QTY_TOTAL" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{CMR_ORDER_QTY} != null ? $F{CMR_ORDER_QTY} : Double.valueOf(0.0)]]></variableExpression>
+	</variable>
+	<group name="SUPPLIER_GROUP">
+		<groupExpression><![CDATA[$F{SUP_NAME}]]></groupExpression>
+		<groupHeader>
+			<band height="44" splitType="Stretch">
+				<rectangle>
+					<reportElement key="rectangle-supplier" x="0" y="2" width="535" height="20" forecolor="#9999FF" backcolor="#6699FF"/>
+					<graphicElement/>
+				</rectangle>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-supLabel" x="5" y="3" width="75" height="18" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.supplier")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-supName" x="80" y="3" width="280" height="18" forecolor="#FFFFFF"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{SUP_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement key="textField-supContact" x="360" y="3" width="170" height="18" forecolor="#FFFFFF"/>
+					<box rightPadding="4"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{SUP_PHONE} != null && !$F{SUP_PHONE}.trim().isEmpty() ? "Tél: " + $F{SUP_PHONE} : "") + ($F{SUP_EMAIL} != null && !$F{SUP_EMAIL}.trim().isEmpty() ? " | " + $F{SUP_EMAIL} : "")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-refno" x="0" y="24" width="80" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.refno")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-date" x="80" y="24" width="65" height="18"/>
+					<box/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.date")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-code" x="145" y="24" width="60" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.code")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-desc" x="205" y="24" width="165" height="18"/>
+					<box leftPadding="2"/>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.description")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-orderqty" x="370" y="24" width="55" height="18"/>
+					<box rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.orderqty")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-stock" x="425" y="24" width="50" height="18"/>
+					<box rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.stock")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="th-status" x="475" y="24" width="60" height="18"/>
+					<box/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.status")]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-th" x="0" y="43" width="535" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#CCCCCC"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="24" splitType="Stretch">
+				<line>
+					<reportElement key="line-gf" x="0" y="1" width="535" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.5" lineColor="#CCCCCC"/>
+					</graphicElement>
+				</line>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-gfLabel" x="0" y="3" width="370" height="18"/>
+					<box leftPadding="4"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.totalsupplier") + " (" + $V{GRP_COUNT} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.items") + ") :"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="SUPPLIER_GROUP">
+					<reportElement key="textField-gfTotalQty" x="370" y="3" width="55" height="18"/>
+					<box rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{GRP_ORDER_QTY_TOTAL}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement key="textField-camerounf" x="0" y="0" width="280" height="16"/>
+				<textElement textAlignment="Left">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-patrief" x="15" y="16" width="265" height="14"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-santef" x="0" y="30" width="280" height="16"/>
+				<textElement textAlignment="Left">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-cameroune" x="280" y="0" width="255" height="16"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-patriee" x="280" y="16" width="240" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-santee" x="280" y="30" width="255" height="16"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-titre" x="0" y="55" width="535" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-periode" x="0" y="75" width="535" height="16"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-district" x="0" y="95" width="280" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-adresse" x="0" y="109" width="280" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-structure" x="280" y="95" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-telephone" x="280" y="109" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-email" x="280" y="123" width="255" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-header" x="0" y="140" width="535" height="1"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="td-refno" x="0" y="1" width="80" height="16"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMD_REFNO}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="td-date" x="80" y="1" width="65" height="16"/>
+				<box/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMD_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="td-code" x="145" y="1" width="60" height="16"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMR_MDSR_CODE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="td-desc" x="205" y="1" width="165" height="16"/>
+				<box leftPadding="2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMR_MDSR_DESC}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement key="td-orderqty" x="370" y="1" width="55" height="16"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMR_ORDER_QTY}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement key="td-stock" x="425" y="1" width="50" height="16"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMR_QTY_IN_STORE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="td-status" x="475" y="1" width="60" height="16"/>
+				<box/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CMR_ACTIVE} != null && $F{CMR_ACTIVE}.intValue() == 1 ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.status.pending") : $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.status.delivered")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="35" splitType="Stretch">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-footerDate" x="0" y="14" width="247" height="20"/>
+				<box leftPadding="2"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-footerPage" x="390" y="14" width="120" height="20"/>
+				<box/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.page") + " " + $V{PAGE_NUMBER} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.of")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false" evaluationTime="Report">
+				<reportElement key="textField-footerTotalPages" x="510" y="14" width="25" height="20"/>
+				<box/>
+				<textElement verticalAlignment="Bottom">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-summaryLabel" mode="Opaque" x="0" y="3" width="410" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
+				<box leftPadding="5"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.totalgeneral") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "") + " (" + $V{REPORT_COUNT} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.items") + ") :"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Report">
+				<reportElement key="textField-summaryTotal" mode="Opaque" x="410" y="3" width="125" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
+				<box rightPadding="5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0").format($V{REPORT_ORDER_QTY_TOTAL} != null ? $V{REPORT_ORDER_QTY_TOTAL} : Double.valueOf(0.0)) + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.units")]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

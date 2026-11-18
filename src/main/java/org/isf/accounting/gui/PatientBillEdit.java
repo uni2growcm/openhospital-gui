@@ -3115,6 +3115,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                 }
 
                 billItems.clear();
+                modified = true;
                 updateTotals();
                 updateGUI();
             });
@@ -3246,6 +3247,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		if (row != -1) {
 			billItems.remove(row);
             selectedBillItem = null;
+			modified = true;
 			updateTotals();
 			updateGUI();
 		} else {
@@ -3834,8 +3836,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
     }
 
 	private void removePayment(int row) {
-		if (row != -1 && row >= payItemsSaved) {
+		if (row != -1 && row < payItems.size()) {
 			payItems.remove(row);
+			modified = true;
 			updateTotals();
 			updateGUI();
 		} else {

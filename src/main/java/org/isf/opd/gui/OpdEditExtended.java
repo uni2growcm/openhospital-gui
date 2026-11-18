@@ -87,6 +87,7 @@ import org.isf.patient.gui.PatientInsert;
 import org.isf.tuberculosis.gui.TuberculosisMiniPanel;
 import org.isf.patient.gui.PatientInsert.PatientListener;
 import org.isf.patient.gui.PatientInsertExtended;
+import org.isf.patient.gui.SelectPatientComponent;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.utils.db.RememberData;
@@ -131,15 +132,21 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 	public void patientInserted(AWTEvent e) {
 		opdPatient = (Patient) e.getSource();
 		setPatient(opdPatient);
-		jComboPatResult.addItem(opdPatient);
-		jComboPatResult.setSelectedItem(opdPatient);
-		jPatientEditButton.setEnabled(true);
+		if (selectPatientComponent != null) {
+			selectPatientComponent.setPatient(opdPatient);
+		}
 		updateTuberculosisTab();
 	}
 
 	@Override
 	public void patientUpdated(AWTEvent e) {
+		if (e.getSource() instanceof Patient p) {
+			opdPatient = p;
+		}
 		setPatient(opdPatient);
+		if (selectPatientComponent != null) {
+			selectPatientComponent.setPatient(opdPatient);
+		}
 	}
 
 	private EventListenerList surgeryListeners = new EventListenerList();
@@ -221,12 +228,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			MessageBundle.getMessage("angal.opd.alldiseases.txt"),
 			MessageBundle.getMessage("angal.opd.selectdiseases.txt"),
 			allType);
-	private VoLimitedTextField jTextPatientSrc;
-	private JComboBox jComboPatResult;
+	private SelectPatientComponent selectPatientComponent;
 	private JRadioButton radiof;
 	private JRadioButton radiom;
-	private JButton jPatientEditButton;
-	private JButton jSearchButton;
 	private JLabel jLabelLastOpdVisit;
 	private JLabel jFieldLastOpdVisit;
 	private JLabel jLabelLastOpdNote;
@@ -400,6 +404,14 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		opdPatient = null;
 		opdNextVisitDate.setEnabled(false);
 		nextVisitWardBox.setEnabled(false);
+		updateTuberculosisTab();
+		jLabelLastOpdVisit.setText(" ");
+		jFieldLastOpdVisit.setText(" ");
+		jLabelLastOpdNote.setText(" ");
+		jFieldLastOpdNote.setText(" ");
+		if (jNoteTextArea != null) {
+			jNoteTextArea.setText("");
+		}
 	}
 
 	//Alex: Resetting history from the last OPD visit for the patient
@@ -575,7 +587,9 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		}
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		if (insert) {
-			jTextPatientSrc.requestFocusInWindow();
+			if (selectPatientComponent != null) {
+				selectPatientComponent.getPatientSearchField().requestFocusInWindow();
+			}
 		} else {
 			jNoteTextArea.requestFocusInWindow();
 		}
@@ -588,7 +602,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				diseasesAll.clear();
 				diseasesOPD.clear();
 				types.clear();
-				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
 				dispose();
 			}
@@ -663,39 +676,22 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			gbcWardPanel.gridx = 4;
 			gbcWardPanel.gridy = 0;
 			jPanelData.add(getWardBox(), gbcWardPanel);
-			JLabel jSearchLabel = new JLabel(MessageBundle.getMessage("angal.common.search.txt"));
-			GridBagConstraints gbcSearchLabel = new GridBagConstraints();
-			gbcSearchLabel.fill = GridBagConstraints.VERTICAL;
-			gbcSearchLabel.anchor = GridBagConstraints.WEST;
-			gbcSearchLabel.insets = new Insets(5, 5, 5, 5);
-			gbcSearchLabel.gridx = 0;
-			gbcSearchLabel.gridy = 1;
-			jPanelData.add(jSearchLabel, gbcSearchLabel);
-			GridBagConstraints gbcTextPatientSrc = new GridBagConstraints();
-			gbcTextPatientSrc.weightx = 0.5;
-			gbcTextPatientSrc.fill = GridBagConstraints.HORIZONTAL;
-			gbcTextPatientSrc.insets = new Insets(5, 5, 5, 5);
-			gbcTextPatientSrc.gridx = 1;
-			gbcTextPatientSrc.gridy = 1;
-			jPanelData.add(getJTextPatientSrc(), gbcTextPatientSrc);
-			GridBagConstraints gbcSearchButton = new GridBagConstraints();
-			gbcSearchButton.insets = new Insets(5, 5, 5, 5);
-			gbcSearchButton.gridx = 2;
-			gbcSearchButton.gridy = 1;
-			jPanelData.add(getJSearchButton(), gbcSearchButton);
-			GridBagConstraints gbcSearchBox = new GridBagConstraints();
-			gbcSearchBox.weightx = 0.5;
-			gbcSearchBox.fill = GridBagConstraints.HORIZONTAL;
-			gbcSearchBox.insets = new Insets(5, 5, 5, 5);
-			gbcSearchBox.gridwidth = 2;
-			gbcSearchBox.gridx = 3;
-			gbcSearchBox.gridy = 1;
-			jPanelData.add(getSearchBox(), gbcSearchBox);
-			GridBagConstraints gbcPatientEditButton = new GridBagConstraints();
-			gbcPatientEditButton.insets = new Insets(5, 5, 5, 0);
-			gbcPatientEditButton.gridx = 5;
-			gbcPatientEditButton.gridy = 1;
-			jPanelData.add(getJPatientEditButton(), gbcPatientEditButton);
+			JLabel jPatientLabel = new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ':');
+			GridBagConstraints gbcPatientLabel = new GridBagConstraints();
+			gbcPatientLabel.fill = GridBagConstraints.VERTICAL;
+			gbcPatientLabel.anchor = GridBagConstraints.WEST;
+			gbcPatientLabel.insets = new Insets(5, 5, 5, 5);
+			gbcPatientLabel.gridx = 0;
+			gbcPatientLabel.gridy = 1;
+			jPanelData.add(jPatientLabel, gbcPatientLabel);
+			GridBagConstraints gbcSelectPatient = new GridBagConstraints();
+			gbcSelectPatient.fill = GridBagConstraints.HORIZONTAL;
+			gbcSelectPatient.anchor = GridBagConstraints.WEST;
+			gbcSelectPatient.insets = new Insets(5, 5, 5, 5);
+			gbcSelectPatient.gridwidth = 5;
+			gbcSelectPatient.gridx = 1;
+			gbcSelectPatient.gridy = 1;
+			jPanelData.add(getSelectPatientComponent(), gbcSelectPatient);
 
 			JLabel jLabelDiseaseType1 = new JLabel(MessageBundle.getMessage("angal.opd.diseasetype.txt"));
 			GridBagConstraints gbcLabelDiseaseType1 = new GridBagConstraints();
@@ -1013,29 +1009,30 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 		return diseaseTypeBox;
 	}
 
-	private VoLimitedTextField getJTextPatientSrc() {
-		if (jTextPatientSrc == null) {
-			jTextPatientSrc = new VoLimitedTextField(16, 20);
-			jTextPatientSrc.addKeyListener(new KeyListener() {
-
+	private SelectPatientComponent getSelectPatientComponent() {
+		if (selectPatientComponent == null) {
+			selectPatientComponent = new SelectPatientComponent(true, false, true);
+			selectPatientComponent.setFieldWidth(220);
+			if (opdPatient != null) {
+				selectPatientComponent.setPatient(opdPatient);
+			}
+			if (!insert) {
+				selectPatientComponent.setEnabled(false);
+			}
+			selectPatientComponent.addPatientSelectionListener(new SelectPatientComponent.PatientSelectionListener() {
 				@Override
-				public void keyPressed(KeyEvent e) {
-					int key = e.getKeyCode();
-					if (key == KeyEvent.VK_ENTER) {
-						jSearchButton.doClick();
-					}
+				public void patientSelected(Patient patient) {
+					opdPatient = patient;
+					setPatient(opdPatient);
 				}
 
 				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyTyped(KeyEvent e) {
+				public void patientCleared() {
+					resetPatient();
 				}
 			});
 		}
-		return jTextPatientSrc;
+		return selectPatientComponent;
 	}
 	private JButton getNextVisitClearButton() {
 		if (nextVisitClearButton == null) {
@@ -1053,177 +1050,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 			});
 		}
 		return nextVisitClearButton;
-	}
-
-	private JButton getJSearchButton() {
-		if (jSearchButton == null) {
-			jSearchButton = new JButton();
-			jSearchButton.setIcon(new ImageIcon("rsc/icons/zoom_r_button.png"));
-			jSearchButton.setBorderPainted(false);
-			jSearchButton.setPreferredSize(new Dimension(20, 20));
-			jSearchButton.addActionListener(actionEvent -> {
-				String searchText = jTextPatientSrc.getText();
-				jComboPatResult.removeAllItems();
-				try {
-					pat = patientBrowserManager.getPatientsByOneOfFieldsLike(searchText);
-					for (Patient p : pat) {
-					}
-				} catch (OHServiceException ex) {
-					ex.printStackTrace();
-				}
-				getSearchBox(searchText);
-			});
-		}
-		return jSearchButton;
-	}
-
-	private void getSearchBox(String key) {
-		if (key == null || key.trim().isEmpty()) {
-			jComboPatResult.removeAllItems();
-			jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.selectapatient.txt"));
-			jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.enteranewpatient.txt"));
-			jLabelLastOpdVisit.setText(" ");
-			jFieldLastOpdVisit.setText(" ");
-			jLabelLastOpdNote.setText(" ");
-			jFieldLastOpdNote.setText(" ");
-			if (jNoteTextArea != null) {
-				jNoteTextArea.setText("");
-			}
-			if (jPanelPatient != null) {
-				resetPatient();
-			}
-			jPatientEditButton.setEnabled(false);
-			return;
-		}
-
-		jComboPatResult.removeAllItems();
-		jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.selectapatient.txt"));
-		jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.enteranewpatient.txt"));
-
-		boolean isIdSearch = key.trim().matches("\\d+");
-		Patient foundPatient = null;
-		List<Patient> matchedPatients = new ArrayList<>();
-
-		for (Patient elem : pat) {
-			if (isIdSearch) {
-
-				int searchId = Integer.parseInt(key.trim());
-				if (elem.getCode() == searchId) {
-					foundPatient = elem;
-					break;
-				}
-			} else {
-				String[] patterns = key.toLowerCase().split(" ");
-				String name = elem.getSearchString().toLowerCase();
-				boolean allPatternsMatch = true;
-				for (String pattern : patterns) {
-					if (!name.contains(pattern)) {
-						allPatternsMatch = false;
-						break;
-					}
-				}
-				if (allPatternsMatch) {
-					matchedPatients.add(elem);
-				}
-			}
-		}
-
-		if (isIdSearch && foundPatient != null) {
-			jComboPatResult.addItem(foundPatient);
-			opdPatient = foundPatient;
-			setPatient(opdPatient);
-			jPatientEditButton.setEnabled(true);
-			jComboPatResult.setSelectedItem(foundPatient);
-		} else if (!isIdSearch && !matchedPatients.isEmpty()) {
-
-			for (Patient patient : matchedPatients) {
-
-				jComboPatResult.addItem(patient);
-			}
-			opdPatient = matchedPatients.get(0);
-			setPatient(opdPatient);
-			jPatientEditButton.setEnabled(true);
-			jComboPatResult.setSelectedItem(opdPatient);
-		} else {
-
-			opdPatient = null;
-			if (jPanelPatient != null) {
-				resetPatient();
-			}
-			jPatientEditButton.setEnabled(false);
-
-		}
-
-		jTextPatientSrc.requestFocus();
-	}
-
-	private JComboBox getSearchBox() {
-		if (jComboPatResult == null) {
-			jComboPatResult = new JComboBox();
-			if (opdPatient != null) {
-				jComboPatResult.addItem(opdPatient);
-				jComboPatResult.setEnabled(false);
-				jTextPatientSrc.setEnabled(false);
-				jSearchButton.setEnabled(false);
-				return jComboPatResult;
-			} else {
-				jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.selectapatient.txt"));
-				jComboPatResult.addItem(MessageBundle.getMessage("angal.opd.enteranewpatient.txt"));
-			}
-
-			jComboPatResult.addActionListener(actionEvent -> {
-
-				if (jComboPatResult.getSelectedItem() != null) {
-					if (jComboPatResult.getSelectedItem().toString().compareTo(MessageBundle.getMessage("angal.opd.enteranewpatient.txt")) == 0) {
-						if (GeneralData.PATIENTEXTENDED) {
-							PatientInsertExtended newrecord = new PatientInsertExtended(this, new Patient(), true);
-							newrecord.addPatientListener(this);
-							newrecord.setVisible(true);
-						} else {
-							PatientInsert newrecord = new PatientInsert(this, new Patient(), true);
-							newrecord.addPatientListener(this);
-							newrecord.setVisible(true);
-						}
-
-					} else if (jComboPatResult.getSelectedItem().toString().compareTo(MessageBundle.getMessage("angal.opd.selectapatient.txt")) == 0) {
-						jPatientEditButton.setEnabled(false);
-
-					} else {
-						opdPatient = (Patient) jComboPatResult.getSelectedItem();
-						setPatient(opdPatient);
-						jPatientEditButton.setEnabled(true);
-					}
-				}
-			});
-		}
-		return jComboPatResult;
-	}
-
-	//ADDED: Alex
-	private JButton getJPatientEditButton() {
-		if (jPatientEditButton == null) {
-			jPatientEditButton = new JButton();
-			jPatientEditButton.setIcon(new ImageIcon("rsc/icons/edit_button.png"));
-			jPatientEditButton.setBorderPainted(false);
-			jPatientEditButton.setPreferredSize(new Dimension(20, 20));
-			jPatientEditButton.addActionListener(actionEvent -> {
-				if (opdPatient != null) {
-					if (GeneralData.PATIENTEXTENDED) {
-						PatientInsertExtended editrecord = new PatientInsertExtended(this, opdPatient, false);
-						editrecord.addPatientListener(this);
-						editrecord.setVisible(true);
-					} else {
-						PatientInsert editrecord = new PatientInsert(this, opdPatient, false);
-						editrecord.addPatientListener(this);
-						editrecord.setVisible(true);
-					}
-				}
-			});
-			if (!insert) {
-				jPatientEditButton.setEnabled(false);
-			}
-		}
-		return jPatientEditButton;
 	}
 
 	private JTabbedPane getJTabbedPaneOpd() {
@@ -1748,7 +1574,6 @@ public class OpdEditExtended extends ModalJFrame implements PatientInsertExtende
 				diseasesAll.clear();
 				diseasesOPD.clear();
 				types.clear();
-				jComboPatResult.removeAllItems();
 				diseaseTypeBox.removeAllItems();
 				dispose();
 			});
