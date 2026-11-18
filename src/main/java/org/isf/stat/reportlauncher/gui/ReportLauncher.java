@@ -51,15 +51,22 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.menu.manager.Context;
+import org.isf.opetype.manager.OperationTypeBrowserManager;
+import org.isf.opetype.model.OperationType;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
+import org.isf.utils.exception.OHServiceException;
+import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.stat.gui.report.GenericReportSynthesisActivities;
 import org.isf.utils.jobjects.GoodDateChooser;
+import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
 import org.isf.utils.time.TimeTools;
 import org.isf.xmpp.gui.CommunicationFrame;
@@ -81,6 +88,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportLauncher.class);
+	private static final String INCOMES_PER_SURGERY_ACT_FILENAME = "OH004_IncomesAllByPriceCodes_3_Surgery";
 
 	private JPanel jPanel;
 	private JPanel jButtonPanel;
@@ -97,8 +105,6 @@ public class ReportLauncher extends ModalJFrame {
 	private JLabel jToDateLabel;
 	private GoodDateChooser jToDateField;
 	private GoodDateChooser jFromDateField;
-	private JLabel jStatusLabel;
-	private JComboBox<String> jStatusComboBox;
 
 	private JComboBox<String> jRptComboBox;
 
@@ -319,16 +325,6 @@ public class ReportLauncher extends ModalJFrame {
 			jFromDateLabel.setVisible(false);
 			jFromDateField.setVisible(false);
 
-			// TODO: fix how the layout of the last two fields are done; adding
-			// spaces is a hack
-			jStatusLabel = new JLabel("               " + MessageBundle.getMessage("angal.common.status.txt"));
-			jStatusComboBox = new JComboBox<>();
-			jStatusComboBox.addItem(MessageBundle.getMessage("angal.common.all.txt"));
-			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.pending.title"));
-			jStatusComboBox.addItem(MessageBundle.getMessage("angal.billbrowser.closed.title"));
-			jStatusLabel.setVisible(false);
-			jStatusComboBox.setVisible(false);
-
 			jMonthPanel.add(jRptLabel, null);
 			jMonthPanel.add(jRptComboBox, null);
 			jMonthPanel.add(jMonthLabel, null);
@@ -339,11 +335,26 @@ public class ReportLauncher extends ModalJFrame {
 			jMonthPanel.add(jFromDateField, null);
 			jMonthPanel.add(jToDateLabel, null);
 			jMonthPanel.add(jToDateField, null);
-			jMonthPanel.add(jStatusLabel, null);
-			jMonthPanel.add(jStatusComboBox, null);
 		}
 		return jMonthPanel;
 
+	}
+
+	private JComboBox<Object> getJOperationTypeComboBox() {
+		JComboBox<Object> comboBox = new JComboBox<>();
+		OperationTypeBrowserManager operationTypeBrowserManager = Context.getApplicationContext().getBean(OperationTypeBrowserManager.class);
+		List<OperationType> operationTypes;
+		try {
+			operationTypes = operationTypeBrowserManager.getOperationType();
+		} catch (OHServiceException e) {
+			operationTypes = new LinkedList<>();
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		comboBox.addItem(MessageBundle.getMessage("angal.common.all.txt"));
+		for (OperationType operationType : operationTypes) {
+			comboBox.addItem(operationType);
+		}
+		return comboBox;
 	}
 
 	protected void selectAction() {
@@ -356,7 +367,23 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
-				if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
+
+				boolean isIncomesPerSurgeryAct = jasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper");
+				jStatusLabel.setVisible(isIncomesPerSurgeryAct);
+				jStatusComboBox.setVisible(isIncomesPerSurgeryAct);
+				jOperationTypeLabel.setVisible(isIncomesPerSurgeryAct);
+				jOperationTypeComboBox.setVisible(isIncomesPerSurgeryAct);
+
+				if (isIncomesPerSurgeryAct) {
+					jMonthComboBox.setVisible(false);
+					jMonthLabel.setVisible(false);
+					jYearComboBox.setVisible(true);
+					jYearLabel.setVisible(true);
+					jFromDateLabel.setVisible(false);
+					jFromDateField.setVisible(false);
+					jToDateLabel.setVisible(false);
+					jToDateField.setVisible(false);
+				} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
 					jMonthComboBox.setVisible(false);
 					jMonthLabel.setVisible(false);
 					jYearComboBox.setVisible(false);
@@ -375,12 +402,6 @@ public class ReportLauncher extends ModalJFrame {
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
-				}
-				boolean hasStatus = userInputParamNames.contains("state");
-				jStatusLabel.setVisible(hasStatus);
-				jStatusComboBox.setVisible(hasStatus);
-				if (hasStatus) {
-					jStatusComboBox.setSelectedIndex(0);
 				}
 			} catch (JRException e) {
 				LOGGER.error("Exception in selectAction method.", e);
@@ -417,30 +438,12 @@ public class ReportLauncher extends ModalJFrame {
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
 			if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
-				String folder = folderNameFileNameMap.get("rpt_stat").contains(
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-												: "rpt_extra";
-				String jasperFileName = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "");
-
-				if (userInputParamNames.contains("state")) {
-					String state;
-					String state2;
-					if (jStatusComboBox.getSelectedIndex() == 1) {
-						state = "O";
-						state2 = "O";
-					} else if (jStatusComboBox.getSelectedIndex() == 2) {
-						state = "C";
-						state2 = "C";
-					} else {
-						state = "O";
-						state2 = "C";
-					}
-					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
-									jRptComboBox.getSelectedItem().toString(), toExcel, state, state2);
-				} else {
-					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
-									jRptComboBox.getSelectedItem().toString(), toExcel);
-				}
+				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
+								folderNameFileNameMap.get("rpt_stat").contains(
+												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+																: "rpt_extra",
+								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
+								jRptComboBox.getSelectedItem().toString(), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
