@@ -26,9 +26,12 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +61,7 @@ public final class ReductionPlanChooser {
 	/**
 	 * @param parent the parent component
 	 * @param title the dialog title
-	 * @param available the plans that can be assigned
+	 * @param available the plans to display in the chooser
 	 * @param current the plans currently assigned (always displayed, ticked)
 	 * @param manager the manager used to display the number of patients of each plan
 	 * @return the ticked plans, {@code null} if the dialog was cancelled
@@ -69,10 +72,12 @@ public final class ReductionPlanChooser {
 		Set<ReductionPlan> plans = new LinkedHashSet<>(current);
 		plans.addAll(available);
 		List<ReductionPlan> rows = new ArrayList<>(plans);
+		Set<Integer> selectablePlanIds = new HashSet<>();
 
 		String[] columns = {
 			MessageBundle.getMessage("angal.common.select"),
 			MessageBundle.getMessage("angal.common.description.txt"),
+			MessageBundle.getMessage("angal.reductionplan.partner.col"),
 			MessageBundle.getMessage("angal.reductionplan.expirationdate.col"),
 			MessageBundle.getMessage("angal.reductionplan.patients.col")
 		};
@@ -87,7 +92,7 @@ public final class ReductionPlanChooser {
 
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				return column == 0;
+				return column == 0 && selectablePlanIds.contains(rows.get(row).getId());
 			}
 		};
 		LocalDateTime now = LocalDateTime.now();
@@ -99,7 +104,13 @@ public final class ReductionPlanChooser {
 			}
 			long count = manager.getPatientCount(plan);
 			String patients = plan.getMaxPatients() == null ? String.valueOf(count) : count + " / " + plan.getMaxPatients();
-			model.addRow(new Object[] { current.contains(plan), plan.getDescription(), expirationText, patients });
+			Integer maxPatients = plan.getMaxPatients();
+			boolean maxPatientsReached = maxPatients != null && maxPatients > 0 && count >= maxPatients;
+			if (current.contains(plan) || (!plan.isExpiredAt(now) && !maxPatientsReached)) {
+				selectablePlanIds.add(plan.getId());
+			}
+			String partnerName = plan.getPartner() == null ? "" : plan.getPartner().getName();
+			model.addRow(new Object[] { current.contains(plan), plan.getDescription(), partnerName, expirationText, patients });
 		}
 
 		Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
@@ -110,10 +121,32 @@ public final class ReductionPlanChooser {
 		dialog.setLayout(new BorderLayout(10, 10));
 
 		JTable table = new JTable(model);
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+					int viewRow = table.rowAtPoint(e.getPoint());
+					int col = table.columnAtPoint(e.getPoint());
+					if (viewRow >= 0 && col > 0) {
+						int modelRow = table.convertRowIndexToModel(viewRow);
+						if (modelRow >= 0 && modelRow < model.getRowCount()) {
+							if (selectablePlanIds.contains(rows.get(modelRow).getId())) {
+								e.consume();
+								boolean currentVal = Boolean.TRUE.equals(model.getValueAt(modelRow, 0));
+								model.setValueAt(!currentVal, modelRow, 0);
+							}
+						}
+					}
+				}
+			}
+		});
 		table.getColumnModel().getColumn(0).setMaxWidth(70);
-		table.getColumnModel().getColumn(1).setPreferredWidth(220);
+		table.getColumnModel().getColumn(1).setPreferredWidth(180);
+		table.getColumnModel().getColumn(2).setPreferredWidth(140);
+		table.getColumnModel().getColumn(3).setPreferredWidth(130);
+		table.getColumnModel().getColumn(4).setPreferredWidth(100);
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setPreferredSize(new Dimension(520, 220));
+		scrollPane.setPreferredSize(new Dimension(700, 240));
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

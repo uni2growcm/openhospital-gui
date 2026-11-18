@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.StringTokenizer;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -580,6 +581,14 @@ public class PatientInsertExtended extends JDialog {
 						p.getCode()
 				});
 			}
+			try {
+				hospitalPlansModel.clear();
+				for (ReductionPlan plan : patientReductionPlanManager.getPatientReductionPlans(patient.getCode())) {
+					hospitalPlansModel.addElement(plan);
+				}
+			} catch (OHServiceException e) {
+				LOGGER.error(e.getMessage(), e);
+			}
 		}
 	}
 
@@ -631,7 +640,7 @@ public class PatientInsertExtended extends JDialog {
 	 */
 	private void choosePartnerPlans(Partner partner) {
 		try {
-			List<ReductionPlan> available = patientReductionPlanManager.getAssignablePartnerPlans(partner.getCode(), patient.getCode());
+			List<ReductionPlan> available = reductionPlanManager.getPartnerPlans(partner.getCode());
 			List<ReductionPlan> current = patientReductionPlanManager.getPatientPartnerPlans(patient.getCode(), partner.getCode());
 			if (available.isEmpty() && current.isEmpty()) {
 				MessageDialog.info(this, MessageBundle.formatMessage("angal.patient.partner.noreductionplan.fmt.msg", partner.getName()));
@@ -719,6 +728,23 @@ public class PatientInsertExtended extends JDialog {
 		}
 
 		JTable partnerTable = new JTable(tableModel);
+		partnerTable.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+					int viewRow = partnerTable.rowAtPoint(e.getPoint());
+					int col = partnerTable.columnAtPoint(e.getPoint());
+					if (viewRow >= 0 && col > 0) {
+						int modelRow = partnerTable.convertRowIndexToModel(viewRow);
+						if (modelRow >= 0 && modelRow < tableModel.getRowCount()) {
+							e.consume();
+							boolean currentVal = Boolean.TRUE.equals(tableModel.getValueAt(modelRow, 0));
+							tableModel.setValueAt(!currentVal, modelRow, 0);
+						}
+					}
+				}
+			}
+		});
 		partnerTable.getColumnModel().getColumn(0).setMaxWidth(80);
 		partnerTable.getColumnModel().getColumn(0).setPreferredWidth(80);
 		partnerTable.getColumnModel().getColumn(0).setResizable(false);
@@ -2900,12 +2926,16 @@ public class PatientInsertExtended extends JDialog {
     }
 
     private void addReductionSection() {
-        JLabel reductionPlanLabel = new JLabel(MessageBundle.getMessage("angal.patient.hospitalreductionplans.label"));
-        billingPanel.add(centeredPanel(reductionPlanLabel));
+        JPanel reductionPlanPanel = new JPanel(new BorderLayout(0, 4));
+        reductionPlanPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel reductionPlanLabel = new JLabel(MessageBundle.getMessage("angal.patient.reductionplan.label"));
+        reductionPlanLabel.setHorizontalAlignment(JLabel.CENTER);
+        reductionPlanPanel.add(reductionPlanLabel, BorderLayout.NORTH);
 
         if (!insert) {
             try {
-                for (ReductionPlan plan : patientReductionPlanManager.getPatientHospitalPlans(patient.getCode())) {
+                for (ReductionPlan plan : patientReductionPlanManager.getPatientReductionPlans(patient.getCode())) {
                     hospitalPlansModel.addElement(plan);
                 }
             } catch (OHServiceException e) {
@@ -2915,21 +2945,63 @@ public class PatientInsertExtended extends JDialog {
 
         javax.swing.JList<ReductionPlan> hospitalPlansList = new javax.swing.JList<>(hospitalPlansModel);
         hospitalPlansList.setVisibleRowCount(3);
-        hospitalPlansList.setEnabled(false);
+        hospitalPlansList.setFocusable(false);
+        hospitalPlansList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        hospitalPlansList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, false, false);
+                if (value instanceof ReductionPlan plan) {
+                    if (plan.isHospitalPlan()) {
+                        setText(plan.getDescription());
+                    } else if (plan.getPartner() != null) {
+                        setText(plan.getDescription() + " (" + plan.getPartner().getName() + ")");
+                    } else {
+                        setText(plan.getDescription());
+                    }
+                }
+                return this;
+            }
+        });
         JScrollPane scrollPane = new JScrollPane(hospitalPlansList);
-        scrollPane.setPreferredSize(new Dimension(180, 60));
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        billingPanel.add(scrollPane);
+        scrollPane.setPreferredSize(new Dimension(220, 65));
+        scrollPane.setMaximumSize(new Dimension(240, 75));
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        reductionPlanPanel.add(scrollPane, BorderLayout.CENTER);
 
         hospitalPlansButton = new JButton(MessageBundle.getMessage("angal.patient.choosereductionplans.btn"));
-        hospitalPlansButton.setMargin(new Insets(8, 40, 8, 40));
+        hospitalPlansButton.setMargin(new Insets(3, 15, 3, 15));
+        hospitalPlansButton.setPreferredSize(new Dimension(140, 25));
         hospitalPlansButton.addActionListener(e -> {
             try {
+                Integer patientCode = insert ? null : patient.getCode();
                 List<ReductionPlan> current = java.util.Collections.list(hospitalPlansModel.elements());
+
+                // Default hospital plans
+                List<ReductionPlan> available = new ArrayList<>(
+                        patientReductionPlanManager.getAssignableHospitalPlans(patientCode).stream()
+                                .filter(ReductionPlan::isHospitalPlan)
+                                .toList()
+                );
+
+                // In edit mode: if patient has associated partner(s), include their reduction plans
+                if (!insert && patient != null && patient.getPartners() != null) {
+                    for (Partner partner : patient.getPartners()) {
+                        List<ReductionPlan> partnerPlans = patientReductionPlanManager
+                                .getAssignablePartnerPlans(partner.getCode(), patientCode);
+                        available.addAll(partnerPlans);
+                    }
+                }
+
+                // If patient has no partner associated (insert mode or edit mode with no partners),
+                // ensure current contains only hospital plans
+                if (insert || patient == null || patient.getPartners() == null || patient.getPartners().isEmpty()) {
+                    current = current.stream().filter(ReductionPlan::isHospitalPlan).toList();
+                }
+
                 List<ReductionPlan> chosen = ReductionPlanChooser.choose(this,
-                        MessageBundle.getMessage("angal.patient.hospitalreductionplans.label"),
-                        patientReductionPlanManager.getAssignableHospitalPlans(insert ? null : patient.getCode()),
-                        current, patientReductionPlanManager);
+                        MessageBundle.getMessage("angal.patient.reductionplan.label"),
+                        available, current, patientReductionPlanManager);
                 if (chosen != null) {
                     hospitalPlansModel.clear();
                     chosen.forEach(hospitalPlansModel::addElement);
@@ -2938,15 +3010,31 @@ public class PatientInsertExtended extends JDialog {
                 OHServiceExceptionUtil.showMessages(ex);
             }
         });
-        billingPanel.add(centeredPanel(hospitalPlansButton));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 3));
+        buttonPanel.add(hospitalPlansButton);
+        reductionPlanPanel.add(buttonPanel, BorderLayout.SOUTH);
+        billingPanel.add(centeredPanel(reductionPlanPanel));
     }
 
     /**
-     * Saves the hospital reduction plans chosen in the billing panel (the patient must be saved).
+     * Saves the reduction plans (hospital plans and partner plans) chosen in the billing panel (the patient must be saved).
      */
     private void saveHospitalPlans() {
         try {
-            patientReductionPlanManager.setPatientHospitalPlans(patient, java.util.Collections.list(hospitalPlansModel.elements()));
+            List<ReductionPlan> allChosenPlans = java.util.Collections.list(hospitalPlansModel.elements());
+            List<ReductionPlan> hospitalPlans = allChosenPlans.stream()
+                    .filter(ReductionPlan::isHospitalPlan)
+                    .toList();
+            patientReductionPlanManager.setPatientHospitalPlans(patient, hospitalPlans);
+
+            if (!insert && patient != null && patient.getPartners() != null) {
+                for (Partner partner : patient.getPartners()) {
+                    List<ReductionPlan> partnerPlans = allChosenPlans.stream()
+                            .filter(p -> p.getPartner() != null && partner.getCode().equals(p.getPartner().getCode()))
+                            .toList();
+                    patientReductionPlanManager.setPatientPartnerPlans(patient, partner, partnerPlans);
+                }
+            }
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e);
         }
@@ -2981,7 +3069,8 @@ public class PatientInsertExtended extends JDialog {
             priceListComboBox.setSelectedIndex(0);
         }
 
-        billingPanel.add(priceListComboBox);
+        priceListComboBox.setPreferredSize(new Dimension(220, 25));
+        billingPanel.add(centeredPanel(priceListComboBox));
     }
 
 	/**
