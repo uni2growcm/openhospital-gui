@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Outpatient_Register" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoPages" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="Outpatient_Register" uuid="a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -89,7 +90,11 @@
 	p.PAT_NAME,
 	p.PAT_MAR_STAT AS PAT_STATUS,
 	p.PAT_NEXT_KIN,
-	p.PAT_BLAMA,
+	CASE 
+		WHEN p.PAT_BLAMA IS NOT NULL AND TRIM(p.PAT_BLAMA) NOT IN ('', '-') THEN p.PAT_BLAMA
+		WHEN p.PAT_NEXT_KIN IS NOT NULL AND TRIM(p.PAT_NEXT_KIN) NOT IN ('', '-') THEN p.PAT_NEXT_KIN
+		ELSE ''
+	END AS PAT_BLAMA,
 	p.PAT_CITY,
 	p.PAT_ADDR,
 	p.PAT_GEO_POS,
@@ -326,135 +331,223 @@ ORDER BY o.OPD_ID]]>
 	<columnHeader>
 		<band height="100" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="0" width="26" height="100" uuid="d6e7f890-0112-4324-3546-576879800112" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="0" y="0" width="26" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="d6e7f890-0112-4324-3546-576879800112"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colDate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="26" y="0" width="14" height="100" uuid="e7f89001-0213-4435-4657-687980011223" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="26" y="0" width="14" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="e7f89001-0213-4435-4657-687980011223"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colMonthOrder}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="40" y="0" width="11" height="100" uuid="f8900112-0324-4546-5768-798001122334" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="40" y="0" width="11" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="f8900112-0324-4546-5768-798001122334"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colCase}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="71" y="0" width="90" height="100" uuid="09011223-0435-4657-6879-800112233445" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="71" y="0" width="90" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="09011223-0435-4657-6879-800112233445"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colName}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="161" y="0" width="15" height="100" uuid="11223344-0546-4768-7980-011223344556" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="161" y="0" width="15" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="11223344-0546-4768-7980-011223344556"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colSex}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="176" y="0" width="15" height="100" uuid="22334455-0657-4879-8091-122334455667" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="176" y="0" width="15" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="22334455-0657-4879-8091-122334455667"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colAge}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="191" y="0" width="16" height="100" uuid="33445566-0768-4980-9112-233445566778" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="191" y="0" width="16" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="33445566-0768-4980-9112-233445566778"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colStatus}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="207" y="0" width="15" height="100" uuid="44556677-0879-4091-1223-344556677889" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="207" y="0" width="15" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="44556677-0879-4091-1223-344556677889"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colPregnant}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="51" y="0" width="20" height="100" uuid="55667788-0980-4112-2334-455667788990" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="51" y="0" width="20" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="55667788-0980-4112-2334-455667788990"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colPatientCode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="222" y="0" width="27" height="100" uuid="66778899-1091-4223-3445-566778899001" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="222" y="0" width="27" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="66778899-1091-4223-3445-566778899001"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colProfession}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="249" y="0" width="27" height="100" uuid="77889900-1223-4344-5566-778899001122" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="249" y="0" width="27" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="77889900-1223-4344-5566-778899001122"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colResidence}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="276" y="0" width="23" height="100" uuid="88990011-2334-4455-6677-889900112233" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="276" y="0" width="23" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="88990011-2334-4455-6677-889900112233"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colGeoArea}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="299" y="0" width="37" height="100" uuid="99001122-3445-4566-7788-990011223344" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="299" y="0" width="37" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="99001122-3445-4566-7788-990011223344"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colContact}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="336" y="0" width="100" height="100" uuid="00112233-4556-4677-8899-001122334455" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="336" y="0" width="100" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="00112233-4556-4677-8899-001122334455"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colAntecedents}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="436" y="0" width="83" height="100" uuid="22330011-6778-4899-0011-223344556677" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="436" y="0" width="83" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="22330011-6778-4899-0011-223344556677"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colDiagnostic}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="519" y="0" width="42" height="100" uuid="33001122-7889-4900-1122-334455667788" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="519" y="0" width="42" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="33001122-7889-4900-1122-334455667788"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colExams}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="561" y="0" width="48" height="100" uuid="44112233-8990-4011-2233-445566778899" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="561" y="0" width="48" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="44112233-8990-4011-2233-445566778899"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colResults}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="609" y="0" width="38" height="100" uuid="55223344-9001-4122-3344-556677889900" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="609" y="0" width="38" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="55223344-9001-4122-3344-556677889900"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colTreatment}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="647" y="0" width="40" height="100" uuid="66334455-0112-4233-4455-667788990011" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="647" y="0" width="40" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="66334455-0112-4233-4455-667788990011"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colConfirmDiagnostic}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="687" y="0" width="32" height="100" uuid="77445566-1223-4344-5566-778899001122" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="687" y="0" width="32" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="77445566-1223-4344-5566-778899001122"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colHospitalization}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="719" y="0" width="18" height="100" uuid="88556677-2334-4455-6677-889900112233" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="719" y="0" width="18" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="88556677-2334-4455-6677-889900112233"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colReferral}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="737" y="0" width="45" height="100" uuid="99667788-3445-4566-7788-990011223344" mode="Opaque" backcolor="#EAF0F6" forecolor="#1E3A8A"/>
-				<box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7" isBold="true"/></textElement>
+				<reportElement mode="Opaque" x="737" y="0" width="45" height="100" forecolor="#1E3A8A" backcolor="#EAF0F6" uuid="99667788-3445-4566-7788-990011223344"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#B0C4DE"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{colObservation}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -463,156 +556,250 @@ ORDER BY o.OPD_ID]]>
 		<band height="37" splitType="Prevent">
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="26" height="37" uuid="a0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_DATE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="26" y="0" width="14" height="37" uuid="b1c2d3e4-5f6a-4b7c-8d9e-0f1a2b3c4d5e"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_PROG_MONTH}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="40" y="0" width="11" height="37" uuid="c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA["N".equals($F{OPD_NEW_PAT}) ? $R{newPatient} : ("R".equals($F{OPD_NEW_PAT}) ? $R{returningPatient} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="71" y="0" width="90" height="37" uuid="d3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f70"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_NAME} == null ? "" : $F{PAT_NAME}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="161" y="0" width="15" height="37" uuid="e4f5a6b7-8c9d-4e0f-1a2b-3c4d5e6f7081"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_SEX}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="176" y="0" width="15" height="37" uuid="f5a6b7c8-9d0e-4f1a-2b3c-4d5e6f708192"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_AGE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="191" y="0" width="16" height="37" uuid="a6b7c8d9-0e1f-4a2b-3c4d-5e6f708192a3"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_STATUS}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="207" y="0" width="15" height="37" uuid="b7c8d9e0-1f2a-4b3c-4d5e-6f708192a3b4"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA["yes".equals($F{PAT_PREGNANT}) ? $R{yes} : ("no".equals($F{PAT_PREGNANT}) ? $R{no} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="51" y="0" width="20" height="37" uuid="c8d9e0f1-2a3b-4c4d-5e6f-708192a3b4c5"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ID}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="222" y="0" width="27" height="37" uuid="d9e0f1a2-3b4c-4d5e-6f70-8192a3b4c5d6"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_OCCUPATION}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="249" y="0" width="27" height="37" uuid="e0f1a2b3-4c5d-4e6f-7081-92a3b4c5d6e7"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[($F{PAT_ADDR} == null ? "" : $F{PAT_ADDR}) + ($F{PAT_ADDR} != null && $F{PAT_CITY} != null ? " / " : "") + ($F{PAT_CITY} == null ? "" : $F{PAT_CITY})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="276" y="0" width="23" height="37" uuid="f1a2b3c4-5d6e-4f70-8192-a3b4c5d6e7f8"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA["dans_l_air".equals($F{PAT_GEO_POS}) ? $R{geoInside} : ("hors_de_l_air".equals($F{PAT_GEO_POS}) ? $R{geoOutside} : ("hors_du_district".equals($F{PAT_GEO_POS}) ? $R{geoOutsideDistrict} : $R{notAvailable}))]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="299" y="0" width="37" height="37" uuid="a2b3c4d5-6e7f-4081-92a3-b4c5d6e7f809"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_BLAMA}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="336" y="0" width="100" height="37" uuid="b3c4d5e6-7f80-4192-a3b4-c5d6e7f80910"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ANTECEDENTS} == null || $F{PAT_ANTECEDENTS}.trim().isEmpty() ? $R{notAvailable} : $F{PAT_ANTECEDENTS}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="436" y="0" width="83" height="37" uuid="d5e6f708-9102-4435-4c5d-6e7f80910a32"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_DIAGNOSTIC}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="519" y="0" width="42" height="37" uuid="e6f70910-a243-4546-5d6e-7f80910a3243"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_EXAMS}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="561" y="0" width="48" height="37" uuid="f70910a3-2435-4647-6e7f-80910a324354"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_RESULTS}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="609" y="0" width="38" height="37" uuid="0910a324-3546-4758-7f80-910a32435465"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_TREATMENT}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="647" y="0" width="40" height="37" uuid="910a3243-5465-4869-8091-0a3243546576"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{notAvailable}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="687" y="0" width="32" height="37" uuid="10a32435-4657-4970-910a-324354657687"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA["yes".equals($F{OPD_HOSPITALIZATION}) ? $R{yes} : ("no".equals($F{OPD_HOSPITALIZATION}) ? $R{no} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="719" y="0" width="18" height="37" uuid="0a324354-5768-4a81-10a3-243546576879"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA["yes".equals($F{OPD_REFERRAL_TO_HOSPITAL}) ? $R{yes} : ("non".equals($F{OPD_REFERRAL_TO_HOSPITAL}) ? $R{no} : $R{notAvailable})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="737" y="0" width="45" height="37" uuid="a3243546-5768-4a92-21a3-435465768798"/>
-				<box><pen lineWidth="0.25"/></box>
-				<textElement verticalAlignment="Middle"><font fontName="SansSerif" size="7"/></textElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="7"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_NOTE} == null ? "" : $F{OPD_NOTE}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<columnFooter>
-		<band height="0" splitType="Stretch"/>
+		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
 		<band height="20" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="0" width="200" height="16" uuid="b2435465-7687-4a93-32b4-546576879809"/>
-				<textElement><font fontName="SansSerif" size="8"/></textElement>
+				<textElement>
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date())]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="632" y="0" width="100" height="16" uuid="c3465768-7980-4ba4-43c5-657687980a10"/>
-				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="736" y="0" width="46" height="16" uuid="d4576879-80a1-4bb5-54d6-768798a0b121"/>
-				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -621,7 +808,9 @@ ORDER BY o.OPD_ID]]>
 		<band height="30" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="4" width="400" height="20" forecolor="#1E3A8A" uuid="e568798a-0b12-4cc6-65e7-879a0b122c32"/>
-				<textElement><font fontName="SansSerif" size="12" isBold="true"/></textElement>
+				<textElement>
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + $V{TOTAL}]]></textFieldExpression>
 			</textField>
 		</band>
