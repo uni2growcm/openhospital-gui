@@ -273,6 +273,10 @@ public class InventoryEdit extends ModalJFrame {
 		initComponents();
 	}
 
+	private boolean isViewMode() {
+		return "view".equals(mode);
+	}
+
 	private void initComponents() {
 		inventoryRowList = new ArrayList<>();
 		inventoryRowSearchList = new ArrayList<>();
@@ -307,16 +311,16 @@ public class InventoryEdit extends ModalJFrame {
 				closeButton.doClick();
 			}
 		});
-		if (mode.equals("view")) {
-			saveButton.setVisible(false);
-			validateButton.setVisible(false);
-			confirmButton.setVisible(false);
-			deleteButton.setVisible(false);
-			resetButton.setVisible(false);
+		if (isViewMode()) {
+			// read only: the editing buttons are removed (not only hidden) so that their mnemonics cannot trigger them
+			for (JButton button : new JButton[] { saveButton, lotButton, deleteButton, resetButton, validateButton, confirmButton }) {
+				button.setEnabled(false);
+				button.setVisible(false);
+				panelFooter.remove(button);
+			}
 			referenceTextField.setEditable(false);
 			jCalendarInventoryDate.setEnabled(false);
 			dischargeCombo.setEnabled(false);
-			lotButton.setVisible(false);
 			printButton.setVisible(true);
 			selectButton.setEnabled(false);
 			medicalCodeTextField.setEnabled(false);
@@ -721,44 +725,29 @@ public class InventoryEdit extends ModalJFrame {
 			allMedicals = option.equals(allMedicalsOrList[0]); // Yes (All medicals)
 			allMedicalsChosen = true;
 			try {
-				medicalInventoryManager.validateMedicalInventoryRow(inventory, inventoryRowSearchList, allMedicals);
+				// Align the rows on the current stock keeping the counted differences (real - theoretic):
+				// stock movements done since the count do not prevent the validation and are not lost.
+				inventory = medicalInventoryManager.actualizeMedicalInventoryRow(inventory, allMedicals);
 				inventory.setStatus(status);
 				inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
+				reloadInventoryRows();
 				MessageDialog.info(null, "angal.inventory.validate.success.msg");
 				statusLabel.setText(status.toUpperCase());
 				statusLabel.setForeground(Color.BLUE);
 				confirmButton.setEnabled(true);
 				fireInventoryUpdated();
 			} catch (OHServiceException e) {
+				// only blocking case: the counted difference of some lots can no longer be applied (stock decreased too much)
 				OHServiceExceptionUtil.showMessages(e);
-				int answer = MessageDialog.yesNo(null, "angal.inventory.doyouwanttoactualizetheinventory.msg");
-				if (answer == JOptionPane.YES_OPTION) {
-					try {
-						inventory.setStatus(status);
-						inventory = medicalInventoryManager.actualizeMedicalInventoryRow(inventory, allMedicals);
-						dateInventory = inventory.getInventoryDate();
-						statusLabel.setText(status.toUpperCase());
-						statusLabel.setForeground(Color.BLUE);
-						confirmButton.setEnabled(true);
-						jTableInventoryRow.setModel(new InventoryRowModel());
-						fireInventoryUpdated();
-					} catch (OHServiceException e1) {
-						OHServiceExceptionUtil.showMessages(e1);
-					}
-				} else {
-					try {
-						inventory.setStatus(InventoryStatus.draft.toString());
-						statusLabel.setText(InventoryStatus.draft.toString().toUpperCase());
-						statusLabel.setForeground(Color.GRAY);
-						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
-						fireInventoryUpdated();
-					} catch (OHServiceException ex) {
-						OHServiceExceptionUtil.showMessages(ex);
-					}
-				}
 			}
 		});
 		return validateButton;
+	}
+
+	private void reloadInventoryRows() throws OHServiceException {
+		model = new InventoryRowModel();
+		jTableInventoryRow.setModel(model);
+		jTableInventoryRow.updateUI();
 	}
 
 	private String askAllMedicalsOrList(String question) {
@@ -828,6 +817,8 @@ public class InventoryEdit extends ModalJFrame {
 					statusLabel.setForeground(Color.GRAY);
 					try {
 						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
+						// the confirmation has been rolled back: reload the rows as they are saved
+						reloadInventoryRows();
 						fireInventoryUpdated();
 					} catch (OHServiceException e1) {
 						OHServiceExceptionUtil.showMessages(e1);
@@ -976,6 +967,11 @@ public class InventoryEdit extends ModalJFrame {
 		closeButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 		closeButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 		closeButton.addActionListener(actionEvent -> {
+			if (isViewMode()) {
+				resetVariables();
+				dispose();
+				return;
+			}
 			String lastCharge = null;
 			String lastDischarge = null;
 			Integer lastSupplier = null;
@@ -1224,6 +1220,12 @@ public class InventoryEdit extends ModalJFrame {
 						MessageDialog.error(null, "angal.inventory.invalidquantity.msg");
 						return;
 					}
+					if (doubleValue == invRow.getRealQty()) {
+						// nothing counted again: keep the counted difference as it is
+						return;
+					}
+					// the counted difference is computed against the stock at the moment of the count
+					refreshTheoreticQty(invRow);
 					invRow.setRealqty(doubleValue);
 					if (invRow.getLot() != null && invRow.getLot().getCost() != null) {
 						BigDecimal total = invRow.getLot().getCost().multiply(BigDecimal.valueOf(invRow.getRealQty()));
@@ -1238,7 +1240,25 @@ public class InventoryEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return columnEditable[columnIndex];
+			return !isViewMode() && columnEditable[columnIndex];
+		}
+	}
+
+	/**
+	 * Set the theoretic quantity of the row to the current main store quantity of its lot (only for existing lots).
+	 */
+	private void refreshTheoreticQty(MedicalInventoryRow invRow) {
+		Lot lot = invRow.getLot();
+		if (lot == null || invRow.isNewLot() || lot.getCode() == null || lot.getCode().isEmpty()) {
+			return;
+		}
+		try {
+			Lot currentLot = movStockInsertingManager.getLot(lot.getCode());
+			if (currentLot != null && currentLot.getMainStoreQuantity() != null) {
+				invRow.setTheoreticQty(currentLot.getMainStoreQuantity());
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
 	}
 
@@ -1735,7 +1755,11 @@ public class InventoryEdit extends ModalJFrame {
 			referenceTextField = new VoLimitedTextField(40, 10);
 			referenceTextField.setColumns(10);
 
-			if (GeneralData.REFERENCE_AUTOMATIC) {
+			if (GeneralData.REFERENCE_AUTOMATIC && inventory != null && !mode.equals("new")) {
+				// existing inventory: show its own reference, never generate a new one
+				referenceTextField.setText(inventory.getInventoryReference());
+				referenceTextField.setEditable(false);
+			} else if (GeneralData.REFERENCE_AUTOMATIC) {
 				LocalDateTime now = LocalDateTime.now();
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GeneralData.REFERENCE_TIMESTAMP_FORMAT);
 				String timestamp = now.format(formatter);

@@ -275,6 +275,10 @@ public class InventoryWardEdit extends ModalJFrame {
 		initComponents();
 	}
 
+	private boolean isViewMode() {
+		return "view".equals(mode);
+	}
+
 	private void initComponents() {
 		inventoryRowList = new ArrayList<>();
 		inventoryRowSearchList = new ArrayList<>();
@@ -310,18 +314,18 @@ public class InventoryWardEdit extends ModalJFrame {
 				closeButton.doClick();
 			}
 		});
-		if (mode.equals("view")) {
-			saveButton.setVisible(false);
-			validateButton.setVisible(false);
-			confirmButton.setVisible(false);
-			deleteButton.setVisible(false);
-			resetButton.setVisible(false);
+		if (isViewMode()) {
+			// read only: the editing buttons are removed (not only hidden) so that their mnemonics cannot trigger them
+			for (JButton button : new JButton[] { saveButton, lotButton, deleteButton, resetButton, validateButton, confirmButton }) {
+				button.setEnabled(false);
+				button.setVisible(false);
+				panelFooter.remove(button);
+			}
 			referenceTextField.setEditable(false);
 			jCalendarInventoryDate.setEnabled(false);
 			selectButton.setEnabled(false);
 			wardComboBox.setEnabled(false);
 			printButton.setVisible(true);
-			lotButton.setVisible(false);
 			medicalCodeTextField.setEditable(false);
 
 		} else {
@@ -717,44 +721,29 @@ public class InventoryWardEdit extends ModalJFrame {
 			allMedicals = option.equals(allMedicalsOrList[0]); // Yes (All medicals)
 			allMedicalsChosen = true;
 			try {
-				medicalInventoryManager.validateMedicalWardInventoryRow(inventory, inventoryRowSearchList, allMedicals);
+				// Align the rows on the current ward stock keeping the counted differences (real - theoretic):
+				// stock movements done since the count do not prevent the validation and are not lost.
+				inventory = medicalInventoryManager.actualizeMedicalWardInventoryRow(inventory, allMedicals);
 				inventory.setStatus(status);
 				inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
+				reloadInventoryRows();
 				MessageDialog.info(null, "angal.inventory.validate.success.msg");
 				statusLabel.setText(status.toUpperCase());
 				statusLabel.setForeground(Color.BLUE);
 				confirmButton.setEnabled(true);
 				fireInventoryUpdated();
 			} catch (OHServiceException e) {
+				// only blocking case: the counted difference of some lots can no longer be applied (stock decreased too much)
 				OHServiceExceptionUtil.showMessages(e);
-				int answer = MessageDialog.yesNo(null, "angal.inventory.doyouwanttoactualizetheinventory.msg");
-				if (answer == JOptionPane.YES_OPTION) {
-					try {
-						inventory.setStatus(status);
-						inventory = medicalInventoryManager.actualizeMedicalWardInventoryRow(inventory, allMedicals);
-						dateInventory = inventory.getInventoryDate();
-						statusLabel.setText(status.toUpperCase());
-						statusLabel.setForeground(Color.BLUE);
-						confirmButton.setEnabled(true);
-						jTableInventoryRow.setModel(new InventoryRowModel());
-						fireInventoryUpdated();
-					} catch (OHServiceException e1) {
-						OHServiceExceptionUtil.showMessages(e1);
-					}
-				} else {
-					try {
-						inventory.setStatus(InventoryStatus.draft.toString());
-						statusLabel.setText(InventoryStatus.draft.toString().toUpperCase());
-						statusLabel.setForeground(Color.GRAY);
-						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
-						fireInventoryUpdated();
-					} catch (OHServiceException ex) {
-						OHServiceExceptionUtil.showMessages(ex);
-					}
-				}
 			}
 		});
 		return validateButton;
+	}
+
+	private void reloadInventoryRows() throws OHServiceException {
+		model = new InventoryRowModel();
+		jTableInventoryRow.setModel(model);
+		jTableInventoryRow.updateUI();
 	}
 
 	private String askAllMedicalsOrList(String question) {
@@ -819,6 +808,8 @@ public class InventoryWardEdit extends ModalJFrame {
 					statusLabel.setForeground(Color.GRAY);
 					try {
 						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
+						// the confirmation has been rolled back: reload the rows as they are saved
+						reloadInventoryRows();
 						fireInventoryUpdated();
 					} catch (OHServiceException e1) {
 						OHServiceExceptionUtil.showMessages(e1);
@@ -967,6 +958,11 @@ public class InventoryWardEdit extends ModalJFrame {
 		closeButton = new JButton(MessageBundle.getMessage("angal.common.close.btn"));
 		closeButton.setMnemonic(MessageBundle.getMnemonic("angal.common.close.btn.key"));
 		closeButton.addActionListener(actionEvent -> {
+			if (isViewMode()) {
+				resetVariables();
+				dispose();
+				return;
+			}
 			String lastReference = null;
 			newReference = referenceTextField.getText().trim();
 			LocalDateTime lastDate = dateInventory;
@@ -1200,6 +1196,12 @@ public class InventoryWardEdit extends ModalJFrame {
 						MessageDialog.error(null, "angal.inventory.invalidquantity.msg");
 						return;
 					}
+					if (doubleValue == invRow.getRealQty()) {
+						// nothing counted again: keep the counted difference as it is
+						return;
+					}
+					// the counted difference is computed against the ward stock at the moment of the count
+					refreshTheoreticQty(invRow);
 					invRow.setRealqty(doubleValue);
 					if (invRow.getLot() != null && invRow.getLot().getCost() != null) {
 						BigDecimal total = invRow.getLot().getCost().multiply(BigDecimal.valueOf(invRow.getRealQty()));
@@ -1214,7 +1216,29 @@ public class InventoryWardEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return columnEditable[columnIndex];
+			return !isViewMode() && columnEditable[columnIndex];
+		}
+	}
+
+	/**
+	 * Set the theoretic quantity of the row to the current quantity of its lot in the ward (only for existing lots).
+	 */
+	private void refreshTheoreticQty(MedicalInventoryRow invRow) {
+		Lot lot = invRow.getLot();
+		Medical medical = invRow.getMedical();
+		if (lot == null || medical == null || invRow.isNewLot() || lot.getCode() == null || lot.getCode().isEmpty()) {
+			return;
+		}
+		try {
+			// a lot no longer present in the ward has a quantity of zero (same rule as the core)
+			double currentQty = movWardBrowserManager.getMedicalsWard(wardCode, medical.getCode(), false).stream()
+				.filter(medicalWard -> medicalWard.getLot() != null && lot.getCode().equals(medicalWard.getLot().getCode()))
+				.findFirst()
+				.map(medicalWard -> medicalWard.getQty() == null ? 0.0 : medicalWard.getQty())
+				.orElse(0.0);
+			invRow.setTheoreticQty(currentQty);
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
 		}
 	}
 
@@ -1765,7 +1789,11 @@ public class InventoryWardEdit extends ModalJFrame {
 			referenceTextField = new VoLimitedTextField(40, 10);
 			referenceTextField.setColumns(10);
 
-			if (GeneralData.REFERENCE_AUTOMATIC) {
+			if (GeneralData.REFERENCE_AUTOMATIC && inventory != null && !mode.equals("new")) {
+				// existing inventory: show its own reference, never generate a new one
+				referenceTextField.setText(inventory.getInventoryReference());
+				referenceTextField.setEditable(false);
+			} else if (GeneralData.REFERENCE_AUTOMATIC) {
 				LocalDateTime now = LocalDateTime.now();
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GeneralData.REFERENCE_TIMESTAMP_FORMAT);
 				String timestamp = now.format(formatter);
