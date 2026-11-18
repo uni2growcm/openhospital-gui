@@ -62,9 +62,9 @@ import org.isf.opetype.manager.OperationTypeBrowserManager;
 import org.isf.opetype.model.OperationType;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.stat.gui.report.GenericReportMY;
+import org.isf.stat.gui.report.GenericReportSynthesisActivities;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
-import org.isf.stat.gui.report.GenericReportSynthesisActivities;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -142,7 +142,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	/**
 	 * This method initializes jPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJPanel() {
@@ -156,7 +156,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	/**
 	 * This method initializes jButtonPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJButtonPanel() {
@@ -184,7 +184,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	/**
 	 * This method initializes jCloseButton
-	 * 
+	 *
 	 * @return javax.swing.JButton
 	 */
 	private JButton getJCloseButton() {
@@ -198,7 +198,7 @@ public class ReportLauncher extends ModalJFrame {
 
 	/**
 	 * This method initializes jContentPanel
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJContentPanel() {
@@ -232,18 +232,18 @@ public class ReportLauncher extends ModalJFrame {
 			folderNameFileNameMap = new HashMap<>();
 			try {
 				List<File> loadedFiles = Files.walk(Paths.get("./rpt_stat"))
-								.filter(Files::isRegularFile)
-								.map(Path::toFile)
-								.filter(t -> t.getName().endsWith(".jasper"))
-								.collect(Collectors.toList());
+						.filter(Files::isRegularFile)
+						.map(Path::toFile)
+						.filter(t -> t.getName().endsWith(".jasper"))
+						.collect(Collectors.toList());
 				jasperFilesInFolder.addAll(loadedFiles);
 				folderNameFileNameMap.put("rpt_stat", loadedFiles.stream().map(t -> t.getName().replace(".jasper", "")).collect(Collectors.toList()));
 
 				loadedFiles = Files.walk(Paths.get("./rpt_extra"))
-								.filter(Files::isRegularFile)
-								.map(Path::toFile)
-								.filter(t -> t.getName().endsWith(".jasper"))
-								.collect(Collectors.toList());
+						.filter(Files::isRegularFile)
+						.map(Path::toFile)
+						.filter(t -> t.getName().endsWith(".jasper"))
+						.collect(Collectors.toList());
 				jasperFilesInFolder.addAll(loadedFiles);
 				folderNameFileNameMap.put("rpt_extra", loadedFiles.stream().map(t -> t.getName().replace(".jasper", "")).collect(Collectors.toList()));
 
@@ -284,6 +284,8 @@ public class ReportLauncher extends ModalJFrame {
 			jRptComboBox.addActionListener(actionEvent -> {
 				if (actionEvent.getActionCommand() != null && actionEvent.getActionCommand().equalsIgnoreCase("comboBoxChanged")) {
 					selectAction();
+					pack();
+					setLocationRelativeTo(null);
 				}
 			});
 
@@ -386,7 +388,7 @@ public class ReportLauncher extends ModalJFrame {
 				JRParameter[] params = jasperReport.getParameters();
 
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
-								.collect(Collectors.toList());
+						.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
 
 				boolean isIncomesPerSurgeryAct = jasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper");
@@ -424,8 +426,17 @@ public class ReportLauncher extends ModalJFrame {
 					jToDateLabel.setVisible(false);
 					jToDateField.setVisible(false);
 				}
-				pack();
-				setLocationRelativeTo(null);
+
+				boolean hasStatus = userInputParamNames.contains("state") && !isIncomesPerSurgeryAct;
+				if (hasStatus) {
+					jStatusLabel.setVisible(true);
+					jStatusComboBox.setVisible(true);
+					jStatusComboBox.setSelectedIndex(0);
+				} else if (!isIncomesPerSurgeryAct) {
+					jStatusLabel.setVisible(false);
+					jStatusComboBox.setVisible(false);
+				}
+
 			} catch (JRException e) {
 				LOGGER.error("Exception in selectAction method.", e);
 			}
@@ -454,8 +465,8 @@ public class ReportLauncher extends ModalJFrame {
 
 	public static Date convertToDateUsingInstant(LocalDate date) {
 		return Date.from(date.atStartOfDay()
-						.atZone(ZoneId.systemDefault())
-						.toInstant());
+				.atZone(ZoneId.systemDefault())
+				.toInstant());
 	}
 
 	protected void generateReport(boolean toExcel) {
@@ -471,8 +482,6 @@ public class ReportLauncher extends ModalJFrame {
 					case 1:
 						state = "O";
 						state2 = "O";
-						// A pending bill can only have a zero balance when ALLOWOPENBILLWITHZEROBALANCE allows
-						// it to stay open instead of auto-closing; otherwise the distinction is moot.
 						if (GeneralData.ALLOWOPENBILLWITHZEROBALANCE) {
 							int balanceAnswer = MessageDialog.yesNo(this, "angal.stat.incomespersurgeryact.balancezero.msg");
 							if (balanceAnswer == JOptionPane.CLOSED_OPTION) {
@@ -494,54 +503,72 @@ public class ReportLauncher extends ModalJFrame {
 				Object selectedOperationType = jOperationTypeComboBox.getSelectedItem();
 				String operationTypeCode = selectedOperationType instanceof OperationType ? ((OperationType) selectedOperationType).getCode() : "ALL";
 				String operationTypeLabel = selectedOperationType instanceof OperationType ? ((OperationType) selectedOperationType).getDescription()
-								: MessageBundle.getMessage("angal.common.all.txt");
+						: MessageBundle.getMessage("angal.common.all.txt");
 
 				new GenericReportFromDateToDate(year, state, state2, operationTypeCode, operationTypeLabel, balanceZero, jRptComboBox.getSelectedItem().toString(),
-								toExcel);
+						toExcel);
 			} else if (userInputParamNames.contains("fromdate") || userInputParamNames.contains("todate")) {
-				new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(),
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
-								jRptComboBox.getSelectedItem().toString(), toExcel);
+				String folder = folderNameFileNameMap.get("rpt_stat").contains(
+						reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+						: "rpt_extra";
+				String jasperFileName = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "");
+
+				if (userInputParamNames.contains("state")) {
+					String state;
+					String state2;
+					if (jStatusComboBox.getSelectedIndex() == 1) {
+						state = "O";
+						state2 = "O";
+					} else if (jStatusComboBox.getSelectedIndex() == 2) {
+						state = "C";
+						state2 = "C";
+					} else {
+						state = "O";
+						state2 = "C";
+					}
+					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
+							jRptComboBox.getSelectedItem().toString(), toExcel, state, state2);
+				} else {
+					new GenericReportFromDateToDate(jFromDateField.getDate(), jToDateField.getDate(), folder, jasperFileName,
+							jRptComboBox.getSelectedItem().toString(), toExcel);
+				}
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
 					frame.sendMessage("report " +
-									TimeTools.formatDateTime(jFromDateField.getDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY) + ' ' +
-									TimeTools.formatDateTime(jToDateField.getDate().atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY) + ' ' +
-									jRptComboBox.getSelectedItem().toString(), user, false);
+							TimeTools.formatDateTime(jFromDateField.getDate().atStartOfDay(), DATE_FORMAT_DD_MM_YYYY) + ' ' +
+							TimeTools.formatDateTime(jToDateField.getDate().atTime(LocalTime.MAX), DATE_FORMAT_DD_MM_YYYY) + ' ' +
+							jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			} else if (userInputParamNames.contains("year") && !userInputParamNames.contains("month")) {
 				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
 
 				new GenericReportSynthesisActivities(year,
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""), toExcel);
+						folderNameFileNameMap.get("rpt_stat").contains(
+								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+								: "rpt_extra",
+						reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
 					frame.sendMessage("report " + year + ' ' +
-									jRptComboBox.getSelectedItem().toString(), user, false);
+							jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			} else {
 				int month = jMonthComboBox.getSelectedIndex() + 1;
 				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
 
 				new GenericReportMY(month, year,
-								folderNameFileNameMap.get("rpt_stat").contains(
-												reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
-																: "rpt_extra",
-								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
-								jRptComboBox.getSelectedItem().toString(), toExcel);
+						folderNameFileNameMap.get("rpt_stat").contains(
+								reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", "")) ? "rpt_stat"
+								: "rpt_extra",
+						reportNameFileMap.get(jRptComboBox.getSelectedItem().toString()).getName().replace(".jasper", ""),
+						jRptComboBox.getSelectedItem().toString(), toExcel);
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
 					frame.sendMessage("report " + month + ' ' + year + ' ' +
-									jRptComboBox.getSelectedItem().toString(), user, false);
+							jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			}
 		}
@@ -552,7 +579,7 @@ public class ReportLauncher extends ModalJFrame {
 	 */
 	private JPanel setMyBorder(JPanel panel, String title) {
 		Border border = BorderFactory.createCompoundBorder(
-						BorderFactory.createTitledBorder(title), BorderFactory.createEmptyBorder(0, 0, 0, 0));
+				BorderFactory.createTitledBorder(title), BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		panel.setBorder(border);
 		return panel;
 	}
