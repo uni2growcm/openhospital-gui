@@ -98,6 +98,7 @@ public class ReportLauncher extends ModalJFrame {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReportLauncher.class);
 	private static final String INCOMES_PER_SURGERY_ACT_FILENAME = "OH004_IncomesAllByPriceCodes_3_Surgery";
+	private static final String SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME = "OH004_IncomesAllByPriceCodes_3";
 
 	private JPanel jPanel;
 	private JPanel jButtonPanel;
@@ -407,6 +408,23 @@ public class ReportLauncher extends ModalJFrame {
 
 	}
 
+	private JComboBox<Object> getJWardComboBox() {
+		JComboBox<Object> comboBox = new JComboBox<>();
+		WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
+		List<Ward> wardList;
+		try {
+			wardList = wardBrowserManager.getWards();
+		} catch (OHServiceException e) {
+			wardList = new LinkedList<>();
+			OHServiceExceptionUtil.showMessages(e);
+		}
+		comboBox.addItem(MessageBundle.getMessage("angal.billbrowser.allwards.txt"));
+		for (Ward ward : wardList) {
+			comboBox.addItem(ward);
+		}
+		return comboBox;
+	}
+
 	private JComboBox<Object> getJOperationTypeComboBox() {
 		JComboBox<Object> comboBox = new JComboBox<>();
 		OperationTypeBrowserManager operationTypeBrowserManager = Context.getApplicationContext().getBean(OperationTypeBrowserManager.class);
@@ -478,9 +496,15 @@ public class ReportLauncher extends ModalJFrame {
 				List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
 								.collect(Collectors.toList());
 				userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
+
+				boolean isSalesByProductAndServicePerYear = jasperFile.getName().equals(SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME + ".jasper");
 				boolean isIncomesPerSurgeryAct = jasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper");
-				jStatusLabel.setVisible(isIncomesPerSurgeryAct);
-				jStatusComboBox.setVisible(isIncomesPerSurgeryAct);
+				boolean isYearlyBillingReport = isSalesByProductAndServicePerYear || isIncomesPerSurgeryAct;
+
+				jStatusLabel.setVisible(isYearlyBillingReport);
+				jStatusComboBox.setVisible(isYearlyBillingReport);
+				jWardLabel.setVisible(isSalesByProductAndServicePerYear);
+				jWardComboBox.setVisible(isSalesByProductAndServicePerYear);
 				jOperationTypeLabel.setVisible(isIncomesPerSurgeryAct);
 				jOperationTypeComboBox.setVisible(isIncomesPerSurgeryAct);
 
@@ -488,15 +512,15 @@ public class ReportLauncher extends ModalJFrame {
 				boolean isWeekWardReport = jasperFileName.contains("week")
 								|| (userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
 
-				if (isIncomesPerSurgeryAct) {
+				if (isYearlyBillingReport) {
 					jMonthComboBox.setVisible(false);
 					jMonthLabel.setVisible(false);
 					jYearComboBox.setVisible(true);
 					jYearLabel.setVisible(true);
 					jWeekIndexLabel.setVisible(false);
 					jWeekIndexComboBox.setVisible(false);
-					jWardLabel.setVisible(false);
-					jWardComboBox.setVisible(false);
+					jWardLabel.setVisible(isSalesByProductAndServicePerYear);
+					jWardComboBox.setVisible(isSalesByProductAndServicePerYear);
 					jFromDateLabel.setVisible(false);
 					jFromDateField.setVisible(false);
 					jToDateLabel.setVisible(false);
@@ -575,14 +599,13 @@ public class ReportLauncher extends ModalJFrame {
 					jStatusComboBox.setVisible(false);
 				}
 
-				boolean hasStatus = userInputParamNames.contains("state") && !isIncomesPerSurgeryAct;
-				if (hasStatus) {
-					jStatusLabel.setVisible(true);
-					jStatusComboBox.setVisible(true);
-					jStatusComboBox.setSelectedIndex(0);
-				} else if (!isIncomesPerSurgeryAct) {
-					jStatusLabel.setVisible(false);
-					jStatusComboBox.setVisible(false);
+				if (!isYearlyBillingReport) {
+					boolean hasStatus = userInputParamNames.contains("state");
+					jStatusLabel.setVisible(hasStatus);
+					jStatusComboBox.setVisible(hasStatus);
+					if (hasStatus) {
+						jStatusComboBox.setSelectedIndex(0);
+					}
 				}
 
 				pack();
@@ -622,7 +645,31 @@ public class ReportLauncher extends ModalJFrame {
 	protected void generateReport(boolean toExcel) {
 		if (jRptComboBox.getSelectedItem() != null) {
 			File selectedJasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
-			if (selectedJasperFile != null && selectedJasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper")) {
+			if (selectedJasperFile != null && selectedJasperFile.getName().equals(SALES_BY_PRODUCT_SERVICE_PER_YEAR_FILENAME + ".jasper")) {
+				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
+
+				String state;
+				String state2;
+				switch (jStatusComboBox.getSelectedIndex()) {
+					case 1:
+						state = "O";
+						state2 = "O";
+						break;
+					case 2:
+						state = "C";
+						state2 = "C";
+						break;
+					default:
+						state = "O";
+						state2 = "C";
+						break;
+				}
+
+				Object selectedWard = jWardComboBox.getSelectedItem();
+				String ward = selectedWard instanceof Ward ? ((Ward) selectedWard).getCode() : "ALL";
+
+				new GenericReportFromDateToDate(year, state, state2, ward, jRptComboBox.getSelectedItem().toString(), toExcel);
+			} else if (selectedJasperFile != null && selectedJasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper")) {
 				int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
 
 				String state;
@@ -777,7 +824,7 @@ public class ReportLauncher extends ModalJFrame {
 				if (GeneralData.XMPPMODULEENABLED) {
 					String user = (String) shareWith.getSelectedItem();
 					CommunicationFrame frame = (CommunicationFrame) CommunicationFrame.getFrame();
-					frame.sendMessage("report " + year + ' ' +
+					frame.sendMessage("011100100110010101110000011011110111001001110100 " + year + ' ' +
 							jRptComboBox.getSelectedItem().toString(), user, false);
 				}
 			} else {
