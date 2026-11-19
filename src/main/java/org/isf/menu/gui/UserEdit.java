@@ -24,6 +24,7 @@ package org.isf.menu.gui;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.List;
@@ -71,6 +72,7 @@ public class UserEdit extends JDialog {
 	private JComboBox<UserGroup> userGroupComboBox;
 	private JCheckBox accountLocked;
 	private JCheckBox isDeletedCheck;
+	private JTextField guarantorQuotaTextField;
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
 	 */
@@ -159,13 +161,20 @@ public class UserEdit extends JDialog {
 				dataPanel.add(accountLocked);
 			}
 
+			if (isGuarantorQuotaEditable()) {
+				JLabel quotaLabel = new JLabel(MessageBundle.getMessage("angal.userbrowser.guarantorquota.label"));
+				quotaLabel.setToolTipText(MessageBundle.getMessage("angal.userbrowser.guarantorquota.tooltip"));
+				dataPanel.add(quotaLabel);
+				dataPanel.add(getGuarantorQuotaTextField());
+			}
+
 			dataPanel.add(new JLabel(MessageBundle.getMessage("angal.common.deleted.label")));
 			isDeletedCheck = new JCheckBox();
 			isDeletedCheck.setSelected(user.isDeleted());
 			dataPanel.add(isDeletedCheck);
 
 			SpringUtilities.makeCompactGrid(dataPanel,
-				insert ? 6 : 5, 2,
+				dataPanel.getComponentCount() / 2, 2,
 				5, 5,
 				5, 5);
 		}
@@ -210,9 +219,31 @@ public class UserEdit extends JDialog {
 					return;
 				}
 
+				Double guarantorQuota = null;
+				if (isGuarantorQuotaEditable()) {
+					String quotaText = guarantorQuotaTextField.getText().trim().replace(",", ".");
+					if (!quotaText.isEmpty()) {
+						try {
+							guarantorQuota = Double.valueOf(quotaText);
+						} catch (NumberFormatException e) {
+							guarantorQuota = -1d;
+						}
+						if (guarantorQuota < 0) {
+							MessageDialog.error(null, "angal.userbrowser.guarantorquotamustbepositive.msg");
+							return;
+						}
+						if (guarantorQuota == 0) {
+							guarantorQuota = null;
+						}
+					}
+				}
+
 				user.setUserName(userName);
 				user.setDesc(descriptionTextField.getText());
 				user.setDeleted(isDeletedCheck.isSelected());
+				if (isGuarantorQuotaEditable()) {
+					user.setGuarantorQuota(guarantorQuota);
+				}
 
 				if (insert) {
 					char[] password = pwdTextField.getPassword();
@@ -282,6 +313,9 @@ public class UserEdit extends JDialog {
 							userBrowsingManager.lockUser(user);
 						}
 						userBrowsingManager.updateUser(user);
+						if (isGuarantorQuotaEditable()) {
+							userBrowsingManager.updateGuarantorQuota(user);
+						}
 						fireUserUpdated();
 						dispose();
 					} catch (OHServiceException e1) {
@@ -308,6 +342,25 @@ public class UserEdit extends JDialog {
 		}
 		return descriptionTextField;
 	}
+	/**
+	 * The guarantor quota is set per user only when guarantors are enabled and the single quota is disabled
+	 */
+	private boolean isGuarantorQuotaEditable() {
+		return GeneralData.ALLOWBILLGUARANTOR && !GeneralData.BILLGUARANTORSINGLEQUOTA;
+	}
+
+	private JTextField getGuarantorQuotaTextField() {
+		if (guarantorQuotaTextField == null) {
+			guarantorQuotaTextField = new JTextField(15);
+			guarantorQuotaTextField.setToolTipText(MessageBundle.getMessage("angal.userbrowser.guarantorquota.tooltip"));
+			Double quota = user.getGuarantorQuota();
+			if (!insert && quota != null && quota > 0) {
+				guarantorQuotaTextField.setText(new BigDecimal(String.valueOf(quota)).stripTrailingZeros().toPlainString());
+			}
+		}
+		return guarantorQuotaTextField;
+	}
+
 	private JTextField getNameTextField() {
 		if (nameTextField == null) {
 			if (insert) {
