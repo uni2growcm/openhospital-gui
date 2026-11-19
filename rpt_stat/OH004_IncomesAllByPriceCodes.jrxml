@@ -20,7 +20,7 @@
 		<defaultValueExpression><![CDATA["C"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="state2" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["Nothing"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["O"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="IMAGE_PATH" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PeriodLabel" class="java.lang.String" isForPrompting="false"/>
