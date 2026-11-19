@@ -367,6 +367,8 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
                     continue;
                 }
 
+                billItem.setItemAmount(getVariablePriceAmount(price, billItem.getItemAmount()));
+
                 if ("MED".equals(price.getGroup())) {
 
                     MedicalWard medicalWard = getMedicalWard(price);
@@ -930,6 +932,52 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 		billItem.setItemGroup(price.getGroup());
 
         return billItem;
+	}
+
+    private double getVariablePriceAmount(Price price, double listPrice) {
+        if (price == null || !price.isVariable() || isUndefinedOther(price)) {
+            return listPrice;
+        }
+
+        Icon icon = new ImageIcon("rsc/icons/money_dialog.png");
+        String value = (String) JOptionPane.showInputDialog(
+                this,
+                MessageBundle.getMessage("angal.newbill.howmuchisit.txt") + " - " + price.getDesc(),
+                MessageBundle.getMessage("angal.priceslist.variable.txt"),
+                JOptionPane.PLAIN_MESSAGE,
+                icon,
+                null,
+                String.valueOf(listPrice)
+        );
+
+        if (value == null || value.trim().isEmpty()) {
+            return listPrice;
+        }
+
+        try {
+            double amount = Double.parseDouble(value.replace(',', '.').trim());
+            if (amount < 0) {
+                MessageDialog.error(this, "angal.priceslist.negativepricenotallowed.msg");
+                return listPrice;
+            }
+            return amount;
+        } catch (NumberFormatException e) {
+            MessageDialog.error(this, "angal.newbill.invalidpricepleasetryagain.msg");
+            return listPrice;
+        }
+    }
+
+    private boolean isUndefinedOther(Price price) {
+        if (price == null || !"OTH".equals(price.getGroup()) || price.getItem() == null) {
+            return false;
+        }
+        try {
+            int id = Integer.parseInt(price.getItem());
+            return othPrices != null && othPrices.stream()
+                    .anyMatch(other -> other.getId() == id && other.isUndefined());
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 	private void setCurrencyCode() {
@@ -3168,7 +3216,7 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
 	private BillItems addItem(Price prc, int qty, boolean isPrice) {
         BillItems item = null;
         if (prc != null) {
-			double amount = prc.getPrice();
+			double amount = getVariablePriceAmount(prc, prc.getPrice());
 			try {
                 item = new BillItems(0, billBrowserManager.getBill(thisBill.getId()), isPrice, prc.getGroup() + prc.getItem(), prc.getDesc(), amount, qty);
 				item.setItemGroup(prc.getGroup());
@@ -3993,6 +4041,9 @@ public class PatientBillEdit extends JDialog implements SelectionListener, BillI
             }
         }
 
+        if (billItem != null) {
+            billItem.setItemAmount(getVariablePriceAmount(price, billItem.getItemAmount()));
+        }
         selectedBillItem = billItem;
         loadFields();
     }
