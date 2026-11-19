@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -765,27 +765,25 @@ public class MovStockMultipleDischarging extends JDialog {
 		}
 		totalQty = totalQty - usedQty;
 
+		String title = MessageBundle.getMessage("angal.common.quantity.txt");
+		String prodCode = med.getProdCode();
 		StringBuilder message = new StringBuilder();
-		message.append(med)
+		if (prodCode != null && !prodCode.isEmpty()) {
+			message.append(MessageBundle.getMessage("angal.common.code.txt"))
+				.append(": ")
+				.append(prodCode)
+				.append('\n');
+		}
+		message.append(med.getDescription())
 			.append('\n') // $NON-NLS-1$
 			.append(MessageBundle.getMessage("angal.medicalstock.multipledischarging.lyinginstock")) //$NON-NLS-1$
 			.append(totalQty); // $NON-NLS-1$
 
-		StringBuilder title = new StringBuilder(MessageBundle.getMessage("angal.common.quantity.txt"));
-		String prodCode = med.getProdCode();
-		if (prodCode != null && !prodCode.equals("")) { //$NON-NLS-1$
-			title.append(' ') // $NON-NLS-1$
-				.append(MessageBundle.getMessage("angal.common.code.txt"))
-				.append(": ") //$NON-NLS-1$
-				.append(prodCode);
-		} else {
-			title.append(": "); //$NON-NLS-1$
-		}
 		int qty = 0;
 		do {
 			String quantity = JOptionPane.showInputDialog(this,
 				message.toString(),
-				title.toString(),
+				title,
 				JOptionPane.QUESTION_MESSAGE);
 			if (quantity != null) {
 				try {

@@ -425,23 +425,20 @@ public class WardPharmacyNew extends JDialog implements SelectionListener {
 			}
 
 		}
+		String title = MessageBundle.getMessage("angal.common.quantity.txt");
 		StringBuilder message = new StringBuilder();
+		if (prodCode != null && !prodCode.isEmpty()) {
+			message.append(MessageBundle.getMessage("angal.common.code.txt"))
+				.append(": ")
+				.append(prodCode)
+				.append('\n');
+		}
 		message.append(med).append('\n') // $NON-NLS-1$
 			.append(MessageBundle.getMessage("angal.medicalstock.multipledischarging.lyinginstock")) //$NON-NLS-1$
 			.append(totalQty); // $NON-NLS-1$
-		StringBuilder title = new StringBuilder(MessageBundle.getMessage("angal.common.quantity.txt"));
-
-		if (prodCode != null && !prodCode.equals("")) { //$NON-NLS-1$
-			title.append(' ') // $NON-NLS-1$
-				.append(MessageBundle.getMessage("angal.common.code.txt"))
-				.append(": ") //$NON-NLS-1$
-				.append(prodCode);
-		} else {
-			title.append(": "); //$NON-NLS-1$
-		}
 
 		do {
-			String quantity = JOptionPane.showInputDialog(this, message.toString(), title.toString(),
+			String quantity = JOptionPane.showInputDialog(this, message.toString(), title,
 				JOptionPane.QUESTION_MESSAGE);
 
 			if (quantity != null) {

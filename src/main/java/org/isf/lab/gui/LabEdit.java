@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -141,6 +142,7 @@ public class LabEdit extends ModalJFrame {
 	private ExamComboBox examComboBox;
 	private JComboBox examRowComboBox;
 	private JTextField jTextFieldPatient;
+	private JButton pickPatientButton;
 	private Exam examSelected;
 	private JScrollPane noteScrollPane;
 
@@ -170,7 +172,13 @@ public class LabEdit extends ModalJFrame {
 	public LabEdit(JFrame owner, Laboratory laboratory, boolean inserting) {
 		insert = inserting;
 		lab = laboratory;
+		if (lab != null && lab.getPatient() != null && lab.getPatient().getCode() != 0) {
+			patSelected = lab.getPatient();
+		}
 		initialize();
+		if (patSelected != null) {
+			setPatient(patSelected);
+		}
 		showAsModal(owner);
 	}
 
@@ -244,6 +252,8 @@ public class LabEdit extends ModalJFrame {
 			inPatientCheckBox.setBounds(LABEL_WIDTH + 5, 65, LABEL_WIDTH, 20);
 			jTextFieldPatient = getJTextFieldPatient();
 			jTextFieldPatient.setBounds((LABEL_WIDTH + 5) * 2, 65, 250, 20);
+			pickPatientButton = getPickPatientButton();
+			pickPatientButton.setBounds(405, 65, 30, 20);
 
 			JLabel nameLabel = new JLabel(MessageBundle.getMessage("angal.common.name.txt"));
 			nameLabel.setBounds(5, 90, LABEL_WIDTH, 20);
@@ -275,6 +285,7 @@ public class LabEdit extends ModalJFrame {
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
 			dataPanel.add(jTextFieldPatient, null);
+			dataPanel.add(pickPatientButton, null);
 			dataPanel.add(nameLabel, null);
 			dataPanel.add(patTextField);
 			dataPanel.add(ageLabel, null);
@@ -318,10 +329,53 @@ public class LabEdit extends ModalJFrame {
 			inPatientCheckBox = new JCheckBox(MessageBundle.getMessage("angal.lab.in"));
 			if (!insert) {
 				inPatientCheckBox.setSelected(lab.getInOutPatient().equalsIgnoreCase("I"));
+			} else if (patSelected != null) {
+				Admission admission = admissionBrowserManager.getCurrentAdmission(patSelected);
+				inPatientCheckBox.setSelected(admission != null);
 			}
 			lab.setInOutPatient(inPatientCheckBox.isSelected() ? "I" : "R");
 		}
 		return inPatientCheckBox;
+	}
+
+	private void setPatient(Patient selected) {
+		patSelected = selected;
+		if (jTextFieldPatient != null) {
+			jTextFieldPatient.setText(patSelected.getName());
+		}
+		if (patTextField != null) {
+			patTextField.setText(patSelected.getName());
+		}
+		if (ageTextField != null) {
+			ageTextField.setText(String.valueOf(patSelected.getAge()));
+		}
+		if (sexTextField != null) {
+			sexTextField.setText(String.valueOf(patSelected.getSex()));
+		}
+		if (inPatientCheckBox != null) {
+			Admission admission = admissionBrowserManager.getCurrentAdmission(patSelected);
+			inPatientCheckBox.setSelected(admission != null);
+		}
+	}
+
+	private JButton getPickPatientButton() {
+		if (pickPatientButton == null) {
+			pickPatientButton = new JButton();
+			pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
+			pickPatientButton.setBounds(405, 65, 30, 20);
+			pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
+			pickPatientButton.setEnabled(insert);
+			pickPatientButton.addActionListener(e -> {
+				String text = jTextFieldPatient != null ? jTextFieldPatient.getText().trim() : "";
+				SelectPatient dialog = new SelectPatient(LabEdit.this, text);
+				dialog.setVisible(true);
+				Patient selected = dialog.getPatient();
+				if (selected != null) {
+					setPatient(selected);
+				}
+			});
+		}
+		return pickPatientButton;
 	}
 
 	/*
@@ -331,25 +385,17 @@ public class LabEdit extends ModalJFrame {
 	private JTextField getJTextFieldPatient() {
 		if (jTextFieldPatient == null) {
 			jTextFieldPatient = new JTextField();
-			jTextFieldPatient.setEditable(false);
+			jTextFieldPatient.setEditable(insert);
 			if (patSelected != null) {
 				jTextFieldPatient.setText(patSelected.getName());
 			}
 			jTextFieldPatient.addActionListener(actionEvent -> {
 				String text = jTextFieldPatient.getText().trim();
-				if (!text.isEmpty()) {
-					SelectPatient dialog = new SelectPatient(LabEdit.this, patSelected);
-					dialog.setVisible(true);
-					Patient selected = dialog.getPatient();
-					if (selected != null) {
-						patSelected = selected;
-						jTextFieldPatient.setText(patSelected.getName());
-						patTextField.setText(patSelected.getName());
-						ageTextField.setText(String.valueOf(patSelected.getAge()));
-						sexTextField.setText(String.valueOf(patSelected.getSex()));
-						Admission admission = admissionBrowserManager.getCurrentAdmission(patSelected);
-						inPatientCheckBox.setSelected(admission != null);
-					}
+				SelectPatient dialog = new SelectPatient(LabEdit.this, text);
+				dialog.setVisible(true);
+				Patient selected = dialog.getPatient();
+				if (selected != null) {
+					setPatient(selected);
 				}
 			});
 			if (!insert) {
@@ -429,6 +475,8 @@ public class LabEdit extends ModalJFrame {
 					patTextField = new VoLimitedTextField(100);
 					if (!insert) {
 						patTextField.setText(lab.getPatName());
+					} else if (patSelected != null) {
+						patTextField.setText(patSelected.getName());
 					}
 					return patTextField;
 				});
@@ -438,7 +486,11 @@ public class LabEdit extends ModalJFrame {
 		if (ageTextField == null) {
 			ageTextField = new VoLimitedTextField(3);
 			if (insert) {
-				ageTextField.setText("");
+				if (patSelected != null) {
+					ageTextField.setText(String.valueOf(patSelected.getAge()));
+				} else {
+					ageTextField.setText("");
+				}
 			} else {
 				try {
 					Integer intAge = lab.getAge();
@@ -456,6 +508,8 @@ public class LabEdit extends ModalJFrame {
 			sexTextField = new VoLimitedTextField(1);
 			if (!insert) {
 				sexTextField.setText(lab.getSex());
+			} else if (patSelected != null) {
+				sexTextField.setText(String.valueOf(patSelected.getSex()));
 			}
 		}
 		return sexTextField;
