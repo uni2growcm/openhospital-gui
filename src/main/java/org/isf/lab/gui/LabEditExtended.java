@@ -54,6 +54,8 @@ import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
 import org.isf.generaldata.MessageBundle;
+import org.isf.hospital.manager.HospitalBrowsingManager;
+import org.isf.hospital.model.Hospital;
 import org.isf.lab.gui.elements.ExamComboBox;
 import org.isf.lab.gui.elements.ExamRowComboBox;
 import org.isf.lab.gui.elements.MatComboBox;
@@ -62,7 +64,12 @@ import org.isf.lab.manager.LabRowManager;
 import org.isf.lab.model.Laboratory;
 import org.isf.lab.model.LaboratoryForPrint;
 import org.isf.lab.model.LaboratoryRow;
+import org.isf.lab.model.LaboratoryStatus;
+import org.isf.lab.model.PatientAnalysisRow;
 import org.isf.menu.manager.Context;
+import org.isf.prescriber.gui.PrescriberEdit;
+import org.isf.prescriber.manager.PrescriberBrowserManager;
+import org.isf.prescriber.model.Prescriber;
 import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -266,6 +273,22 @@ public class LabEditExtended extends ModalJFrame {
 			} catch (OHServiceException e) {
 				// silently ignored
 			}
+			try {
+				PrescriberBrowserManager prescriberManager = Context.getApplicationContext().getBean(PrescriberBrowserManager.class);
+				for (String name : prescriberManager.getPrescriberNames()) {
+					boolean exists = false;
+					for (int i = 0; i < prescriberComboBox.getItemCount(); i++) {
+						if (name.equals(prescriberComboBox.getItemAt(i))) {
+							exists = true;
+							break;
+						}
+					}
+					if (!exists) {
+						prescriberComboBox.addItem(name);
+					}
+				}
+			} catch (OHServiceException e) {
+			}
 			prescriberComboBox.addActionListener(ae -> {
 				String sel = (String) prescriberComboBox.getSelectedItem();
 				if (sel != null && !sel.equals(placeholder) && !sel.isEmpty()) {
@@ -275,6 +298,29 @@ public class LabEditExtended extends ModalJFrame {
 				}
 			});
 			prescriberComboBox.setBounds(LABEL_WIDTH + 185, 70, 255, 20);
+
+			JButton addPrescriberButton = new JButton("+");
+			addPrescriberButton.setToolTipText(MessageBundle.getMessage("angal.prescriber.add.tooltip"));
+			addPrescriberButton.setBounds(LABEL_WIDTH + 445, 70, 30, 20);
+			addPrescriberButton.addActionListener(ae -> {
+				PrescriberEdit dialog = new PrescriberEdit(this, new Prescriber(), true);
+				dialog.setVisible(true);
+				if (dialog.isSaved() && dialog.getSavedPrescriber() != null) {
+					String name = dialog.getSavedPrescriber().getName();
+					boolean exists = false;
+					for (int i = 0; i < prescriberComboBox.getItemCount(); i++) {
+						if (name.equals(prescriberComboBox.getItemAt(i))) {
+							exists = true;
+							break;
+						}
+					}
+					if (!exists) {
+						prescriberComboBox.addItem(name);
+					}
+					prescriberComboBox.setSelectedItem(name);
+					prescriberTextField.setText(name);
+				}
+			});
 
 			// patient (in or out) data
 			JLabel patientLabel = new JLabel(MessageBundle.getMessage("angal.common.searchpatient.txt"));
@@ -294,6 +340,7 @@ public class LabEditExtended extends ModalJFrame {
 			dataPanel.add(prescriberLabel, null);
 			dataPanel.add(prescriberTextField, null);
 			dataPanel.add(prescriberComboBox, null);
+			dataPanel.add(addPrescriberButton, null);
 			dataPanel.add(patientLabel, null);
 			dataPanel.add(inPatientCheckBox, null);
 			dataPanel.add(jTextFieldPatient, null);
@@ -329,6 +376,10 @@ public class LabEditExtended extends ModalJFrame {
                     }
                 }
             });
+            if (!insert) {
+                jTextFieldPatient.setEnabled(false);
+                jTextFieldPatient.setToolTipText(MessageBundle.getMessage("angal.lab.patientcannotbechanged.msg"));
+            }
         }
         return jTextFieldPatient;
     }
@@ -534,28 +585,80 @@ public class LabEditExtended extends ModalJFrame {
 		if (printButton == null) {
 			printButton = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
 			printButton.setMnemonic(MessageBundle.getMnemonic("angal.common.print.btn.key"));
-			printButton.addActionListener(actionEvent -> {
-				try {
-					List<LaboratoryForPrint> labs = new ArrayList<>();
-
-					labs.add(new LaboratoryForPrint(
-							lab.getCode(),
-							lab.getExam(),
-							lab.getLabDate(),
-							lab.getResult(),
-							lab.getPatName(),
-							lab.getPrescriber(),
-							lab.getPaidStatus()));
-					Map<String, Object> extraParameters = new HashMap<>();
-					DateTimeFormatter periodFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-					extraParameters.put("PeriodLabel", lab.getLabDate().toLocalDate().format(periodFormatter));
-					printManager.print("Laboratory", labs, extraParameters, 0);
-				} catch (OHServiceException e) {
-					OHServiceExceptionUtil.showMessages(e);
-				}
-			});
+			printButton.addActionListener(actionEvent -> printPatientAnalysisReport());
 		}
 		return printButton;
+	}
+
+	private void printPatientAnalysisReport() {
+		Map<String, Object> customParams = new HashMap<>();
+
+		if (examDateFieldCal != null) {
+			try {
+				LocalDateTime examDate = examDateFieldCal.getLocalDateTime();
+				if (examDate != null) {
+					customParams.put("examDate", examDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+					customParams.put("PeriodLabel", examDate.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+				}
+			} catch (Exception ignored) {
+			}
+		}
+
+		Exam exam = examSelected != null ? examSelected : lab.getExam();
+		if (exam != null) {
+			customParams.put("examName", exam.getDescription());
+		}
+
+		if (matComboBox != null && matComboBox.getSelectedItem() != null) {
+			String material = matComboBox.getSelectedItem().toString();
+			if (MessageBundle.getMessage("angal.lab.undefined.txt").equals(material)) {
+				material = "";
+			}
+			customParams.put("material", material);
+		}
+
+		if (prescriberTextField != null && !prescriberTextField.getText().trim().isEmpty()) {
+			customParams.put("prescriber", prescriberTextField.getText().trim());
+		}
+
+		if (noteTextArea != null) {
+			customParams.put("note", noteTextArea.getText().trim());
+		}
+
+		if (labPat != null) {
+			customParams.put("patientName", labPat.getName());
+			customParams.put("patientCode", labPat.getCode() != null ? String.valueOf(labPat.getCode()) : "");
+			customParams.put("patientAge", String.valueOf(labPat.getAge()));
+			customParams.put("patientSex", String.valueOf(labPat.getSex()));
+		}
+
+		if (inPatientCheckBox != null) {
+			customParams.put("patientType", inPatientCheckBox.isSelected() ? "I" : "R");
+		}
+
+		List<PatientAnalysisRow> rows = new ArrayList<>();
+		int proc = exam != null && exam.getProcedure() != null ? exam.getProcedure() : 1;
+
+		if (proc == 2) {
+			if (procedure2RowsComponents != null && !procedure2RowsComponents.isEmpty()) {
+				for (EditProcedure2RowPanel rowPanel : procedure2RowsComponents) {
+					if (rowPanel.isChecked()) {
+						rows.add(new PatientAnalysisRow(rowPanel.getLabRowDescription(), rowPanel.getValueText()));
+					}
+				}
+			}
+		} else if (proc == 1) {
+			String res = examRowComboBox != null && examRowComboBox.getSelectedItem() != null ?
+					examRowComboBox.getSelectedItem().toString() : lab.getResult();
+			String desc = exam != null ? exam.getDescription() : "";
+			rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+		} else {
+			String res = examTextField != null ? examTextField.getText().trim() : lab.getResult();
+			String desc = exam != null ? exam.getDescription() : "";
+			rows.add(new PatientAnalysisRow(desc, res != null ? res : ""));
+		}
+
+		PatientAnalysisReportLauncher.print(lab, customParams, rows);
 	}
 
 	private JButton getCancelButton() {
@@ -590,6 +693,11 @@ public class LabEditExtended extends ModalJFrame {
 					examDate = examDateFieldCal.getLocalDateTime();
 				} catch (Exception e1) {
 					MessageDialog.error(this, "angal.lab.pleaseinsertavalidexamdate.msg");
+					return;
+				}
+
+				if (examDate != null && examDate.isAfter(LocalDateTime.now())) {
+					MessageDialog.error(this, "angal.lab.futuredatenotallowed.msg");
 					return;
 				}
 
@@ -640,6 +748,7 @@ public class LabEditExtended extends ModalJFrame {
 					}
 					lab.setResult(examTextField.getText());
 				}
+				lab.setStatus(LaboratoryStatus.done.toString());
 				if (insert) {
 					lab.setAge(labPat != null ? labPat.getAge() : 0);
 					try {
