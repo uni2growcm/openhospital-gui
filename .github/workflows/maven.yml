@@ -86,6 +86,8 @@ jobs:
             TARGET_BRANCH="${{ env.BRANCH_NAME }}"
           elif [ -n "${{ github.base_ref }}" ] && git rev-parse --verify "origin/${{ github.base_ref }}" >/dev/null 2>&1; then
             TARGET_BRANCH="${{ github.base_ref }}"
+          elif git rev-parse --verify "origin/feature/OH-561-reports" >/dev/null 2>&1; then
+            TARGET_BRANCH="feature/OH-561-reports"
           elif git rev-parse --verify "origin/feature/OH-568-mada-enhancement" >/dev/null 2>&1; then
             TARGET_BRANCH="feature/OH-568-mada-enhancement"
           elif git rev-parse --verify "origin/develop" >/dev/null 2>&1; then

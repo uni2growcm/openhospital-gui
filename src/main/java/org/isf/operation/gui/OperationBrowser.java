@@ -255,9 +255,7 @@ public class OperationBrowser extends ModalJFrame implements OperationListener {
 		buttonClose.addActionListener(actionEvent -> dispose());
 		buttonPanel.add(buttonClose);
 		add(buttonPanel, BorderLayout.SOUTH);
-
-	    filterOperations("");
-
+		filterOperations("");
 		setVisible(true);
 	}
 

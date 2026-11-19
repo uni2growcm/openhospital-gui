@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="OH004_IncomesAllByPriceCodes_3_week"
+              pageWidth="842" pageHeight="595" orientation="Landscape"
+              columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20"
+              resourceBundle="OH004_IncomesAllByPriceCodes_3_week"
+              uuid="c0040004-0000-0000-0000-000000000001">
+
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="java.text.DecimalFormat"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PeriodLabel" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ward_name" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["ALL"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="status_label" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["ALL"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fromdate" class="java.lang.String" isForPrompting="true"/>
+	<parameter name="todate" class="java.lang.String" isForPrompting="true"/>
+	<parameter name="ward_id" class="java.lang.String" isForPrompting="true">
+		<defaultValueExpression><![CDATA["ALL"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="status" class="java.lang.String" isForPrompting="true">
+		<defaultValueExpression><![CDATA["ALL"]]></defaultValueExpression>
+	</parameter>
+
+	<queryString>
+		<![CDATA[SELECT 
+    bli.BLI_ITEM_GROUP,
+    bli.BLI_ITEM_DESC,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_MONDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_TUESDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_WEDNESDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_THURSDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_FRIDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_SATURDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_SUNDAY,
+
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS TOTAL_WEEK_COUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_TOTAL_WEEK_COUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS TOTAL_WEEK_AMOUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_TOTAL_WEEK_AMOUNT
+FROM OH_BILLITEMS bli
+JOIN OH_BILLS b ON bli.BLI_ID_BILL = b.BLL_ID
+LEFT JOIN OH_ADMISSION adm ON b.BLL_ADM_ID = adm.ADM_ID
+WHERE DATE(b.BLL_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
+  AND (
+      ($P{status} = 'ALL' AND b.BLL_STATUS <> 'D' AND b.BLL_STATUS <> 'X')
+      OR ($P{status} = 'O' AND b.BLL_STATUS = 'O')
+      OR ($P{status} = 'C' AND b.BLL_STATUS = 'C')
+  )
+  AND ($P{ward_id} = 'ALL' OR COALESCE(b.BLL_WARD_ID, adm.ADM_WRD_ID_A) = $P{ward_id})
+GROUP BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC
+ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
+	</queryString>
+
+	<field name="BLI_ITEM_GROUP" class="java.lang.String"/>
+	<field name="BLI_ITEM_DESC" class="java.lang.String"/>
+	<field name="COUNT_MONDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_MONDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_MONDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_MONDAY" class="java.lang.Double"/>
+	<field name="COUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="COUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="COUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="COUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="COUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="COUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="AMOUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="TOTAL_WEEK_COUNT" class="java.lang.Double"/>
+	<field name="REFUNDED_TOTAL_WEEK_COUNT" class="java.lang.Double"/>
+	<field name="TOTAL_WEEK_AMOUNT" class="java.lang.Double"/>
+	<field name="REFUNDED_TOTAL_WEEK_AMOUNT" class="java.lang.Double"/>
+
+	<variable name="TOTAL" class="java.lang.Double" resetType="Report" calculation="Sum">
+		<variableExpression><![CDATA[($F{TOTAL_WEEK_AMOUNT} != null ? $F{TOTAL_WEEK_AMOUNT} : 0) - ($F{REFUNDED_TOTAL_WEEK_AMOUNT} != null ? $F{REFUNDED_TOTAL_WEEK_AMOUNT} : 0)]]></variableExpression>
+	</variable>
+
+
+	<group name="type">
+		<groupExpression><![CDATA[$F{BLI_ITEM_GROUP}]]></groupExpression>
+		<groupHeader>
+			<band height="18" splitType="Stretch">
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+					<reportElement mode="Opaque" x="0" y="2" width="782" height="15" forecolor="#FFFFFF" backcolor="#000099" key="textField-group" uuid="c0040004-0000-0000-0000-000000000010"/>
+					<box leftPadding="5"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{BLI_ITEM_GROUP} == null || $F{BLI_ITEM_GROUP}.trim().isEmpty() || $F{BLI_ITEM_GROUP}.equals("")) ? $R{angal.priceslist.notype} :
+($F{BLI_ITEM_GROUP}.equalsIgnoreCase("MED") ? $R{angal.priceslist.medicals} :
+($F{BLI_ITEM_GROUP}.equalsIgnoreCase("EXA") ? $R{angal.priceslist.exams} :
+($F{BLI_ITEM_GROUP}.equalsIgnoreCase("OPE") ? $R{angal.priceslist.operations} :
+($F{BLI_ITEM_GROUP}.equalsIgnoreCase("OTH") ? $R{angal.priceslist.others} : $F{BLI_ITEM_GROUP}))))]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+
+	<title>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="390" height="16" uuid="c0040004-0000-0000-0000-000000000010"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="16" width="375" height="14" uuid="c0040004-0000-0000-0000-000000000011"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="390" height="16" uuid="c0040004-0000-0000-0000-000000000012"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="0" width="390" height="16" uuid="c0040004-0000-0000-0000-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="16" width="375" height="14" uuid="c0040004-0000-0000-0000-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="30" width="390" height="16" uuid="c0040004-0000-0000-0000-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="55" width="782" height="20" uuid="c0040004-0000-0000-0000-000000000018"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="75" width="782" height="16" uuid="c0040004-0000-0000-0000-000000000019"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + $P{PeriodLabel} + "   -   " + $R{label_service} + " " + $P{ward_name} + "   -   " + $R{label_statut} + " " + $P{status_label}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="95" width="350" height="14" uuid="c0040004-0000-0000-0000-000000000020"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="109" width="350" height="14" uuid="c0040004-0000-0000-0000-000000000021"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="432" y="95" width="350" height="14" uuid="c0040004-0000-0000-0000-000000000022"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="432" y="109" width="350" height="14" uuid="c0040004-0000-0000-0000-000000000023"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="432" y="123" width="350" height="14" uuid="c0040004-0000-0000-0000-000000000024"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="782" height="1" uuid="c0040004-0000-0000-0000-000000000025"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+
+	<pageHeader>
+		<band height="0" splitType="Stretch"/>
+	</pageHeader>
+
+	<columnHeader>
+		<band height="14" splitType="Stretch">
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="0" y="0" width="142" height="14" key="textField-col-desc" uuid="c0040004-0000-0000-0000-000000000030"/>
+				<box leftPadding="2">
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.designation}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="142" y="0" width="80" height="14" key="textField-col-mon" uuid="c0040004-0000-0000-0000-000000000031"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.monday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="222" y="0" width="80" height="14" key="textField-col-tue" uuid="c0040004-0000-0000-0000-000000000032"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.tuesday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="302" y="0" width="80" height="14" key="textField-col-wed" uuid="c0040004-0000-0000-0000-000000000033"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.wednesday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="382" y="0" width="80" height="14" key="textField-col-thu" uuid="c0040004-0000-0000-0000-000000000034"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.thursday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="462" y="0" width="80" height="14" key="textField-col-fri" uuid="c0040004-0000-0000-0000-000000000035"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.friday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="542" y="0" width="80" height="14" key="textField-col-sat" uuid="c0040004-0000-0000-0000-000000000036"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.saturday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="622" y="0" width="80" height="14" key="textField-col-sun" uuid="c0040004-0000-0000-0000-000000000037"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.sunday}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="702" y="0" width="80" height="14" key="textField-col-tot" uuid="c0040004-0000-0000-0000-000000000038"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.total}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="0" y="0" width="142" height="28" key="textField-det-desc" uuid="c0040004-0000-0000-0000-000000000040"/>
+				<box leftPadding="2">
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="142" y="0" width="80" height="28" key="textField-det-mon" uuid="c0040004-0000-0000-0000-000000000041"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_MONDAY} != null ? $F{COUNT_MONDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_MONDAY} != null ? $F{REFUNDED_COUNT_MONDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_MONDAY} != null ? $F{AMOUNT_MONDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="222" y="0" width="80" height="28" key="textField-det-tue" uuid="c0040004-0000-0000-0000-000000000042"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_TUESDAY} != null ? $F{COUNT_TUESDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_TUESDAY} != null ? $F{REFUNDED_COUNT_TUESDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_TUESDAY} != null ? $F{AMOUNT_TUESDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="302" y="0" width="80" height="28" key="textField-det-wed" uuid="c0040004-0000-0000-0000-000000000043"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_WEDNESDAY} != null ? $F{COUNT_WEDNESDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_WEDNESDAY} != null ? $F{REFUNDED_COUNT_WEDNESDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_WEDNESDAY} != null ? $F{AMOUNT_WEDNESDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="382" y="0" width="80" height="28" key="textField-det-thu" uuid="c0040004-0000-0000-0000-000000000044"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_THURSDAY} != null ? $F{COUNT_THURSDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_THURSDAY} != null ? $F{REFUNDED_COUNT_THURSDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_THURSDAY} != null ? $F{AMOUNT_THURSDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="462" y="0" width="80" height="28" key="textField-det-fri" uuid="c0040004-0000-0000-0000-000000000045"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_FRIDAY} != null ? $F{COUNT_FRIDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_FRIDAY} != null ? $F{REFUNDED_COUNT_FRIDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_FRIDAY} != null ? $F{AMOUNT_FRIDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="542" y="0" width="80" height="28" key="textField-det-sat" uuid="c0040004-0000-0000-0000-000000000046"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_SATURDAY} != null ? $F{COUNT_SATURDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_SATURDAY} != null ? $F{REFUNDED_COUNT_SATURDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_SATURDAY} != null ? $F{AMOUNT_SATURDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="622" y="0" width="80" height="28" key="textField-det-sun" uuid="c0040004-0000-0000-0000-000000000047"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_SUNDAY} != null ? $F{COUNT_SUNDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_SUNDAY} != null ? $F{REFUNDED_COUNT_SUNDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_SUNDAY} != null ? $F{AMOUNT_SUNDAY} : 0)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="702" y="0" width="80" height="28" key="textField-det-tot" uuid="c0040004-0000-0000-0000-000000000048"/>
+				<box rightPadding="2">
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{TOTAL_WEEK_COUNT} != null ? $F{TOTAL_WEEK_COUNT} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_TOTAL_WEEK_COUNT} != null ? $F{REFUNDED_TOTAL_WEEK_COUNT} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{TOTAL_WEEK_AMOUNT} != null ? $F{TOTAL_WEEK_AMOUNT} : 0)]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+
+	<columnFooter>
+		<band height="0" splitType="Stretch"/>
+	</columnFooter>
+
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Opaque" x="0" y="2" width="782" height="20" forecolor="#000099" backcolor="#000099" uuid="c0040004-0000-0000-0000-000000000050"/>
+			</rectangle>
+			<textField pattern="">
+				<reportElement mode="Transparent" x="572" y="2" width="174" height="19" forecolor="#FFFFFF" uuid="c0040004-0000-0000-0000-000000000051"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{angal.report.diseaseslist.page} + " " + $V{PAGE_NUMBER} + " " + $R{angal.report.diseaseslist.of}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="">
+				<reportElement mode="Transparent" x="746" y="2" width="36" height="19" forecolor="#FFFFFF" uuid="c0040004-0000-0000-0000-000000000052"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="10" y="2" width="200" height="19" forecolor="#FFFFFF" uuid="c0040004-0000-0000-0000-000000000053"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+
+	<summary>
+		<band height="30" splitType="Stretch">
+			<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="542" y="5" width="80" height="20" key="textField-sum-lbl" uuid="c0040004-0000-0000-0000-000000000060"/>
+				<box rightPadding="4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{angal.stat.total} + " : "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="false" pattern="#,##0" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<reportElement x="622" y="5" width="160" height="20" key="textField-sum-val" uuid="c0040004-0000-0000-0000-000000000061"/>
+				<box leftPadding="4">
+					<topPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{TOTAL}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
