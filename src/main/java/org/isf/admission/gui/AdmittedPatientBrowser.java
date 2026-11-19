@@ -103,12 +103,15 @@ import org.isf.opd.gui.OpdEditExtended;
 import org.isf.opd.model.Opd;
 import org.isf.partner.manager.PartnerBrowserManager;
 import org.isf.partner.model.Partner;
+import org.isf.reductionplan.manager.ReductionPlanManager;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.isf.patient.gui.PatientInsert;
 import org.isf.patient.gui.PatientInsertExtended;
 import org.isf.patient.gui.PatientInsertExtended.PatientListener;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportVisit;
+import org.isf.stat.gui.report.PatientsByPartnerReport;
 import org.isf.therapy.gui.TherapyEdit;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -155,6 +158,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private JComboBox patientSexBox = new JComboBox(patientSexItems);
 	private JComboBox<Country> patientCountryBox;
 	private JComboBox<Partner> partnerComboBox;
+	private JComboBox<ReductionPlan> reductionPlanComboBox;
 	private JCheckBox[] wardCheck;
 	private JTextField searchString;
 	private JButton jSearchButton;
@@ -192,6 +196,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private ExaminationBrowserManager examinationBrowserManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
 	private CountryBrowserManager countryBrowserManager = Context.getApplicationContext().getBean(CountryBrowserManager.class);
 	private PartnerBrowserManager partnerBrowserManager = Context.getApplicationContext().getBean(PartnerBrowserManager.class);
+	private ReductionPlanManager reductionPlanManager = Context.getApplicationContext().getBean(ReductionPlanManager.class);
 
 	protected boolean altKeyReleased = true;
 	protected Timer ageTimer = new Timer(1000, e -> filterPatient(null));
@@ -574,14 +579,23 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 			loadPartnerList();
 
+			reductionPlanComboBox = new JComboBox<>();
+			reductionPlanComboBox.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
+			loadReductionPlanList(null);
+
+			// the reduction plans proposed are the ones of the selected partner
+			partnerComboBox.addActionListener(e -> loadReductionPlanList((Partner) partnerComboBox.getSelectedItem()));
+
 			if (!GeneralData.ENHANCEDSEARCH) {
 				partnerComboBox.addActionListener(listener);
+				reductionPlanComboBox.addActionListener(listener);
 			}
 
 			partnerPanel = new JPanel();
-			partnerPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 20));
-			partnerPanel.setLayout(new BorderLayout());
-			partnerPanel.add(partnerComboBox, BorderLayout.CENTER);
+			partnerPanel.setPreferredSize(new Dimension(PANEL_WIDTH, 44));
+			partnerPanel.setLayout(new BorderLayout(0, 4));
+			partnerPanel.add(partnerComboBox, BorderLayout.NORTH);
+			partnerPanel.add(reductionPlanComboBox, BorderLayout.SOUTH);
 
 			partnerPanel = setMyBorder(
 					partnerPanel,
@@ -848,6 +862,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		}
 		if (MainMenu.checkUserGrants("btnadmadmvisitsrpt")) {
 			buttonPanel.add(getButtonReport());
+		}
+		if (GeneralData.PARTNERSMODULEENABLED) {
+			buttonPanel.add(getButtonPatientsByPartnerReport());
 		}
 		if (GeneralData.MERGEFUNCTION && MainMenu.checkUserGrants("btnadmmer")) {
 			buttonPanel.add(getButtonMerge());
@@ -1164,6 +1181,17 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 		return buttonReport;
 	}
 
+	private JButton getButtonPatientsByPartnerReport() {
+		JButton button = new JButton(MessageBundle.getMessage("angal.admission.patientsbypartner.btn"));
+		button.setToolTipText(MessageBundle.getMessage("angal.admission.patientsbypartner.tooltip"));
+		button.addActionListener(actionEvent -> {
+			Partner partner = partnerComboBox != null ? (Partner) partnerComboBox.getSelectedItem() : null;
+			ReductionPlan plan = reductionPlanComboBox != null ? (ReductionPlan) reductionPlanComboBox.getSelectedItem() : null;
+			new PatientsByPartnerReport(partner != null ? partner.getCode() : null, plan != null ? plan.getId() : null);
+		});
+		return button;
+	}
+
 	private void generateVisitReport() {
 		String currentUser = UserBrowsingManager.getCurrentUser();
 
@@ -1320,6 +1348,14 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				}
 			}
 
+			Integer reductionPlanId = null;
+			if (GeneralData.PARTNERSMODULEENABLED && reductionPlanComboBox != null) {
+				ReductionPlan selectedPlan = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
+				if (selectedPlan != null) {
+					reductionPlanId = selectedPlan.getId();
+				}
+			}
+
 			LocalDateTime admissionDateFrom = null;
 			LocalDateTime admissionDateTo = null;
 			LocalDateTime dischargeDateFrom = null;
@@ -1344,7 +1380,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 			Page<AdmittedPatient> result =
 					admissionBrowserManager.getAdmittedPatientsPaginated(searchTerms, admissionStatus, wardCodes, admissionDateFrom, admissionDateTo, dischargeDateFrom,
-							dischargeDateTo, ageFrom, ageTo, sex, countryId, partnerId, page, PAGE_SIZE);
+							dischargeDateTo, ageFrom, ageTo, sex, countryId, partnerId, reductionPlanId, page, PAGE_SIZE);
 
 			pPatient = new ArrayList<>(result.getContent());
 			currentPage = result.getNumber();
@@ -1620,5 +1656,51 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				return this;
 			}
 		});
+	}
+
+	/**
+	 * Fills the reduction plan filter with the reduction plans of the given partner.
+	 * Without partner, only the "all" entry is available.
+	 */
+	private void loadReductionPlanList(Partner partner) {
+		ReductionPlan previous = (ReductionPlan) reductionPlanComboBox.getSelectedItem();
+		// avoid triggering the filter for each item added
+		ActionListener[] listeners = reductionPlanComboBox.getActionListeners();
+		for (ActionListener l : listeners) {
+			reductionPlanComboBox.removeActionListener(l);
+		}
+		reductionPlanComboBox.removeAllItems();
+		reductionPlanComboBox.addItem(null);
+		if (partner != null) {
+			try {
+				for (ReductionPlan plan : reductionPlanManager.getAll()) {
+					if (plan.getPartner() != null && partner.getCode().equals(plan.getPartner().getCode())) {
+						reductionPlanComboBox.addItem(plan);
+						if (previous != null && previous.getId() == plan.getId()) {
+							reductionPlanComboBox.setSelectedItem(plan);
+						}
+					}
+				}
+			} catch (OHServiceException e) {
+				OHServiceExceptionUtil.showMessages(e);
+			}
+		}
+		reductionPlanComboBox.setEnabled(partner != null);
+		reductionPlanComboBox.setToolTipText(MessageBundle.getMessage("angal.admission.reductionplanfilter.tooltip"));
+		reductionPlanComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value == null) {
+					setText(MessageBundle.getMessage("angal.admission.allreductionplans.txt"));
+				} else {
+					setText(((ReductionPlan) value).getDescription());
+				}
+				return this;
+			}
+		});
+		for (ActionListener l : listeners) {
+			reductionPlanComboBox.addActionListener(l);
+		}
 	}
 }

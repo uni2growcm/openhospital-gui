@@ -23,14 +23,16 @@ package org.isf.tuberculosis.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.Serial;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -76,11 +78,6 @@ public class TuberculosisMiniPanel extends JPanel {
     private JTable treatmentTable;
     private JTable visitTable;
     private JTable contactTable;
-    private JButton editTreatmentButton;
-    private JButton newVisitButton;
-    private JButton newContactButton;
-    private JButton editVisitButton;
-    private JButton editContactButton;
 
     private final String[] treatmentHeaders = {
             MessageBundle.getMessage("angal.tb.browser.id.col"),
@@ -103,8 +100,15 @@ public class TuberculosisMiniPanel extends JPanel {
             MessageBundle.getMessage("angal.tb.browser.contactnotes.col")
     };
 
+    private boolean showContacts = false;
+
     public TuberculosisMiniPanel(Patient patient) {
+        this(patient, false);
+    }
+
+    public TuberculosisMiniPanel(Patient patient, boolean showContacts) {
         this.patient = patient;
+        this.showContacts = showContacts;
         initManagers();
         initialize();
     }
@@ -120,21 +124,13 @@ public class TuberculosisMiniPanel extends JPanel {
     private void initManagers() {
         treatmentManager = Context.getApplicationContext().getBean(TuberculosisTreatmentManager.class);
         visitManager = Context.getApplicationContext().getBean(TuberculosisVisitManager.class);
-        contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
+        if (showContacts) {
+            contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
+        }
     }
 
     private void initialize() {
-        setLayout(new BorderLayout(10, 10));
-
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        if (patient != null) {
-            headerPanel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ": "
-                    + patient.getCode() + " - " + patient.getSecondName() + " " + patient.getFirstName()));
-        } else {
-            headerPanel.add(new JLabel(MessageBundle.getMessage("angal.common.patient.txt") + ": "
-                    + MessageBundle.getMessage("angal.opd.selectapatient.txt")));
-        }
-        add(headerPanel, BorderLayout.NORTH);
+        setLayout(new BorderLayout());
 
         JPanel tablesPanel = new JPanel();
         tablesPanel.setLayout(new BoxLayout(tablesPanel, BoxLayout.Y_AXIS));
@@ -145,84 +141,81 @@ public class TuberculosisMiniPanel extends JPanel {
         treatmentTable.setFillsViewportHeight(true);
         treatmentTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         treatmentTable.getSelectionModel().addListSelectionListener(new TreatmentSelectionListener());
+        treatmentTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editTreatment();
+                }
+            }
+        });
         for (int i = 0; i < treatmentHeaders.length; i++) {
             treatmentTable.getColumnModel().getColumn(i).setPreferredWidth(150);
         }
         JScrollPane treatmentScroll = new JScrollPane(treatmentTable);
-        treatmentScroll.setPreferredSize(new Dimension(600, 100));
+        treatmentScroll.setPreferredSize(new Dimension(600, showContacts ? 100 : 150));
         tablesPanel.add(treatmentScroll);
 
-        tablesPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.visitstab")));
+        JLabel visitsLabel = new JLabel(MessageBundle.getMessage("angal.tb.browser.visitstab"));
+        visitsLabel.setFont(visitsLabel.getFont().deriveFont(Font.BOLD));
+        visitsLabel.setBorder(BorderFactory.createEmptyBorder(6, 4, 2, 4));
+        tablesPanel.add(visitsLabel);
+
         visitTable = new JTable(new VisitTableModel());
         visitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         visitTable.setRowHeight(20);
         visitTable.setFillsViewportHeight(true);
         visitTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         visitTable.getSelectionModel().addListSelectionListener(new VisitSelectionListener());
+        visitTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editVisit();
+                }
+            }
+        });
         for (int i = 0; i < visitHeaders.length; i++) {
             visitTable.getColumnModel().getColumn(i).setPreferredWidth(150);
         }
         JScrollPane visitScroll = new JScrollPane(visitTable);
-        visitScroll.setPreferredSize(new Dimension(600, 100));
+        visitScroll.setPreferredSize(new Dimension(600, showContacts ? 100 : 150));
         tablesPanel.add(visitScroll);
 
-        tablesPanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.contactstab")));
-        contactTable = new JTable(new ContactTableModel());
-        contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        contactTable.setRowHeight(20);
-        contactTable.setFillsViewportHeight(true);
-        contactTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        contactTable.getSelectionModel().addListSelectionListener(new ContactSelectionListener());
-        for (int i = 0; i < contactHeaders.length; i++) {
-            contactTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+        if (showContacts) {
+            JLabel contactsLabel = new JLabel(MessageBundle.getMessage("angal.tb.browser.contactstab"));
+            contactsLabel.setFont(contactsLabel.getFont().deriveFont(Font.BOLD));
+            contactsLabel.setBorder(BorderFactory.createEmptyBorder(6, 4, 2, 4));
+            tablesPanel.add(contactsLabel);
+
+            contactTable = new JTable(new ContactTableModel());
+            contactTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            contactTable.setRowHeight(20);
+            contactTable.setFillsViewportHeight(true);
+            contactTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            contactTable.getSelectionModel().addListSelectionListener(new ContactSelectionListener());
+            contactTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        editContact();
+                    }
+                }
+            });
+            for (int i = 0; i < contactHeaders.length; i++) {
+                contactTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+            }
+            JScrollPane contactScroll = new JScrollPane(contactTable);
+            contactScroll.setPreferredSize(new Dimension(600, 100));
+            tablesPanel.add(contactScroll);
         }
-        JScrollPane contactScroll = new JScrollPane(contactTable);
-        contactScroll.setPreferredSize(new Dimension(600, 100));
-        tablesPanel.add(contactScroll);
 
         JScrollPane mainScroll = new JScrollPane(tablesPanel);
         add(mainScroll, BorderLayout.CENTER);
 
-        add(getButtonPanel(), BorderLayout.SOUTH);
-
         if (patient != null) {
             loadTreatments();
         }
-    }
-
-    private JPanel getButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-
-        JButton newTreatmentButton = new JButton(MessageBundle.getMessage("angal.tb.browser.newtreatment.btn"));
-        newTreatmentButton.addActionListener(e -> newTreatment());
-        buttonPanel.add(newTreatmentButton);
-
-        editTreatmentButton = new JButton(MessageBundle.getMessage("angal.tb.browser.edittreatment.btn"));
-        editTreatmentButton.setEnabled(false);
-        editTreatmentButton.addActionListener(e -> editTreatment());
-        buttonPanel.add(editTreatmentButton);
-
-        newVisitButton = new JButton(MessageBundle.getMessage("angal.tb.browser.newvisit.btn"));
-        newVisitButton.setEnabled(false);
-        newVisitButton.addActionListener(e -> newVisit());
-        buttonPanel.add(newVisitButton);
-
-        editVisitButton = new JButton(MessageBundle.getMessage("angal.tb.browser.editvisit.btn"));
-        editVisitButton.setEnabled(false);
-        editVisitButton.addActionListener(e -> editVisit());
-        buttonPanel.add(editVisitButton);
-
-        newContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.newcontact.btn"));
-        newContactButton.setEnabled(false);
-        newContactButton.addActionListener(e -> newContact());
-        buttonPanel.add(newContactButton);
-
-        editContactButton = new JButton(MessageBundle.getMessage("angal.tb.browser.editcontact.btn"));
-        editContactButton.setEnabled(false);
-        editContactButton.addActionListener(e -> editContact());
-        buttonPanel.add(editContactButton);
-
-        return buttonPanel;
     }
 
     private void loadTreatments() {
@@ -230,9 +223,6 @@ public class TuberculosisMiniPanel extends JPanel {
             treatmentList = new ArrayList<>();
             ((TreatmentTableModel) treatmentTable.getModel()).fireTableDataChanged();
             selectedTreatment = null;
-            editTreatmentButton.setEnabled(false);
-            newVisitButton.setEnabled(false);
-            newContactButton.setEnabled(false);
             visitList = new ArrayList<>();
             contactList = new ArrayList<>();
             if (visitTable != null) ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
@@ -247,13 +237,13 @@ public class TuberculosisMiniPanel extends JPanel {
         }
         ((TreatmentTableModel) treatmentTable.getModel()).fireTableDataChanged();
         selectedTreatment = null;
-        editTreatmentButton.setEnabled(false);
-        newVisitButton.setEnabled(false);
-        newContactButton.setEnabled(false);
         visitList = new ArrayList<>();
         contactList = new ArrayList<>();
         if (visitTable != null) ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
         if (contactTable != null) ((ContactTableModel) contactTable.getModel()).fireTableDataChanged();
+        if (!treatmentList.isEmpty()) {
+            treatmentTable.setRowSelectionInterval(0, 0);
+        }
     }
 
     private void loadVisits() {
@@ -268,7 +258,6 @@ public class TuberculosisMiniPanel extends JPanel {
             }
         }
         selectedVisit = null;
-        editVisitButton.setEnabled(false);
         if (visitTable != null) {
             ((VisitTableModel) visitTable.getModel()).fireTableDataChanged();
         }
@@ -286,30 +275,18 @@ public class TuberculosisMiniPanel extends JPanel {
             }
         }
         selectedContact = null;
-        editContactButton.setEnabled(false);
         if (contactTable != null) {
             ((ContactTableModel) contactTable.getModel()).fireTableDataChanged();
         }
     }
 
-    private void newTreatment() {
-        if (patient == null) return;
-        TuberculosisTreatmentEdit edit = new TuberculosisTreatmentEdit(
-                (JFrame) SwingUtilities.getWindowAncestor(this), patient, true);
-        edit.addTuberculosisTreatmentListener(new TuberculosisTreatmentEdit.TuberculosisTreatmentListener() {
-            @Override
-            public void treatmentInserted(java.awt.AWTEvent e, TuberculosisTreatment treatment) {
-                loadTreatments();
-            }
-            @Override
-            public void treatmentUpdated(java.awt.AWTEvent e, TuberculosisTreatment treatment) {
-                loadTreatments();
-            }
-        });
-        edit.setVisible(true);
-    }
-
     private void editTreatment() {
+        if (selectedTreatment == null) {
+            int selectedRow = treatmentTable.getSelectedRow();
+            if (selectedRow >= 0 && selectedRow < treatmentList.size()) {
+                selectedTreatment = treatmentList.get(selectedRow);
+            }
+        }
         if (selectedTreatment == null) return;
         TuberculosisTreatmentEdit edit = new TuberculosisTreatmentEdit(
                 (JFrame) SwingUtilities.getWindowAncestor(this), selectedTreatment, false);
@@ -326,15 +303,13 @@ public class TuberculosisMiniPanel extends JPanel {
         edit.setVisible(true);
     }
 
-    private void newVisit() {
-        if (selectedTreatment == null) return;
-        TuberculosisVisitEdit edit = new TuberculosisVisitEdit(
-                (JFrame) SwingUtilities.getWindowAncestor(this), selectedTreatment, true);
-        edit.setVisible(true);
-        loadVisits();
-    }
-
     private void editVisit() {
+        if (selectedVisit == null) {
+            int selectedRow = visitTable.getSelectedRow();
+            if (selectedRow >= 0 && selectedRow < visitList.size()) {
+                selectedVisit = visitList.get(selectedRow);
+            }
+        }
         if (selectedVisit == null) return;
         TuberculosisVisitEdit edit = new TuberculosisVisitEdit(
                 (JFrame) SwingUtilities.getWindowAncestor(this), selectedVisit, false);
@@ -342,15 +317,13 @@ public class TuberculosisMiniPanel extends JPanel {
         loadVisits();
     }
 
-    private void newContact() {
-        if (selectedTreatment == null) return;
-        TuberculosisContactEdit edit = new TuberculosisContactEdit(
-                (JFrame) SwingUtilities.getWindowAncestor(this), selectedTreatment, true);
-        edit.setVisible(true);
-        loadContacts();
-    }
-
     private void editContact() {
+        if (selectedContact == null) {
+            int selectedRow = contactTable.getSelectedRow();
+            if (selectedRow >= 0 && selectedRow < contactList.size()) {
+                selectedContact = contactList.get(selectedRow);
+            }
+        }
         if (selectedContact == null) return;
         TuberculosisContactEdit edit = new TuberculosisContactEdit(
                 (JFrame) SwingUtilities.getWindowAncestor(this), selectedContact, false);
@@ -479,18 +452,12 @@ public class TuberculosisMiniPanel extends JPanel {
                 int viewRow = treatmentTable.getSelectedRow();
                 if (viewRow >= 0 && viewRow < treatmentList.size()) {
                     selectedTreatment = treatmentList.get(viewRow);
-                    editTreatmentButton.setEnabled(true);
-                    newVisitButton.setEnabled(true);
-                    newContactButton.setEnabled(true);
                     loadVisits();
-                    loadContacts();
+                    if (showContacts) loadContacts();
                 } else {
                     selectedTreatment = null;
-                    editTreatmentButton.setEnabled(false);
-                    newVisitButton.setEnabled(false);
-                    newContactButton.setEnabled(false);
                     loadVisits();
-                    loadContacts();
+                    if (showContacts) loadContacts();
                 }
             }
         }
@@ -503,10 +470,8 @@ public class TuberculosisMiniPanel extends JPanel {
                 int viewRow = visitTable.getSelectedRow();
                 if (viewRow >= 0 && viewRow < visitList.size()) {
                     selectedVisit = visitList.get(viewRow);
-                    editVisitButton.setEnabled(true);
                 } else {
                     selectedVisit = null;
-                    editVisitButton.setEnabled(false);
                 }
             }
         }
@@ -519,10 +484,8 @@ public class TuberculosisMiniPanel extends JPanel {
                 int viewRow = contactTable.getSelectedRow();
                 if (viewRow >= 0 && viewRow < contactList.size()) {
                     selectedContact = contactList.get(viewRow);
-                    editContactButton.setEnabled(true);
                 } else {
                     selectedContact = null;
-                    editContactButton.setEnabled(false);
                 }
             }
         }

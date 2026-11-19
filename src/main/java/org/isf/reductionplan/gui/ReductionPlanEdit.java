@@ -29,6 +29,8 @@ import org.isf.medicals.model.Medical;
 import org.isf.menu.manager.Context;
 import org.isf.operation.manager.OperationBrowserManager;
 import org.isf.operation.model.Operation;
+import org.isf.partner.manager.PartnerBrowserManager;
+import org.isf.partner.model.Partner;
 import org.isf.pricesothers.manager.PricesOthersManager;
 import org.isf.pricesothers.model.PricesOthers;
 import org.isf.reductionplan.manager.ReductionPlanManager;
@@ -91,6 +93,10 @@ public class ReductionPlanEdit extends ModalJFrame {
     private JTextField textExamRate;
     private JLabel labelPriceOtherRate;
     private JTextField textPriceOtherRate;
+    private JComboBox<Object> partnerComboBox;
+    private JTextField textValidityValue;
+    private JComboBox<ValidityUnit> validityUnitComboBox;
+    private JTextField textMaxPatients;
     private List<MedicalReduction> medicalReductionList = new ArrayList<>();
     private JTable medicalReductionTable;
     private List<ExamReduction> examReductionList = new ArrayList<>();
@@ -138,7 +144,7 @@ public class ReductionPlanEdit extends ModalJFrame {
         setTitle(this.isInsert ? MessageBundle.getMessage("angal.reductionplan.createreductionplan.title")
                 : MessageBundle.getMessage("angal.reductionplan.editreductionplan.title"));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setBounds(100, 100, 600, 350);
+        setBounds(100, 100, 650, 450);
         setContentPane(getMainContentPane());
         setLocationRelativeTo(null);
     }
@@ -286,7 +292,100 @@ public class ReductionPlanEdit extends ModalJFrame {
         detailPane.add(textPriceOtherRate, gbc_textPriceOtherRate);
         textPriceOtherRate.setColumns(10);
 
+        addDetailRow(detailPane, 3, MessageBundle.getMessage("angal.reductionplan.partner.label"), getPartnerComboBox(),
+                MessageBundle.getMessage("angal.reductionplan.maxpatients.label"), getTextMaxPatients());
+
+        JPanel validityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        validityPanel.add(getTextValidityValue());
+        validityPanel.add(Box.createHorizontalStrut(5));
+        validityPanel.add(getValidityUnitComboBox());
+        addDetailRow(detailPane, 4, MessageBundle.getMessage("angal.reductionplan.validity.label"), validityPanel, null, null);
+
         return detailPane;
+    }
+
+    private void addDetailRow(JPanel detailPane, int row, String label1, JComponent field1, String label2, JComponent field2) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        detailPane.add(new JLabel(label1), gbc);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        detailPane.add(field1, gbc);
+        if (label2 != null) {
+            gbc.fill = GridBagConstraints.NONE;
+            gbc.gridx = 2;
+            detailPane.add(new JLabel(label2), gbc);
+            gbc.gridx = 3;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            detailPane.add(field2, gbc);
+        }
+    }
+
+    private JComboBox<Object> getPartnerComboBox() {
+        if (partnerComboBox == null) {
+            partnerComboBox = new JComboBox<>();
+            partnerComboBox.addItem(MessageBundle.getMessage("angal.reductionplan.hospitalplan.txt"));
+            try {
+                for (Partner partner : Context.getApplicationContext().getBean(PartnerBrowserManager.class).getPartnersByPriority()) {
+                    partnerComboBox.addItem(partner);
+                }
+            } catch (OHServiceException e) {
+                OHServiceExceptionUtil.showMessages(e);
+            }
+        }
+        return partnerComboBox;
+    }
+
+    private JTextField getTextValidityValue() {
+        if (textValidityValue == null) {
+            textValidityValue = new JTextField(5);
+            textValidityValue.setToolTipText(MessageBundle.getMessage("angal.reductionplan.validity.tooltip"));
+        }
+        return textValidityValue;
+    }
+
+    private JComboBox<ValidityUnit> getValidityUnitComboBox() {
+        if (validityUnitComboBox == null) {
+            validityUnitComboBox = new JComboBox<>(ValidityUnit.values());
+            validityUnitComboBox.setSelectedItem(ValidityUnit.MONTHS);
+            validityUnitComboBox.setRenderer(new DefaultListCellRenderer() {
+                @Serial
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    Object text = value instanceof ValidityUnit unit ? validityUnitLabel(unit) : value;
+                    return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+                }
+            });
+        }
+        return validityUnitComboBox;
+    }
+
+    static String validityUnitLabel(ValidityUnit unit) {
+        return MessageBundle.getMessage("angal.reductionplan.validityunit." + unit.name().toLowerCase() + ".txt");
+    }
+
+    private JTextField getTextMaxPatients() {
+        if (textMaxPatients == null) {
+            textMaxPatients = new JTextField(5);
+            textMaxPatients.setToolTipText(MessageBundle.getMessage("angal.reductionplan.maxpatients.tooltip"));
+        }
+        return textMaxPatients;
+    }
+
+    private static Integer parseOptionalPositiveInt(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return null;
+        }
+        int value = Integer.parseInt(text.trim());
+        if (value <= 0) {
+            throw new NumberFormatException();
+        }
+        return value;
     }
 
     private JPanel getMedicalReductionPanel() {
@@ -882,6 +981,23 @@ public class ReductionPlanEdit extends ModalJFrame {
                 );
             }
 
+            try {
+                Integer validityValue = parseOptionalPositiveInt(textValidityValue.getText());
+                reductionPlan.setValidityValue(validityValue);
+                reductionPlan.setValidityUnit(validityValue == null ? null : (ValidityUnit) validityUnitComboBox.getSelectedItem());
+            } catch (NumberFormatException ex) {
+                throw new OHDataValidationException(
+                        new OHExceptionMessage(MessageBundle.getMessage("angal.reductionplan.invalidvalidityperiod.msg")));
+            }
+            try {
+                reductionPlan.setMaxPatients(parseOptionalPositiveInt(textMaxPatients.getText()));
+            } catch (NumberFormatException ex) {
+                throw new OHDataValidationException(
+                        new OHExceptionMessage(MessageBundle.getMessage("angal.reductionplan.invalidmaxpatients.msg")));
+            }
+            Object selectedPartner = partnerComboBox.getSelectedItem();
+            reductionPlan.setPartner(selectedPartner instanceof Partner partner ? partner : null);
+
             return true;
         } catch (OHServiceException e) {
             OHServiceExceptionUtil.showMessages(e);
@@ -896,6 +1012,26 @@ public class ReductionPlanEdit extends ModalJFrame {
         textExamRate.setText(String.valueOf(this.reductionPlan.getExamRate()));
         textOperationRate.setText(String.valueOf(this.reductionPlan.getOperationRate()));
         textPriceOtherRate.setText(String.valueOf(this.reductionPlan.getOtherRate()));
+        textValidityValue.setText(reductionPlan.getValidityValue() == null ? "" : String.valueOf(reductionPlan.getValidityValue()));
+        if (reductionPlan.getValidityUnit() != null) {
+            validityUnitComboBox.setSelectedItem(reductionPlan.getValidityUnit());
+        }
+        textMaxPatients.setText(reductionPlan.getMaxPatients() == null ? "" : String.valueOf(reductionPlan.getMaxPatients()));
+        if (reductionPlan.getPartner() != null) {
+            boolean found = false;
+            for (int i = 0; i < partnerComboBox.getItemCount(); i++) {
+                if (reductionPlan.getPartner().equals(partnerComboBox.getItemAt(i))) {
+                    partnerComboBox.setSelectedIndex(i);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // partner deleted in the meantime: keep it visible
+                partnerComboBox.addItem(reductionPlan.getPartner());
+                partnerComboBox.setSelectedItem(reductionPlan.getPartner());
+            }
+        }
 
         try {
             medicalReductionList = reductionPlanManager.getMedicalReductionsByReductionPlanId(this.reductionPlan.getId());

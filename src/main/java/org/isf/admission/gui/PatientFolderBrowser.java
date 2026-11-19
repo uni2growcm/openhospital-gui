@@ -67,11 +67,16 @@ import org.isf.examination.manager.ExaminationBrowserManager;
 import org.isf.examination.model.PatientExamination;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
+import org.isf.homevisit.gui.HomeVisitPatList;
 import org.isf.lab.manager.LabManager;
 import org.isf.lab.model.Laboratory;
+import org.isf.maternity.gui.FamilyPlanningPatList;
+import org.isf.maternity.gui.HIVInfantPatList;
+import org.isf.maternity.gui.MaternityPatList;
 import org.isf.medstockmovtype.gui.MedicalsrMovPatList;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.tuberculosis.gui.TuberculosisMiniPanel;
 import org.isf.opd.manager.OpdBrowserManager;
 import org.isf.opd.model.Opd;
 import org.isf.operation.gui.OperationList;
@@ -382,6 +387,31 @@ public class PatientFolderBrowser extends ModalJFrame
 		MedicalsrMovPatList drugsList = new MedicalsrMovPatList(patient);
 		getOlderDate(drugsList.getDrugsData(), "date");
 		tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.drugs.title"), null, drugsList, null);
+
+		if (GeneralData.HOMEVISITMODULEENABLED) {
+			HomeVisitPatList homeVisitList = new HomeVisitPatList(patient);
+			tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.homevisit.title"), null, homeVisitList, null);
+		}
+
+		if (GeneralData.TUBERCULOSISMODULEENABLED) {
+			TuberculosisMiniPanel tbPanel = new TuberculosisMiniPanel(patient);
+			tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.tuberculosis.title"), null, tbPanel, null);
+		}
+
+		if (GeneralData.MATERNITYMODULEENABLED && patient != null && Character.toUpperCase(patient.getSex()) == 'F') {
+			MaternityPatList maternityList = new MaternityPatList(patient);
+			tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.maternity.title"), null, maternityList, null);
+		}
+
+		if (GeneralData.FAMILYPLANNINGMODULEENABLED && patient != null && Character.toUpperCase(patient.getSex()) == 'F') {
+			FamilyPlanningPatList fpList = new FamilyPlanningPatList(patient);
+			tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.familyplanning.title"), null, fpList, null);
+		}
+
+		if (GeneralData.HIVMODULEENABLED) {
+			HIVInfantPatList hivList = new HIVInfantPatList(patient);
+			tabbedPaneLabOpe.addTab(MessageBundle.getMessage("angal.admission.patientfolder.hiv.title"), null, hivList, null);
+		}
 
 		// Handle double click on rows of tables generating report dialog
 		if (MainMenu.checkUserGrants("btnpatfoldpatrpt")) {

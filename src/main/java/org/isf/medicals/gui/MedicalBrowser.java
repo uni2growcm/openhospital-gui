@@ -32,6 +32,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
@@ -117,6 +119,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private long TOTAL_PAGES = 0;
 	private double totalStockValue = 0.0;
 	protected AbstractButton searchBoxButton;
+	private JButton buttonDetails;
 
 	private String[] pColumns = {
 			MessageBundle.getMessage("angal.common.type.txt").toUpperCase(),
@@ -409,6 +412,15 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				}
 			});
 
+			table.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2 && table.getSelectedRow() >= 0) {
+						openMedicalDetails();
+					}
+				}
+			});
+
 			updatePageCombo();
 		}
 		return table;
@@ -432,6 +444,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonOrderList());
+		}
+		buttonPanel.add(getJButtonDetails());
+		if (GeneralData.COMMANDMODULEENABLED) {
 			buttonPanel.add(getJButtonPharmaceuticalOrder());
 		}
 		buttonPanel.add(getJButtonReport());
@@ -808,6 +823,26 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		return buttonNew;
 	}
 
+	private JButton getJButtonDetails() {
+		if (buttonDetails == null) {
+			buttonDetails = new JButton(MessageBundle.getMessage("angal.medicals.details.btn"));
+			buttonDetails.setMnemonic(MessageBundle.getMnemonic("angal.medicals.details.btn.key"));
+			buttonDetails.addActionListener(actionEvent -> openMedicalDetails());
+		}
+		return buttonDetails;
+	}
+
+	private void openMedicalDetails() {
+		if (table.getSelectedRow() < 0) {
+			MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+		} else {
+			selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
+			medical = (Medical) model.getValueAt(selectedrow, -1);
+			MedicalDetailsDialog detailsDialog = new MedicalDetailsDialog(this, medical);
+			detailsDialog.setVisible(true);
+		}
+	}
+
 	private JComboBox<String> getComboBoxActive() {
 		if (activeComboBox == null) {
 			activeComboBox = new JComboBox<>();
@@ -854,6 +889,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		options.add(MessageBundle.getMessage("angal.medicals.nexttwomonths"));
 		options.add(MessageBundle.getMessage("angal.medicals.nextthreemonths"));
 		options.add(MessageBundle.getMessage("angal.medicals.othermonth"));
+		options.add(MessageBundle.getMessage("angal.medicals.expiredanyperiod"));
 
 		Icon icon = new ImageIcon("rsc/icons/calendar_dialog.png");
 		String option = (String) MessageDialog.inputDialog(this, icon, options.toArray(), options.get(0), "angal.medicals.pleaseselectperiod.msg");
@@ -899,6 +935,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				LocalDate end = selectedMonth.with(TemporalAdjusters.lastDayOfMonth());
 				from = format(start.atStartOfDay());
 				to = format(end.atTime(LocalTime.MAX));
+				break;
+			case 6:
+				from = format(LocalDate.of(1000, 1, 1).atStartOfDay());
+				to = format(today.minusDays(1).atTime(LocalTime.MAX));
 				break;
 		}
 		new GenericReportFromDateToDate(from, to, "rpt_base", "PharmaceuticalExpiration", MessageBundle.getMessage("angal.medicals.expiringreport"), false);
