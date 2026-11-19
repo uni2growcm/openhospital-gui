@@ -434,11 +434,11 @@ public class PatVacEdit extends JDialog {
 	 * This method reset patient's additional data
 	 */
 	private void resetPatVacPat() {
-		patTextField.setText("");
-		ageTextField.setText("");
-		sexTextField.setText("");
+		getPatientTextField().setText("");
+		getAgeTextField().setText("");
+		getSexTextField().setText("");
 		selectedPatient = null;
-		dataPatient.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), 
+		getDataPatient().setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), 
 						MessageBundle.getMessage("angal.patvac.datapatient")));
 	}
 
@@ -446,11 +446,13 @@ public class PatVacEdit extends JDialog {
 	 * This method sets patient's additional data
 	 */
 	private void setPatient(Patient selectedPatient) {
-		patTextField.setText(selectedPatient.getName());
-		ageTextField.setText(String.valueOf(selectedPatient.getAge()));
-		sexTextField.setText(String.valueOf(selectedPatient.getSex()));
-		dataPatient.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), 
-						MessageBundle.formatMessage("angal.patvac.patientcode.fmt.msg", selectedPatient.getCode())));
+		if (selectedPatient != null) {
+			getPatientTextField().setText(selectedPatient.getName());
+			getAgeTextField().setText(String.valueOf(selectedPatient.getAge()));
+			getSexTextField().setText(String.valueOf(selectedPatient.getSex()));
+			getDataPatient().setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), 
+							MessageBundle.formatMessage("angal.patvac.patientcode.fmt.msg", selectedPatient.getCode())));
+		}
 	}
 
 	/**
@@ -611,8 +613,8 @@ public class PatVacEdit extends JDialog {
 		if (centerPanel == null) {
 			centerPanel = new JPanel();
 			centerPanel.setLayout(new BorderLayout());
-			centerPanel.add(getDataPanel(), BorderLayout.CENTER);
 			centerPanel.add(getDataPatient(), BorderLayout.SOUTH);
+			centerPanel.add(getDataPanel(), BorderLayout.CENTER);
 		}
 		return centerPanel;
 	}
