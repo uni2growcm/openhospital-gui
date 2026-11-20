@@ -254,11 +254,14 @@ public class ExamEdit extends JDialog {
 				} else {
 					int procedure = Integer.parseInt(procComboBox.getSelectedItem().toString());
 
+					String oldDefResult = exam.getDefaultResult();
+					String newDefResult = defTextField.getText() != null ? defTextField.getText().trim().toUpperCase() : "";
+
 					exam.setExamtype((ExamType) examTypeComboBox.getSelectedItem());
 					exam.setDescription(descriptionTextField.getText());
 					exam.setArticleFamily((ArticleFamily) articleFamilyComboBox.getSelectedItem());
 					exam.setCode(codeTextField.getText().toUpperCase());
-					exam.setDefaultResult(defTextField.getText().toUpperCase());
+					exam.setDefaultResult(newDefResult);
 					exam.setProcedure(procedure);
 
 					boolean inError = false;
@@ -274,9 +277,8 @@ public class ExamEdit extends JDialog {
 						}
 						try {
 							examBrowsingManager.newExam(exam);
-							String defResult = exam.getDefaultResult();
-							if (defResult != null && !defResult.trim().isEmpty()) {
-								examRowBrowsingManager.newExamRow(new ExamRow(exam, defResult.trim()));
+							if (!newDefResult.isEmpty()) {
+								examRowBrowsingManager.newExamRow(new ExamRow(exam, newDefResult));
 							}
 							fireExamInserted();
 						} catch (OHServiceException e1) {
@@ -286,13 +288,23 @@ public class ExamEdit extends JDialog {
 					} else {
 						try {
 							examBrowsingManager.updateExam(exam);
-							String defResult = exam.getDefaultResult();
-							if (defResult != null && !defResult.trim().isEmpty()) {
-								List<ExamRow> existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
+							List<ExamRow> existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
+							if (oldDefResult != null && !oldDefResult.trim().isEmpty()
+									&& (newDefResult.isEmpty() || !newDefResult.equalsIgnoreCase(oldDefResult.trim()))) {
+								if (existingRows != null) {
+									for (ExamRow row : existingRows) {
+										if (row.getDescription() != null && row.getDescription().equalsIgnoreCase(oldDefResult.trim())) {
+											examRowBrowsingManager.deleteExamRow(row);
+										}
+									}
+								}
+							}
+							if (!newDefResult.isEmpty()) {
+								existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
 								boolean exists = existingRows != null && existingRows.stream()
-										.anyMatch(r -> defResult.trim().equalsIgnoreCase(r.getDescription()));
+										.anyMatch(r -> newDefResult.equalsIgnoreCase(r.getDescription()));
 								if (!exists) {
-									examRowBrowsingManager.newExamRow(new ExamRow(exam, defResult.trim()));
+									examRowBrowsingManager.newExamRow(new ExamRow(exam, newDefResult));
 								}
 							}
 							fireExamUpdated();

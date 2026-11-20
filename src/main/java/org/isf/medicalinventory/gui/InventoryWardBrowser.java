@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -578,7 +578,7 @@ public class InventoryWardBrowser extends ModalJFrame implements InventoryListen
 			} else if (c == 2) {
 				return medInvt.getInventoryDate().format(DATE_TIME_FORMATTER);
 			} else if (c == 3) {
-				return medInvt.getStatus();
+				return medicalInventoryManager.getStatusByKey(medInvt.getStatus());
 			} else if (c == 4) {
 				return medInvt.getUser();
 			}
@@ -684,12 +684,14 @@ public class InventoryWardBrowser extends ModalJFrame implements InventoryListen
 	}
 
 	private void formatCellByInventoryStatus(JTable table, int row, Component cell) {
-		int statusColumn = table.getColumnModel().getColumnIndex(MessageBundle.getMessage("angal.inventory.status.col").toUpperCase());
-		String status = (String) table.getValueAt(row, statusColumn);
-		if (status.equals(InventoryStatus.draft.toString()) || status.equals(InventoryStatus.validated.toString())) {
-			cell.setForeground(Color.BLUE);
-		} else {
-			cell.setForeground(Color.BLACK);
+		MedicalInventory medInvt = (MedicalInventory) table.getValueAt(row, -1);
+		if (medInvt != null && medInvt.getStatus() != null) {
+			String status = medInvt.getStatus();
+			if (status.equalsIgnoreCase(InventoryStatus.draft.toString()) || status.equalsIgnoreCase(InventoryStatus.validated.toString())) {
+				cell.setForeground(Color.BLUE);
+			} else {
+				cell.setForeground(Color.BLACK);
+			}
 		}
 	}
 }

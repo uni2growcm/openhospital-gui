@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -317,20 +317,24 @@ public class InventoryWardEdit extends ModalJFrame {
 			deleteButton.setVisible(false);
 			resetButton.setVisible(false);
 			referenceTextField.setEditable(false);
+			referenceTextField.setEnabled(false);
 			jCalendarInventoryDate.setEnabled(false);
 			selectButton.setEnabled(false);
 			wardComboBox.setEnabled(false);
 			printButton.setVisible(true);
 			lotButton.setVisible(false);
 			medicalCodeTextField.setEditable(false);
+			medicalCodeTextField.setEnabled(false);
 
 		} else {
 			saveButton.setVisible(true);
 			validateButton.setVisible(true);
 			deleteButton.setVisible(true);
 			medicalCodeTextField.setEditable(true);
+			medicalCodeTextField.setEnabled(true);
 			resetButton.setVisible(true);
 			referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
+			referenceTextField.setEnabled(!GeneralData.REFERENCE_AUTOMATIC);
 			jCalendarInventoryDate.setEnabled(true);
 			selectButton.setEnabled(true);
 			// wardComboBox.setEnabled(true); depends by "new" or !"new"
@@ -586,6 +590,7 @@ public class InventoryWardEdit extends ModalJFrame {
 					inventory = medicalInventoryManager.newMedicalInventory(inventory, newMedicalInventoryRows);
 					mode = "update";
 					newReference = inventory.getInventoryReference();
+					updateStatusLabel(inventory.getStatus());
 					fireInventoryInserted();
 					MessageDialog.info(this, "angal.inventory.savesuccess.msg");
 					validateButton.setEnabled(true);
@@ -663,8 +668,7 @@ public class InventoryWardEdit extends ModalJFrame {
 
 						MessageDialog.info(null, "angal.inventory.update.success.msg");
 
-						statusLabel.setText(status.toUpperCase());
-						statusLabel.setForeground(Color.GRAY);
+						updateStatusLabel(status);
 						resetVariables();
 						validateButton.setEnabled(true);
 						confirmButton.setEnabled(false);
@@ -721,8 +725,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				inventory.setStatus(status);
 				inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
 				MessageDialog.info(null, "angal.inventory.validate.success.msg");
-				statusLabel.setText(status.toUpperCase());
-				statusLabel.setForeground(Color.BLUE);
+				updateStatusLabel(status);
 				confirmButton.setEnabled(true);
 				fireInventoryUpdated();
 			} catch (OHServiceException e) {
@@ -733,8 +736,7 @@ public class InventoryWardEdit extends ModalJFrame {
 						inventory.setStatus(status);
 						inventory = medicalInventoryManager.actualizeMedicalWardInventoryRow(inventory, allMedicals);
 						dateInventory = inventory.getInventoryDate();
-						statusLabel.setText(status.toUpperCase());
-						statusLabel.setForeground(Color.BLUE);
+						updateStatusLabel(status);
 						confirmButton.setEnabled(true);
 						jTableInventoryRow.setModel(new InventoryRowModel());
 						fireInventoryUpdated();
@@ -744,8 +746,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				} else {
 					try {
 						inventory.setStatus(InventoryStatus.draft.toString());
-						statusLabel.setText(InventoryStatus.draft.toString().toUpperCase());
-						statusLabel.setForeground(Color.GRAY);
+						updateStatusLabel(InventoryStatus.draft.toString());
 						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
 						fireInventoryUpdated();
 					} catch (OHServiceException ex) {
@@ -815,8 +816,7 @@ public class InventoryWardEdit extends ModalJFrame {
 					MessageDialog.info(null, "angal.inventory.pleasevalidateinventoryagainsbeforeconfirmation.msg");
 					confirmButton.setEnabled(false);
 					inventory.setStatus(InventoryStatus.draft.toString());
-					statusLabel.setText(InventoryStatus.draft.toString().toUpperCase());
-					statusLabel.setForeground(Color.GRAY);
+					updateStatusLabel(InventoryStatus.draft.toString());
 					try {
 						inventory = medicalInventoryManager.updateMedicalInventory(inventory, true);
 						fireInventoryUpdated();
@@ -974,7 +974,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				lastReference = inventory.getInventoryReference();
 				lastDate = inventory.getInventoryDate();
 			}
-			if (checkParametersChanges(lastReference, lastDate)) {
+			if (!"view".equals(mode) && checkParametersChanges(lastReference, lastDate)) {
 				int reset = MessageDialog.yesNoCancel(null, "angal.inventory.doyouwanttosavethechanges.msg");
 				if (reset == JOptionPane.YES_OPTION) {
 					this.saveButton.doClick();
@@ -1031,7 +1031,7 @@ public class InventoryWardEdit extends ModalJFrame {
 
 				if (listSelectionEvent.getValueIsAdjusting()) {
 					int selectedRow = jTableInventoryRow.getSelectedRow();
-					if (selectedRow == -1) {
+					if (selectedRow == -1 || "view".equals(mode)) {
 						lotButton.setEnabled(false);
 						return;
 					}
@@ -1214,6 +1214,9 @@ public class InventoryWardEdit extends ModalJFrame {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
+			if ("view".equals(mode)) {
+				return false;
+			}
 			return columnEditable[columnIndex];
 		}
 	}
@@ -1476,7 +1479,8 @@ public class InventoryWardEdit extends ModalJFrame {
 		addMedicalLabel.setEnabled(true);
 		medicalCodeTextField.setEnabled(true);
 		selectButton.setEnabled(true);
-		referenceTextField.setEnabled(true);
+		referenceTextField.setEnabled(!GeneralData.REFERENCE_AUTOMATIC);
+		referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
 		jTableInventoryRow.setEnabled(true);
 		wardComboBox.setEnabled(false);
 		saveButton.setEnabled(true);
@@ -1772,6 +1776,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				String autoRef = GeneralData.REFERENCE_PREFIX_INVENTORY + timestamp;
 				referenceTextField.setText(autoRef);
 				referenceTextField.setEditable(false);
+				referenceTextField.setEnabled(false);
 				referenceTextField.setForeground(Color.BLACK);
 			} else {
 				if (inventory != null && !mode.equals("new")) {
@@ -1780,6 +1785,7 @@ public class InventoryWardEdit extends ModalJFrame {
 					referenceTextField.setText("");
 				}
 				referenceTextField.setEditable(true);
+				referenceTextField.setEnabled(true);
 				referenceTextField.setForeground(Color.BLACK);
 			}
 			referenceTextField.setBackground(Color.WHITE);
@@ -1787,31 +1793,34 @@ public class InventoryWardEdit extends ModalJFrame {
 		return referenceTextField;
 	}
 
+	private void updateStatusLabel(String rawStatus) {
+		if (statusLabel == null) {
+			return;
+		}
+		if (rawStatus == null || rawStatus.trim().isEmpty()) {
+			statusLabel.setText("");
+			return;
+		}
+		String localized = medicalInventoryManager.getStatusByKey(rawStatus);
+		statusLabel.setText(localized != null ? localized.toUpperCase() : rawStatus.toUpperCase());
+		if (rawStatus.equalsIgnoreCase(InventoryStatus.draft.toString())) {
+			statusLabel.setForeground(Color.GRAY);
+		} else if (rawStatus.equalsIgnoreCase(InventoryStatus.validated.toString())) {
+			statusLabel.setForeground(Color.BLUE);
+		} else if (rawStatus.equalsIgnoreCase(InventoryStatus.canceled.toString())) {
+			statusLabel.setForeground(Color.RED);
+		} else if (rawStatus.equalsIgnoreCase(InventoryStatus.done.toString())) {
+			statusLabel.setForeground(Color.GREEN);
+		}
+	}
+
 	private JLabel getStatusLabel() {
 		if (statusLabel == null) {
-			if (inventory == null) {
-				String currentStatus = InventoryStatus.draft.toString();
-				String status = medicalInventoryManager.getStatusByKey(currentStatus);
-				statusLabel = new JLabel(status.toUpperCase());
-				statusLabel.setForeground(Color.GRAY);
-			} else {
-				String currentStatus = inventory.getStatus();
-				String status = medicalInventoryManager.getStatusByKey(currentStatus);
-				statusLabel = new JLabel(status.toUpperCase());
-				if (currentStatus.equalsIgnoreCase(InventoryStatus.draft.toString())) {
-					statusLabel.setForeground(Color.GRAY);
-				}
-				if (currentStatus.equalsIgnoreCase(InventoryStatus.validated.toString())) {
-					statusLabel.setForeground(Color.BLUE);
-				}
-				if (currentStatus.equalsIgnoreCase(InventoryStatus.canceled.toString())) {
-					statusLabel.setForeground(Color.RED);
-				}
-				if (currentStatus.equalsIgnoreCase(InventoryStatus.done.toString())) {
-					statusLabel.setForeground(Color.GREEN);
-				}
-			}
+			statusLabel = new JLabel("");
 			statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.BOLD, statusLabel.getFont().getSize() + 8));
+			if (inventory != null && inventory.getId() != null && inventory.getStatus() != null && !"new".equals(mode)) {
+				updateStatusLabel(inventory.getStatus());
+			}
 		}
 		return statusLabel;
 	}

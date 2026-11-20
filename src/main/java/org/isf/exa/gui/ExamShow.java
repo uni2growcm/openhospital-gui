@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -38,6 +38,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 import org.isf.exa.gui.ExamRowEdit.ExamRowListener;
+import org.isf.exa.manager.ExamBrowsingManager;
 import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
@@ -55,6 +56,7 @@ public class ExamShow extends JDialog implements ExamRowListener {
 	private static final long serialVersionUID = 1L;
 
 	private ExamRowBrowsingManager examRowBrowsingManager = Context.getApplicationContext().getBean(ExamRowBrowsingManager.class);
+	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 
 	private JPanel jContentPane;
 	private JPanel dataPanel;
@@ -168,6 +170,11 @@ public class ExamShow extends JDialog implements ExamRowListener {
 						try {
 							examRowBrowsingManager.deleteExamRow(row);
 							examRowDeleted();
+							if (exam.getDefaultResult() != null && row.getDescription() != null
+									&& exam.getDefaultResult().trim().equalsIgnoreCase(row.getDescription().trim())) {
+								exam.setDefaultResult("");
+								examBrowsingManager.updateExam(exam);
+							}
 						} catch (OHServiceException e1) {
 							OHServiceExceptionUtil.showMessages(e1);
 						}
