@@ -102,8 +102,17 @@ public class PatVacBrowser extends ModalJFrame {
 	private JPanel sexPanel;
 	private JRadioButton radiom;
 	private JRadioButton radiof;
+	private JRadioButton radioa;
 	private JLabel rowCounter;
-	private String rowCounterText = MessageBundle.getMessage("angal.patvac.count") + ": ";
+	private String rowCounterText = initRowCounterText();
+
+	private static String initRowCounterText() {
+		String count = MessageBundle.getMessage("angal.patvac.count").trim();
+		if (count.endsWith(":")) {
+			count = count.substring(0, count.length() - 1).trim();
+		}
+		return count + ": ";
+	}
 	
 	private JTable jTable;
 	private JComboBox vaccineComboBox;
@@ -190,7 +199,7 @@ public class PatVacBrowser extends ModalJFrame {
 
 		jPageLabel.setText(MessageBundle.formatMessage("angal.common.page.label") + ": "
 				+ (totalPages == 0 ? 0 : currentPage + 1) + "/" + totalPages);
-		jElementsLabel.setText(MessageBundle.formatMessage("angal.common.total.label") + ": " + totalElements);
+		jElementsLabel.setText(MessageBundle.formatMessage("angal.patvac.total.label", totalElements));
 	}
 
 	/**
@@ -458,7 +467,7 @@ public class PatVacBrowser extends ModalJFrame {
 	private JPanel getJSelectionPanel() {
 		if (jSelectionPanel == null) {
 			jSelectionPanel = new JPanel();
-			jSelectionPanel.setPreferredSize(new Dimension(225, pfrmHeight));
+			jSelectionPanel.setPreferredSize(new Dimension(280, pfrmHeight));
 
 			jSelectionPanel.add(getPatientFilterPanel());
 			jSelectionPanel.add(getVillageFilterPanel());
@@ -558,7 +567,7 @@ public class PatVacBrowser extends ModalJFrame {
 			ButtonGroup group = new ButtonGroup();
 			radiom = new JRadioButton(MessageBundle.getMessage("angal.common.male.btn"));
 			radiof = new JRadioButton(MessageBundle.getMessage("angal.common.female.btn"));
-			JRadioButton radioa = new JRadioButton(MessageBundle.getMessage("angal.common.all.btn"));
+			radioa = new JRadioButton(MessageBundle.getMessage("angal.common.all.btn"));
 			radioa.setSelected(true);
 			group.add(radiom);
 			group.add(radiof);
@@ -582,8 +591,8 @@ public class PatVacBrowser extends ModalJFrame {
 	private JPanel getFilterPanel() {
 
 		JPanel filterPanel = new JPanel();
-		filterPanel.setPreferredSize(new Dimension(225, 35));
-		filterPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		filterPanel.setPreferredSize(new Dimension(280, 40));
+		filterPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 2));
 		filterPanel.add(getFilterButton());
 		JButton resetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
 		resetButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
@@ -1031,6 +1040,9 @@ public class PatVacBrowser extends ModalJFrame {
 		getComboVaccines();
 		radiof.setSelected(false);
 		radiom.setSelected(false);
+		if (radioa != null) {
+			radioa.setSelected(true);
+		}
 		currentPage = 0;
 		loadPage(0);
 	}
