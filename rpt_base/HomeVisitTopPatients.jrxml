@@ -81,62 +81,62 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$R{col_patient}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="120" y="0" width="40" height="30" uuid="c3000001-0003-0003-0003-000000000003"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="120" y="0" width="36" height="30" uuid="c3000001-0003-0003-0003-000000000003"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_total_court}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="160" y="0" width="50" height="30" uuid="c3000001-0003-0003-0003-000000000009"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="156" y="0" width="54" height="30" uuid="c3000001-0003-0003-0003-000000000009"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_planifiees_court}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="210" y="0" width="50" height="30" uuid="c3000001-0003-0003-0003-00000000000a"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="210" y="0" width="54" height="30" uuid="c3000001-0003-0003-0003-00000000000a"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_realisees_court}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="260" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000b"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="264" y="0" width="56" height="30" uuid="c3000001-0003-0003-0003-00000000000b"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_annulees_court}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="315" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000c"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="320" y="0" width="58" height="30" uuid="c3000001-0003-0003-0003-00000000000c"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_reportees_court}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="370" y="0" width="55" height="30" uuid="c3000001-0003-0003-0003-00000000000d"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement x="378" y="0" width="47" height="30" uuid="c3000001-0003-0003-0003-00000000000d"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.75"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{col_duree_court}]]></textFieldExpression>
 			</textField>
@@ -165,8 +165,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="120" y="0" width="40" height="20" uuid="c3000001-0003-0003-0003-000000000006"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="120" y="0" width="36" height="20" uuid="c3000001-0003-0003-0003-000000000006"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
@@ -175,8 +175,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{TOTAL_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="160" y="0" width="50" height="20" uuid="c3000001-0003-0003-0003-00000000000e"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="156" y="0" width="54" height="20" uuid="c3000001-0003-0003-0003-00000000000e"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
@@ -185,8 +185,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{PLANNED_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="210" y="0" width="50" height="20" uuid="c3000001-0003-0003-0003-00000000000f"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="210" y="0" width="54" height="20" uuid="c3000001-0003-0003-0003-00000000000f"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
@@ -195,8 +195,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000010"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="264" y="0" width="56" height="20" uuid="c3000001-0003-0003-0003-000000000010"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
@@ -205,8 +205,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="315" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000011"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="320" y="0" width="58" height="20" uuid="c3000001-0003-0003-0003-000000000011"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
@@ -215,8 +215,8 @@ LIMIT $P{TopN}]]>
 				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="370" y="0" width="55" height="20" uuid="c3000001-0003-0003-0003-000000000012"/>
-				<box topPadding="2" leftPadding="3">
+				<reportElement stretchType="RelativeToTallestObject" x="378" y="0" width="47" height="20" uuid="c3000001-0003-0003-0003-000000000012"/>
+				<box topPadding="2" leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">

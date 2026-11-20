@@ -58,6 +58,13 @@ PATIENTBILLSTATEMENT=PatientBillStatement
 RECEIPTPRINTER=yes
 STOCKMVTONBILLSAVE=yes
 ALLOWBILLGUARANTOR=no
+# Guarantor quota (max outstanding balance a guarantor can cover on open bills, used when ALLOWBILLGUARANTOR=yes)
+# yes: the single quota BILLGUARANTORQUOTA applies to all guarantors
+# no: each guarantor can have their own quota, set in the user edit window;
+#     guarantors without their own quota use BILLGUARANTORQUOTA as default quota
+BILLGUARANTORSINGLEQUOTA=no
+# Single quota amount, or default quota when BILLGUARANTORSINGLEQUOTA=no (0 = no limit)
+BILLGUARANTORQUOTA=0
 ENABLEMEDICALREFUND=no
 # reduction plans collision (same item covered by several plans of a patient)
 # yes = apply the highest reduction rate, no = apply the lowest one

@@ -1070,7 +1070,7 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 				return;
 			}
 			patient = reloadSelectedPatient(table.getSelectedRow());
-			Laboratory laboratory = new Laboratory(0, new Exam("", "", new ExamType("", ""), 0, ""), TimeTools.getNow(), "P", "", new Patient(), "");
+			Laboratory laboratory = new Laboratory(0, new Exam("", "", new ExamType("", ""), 0, ""), TimeTools.getNow(), "I", "", patient.getPatient(), "");
 			if (GeneralData.LABEXTENDED) {
 				if (GeneralData.LABMULTIPLEINSERT) {
 					LabNew editrecord = new LabNew(myFrame, patient.getPatient());
