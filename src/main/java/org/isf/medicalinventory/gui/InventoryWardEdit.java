@@ -317,6 +317,7 @@ public class InventoryWardEdit extends ModalJFrame {
 			deleteButton.setVisible(false);
 			resetButton.setVisible(false);
 			referenceTextField.setEditable(false);
+			referenceTextField.setEnabled(false);
 			jCalendarInventoryDate.setEnabled(false);
 			selectButton.setEnabled(false);
 			wardComboBox.setEnabled(false);
@@ -333,6 +334,7 @@ public class InventoryWardEdit extends ModalJFrame {
 			medicalCodeTextField.setEnabled(true);
 			resetButton.setVisible(true);
 			referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
+			referenceTextField.setEnabled(!GeneralData.REFERENCE_AUTOMATIC);
 			jCalendarInventoryDate.setEnabled(true);
 			selectButton.setEnabled(true);
 			// wardComboBox.setEnabled(true); depends by "new" or !"new"
@@ -1477,7 +1479,8 @@ public class InventoryWardEdit extends ModalJFrame {
 		addMedicalLabel.setEnabled(true);
 		medicalCodeTextField.setEnabled(true);
 		selectButton.setEnabled(true);
-		referenceTextField.setEnabled(true);
+		referenceTextField.setEnabled(!GeneralData.REFERENCE_AUTOMATIC);
+		referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
 		jTableInventoryRow.setEnabled(true);
 		wardComboBox.setEnabled(false);
 		saveButton.setEnabled(true);
@@ -1773,6 +1776,7 @@ public class InventoryWardEdit extends ModalJFrame {
 				String autoRef = GeneralData.REFERENCE_PREFIX_INVENTORY + timestamp;
 				referenceTextField.setText(autoRef);
 				referenceTextField.setEditable(false);
+				referenceTextField.setEnabled(false);
 				referenceTextField.setForeground(Color.BLACK);
 			} else {
 				if (inventory != null && !mode.equals("new")) {
@@ -1781,6 +1785,7 @@ public class InventoryWardEdit extends ModalJFrame {
 					referenceTextField.setText("");
 				}
 				referenceTextField.setEditable(true);
+				referenceTextField.setEnabled(true);
 				referenceTextField.setForeground(Color.BLACK);
 			}
 			referenceTextField.setBackground(Color.WHITE);

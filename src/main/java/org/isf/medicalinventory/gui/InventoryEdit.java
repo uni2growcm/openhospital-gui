@@ -314,6 +314,7 @@ public class InventoryEdit extends ModalJFrame {
 			deleteButton.setVisible(false);
 			resetButton.setVisible(false);
 			referenceTextField.setEditable(false);
+			referenceTextField.setEnabled(false);
 			jCalendarInventoryDate.setEnabled(false);
 			dischargeCombo.setEnabled(false);
 			lotButton.setVisible(false);
@@ -327,6 +328,7 @@ public class InventoryEdit extends ModalJFrame {
 			deleteButton.setVisible(true);
 			resetButton.setVisible(true);
 			referenceTextField.setEditable(!GeneralData.REFERENCE_AUTOMATIC);
+			referenceTextField.setEnabled(!GeneralData.REFERENCE_AUTOMATIC);
 			jCalendarInventoryDate.setEnabled(true);
 			dischargeCombo.setEnabled(true);
 			lotButton.setVisible(true);
@@ -1749,7 +1751,7 @@ public class InventoryEdit extends ModalJFrame {
 					referenceTextField.setText("");
 				}
 				referenceTextField.setEditable(true);
-				referenceTextField.setEnabled(false);
+				referenceTextField.setEnabled(true);
 			}
 			referenceTextField.setBackground(Color.WHITE);
 		}

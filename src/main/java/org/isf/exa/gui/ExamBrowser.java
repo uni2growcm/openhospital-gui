@@ -319,6 +319,7 @@ public class ExamBrowser extends ModalJFrame implements ExamListener {
 					selectedrow = table.convertRowIndexToModel(table.getSelectedRow());
 					exam = (Exam) model.getValueAt(selectedrow, -1);
 					new ExamShow(myFrame, exam);
+					model.fireTableRowsUpdated(selectedrow, selectedrow);
 				}
 			});
 		}
