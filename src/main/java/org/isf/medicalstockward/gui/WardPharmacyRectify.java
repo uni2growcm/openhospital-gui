@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -613,19 +613,21 @@ public class WardPharmacyRectify extends JDialog {
 	}
 
 	protected int askQuantity(Medical med) {
-		StringBuilder title = new StringBuilder(MessageBundle.getMessage("angal.common.quantity.txt"));
+		String title = MessageBundle.getMessage("angal.common.quantity.txt");
+		StringBuilder message = new StringBuilder();
 		String prodCode = med.getProdCode();
-		if (prodCode != null && !prodCode.equals("")) {
-			title.append(' ').append(MessageBundle.getMessage("angal.common.code.txt")); //$NON-NLS-1$ //$NON-NLS-2$
-			title.append(": ").append(prodCode); //$NON-NLS-1$
-		} else {
-			title.append(": "); //$NON-NLS-1$
+		if (prodCode != null && !prodCode.isEmpty()) {
+			message.append(MessageBundle.getMessage("angal.common.code.txt"))
+				.append(": ")
+				.append(prodCode)
+				.append('\n');
 		}
+		message.append(med.getDescription());
 		int qty = 0;
 		do {
 			String quantity = JOptionPane.showInputDialog(this,
-				med.toString(),
-				title.toString(),
+				message.toString(),
+				title,
 				JOptionPane.QUESTION_MESSAGE);
 			if (quantity != null) {
 				try {
