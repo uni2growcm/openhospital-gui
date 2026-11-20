@@ -41,8 +41,10 @@ import javax.swing.WindowConstants;
 import javax.swing.event.EventListenerList;
 
 import org.isf.exa.manager.ExamBrowsingManager;
+import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.articlefamily.manager.ArticleFamilyBrowserManager;
 import org.isf.exa.model.Exam;
+import org.isf.exa.model.ExamRow;
 import org.isf.articlefamily.model.ArticleFamily;
 import org.isf.exatype.model.ExamType;
 import org.isf.generaldata.MessageBundle;
@@ -115,6 +117,7 @@ public class ExamEdit extends JDialog {
 
 	private ExamBrowsingManager examBrowsingManager = Context.getApplicationContext().getBean(ExamBrowsingManager.class);
 	private ArticleFamilyBrowserManager articleFamilyManager = Context.getApplicationContext().getBean(ArticleFamilyBrowserManager.class);
+	private ExamRowBrowsingManager examRowBrowsingManager = Context.getApplicationContext().getBean(ExamRowBrowsingManager.class);
 
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow
@@ -271,6 +274,10 @@ public class ExamEdit extends JDialog {
 						}
 						try {
 							examBrowsingManager.newExam(exam);
+							String defResult = exam.getDefaultResult();
+							if (defResult != null && !defResult.trim().isEmpty()) {
+								examRowBrowsingManager.newExamRow(new ExamRow(exam, defResult.trim()));
+							}
 							fireExamInserted();
 						} catch (OHServiceException e1) {
 							OHServiceExceptionUtil.showMessages(e1);
@@ -279,6 +286,15 @@ public class ExamEdit extends JDialog {
 					} else {
 						try {
 							examBrowsingManager.updateExam(exam);
+							String defResult = exam.getDefaultResult();
+							if (defResult != null && !defResult.trim().isEmpty()) {
+								List<ExamRow> existingRows = examRowBrowsingManager.getExamRowByExamCode(exam.getCode());
+								boolean exists = existingRows != null && existingRows.stream()
+										.anyMatch(r -> defResult.trim().equalsIgnoreCase(r.getDescription()));
+								if (!exists) {
+									examRowBrowsingManager.newExamRow(new ExamRow(exam, defResult.trim()));
+								}
+							}
 							fireExamUpdated();
 						} catch (OHServiceException e1) {
 							OHServiceExceptionUtil.showMessages(e1);

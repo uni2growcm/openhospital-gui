@@ -306,11 +306,13 @@ public class TuberculosisContactEdit extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
 
         JButton okButton = new JButton(MessageBundle.getMessage("angal.common.ok.btn"));
+        okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
         okButton.setPreferredSize(new Dimension(80, 30));
         okButton.addActionListener(e -> save());
 
         JButton cancelButton = new JButton(MessageBundle.getMessage("angal.common.cancel.btn"));
-        cancelButton.setPreferredSize(new Dimension(80, 30));
+        cancelButton.setMnemonic(MessageBundle.getMnemonic("angal.common.cancel.btn.key"));
+        cancelButton.setPreferredSize(new Dimension(Math.max(100, cancelButton.getPreferredSize().width + 16), 30));
         cancelButton.addActionListener(e -> dispose());
 
         buttonPanel.add(okButton);

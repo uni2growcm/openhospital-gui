@@ -1946,7 +1946,11 @@ public class WardPharmacy extends ModalJFrame implements
 				return mov.getQuantity();
 			}
 			if (c == 7) {
-				return mov.getUnits();
+				String units = mov.getUnits();
+				if (units == null || "pieces".equalsIgnoreCase(units) || "pièces".equalsIgnoreCase(units) || "piece".equalsIgnoreCase(units)) {
+					return MessageBundle.getMessage("angal.medicalstockward.pieces");
+				}
+				return units;
 			}
 			if (c == 8) {
 				return mov.getLot().getCode();
