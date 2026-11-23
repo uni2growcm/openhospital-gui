@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2023 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -57,6 +57,7 @@ import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
 import org.isf.patvac.manager.PatVacManager;
 import org.isf.patvac.model.PatientVaccine;
+import org.isf.stat.gui.report.GenericReportPatientVaccine;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
@@ -91,14 +92,15 @@ public class PatVacBrowser extends ModalJFrame {
 	private JButton buttonEdit;
 	private JButton buttonNew;
 	private JButton buttonDelete;
+	private JButton buttonReport;
 	private JButton buttonClose;
 	private JButton filterButton;
 	private JPanel jSelectionPanel;
 	private JPanel jAgePanel;
 	private VoLimitedTextField jAgeFromTextField;
 	private VoLimitedTextField jAgeToTextField;
-	private Integer ageTo = 0;
-	private Integer ageFrom = 0;
+	private Integer ageTo = null;
+	private Integer ageFrom = null;
 	private JPanel sexPanel;
 	private JRadioButton radiom;
 	private JRadioButton radiof;
@@ -240,8 +242,8 @@ public class PatVacBrowser extends ModalJFrame {
 			LocalDateTime dateFrom = this.dateFrom != null ? this.dateFrom.getDateStartOfDay() : null;
 			LocalDateTime dateTo = this.dateTo != null ? this.dateTo.getDateEndOfDay() : null;
 
-			int ageFromValue = ageFrom != null ? ageFrom : 0;
-			int ageToValue = ageTo != null ? ageTo : 0;
+			Integer ageFromValue = ageFrom;
+			Integer ageToValue = ageTo;
 
 			Pageable pageable = PageRequest.of(page, PAGE_SIZE);
 
@@ -355,6 +357,7 @@ public class PatVacBrowser extends ModalJFrame {
 			if (MainMenu.checkUserGrants("btnpatientvaccinedel")) {
 				jButtonPanel.add(getButtonDelete(), null);
 			}
+			jButtonPanel.add(getButtonReport(), null);
 			jButtonPanel.add(getCloseButton(), null);
 		}
 		return jButtonPanel;
@@ -443,6 +446,64 @@ public class PatVacBrowser extends ModalJFrame {
 			});
 		}
 		return buttonDelete;
+	}
+
+	/**
+	 * This method initializes buttonReport
+	 *
+	 * @return buttonReport (JButton)
+	 */
+	private JButton getButtonReport() {
+		if (buttonReport == null) {
+			buttonReport = new JButton(MessageBundle.getMessage("angal.common.report.btn"));
+			buttonReport.setMnemonic(MessageBundle.getMnemonic("angal.common.report.btn.key"));
+			buttonReport.addActionListener(e -> launchReport());
+		}
+		return buttonReport;
+	}
+
+	/**
+	 * Launches the statistical vaccination report in PDF.
+	 */
+	private void launchReport() {
+		String vaccineTypeCode = null;
+		String vaccineCode = null;
+
+		if (vaccineTypeComboBox != null && vaccineTypeComboBox.getSelectedItem() != null) {
+			VaccineType vt = (VaccineType) vaccineTypeComboBox.getSelectedItem();
+			if (vt.getCode() != null && !vt.getCode().isEmpty()
+					&& !vt.getDescription().equals(MessageBundle.getMessage("angal.patvac.allvaccinetype"))) {
+				vaccineTypeCode = vt.getCode();
+			}
+		}
+
+		if (vaccineComboBox != null && vaccineComboBox.getSelectedItem() != null) {
+			Vaccine v = (Vaccine) vaccineComboBox.getSelectedItem();
+			if (v.getCode() != null && !v.getCode().isEmpty()
+					&& !v.getDescription().equals(MessageBundle.getMessage("angal.patvac.allvaccine"))) {
+				vaccineCode = v.getCode();
+			}
+		}
+		String patientSearchText = patientSearchField != null ? patientSearchField.getText().trim() : "";
+		String villageText = villageFilterField != null ? villageFilterField.getText().trim() : "";
+
+		char sex;
+		if (radiof != null && radiof.isSelected()) {
+			sex = 'F';
+		} else if (radiom != null && radiom.isSelected()) {
+			sex = 'M';
+		} else {
+			sex = 'A';
+		}
+
+		LocalDateTime dateFrom = this.dateFrom != null ? this.dateFrom.getDateStartOfDay() : null;
+		LocalDateTime dateTo = this.dateTo != null ? this.dateTo.getDateEndOfDay() : null;
+
+		Integer ageFromValue = ageFrom;
+		Integer ageToValue = ageTo;
+
+		new GenericReportPatientVaccine(vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex,
+				ageFromValue, ageToValue, patientSearchText, villageText);
 	}
 	
 	/**
@@ -627,23 +688,30 @@ public class PatVacBrowser extends ModalJFrame {
 	private VoLimitedTextField getJAgeFromTextField() {
 		if (jAgeFromTextField == null) {
 			jAgeFromTextField = new VoLimitedTextField(3, 2);
-			jAgeFromTextField.setText("0");
+			jAgeFromTextField.setText("");
 			jAgeFromTextField.setMinimumSize(new Dimension(100, 50));
-			ageFrom = 0;
+			ageFrom = null;
 			jAgeFromTextField.addFocusListener(new FocusListener() {
 
 				@Override
 				public void focusLost(FocusEvent e) {
+					String text = jAgeFromTextField.getText().trim();
+					if (text.isEmpty()) {
+						ageFrom = null;
+						return;
+					}
 					try {
-						ageFrom = Integer.parseInt(jAgeFromTextField.getText());
-						if (ageFrom < 0 || ageFrom > 200) {
-							jAgeFromTextField.setText("0");
-							ageFrom = Integer.parseInt(jAgeFromTextField.getText());
+						int val = Integer.parseInt(text);
+						if (val < 0 || val > 200) {
+							jAgeFromTextField.setText("");
+							ageFrom = null;
 							MessageDialog.error(null, "angal.patvac.insertvalidage");
+						} else {
+							ageFrom = val;
 						}
 					} catch (NumberFormatException ex) {
-						jAgeFromTextField.setText("0");
-						ageFrom = Integer.parseInt(jAgeFromTextField.getText());
+						jAgeFromTextField.setText("");
+						ageFrom = null;
 					}
 				}
 
@@ -663,28 +731,30 @@ public class PatVacBrowser extends ModalJFrame {
 	private VoLimitedTextField getJAgeToTextField() {
 		if (jAgeToTextField == null) {
 			jAgeToTextField = new VoLimitedTextField(3, 2);
-			jAgeToTextField.setText("0");
+			jAgeToTextField.setText("");
 			jAgeToTextField.setMaximumSize(new Dimension(100, 50));
-			ageTo = 0;
+			ageTo = null;
 			jAgeToTextField.addFocusListener(new FocusListener() {
 
 				@Override
 				public void focusLost(FocusEvent e) {
+					String text = jAgeToTextField.getText().trim();
+					if (text.isEmpty()) {
+						ageTo = null;
+						return;
+					}
 					try {
-						ageTo = Integer.parseInt(jAgeToTextField.getText());
-						if (ageTo < 0 || ageTo > 200) {
-							jAgeToTextField.setText("0");
-							ageTo = Integer.parseInt(jAgeToTextField.getText());
+						int val = Integer.parseInt(text);
+						if (val < 0 || val > 200) {
+							jAgeToTextField.setText("");
+							ageTo = null;
 							MessageDialog.error(null, "angal.patvac.insertvalidage");
-						}
-						if (ageFrom > ageTo) {
-							MessageDialog.error(null, "angal.patvac.agefrommustbelowerthanageto");
-							jAgeFromTextField.setText(ageTo.toString());
-							ageFrom = ageTo;
+						} else {
+							ageTo = val;
 						}
 					} catch (NumberFormatException ex) {
-						jAgeToTextField.setText("0");
-						ageTo = Integer.parseInt(jAgeToTextField.getText());
+						jAgeToTextField.setText("");
+						ageTo = null;
 					}
 				}
 
@@ -694,6 +764,58 @@ public class PatVacBrowser extends ModalJFrame {
 			});
 		}
 		return jAgeToTextField;
+	}
+
+	private boolean validateAndSyncAgeFields() {
+		String fromText = jAgeFromTextField != null ? jAgeFromTextField.getText().trim() : "";
+		String toText = jAgeToTextField != null ? jAgeToTextField.getText().trim() : "";
+
+		if (fromText.isEmpty()) {
+			ageFrom = null;
+		} else {
+			try {
+				int val = Integer.parseInt(fromText);
+				if (val < 0 || val > 200) {
+					MessageDialog.error(null, "angal.patvac.insertvalidage");
+					jAgeFromTextField.setText("");
+					ageFrom = null;
+					return false;
+				}
+				ageFrom = val;
+			} catch (NumberFormatException ex) {
+				MessageDialog.error(null, "angal.patvac.insertvalidage");
+				jAgeFromTextField.setText("");
+				ageFrom = null;
+				return false;
+			}
+		}
+
+		if (toText.isEmpty()) {
+			ageTo = null;
+		} else {
+			try {
+				int val = Integer.parseInt(toText);
+				if (val < 0 || val > 200) {
+					MessageDialog.error(null, "angal.patvac.insertvalidage");
+					jAgeToTextField.setText("");
+					ageTo = null;
+					return false;
+				}
+				ageTo = val;
+			} catch (NumberFormatException ex) {
+				MessageDialog.error(null, "angal.patvac.insertvalidage");
+				jAgeToTextField.setText("");
+				ageTo = null;
+				return false;
+			}
+		}
+
+		if (ageFrom != null && ageTo != null && ageFrom > ageTo) {
+			MessageDialog.error(null, "angal.patvac.agefrommustbelowerthanageto");
+			return false;
+		}
+
+		return true;
 	}
 	
 	
@@ -810,6 +932,10 @@ public class PatVacBrowser extends ModalJFrame {
 					}
 				}
 
+				if (!validateAndSyncAgeFields()) {
+					return;
+				}
+
 				if (dateFrom.getDate() == null) {
 					MessageDialog.error(null, "angal.patvac.pleaseinsertvaliddatefrom");
 					return;
@@ -876,7 +1002,7 @@ public class PatVacBrowser extends ModalJFrame {
 			}
 		}
 
-		public PatVacBrowsingModel(String vaccineTypeCode, String vaccineCode, LocalDateTime dateFrom, LocalDateTime dateTo, char sex, int ageFrom, int ageTo) {
+		public PatVacBrowsingModel(String vaccineTypeCode, String vaccineCode, LocalDateTime dateFrom, LocalDateTime dateTo, char sex, Integer ageFrom, Integer ageTo) {
 			try {
 				lPatVac = patVacManager.getPatientVaccine(vaccineTypeCode, vaccineCode, dateFrom, dateTo, sex, ageFrom, ageTo);
 			} catch (OHServiceException e) {
@@ -1031,10 +1157,14 @@ public class PatVacBrowser extends ModalJFrame {
 		}
 		dateFrom.setDate(LocalDate.now().minusWeeks(1));
 		dateTo.setDate(LocalDate.now());
-		ageFrom = 0;
-		ageTo = 0;
-		jAgeFromTextField.setText("0");
-		jAgeToTextField.setText("0");
+		ageFrom = null;
+		ageTo = null;
+		if (jAgeFromTextField != null) {
+			jAgeFromTextField.setText("");
+		}
+		if (jAgeToTextField != null) {
+			jAgeToTextField.setText("");
+		}
 		vaccineTypeComboBox.setSelectedIndex(0);
 		vaccineComboBox.removeAllItems();
 		getComboVaccines();

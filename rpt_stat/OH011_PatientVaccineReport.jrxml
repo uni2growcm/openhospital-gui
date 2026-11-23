@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OH011_PatientVaccineReport" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" resourceBundle="OH011_PatientVaccineReport" whenResourceMissingType="Key" uuid="e0000001-0000-0000-0000-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<import value="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String"/>
+	<parameter name="Address" class="java.lang.String"/>
+	<parameter name="Email" class="java.lang.String"/>
+	<parameter name="Telephone" class="java.lang.String"/>
+	<parameter name="PeriodLabel" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["./rpt_stat/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="totalVaccinations" class="java.lang.Long"/>
+	<parameter name="distinctPatients" class="java.lang.Long"/>
+	<parameter name="maleCount" class="java.lang.Long"/>
+	<parameter name="malePercentage" class="java.lang.Double"/>
+	<parameter name="femaleCount" class="java.lang.Long"/>
+	<parameter name="femalePercentage" class="java.lang.Double"/>
+	<parameter name="under1Count" class="java.lang.Long"/>
+	<parameter name="under1Percentage" class="java.lang.Double"/>
+	<parameter name="from1To5Count" class="java.lang.Long"/>
+	<parameter name="from1To5Percentage" class="java.lang.Double"/>
+	<parameter name="over5Count" class="java.lang.Long"/>
+	<parameter name="over5Percentage" class="java.lang.Double"/>
+	<parameter name="vaccineStatsList" class="java.util.List"/>
+	<field name="patientCode" class="java.lang.Integer"/>
+	<field name="patientName" class="java.lang.String"/>
+	<field name="sex" class="java.lang.String"/>
+	<field name="age" class="java.lang.Integer"/>
+	<field name="vaccineDate" class="java.lang.String"/>
+	<field name="vaccineDescription" class="java.lang.String"/>
+	<field name="vaccineTypeDescription" class="java.lang.String"/>
+	<field name="village" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="145" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="390" height="16" uuid="e0000001-0000-0000-0000-000000000010"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="16" width="375" height="14" uuid="e0000001-0000-0000-0000-000000000011"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="390" height="16" uuid="e0000001-0000-0000-0000-000000000012"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="0" width="390" height="16" uuid="e0000001-0000-0000-0000-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="16" width="375" height="14" uuid="e0000001-0000-0000-0000-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="30" width="390" height="16" uuid="e0000001-0000-0000-0000-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="55" width="782" height="20" uuid="e0000001-0000-0000-0000-000000000016"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="75" width="782" height="16" uuid="e0000001-0000-0000-0000-000000000017"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{PeriodLabel} != null ? $P{PeriodLabel} : "-")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="95" width="390" height="14" uuid="e0000001-0000-0000-0000-000000000018"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "-")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="109" width="390" height="14" uuid="e0000001-0000-0000-0000-000000000019"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "-")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="95" width="390" height="14" uuid="e0000001-0000-0000-0000-000000000020"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "-")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="109" width="390" height="14" uuid="e0000001-0000-0000-0000-000000000021"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "-")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="123" width="390" height="14" uuid="e0000001-0000-0000-0000-000000000022"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_email} + " " + ($P{Email} != null ? $P{Email} : "-")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="140" width="782" height="1" uuid="e0000001-0000-0000-0000-000000000023"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="782" height="20" backcolor="#E5E7EB" uuid="e0000001-0000-0000-0000-000000000030"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#9CA3AF"/>
+				</box>
+				<textField>
+					<reportElement x="0" y="0" width="55" height="20" uuid="e0000001-0000-0000-0000-000000000031"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_patient_code}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="55" y="0" width="145" height="20" uuid="e0000001-0000-0000-0000-000000000032"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_patient_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="200" y="0" width="35" height="20" uuid="e0000001-0000-0000-0000-000000000033"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_sex}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="235" y="0" width="35" height="20" uuid="e0000001-0000-0000-0000-000000000034"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_age}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="0" width="65" height="20" uuid="e0000001-0000-0000-0000-000000000035"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="335" y="0" width="155" height="20" uuid="e0000001-0000-0000-0000-000000000036"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_vaccine}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="490" y="0" width="142" height="20" uuid="e0000001-0000-0000-0000-000000000037"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_vaccine_type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="632" y="0" width="150" height="20" uuid="e0000001-0000-0000-0000-000000000038"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_village}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="782" height="18" uuid="e0000001-0000-0000-0000-000000000040"/>
+				<box>
+					<bottomPen lineWidth="0.25" lineColor="#D1D5DB"/>
+				</box>
+				<textField isBlankWhenNull="true">
+					<reportElement x="0" y="0" width="55" height="18" uuid="e0000001-0000-0000-0000-000000000041"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{patientCode}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="55" y="0" width="145" height="18" uuid="e0000001-0000-0000-0000-000000000042"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{patientName}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="200" y="0" width="35" height="18" uuid="e0000001-0000-0000-0000-000000000043"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sex}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="235" y="0" width="35" height="18" uuid="e0000001-0000-0000-0000-000000000044"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{age}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="270" y="0" width="65" height="18" uuid="e0000001-0000-0000-0000-000000000045"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{vaccineDate}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="335" y="0" width="155" height="18" uuid="e0000001-0000-0000-0000-000000000046"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{vaccineDescription}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="490" y="0" width="142" height="18" uuid="e0000001-0000-0000-0000-000000000047"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{vaccineTypeDescription}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="632" y="0" width="150" height="18" uuid="e0000001-0000-0000-0000-000000000048"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{village}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="e0000001-0000-0000-0000-000000000050"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="0" y="5" width="250" height="18" uuid="e0000001-0000-0000-0000-000000000051"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="580" y="5" width="160" height="18" uuid="e0000001-0000-0000-0000-000000000052"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="740" y="5" width="42" height="18" uuid="e0000001-0000-0000-0000-000000000053"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="25" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="e0000001-0000-0000-0000-000000000054"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="0" y="5" width="250" height="18" uuid="e0000001-0000-0000-0000-000000000055"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="580" y="5" width="160" height="18" uuid="e0000001-0000-0000-0000-000000000056"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="740" y="5" width="42" height="18" uuid="e0000001-0000-0000-0000-000000000057"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="185" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="10" width="782" height="1" uuid="e0000001-0000-0000-0000-000000000060"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineColor="#374151"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="18" width="782" height="20" forecolor="#1F2937" uuid="e0000001-0000-0000-0000-000000000061"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_statistiques_globales}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="0" y="42" width="782" height="26" backcolor="#F3F4F6" uuid="e0000001-0000-0000-0000-000000000062"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#D1D5DB"/>
+				</box>
+				<textField>
+					<reportElement x="10" y="0" width="370" height="26" uuid="e0000001-0000-0000-0000-000000000063"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total_vaccinations} + " : " + ($P{totalVaccinations} != null ? $P{totalVaccinations} : 0)]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="390" y="0" width="380" height="26" uuid="e0000001-0000-0000-0000-000000000064"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{distinct_patients} + " : " + ($P{distinctPatients} != null ? $P{distinctPatients} : 0)]]></textFieldExpression>
+				</textField>
+			</frame>
+			<!-- Sexe Table (Left) -->
+			<frame>
+				<reportElement x="0" y="76" width="380" height="85" uuid="e0000001-0000-0000-0000-000000000070"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#D1D5DB"/>
+				</box>
+				<textField>
+					<reportElement mode="Opaque" x="0" y="0" width="380" height="18" backcolor="#E5E7EB" uuid="e0000001-0000-0000-0000-000000000071"/>
+					<box leftPadding="5"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{sex_breakdown}]]></textFieldExpression>
+				</textField>
+				<!-- Header -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="18" width="180" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000072"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{sex}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="180" y="18" width="100" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000073"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="280" y="18" width="100" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000074"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{percentage}]]></textFieldExpression>
+				</textField>
+				<!-- Row Male -->
+				<textField>
+					<reportElement x="0" y="34" width="180" height="16" uuid="e0000001-0000-0000-0000-000000000075"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{male}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="180" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000076"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{maleCount} != null ? $P{maleCount} : 0]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="280" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000077"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{malePercentage} != null ? $P{malePercentage} : 0.0) + " %"]]></textFieldExpression>
+				</textField>
+				<!-- Row Female -->
+				<textField>
+					<reportElement x="0" y="50" width="180" height="16" uuid="e0000001-0000-0000-0000-000000000078"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{female}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="180" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000079"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{femaleCount} != null ? $P{femaleCount} : 0]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="280" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000080"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{femalePercentage} != null ? $P{femalePercentage} : 0.0) + " %"]]></textFieldExpression>
+				</textField>
+				<!-- Total Row -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="66" width="180" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000081"/>
+					<box leftPadding="5"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="180" y="66" width="100" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000082"/>
+					<box rightPadding="5"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalVaccinations} != null ? $P{totalVaccinations} : 0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="280" y="66" width="100" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000083"/>
+					<box rightPadding="5"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[100.0 %]]></text>
+				</staticText>
+			</frame>
+			<!-- Age Group Table (Right) -->
+			<frame>
+				<reportElement x="400" y="76" width="382" height="101" uuid="e0000001-0000-0000-0000-000000000090"/>
+				<box>
+					<pen lineWidth="0.5" lineColor="#D1D5DB"/>
+				</box>
+				<textField>
+					<reportElement mode="Opaque" x="0" y="0" width="382" height="18" backcolor="#E5E7EB" uuid="e0000001-0000-0000-0000-000000000091"/>
+					<box leftPadding="5"/>
+					<textElement verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{age_breakdown}]]></textFieldExpression>
+				</textField>
+				<!-- Header -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="18" width="182" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000092"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{age_group}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="182" y="18" width="100" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000093"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="282" y="18" width="100" height="16" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000094"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{percentage}]]></textFieldExpression>
+				</textField>
+				<!-- Row < 1 an -->
+				<textField>
+					<reportElement x="0" y="34" width="182" height="16" uuid="e0000001-0000-0000-0000-000000000095"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{infants}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="182" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000096"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{under1Count} != null ? $P{under1Count} : 0]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="282" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000097"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{under1Percentage} != null ? $P{under1Percentage} : 0.0) + " %"]]></textFieldExpression>
+				</textField>
+				<!-- Row 1 - 5 ans -->
+				<textField>
+					<reportElement x="0" y="50" width="182" height="16" uuid="e0000001-0000-0000-0000-000000000098"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{children}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="182" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000099"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{from1To5Count} != null ? $P{from1To5Count} : 0]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="282" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000100"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{from1To5Percentage} != null ? $P{from1To5Percentage} : 0.0) + " %"]]></textFieldExpression>
+				</textField>
+				<!-- Row > 5 ans -->
+				<textField>
+					<reportElement x="0" y="66" width="182" height="16" uuid="e0000001-0000-0000-0000-000000000101"/>
+					<box leftPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{older}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="182" y="66" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000102"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{over5Count} != null ? $P{over5Count} : 0]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="282" y="66" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000103"/>
+					<box rightPadding="5">
+						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{over5Percentage} != null ? $P{over5Percentage} : 0.0) + " %"]]></textFieldExpression>
+				</textField>
+				<!-- Total Row -->
+				<textField>
+					<reportElement mode="Opaque" x="0" y="82" width="182" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000104"/>
+					<box leftPadding="5"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="182" y="82" width="100" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000105"/>
+					<box rightPadding="5"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalVaccinations} != null ? $P{totalVaccinations} : 0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="282" y="82" width="100" height="18" backcolor="#F9FAFB" uuid="e0000001-0000-0000-0000-000000000106"/>
+					<box rightPadding="5"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[100.0 %]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</summary>
+</jasperReport>
