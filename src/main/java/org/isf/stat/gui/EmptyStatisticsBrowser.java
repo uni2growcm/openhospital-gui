@@ -91,20 +91,15 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
-    /*
-     * CPN filters: every combo has "All" at index 0 and is mapped by its position, never by its
-     * translated label, so the filters work in every language. A null bound is open.
-     */
-    // All, 0, 1, 2, 3+
     private static final Integer[] COUNT_0_3PLUS_MIN = {null, 0, 1, 2, 3};
     private static final Integer[] COUNT_0_3PLUS_MAX = {null, 0, 1, 2, null};
-    // All, 0, 1, 2, 3, 4+
+
     private static final Integer[] GRAVIDITY_MIN = {null, 0, 1, 2, 3, 4};
     private static final Integer[] GRAVIDITY_MAX = {null, 0, 1, 2, 3, null};
-    // All, <12, 12-24, 24-36, 36+ weeks (the max is exclusive)
+
     private static final Integer[] GEST_AGE_MIN = {null, 0, 12, 24, 36};
     private static final Integer[] GEST_AGE_MAX = {null, 12, 24, 36, null};
-    // All, 1, 2, 2-3, 4-7, 8+
+
     private static final Integer[] VISIT_COUNT_MIN = {null, 1, 2, 2, 4, 8};
     private static final Integer[] VISIT_COUNT_MAX = {null, 1, 2, 3, 7, null};
     private static final String[] MATERNAL_WEIGHT_CODES = {null, PregnancyStatsRange.MATERNAL_WEIGHT_LT50,
@@ -115,7 +110,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private static final String[] DIASTOLIC_CODES = {null, PregnancyStatsRange.DIASTOLIC_LT80,
             PregnancyStatsRange.DIASTOLIC_80_89, PregnancyStatsRange.DIASTOLIC_GE90};
     private static final String[] URINE_PROTEIN_VALUES = {null, "-", "+", "++", "+++"};
-    // same keys VisitEdit uses to store the values
+
     private static final String[] EDEMA_KEYS = {null, "angal.maternity.edema.none", "angal.maternity.edema.mild",
             "angal.maternity.edema.moderate", "angal.maternity.edema.severe"};
     private static final String[] PRESENTATION_KEYS = {null, "angal.maternity.presentation.cephalic",
@@ -1599,7 +1594,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return key == null ? null : MessageBundle.getMessage(key);
     }
 
-    /** Shows "All" for the null entry of a combo. */
     private static DefaultListCellRenderer allRenderer() {
         return new DefaultListCellRenderer() {
             @Override
