@@ -69,6 +69,7 @@ import org.isf.generaldata.MessageBundle;
 import org.isf.lab.gui.LabNew;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
+import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.tuberculosis.manager.TuberculosisContactManager;
 import org.isf.tuberculosis.manager.TuberculosisTreatmentManager;
@@ -105,10 +106,11 @@ public class TuberculosisBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.tb.browser.classification.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.location.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.status.col").toUpperCase(),
+            MessageBundle.getMessage("angal.tb.browser.registrationdate.col").toUpperCase(),
             MessageBundle.getMessage("angal.tb.browser.startdate.col").toUpperCase()
     };
 
-    private final int[] columnWidths = { 50, 70, 150, 100, 120, 90, 100 };
+    private final int[] columnWidths = { 50, 70, 150, 100, 120, 90, 100, 100 };
 
     private final String[] visitColumns = {
             MessageBundle.getMessage("angal.tb.browser.visitdate.col").toUpperCase(),
@@ -138,6 +140,7 @@ public class TuberculosisBrowser extends ModalJFrame {
     private TuberculosisVisitManager visitManager;
     private TuberculosisContactManager contactManager;
     private ExaminationBrowserManager examinationManager;
+    private PatientBrowserManager patientBrowserManager;
 
     private JTable treatmentTable;
     private JTable visitTable;
@@ -206,6 +209,7 @@ public class TuberculosisBrowser extends ModalJFrame {
         visitManager = Context.getApplicationContext().getBean(TuberculosisVisitManager.class);
         contactManager = Context.getApplicationContext().getBean(TuberculosisContactManager.class);
         examinationManager = Context.getApplicationContext().getBean(ExaminationBrowserManager.class);
+        patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
     }
 
     private void initComponents() {
@@ -238,6 +242,10 @@ public class TuberculosisBrowser extends ModalJFrame {
         JPanel codePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         codePanel.add(new JLabel(MessageBundle.getMessage("angal.tb.browser.patientfilter") + ":"));
         patientCodeFilter = new JTextField(10);
+        patientCodeFilter.addActionListener(e -> {
+            CURRENT_PAGE = 1;
+            performSearch();
+        });
         codePanel.add(patientCodeFilter);
         filterPanel.add(codePanel);
 
@@ -311,7 +319,10 @@ public class TuberculosisBrowser extends ModalJFrame {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
-        searchButton.addActionListener(e -> performSearch());
+        searchButton.addActionListener(e -> {
+            CURRENT_PAGE = 1;
+            performSearch();
+        });
         resetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
         resetButton.addActionListener(e -> resetFilters());
         buttonPanel.add(searchButton);
@@ -748,12 +759,16 @@ public class TuberculosisBrowser extends ModalJFrame {
 
             Integer patientCodeInt = null;
             if (!patientCode.isEmpty()) {
-                try {
-                    patientCodeInt = Integer.parseInt(patientCode);
-                } catch (NumberFormatException e) {
-                    MessageDialog.error(this, "angal.common.pleaseinsertavalidnumber.msg");
+                List<Patient> matches = patientBrowserManager.getPatientByCodeOrName(patientCode);
+                if (matches == null || matches.isEmpty()) {
+                    MessageDialog.error(this, "angal.tb.browser.patientnotfound.msg");
                     return;
                 }
+                if (matches.size() > 1) {
+                    MessageDialog.error(this, "angal.tb.browser.multiplepatientsfound.msg");
+                    return;
+                }
+                patientCodeInt = matches.get(0).getCode();
             }
 
             Page<TuberculosisTreatment> pagedResult = manager.getTreatmentsByFilters(
@@ -982,12 +997,18 @@ public class TuberculosisBrowser extends ModalJFrame {
             return;
         }
 
-        int confirmed = JOptionPane.showConfirmDialog(this,
-                MessageBundle.getMessage("angal.tb.browser.deletetreatment.confirm.msg"),
-                MessageBundle.getMessage("angal.common.confirmactiondialogtitle"),
-                JOptionPane.YES_NO_OPTION);
+        try {
+            List<TuberculosisVisit> visits = visitManager.getVisitsByTreatmentId(selectedTreatment.getId());
+            if (visits != null && !visits.isEmpty()) {
+                MessageDialog.error(this, "angal.tb.browser.cannotdeletetreatmentwithvisits.msg");
+                return;
+            }
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+            return;
+        }
 
-        if (confirmed == JOptionPane.YES_OPTION) {
+        if (confirmDeletion("angal.tb.browser.deletetreatment.confirm.msg")) {
             try {
                 manager.deleteTreatment(selectedTreatment);
                 performSearch();
@@ -995,6 +1016,20 @@ public class TuberculosisBrowser extends ModalJFrame {
                 OHServiceExceptionUtil.showMessages(ex);
             }
         }
+    }
+
+    private boolean confirmDeletion(String messageKey) {
+        Object[] options = {
+                MessageBundle.getMessage("angal.common.yes.btn"),
+                MessageBundle.getMessage("angal.tb.browser.confirm.cancel.btn")
+        };
+        int choice = JOptionPane.showOptionDialog(this,
+                MessageBundle.getMessage(messageKey),
+                MessageBundle.getMessage("angal.common.confirmactiondialogtitle"),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null, options, options[0]);
+        return choice == 0;
     }
 
     private void newVisit() {
@@ -1036,12 +1071,7 @@ public class TuberculosisBrowser extends ModalJFrame {
             return;
         }
 
-        int confirmed = JOptionPane.showConfirmDialog(this,
-                MessageBundle.getMessage("angal.tb.browser.deletevisit.confirm.msg"),
-                MessageBundle.getMessage("angal.common.confirmactiondialogtitle"),
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirmed == JOptionPane.YES_OPTION) {
+        if (confirmDeletion("angal.tb.browser.deletevisit.confirm.msg")) {
             try {
                 visitManager.deleteVisit(visitList.get(selectedVisitRow));
                 loadVisits();
@@ -1090,12 +1120,7 @@ public class TuberculosisBrowser extends ModalJFrame {
             return;
         }
 
-        int confirmed = JOptionPane.showConfirmDialog(this,
-                MessageBundle.getMessage("angal.tb.browser.deletecontact.confirm.msg"),
-                MessageBundle.getMessage("angal.common.confirmactiondialogtitle"),
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirmed == JOptionPane.YES_OPTION) {
+        if (confirmDeletion("angal.tb.browser.deletecontact.confirm.msg")) {
             try {
                 contactManager.deleteContact(contactList.get(selectedContactRow));
                 loadContacts();
@@ -1147,6 +1172,9 @@ public class TuberculosisBrowser extends ModalJFrame {
             } else if (c == 5) {
                 return treatment.getStatus() != null ? treatment.getStatus().toString() : "";
             } else if (c == 6) {
+                return treatment.getRegistrationDate() != null
+                        ? treatment.getRegistrationDate().toLocalDate().format(formatter) : "";
+            } else if (c == 7) {
                 return treatment.getTreatmentStartDate() != null
                         ? treatment.getTreatmentStartDate().format(formatter) : "";
             }

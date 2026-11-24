@@ -213,7 +213,9 @@ public class TuberculosisTreatmentEdit extends JDialog
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.generaltab"), getGeneralPanel());
         tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.hivtab"), getHivPanel());
-        tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.outcometab"), getOutcomePanel());
+        if (!insert) {
+            tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.outcometab"), getOutcomePanel());
+        }
         add(tabbedPane, BorderLayout.CENTER);
 
         add(getButtonPanel(), BorderLayout.SOUTH);
@@ -711,8 +713,12 @@ public class TuberculosisTreatmentEdit extends JDialog
         
 
         treatment.setStatus(status);
-        treatment.setOutcome((TreatmentOutcome) outcomeCombo.getSelectedItem());
-        treatment.setOutcomeDate(outcomeDateField.getDate());
+        if (!insert && outcomeCombo != null) {
+            treatment.setOutcome((TreatmentOutcome) outcomeCombo.getSelectedItem());
+        }
+        if (!insert && outcomeDateField != null) {
+            treatment.setOutcomeDate(outcomeDateField.getDate());
+        }
         treatment.setNotes(notesArea.getText().trim());
 
         try {
