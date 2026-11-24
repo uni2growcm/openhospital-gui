@@ -310,6 +310,9 @@ public class FamilyPlanningVisitEdit extends JDialog {
             cancelButton.addActionListener(e -> dispose());
 
             buttonPanel.add(okButton);
+            if (VisitExaminationLauncher.isExaminationAllowed()) {
+                buttonPanel.add(VisitExaminationLauncher.createExaminationButton(this, fp != null ? fp.getPatient() : null));
+            }
             buttonPanel.add(cancelButton);
         }
         return buttonPanel;
@@ -327,6 +330,12 @@ public class FamilyPlanningVisitEdit extends JDialog {
             return;
         }
 
+        if (fp != null && fp.getRegistrationDate() != null
+                && visitDate.toLocalDate().isBefore(fp.getRegistrationDate().toLocalDate())) {
+            MessageDialog.error(this, "angal.maternity.fpvisitdatebeforefp.msg");
+            return;
+        }
+
         Typology visitType = (Typology) visitTypeCombo.getSelectedItem();
         if (visitType == null) {
             MessageDialog.error(this, "angal.maternity.fpvisittyperequired.msg");
@@ -337,14 +346,14 @@ public class FamilyPlanningVisitEdit extends JDialog {
         LocalDateTime nextAppointmentDateTime = nextAppointmentDateTimeField.getLocalDateTime();
 
         if (nextAppointmentDateTime != null && nextAppointmentDateTime.isBefore(visitDate)) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.aftervisit.msg"));
+            MessageDialog.error(this, "angal.familyplanning.nextappointment.aftervisit.msg");
             return;
         }
 
         if (nextAppointmentDateTime != null) {
             LocalDateTime minNextAppointment = visitDate.plusHours(1);
             if (nextAppointmentDateTime.isBefore(minNextAppointment)) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.nextappointment.minimumonehour.msg"));
+                MessageDialog.error(this, "angal.familyplanning.nextappointment.minimumonehour.msg");
                 return;
             }
         }

@@ -53,6 +53,7 @@ import javax.swing.JTextArea;
 
 import org.isf.utils.layout.SpringUtilities;
 
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -105,8 +106,11 @@ public class HomeVisitBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.homevisit.date.col"),
             MessageBundle.getMessage("angal.homevisit.status.col"),
             MessageBundle.getMessage("angal.homevisit.staff.col"),
-            MessageBundle.getMessage("angal.homevisit.nextvisit.col")
+            MessageBundle.getMessage("angal.homevisit.nextvisit.col"),
+            MessageBundle.getMessage("angal.homevisit.cancellationreason.col")
     };
+
+    private static final int CANCELLATION_REASON_COLUMN = 7;
 
     public HomeVisitBrowser() {
         this.manager = Context.getApplicationContext().getBean(HomeVisitBrowserManager.class);
@@ -221,6 +225,17 @@ public class HomeVisitBrowser extends ModalJFrame {
         table.getColumnModel().getColumn(0).setMinWidth(0);
         table.getColumnModel().getColumn(0).setMaxWidth(0);
         table.getColumnModel().getColumn(0).setWidth(0);
+        table.getColumnModel().getColumn(CANCELLATION_REASON_COLUMN).setPreferredWidth(250);
+        // the reason can be long: show the full text as tooltip
+        table.getColumnModel().getColumn(CANCELLATION_REASON_COLUMN).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable jTable, Object value, boolean isSelected, boolean hasFocus,
+                    int row, int column) {
+                super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
+                setToolTipText(value != null && !value.toString().isEmpty() ? value.toString() : null);
+                return this;
+            }
+        });
 
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateButtonStates();
@@ -381,8 +396,12 @@ public class HomeVisitBrowser extends ModalJFrame {
                 String nextVisitDate = hv.getNextVisitDate() != null ?
                         hv.getNextVisitDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "";
 
+                // the reason is kept when a visit is reactivated: show it only for the cancelled visits
+                String cancellationReason = hv.getStatus() == HomeVisitStatus.CANCELLED && hv.getCancellationReason() != null
+                        ? hv.getCancellationReason() : "";
+
                 tableModel.addRow(new Object[]{
-                        hv.getId(), patientCode, patientName, visitDate, statusStr, staffName, nextVisitDate
+                        hv.getId(), patientCode, patientName, visitDate, statusStr, staffName, nextVisitDate, cancellationReason
                 });
             }
 

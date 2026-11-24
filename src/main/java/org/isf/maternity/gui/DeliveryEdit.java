@@ -412,7 +412,7 @@ public class DeliveryEdit extends ModalJFrame {
             if (!validateDelivery()) return;
 
             if (tableModel.getRowCount() == 0) {
-                MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.atleastonenewborn.msg"));
+                MessageDialog.warning(this, "angal.maternity.delivery.atleastonenewborn.msg");
                 return;
             }
 
@@ -435,7 +435,7 @@ public class DeliveryEdit extends ModalJFrame {
                 try {
                     delivery.setEstimatedBloodLoss(Integer.parseInt(bloodLossText));
                 } catch (NumberFormatException e) {
-                    MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.invalidbloodloss.msg"));                    return;
+                    MessageDialog.warning(this, "angal.maternity.delivery.invalidbloodloss.msg");                    return;
                 }
             }
             
@@ -443,7 +443,7 @@ public class DeliveryEdit extends ModalJFrame {
                 try {
                     delivery.setFatherAge(Integer.parseInt(fatherAge.getText()));
                 } catch (NumberFormatException e) {
-                    MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.invalidfatherage.msg"));
+                    MessageDialog.error(this, "angal.maternity.delivery.invalidfatherage.msg");
                     return;
                 }
             }
@@ -470,7 +470,7 @@ public class DeliveryEdit extends ModalJFrame {
             boolean newbornsSuccess = isNew ? saveNewborns() : updateNewborns();
 
             if (newbornsSuccess) {
-                MessageDialog.info(this, MessageBundle.getMessage(isNew ? "angal.maternity.delivery.deliverysuccessfullycreated" : "angal.maternity.delivery.deliverysuccessfullyupdated.msg"));
+                MessageDialog.info(this, isNew ? "angal.maternity.delivery.deliverysuccessfullycreated" : "angal.maternity.delivery.deliverysuccessfullyupdated.msg");
                 dispose();
             }
         } catch (Exception e) {
@@ -572,15 +572,15 @@ public class DeliveryEdit extends ModalJFrame {
 
     private boolean validateDelivery() {
         if (deliveryDateField.getLocalDateTime() == null) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.daterequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.daterequired.msg");
             return false;
         }
         if (deliveryTypeCombo.getSelectedItem() == null) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.typerequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.typerequired.msg");
             return false;
         }
         if (deliveryDateField.getLocalDateTime().isAfter(LocalDateTime.now())) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.futuredatenotallowed.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.futuredatenotallowed.msg");
             return false;
         }
         return true;
@@ -594,23 +594,23 @@ public class DeliveryEdit extends ModalJFrame {
         Double weight = getDouble(row, 5);
 
         if (first == null || first.isBlank()) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.firstnamerequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.firstnamerequired.msg");
             return false;
         }
         if (last == null || last.isBlank()) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.lastnamerequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.lastnamerequired.msg");
             return false;
         }
         if (sex == null) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.sexisrequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.sexisrequired.msg");
             return false;
         }
         if (birth == null) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.birthdateisrequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.birthdateisrequired.msg");
             return false;
         }
         if (weight == null) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.weightisrequired.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.weightisrequired.msg");
             return false;
         }
         return true;
@@ -766,17 +766,17 @@ public class DeliveryEdit extends ModalJFrame {
         LocalDateTime rom = romField.getLocalDateTime();
 
         if (laborOnset != null && deliveryDate != null && laborOnset.isAfter(deliveryDate)) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.laboronset.beforedelivery.msg"));
+            MessageDialog.error(this, "angal.maternity.delivery.laboronset.beforedelivery.msg");
             return false;
         }
 
         if (rom != null && deliveryDate != null && rom.isAfter(deliveryDate)) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.rom.beforedelivery.msg"));
+            MessageDialog.error(this, "angal.maternity.delivery.rom.beforedelivery.msg");
             return false;
         }
 
         if (laborOnset != null && rom != null && rom.isBefore(laborOnset)) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.delivery.rom.afterlaboronset.msg"));
+            MessageDialog.error(this, "angal.maternity.delivery.rom.afterlaboronset.msg");
             return false;
         }
 
@@ -831,7 +831,7 @@ public class DeliveryEdit extends ModalJFrame {
         try {
             int bloodLoss = Integer.parseInt(bloodLossText);
             if (bloodLoss < 0) {
-                MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.bloodloss.positive.msg"));
+                MessageDialog.warning(this, "angal.maternity.delivery.bloodloss.positive.msg");
                 return false;
             }
             if (bloodLoss > 5000) {
@@ -843,7 +843,7 @@ public class DeliveryEdit extends ModalJFrame {
             }
             return true;
         } catch (NumberFormatException e) {
-            MessageDialog.warning(this, MessageBundle.getMessage("angal.maternity.delivery.invalidbloodloss.msg"));
+            MessageDialog.warning(this, "angal.maternity.delivery.invalidbloodloss.msg");
             return false;
         }
     }
