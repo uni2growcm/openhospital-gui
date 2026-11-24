@@ -216,7 +216,6 @@ public class TuberculosisTreatmentEdit extends JDialog
         if (!insert) {
             tabbedPane.addTab(MessageBundle.getMessage("angal.tb.treatment.outcometab"), getOutcomePanel());
         } else {
-            // initialize the hidden outcome components (status, outcome, notes) so that saving works on creation
             getOutcomePanel();
             statusCombo.setSelectedItem(TreatmentStatus.ONGOING);
         }
