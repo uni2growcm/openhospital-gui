@@ -162,12 +162,24 @@ public class TuberculosisContactEdit extends JDialog {
             if (contact.getScreeningDate() != null) {
                 screeningDateField.setDate(contact.getScreeningDate());
             }
+            updateScreeningDateState();
             tbInfectedCheck.setSelected(contact.getTbInfected() != null && contact.getTbInfected());
             tbDiseaseCheck.setSelected(contact.getTbDisease() != null && contact.getTbDisease());
             tptStartedCheck.setSelected(contact.getTptStarted() != null && contact.getTptStarted());
             if (contact.getNotes() != null) {
                 notesArea.setText(contact.getNotes());
             }
+        }
+    }
+
+    private void updateScreeningDateState() {
+        if (screenedCheck == null || screeningDateField == null) {
+            return;
+        }
+        boolean screened = screenedCheck.isSelected();
+        screeningDateField.setEnabled(screened);
+        if (!screened) {
+            screeningDateField.setDate(null);
         }
     }
 
@@ -253,12 +265,14 @@ public class TuberculosisContactEdit extends JDialog {
         gbc.gridy = row;
         gbc.weightx = 0.0;
         screenedCheck = new JCheckBox(MessageBundle.getMessage("angal.tb.contact.screened"));
+        screenedCheck.addActionListener(e -> updateScreeningDateState());
         panel.add(screenedCheck, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         screeningDateField = new GoodDateChooser((LocalDate) null);
         panel.add(screeningDateField, gbc);
+        updateScreeningDateState();
 
         row++;
 
@@ -353,7 +367,7 @@ public class TuberculosisContactEdit extends JDialog {
         contact.setRelationship(selectedTypology != null ? selectedTypology.getCode() : null);
 
         contact.setScreened(screenedCheck.isSelected());
-        contact.setScreeningDate(screeningDateField.getDate());
+        contact.setScreeningDate(screenedCheck.isSelected() ? screeningDateField.getDate() : null);
         contact.setTbInfected(tbInfectedCheck.isSelected());
         contact.setTbDisease(tbDiseaseCheck.isSelected());
         contact.setTptStarted(tptStartedCheck.isSelected());
