@@ -27,6 +27,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serial;
@@ -62,7 +64,6 @@ import org.isf.mortuary.manager.DeathReasonManager;
 import org.isf.mortuary.model.Death;
 import org.isf.mortuary.model.DeathReason;
 import org.isf.mortuary.service.DeathIoOperations;
-import org.isf.patient.gui.SelectPatient;
 import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
 import org.isf.utils.exception.OHServiceException;
@@ -80,7 +81,10 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private static final String FROM_LABEL = MessageBundle.getMessage("angal.common.from.txt") + ':';
 	private static final String TO_LABEL = MessageBundle.getMessage("angal.common.to.txt") + ':';
 	private static final String TEXT_ALL = MessageBundle.getMessage("angal.common.all.txt");
-	private final int[] pColumnWidth = { 30, 100, 40, 100, 100, 95, 95, 150 };
+	private static final String TEXT_BODYLIFT_ALL = MessageBundle.getMessage("angal.mortuary.bodyliftfilter.all");
+	private static final String TEXT_BODYLIFT_LIFTED = MessageBundle.getMessage("angal.mortuary.bodyliftfilter.lifted");
+	private static final String TEXT_BODYLIFT_NOT_LIFTED = MessageBundle.getMessage("angal.mortuary.bodyliftfilter.notlifted");
+	private final int[] pColumnWidth = { 30, 100, 40, 100, 100, 95, 95, 90, 150, 95 };
 	private final String[] pColumns = {
 		MessageBundle.getMessage("angal.mortuary.id.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.patient.col").toUpperCase(),
@@ -89,13 +93,15 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		MessageBundle.getMessage("angal.mortuary.provenance.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.indate.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.outdate.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.daysinmortuary.col").toUpperCase(),
 		MessageBundle.getMessage("angal.mortuary.causeofdeath.col").toUpperCase(),
+		MessageBundle.getMessage("angal.mortuary.bodyliftperformed.col").toUpperCase(),
 	};
 	private final int[] columnAlignment = { SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER,
-		SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT
+		SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT, SwingConstants.CENTER
 	};
-	private final boolean[] pColumnBold = { true, false, false, false, false, false, false, false };
-	private final boolean[] pColumnVisible = { true, true, true, true, true, true, true, true };
+	private final boolean[] pColumnBold = { true, false, false, false, false, false, false, false, false, false };
+	private final boolean[] pColumnVisible = { true, true, true, true, true, true, true, true, true, true };
 	private final DeathManager deathManager = Context.getApplicationContext().getBean(DeathManager.class);
 	private final WardBrowserManager wardBrowserManager = Context.getApplicationContext().getBean(WardBrowserManager.class);
 	private final DeathReasonManager deathReasonManager = Context.getApplicationContext().getBean(DeathReasonManager.class);
@@ -113,15 +119,14 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private JButton resetFilterButton;
 	private JButton jRapportButton;
 	private JButton jCloseButton;
-	private JButton pickPatientButton;
 	private JButton removePatientButton;
 	private JRadioButton inputRadioButton;
 	private JRadioButton outputRadioButton;
 	private JPanel inOutPanel;
 	private JComboBox<Object> provenanceCombo;
 	private JComboBox<Object> deathReasonCombo;
+	private JComboBox<String> bodyLiftCombo;
 	private JTextField patientTextField;
-	private Patient patientParent;
 	private DeathBrowserModel model;
 	private JTable deathTable;
 	private List<Death> deaths;
@@ -177,6 +182,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		jSelectionContentPanel.add(getSearchPatientPanel());
 		jSelectionContentPanel.add(getProvenancePanel());
 		jSelectionContentPanel.add(getInOutPanel());
+		jSelectionContentPanel.add(getBodyLiftPanel());
 		jSelectionContentPanel.add(getDeathReasonPanel());
 		jSelectionContentPanel.add(getFilterButtonPanel());
 		return jSelectionContentPanel;
@@ -186,36 +192,19 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		JPanel searchPatientPanel = new JPanel();
 		searchPatientPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.searchpatient.border")));
 		patientTextField = new JTextField();
-		patientTextField.setPreferredSize(new Dimension(170,27));
+		patientTextField.setPreferredSize(new Dimension(250, 27));
+		patientTextField.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					applyFilter(false);
+				}
+			}
+		});
 		searchPatientPanel.add(patientTextField);
-		searchPatientPanel.add(getPickPatientButton());
 		searchPatientPanel.add(getRemovePatientButton());
 		return searchPatientPanel;
-	}
-
-	private JButton getPickPatientButton() {
-		if (pickPatientButton == null) {
-			pickPatientButton = new JButton();
-			pickPatientButton.setIcon(new ImageIcon("rsc/icons/pick_patient_button.png"));
-			pickPatientButton.setToolTipText(MessageBundle.getMessage("angal.billbrowser.selectapatient.tooltip"));
-			pickPatientButton.addMouseListener(new MouseAdapter() {
-
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					SelectPatient selectPatient = new SelectPatient(DeathBrowser.this, false, true);
-					selectPatient.addSelectionListener(DeathBrowser.this);
-					selectPatient.setVisible(true);
-					Patient pat = selectPatient.getPatient();
-					patientSelected(pat);
-				}
-			});
-		}
-		return pickPatientButton;
-	}
-
-	public void patientSelected(Patient patient) {
-		patientParent = patient;
-		patientTextField.setText(patientParent != null ? patientParent.getName() : "");
 	}
 
 	private JButton getRemovePatientButton() {
@@ -227,8 +216,8 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					patientParent = null;
 					patientTextField.setText("");
+					applyFilter(false);
 				}
 			});
 		}
@@ -332,6 +321,24 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		return deathReasonCombo;
 	}
 
+	private JPanel getBodyLiftPanel() {
+		JPanel bodyLiftPanel = new JPanel();
+		bodyLiftPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.mortuary.bodylift.border")));
+		bodyLiftPanel.add(getBodyLiftCombo());
+		return bodyLiftPanel;
+	}
+
+	private JComboBox<String> getBodyLiftCombo() {
+		if (bodyLiftCombo == null) {
+			bodyLiftCombo = new JComboBox<>();
+			bodyLiftCombo.setPreferredSize(new Dimension(300, 24));
+			bodyLiftCombo.addItem(TEXT_BODYLIFT_ALL);
+			bodyLiftCombo.addItem(TEXT_BODYLIFT_LIFTED);
+			bodyLiftCombo.addItem(TEXT_BODYLIFT_NOT_LIFTED);
+		}
+		return bodyLiftCombo;
+	}
+
 	private JPanel getFilterButtonPanel() {
 		JPanel jFilterButtonPanel = new JPanel();
 		jFilterButtonPanel.add(getFilterButton());
@@ -344,13 +351,15 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 			resetFilterButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
 			resetFilterButton.setMnemonic(MessageBundle.getMnemonic("angal.common.reset.btn.key"));
 			resetFilterButton.addActionListener(actionEvent -> {
-				patientParent = null;
 				patientTextField.setText("");
 				if (provenanceCombo.getItemCount() > 0) {
 					provenanceCombo.setSelectedIndex(0);
 				}
 				if (deathReasonCombo.getItemCount() > 0) {
 					deathReasonCombo.setSelectedIndex(0);
+				}
+				if (bodyLiftCombo != null && bodyLiftCombo.getItemCount() > 0) {
+					bodyLiftCombo.setSelectedIndex(0);
 				}
 				if (inputRadioButton != null) {
 					inputRadioButton.setSelected(true);
@@ -504,7 +513,16 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 					MessageDialog.error(this, "angal.opd.datefrommustbebefordateto.msg");
 					return;
 				}
-				new GenericReportFromDateToDate(from, to, "rpt_stat", "CorpsesLiftedPerPeriodTime", MessageBundle.getMessage("angal.stat.corpsesliftedperperiod"), false);
+				String reportState = "ALL";
+				if (bodyLiftCombo != null && bodyLiftCombo.getSelectedItem() != null) {
+					String selected = (String) bodyLiftCombo.getSelectedItem();
+					if (selected.equals(TEXT_BODYLIFT_LIFTED)) {
+						reportState = "LIFTED";
+					} else if (selected.equals(TEXT_BODYLIFT_NOT_LIFTED)) {
+						reportState = "NOT_LIFTED";
+					}
+				}
+				new GenericReportFromDateToDate(from, to, "rpt_stat", "CorpsesLiftedPerPeriodTime", MessageBundle.getMessage("angal.stat.corpsesliftedperperiod"), false, reportState, null);
 			});
 		}
 		return jRapportButton;
@@ -638,6 +656,16 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 			}
 		}
 
+		Boolean isDischarged = null;
+		if (bodyLiftCombo != null && bodyLiftCombo.getSelectedItem() != null) {
+			String selected = (String) bodyLiftCombo.getSelectedItem();
+			if (selected.equals(TEXT_BODYLIFT_LIFTED)) {
+				isDischarged = Boolean.TRUE;
+			} else if (selected.equals(TEXT_BODYLIFT_NOT_LIFTED)) {
+				isDischarged = Boolean.FALSE;
+			}
+		}
+
 		LocalDate dateFromDate = dateFrom.getDate();
 		LocalDate dateToDate = dateTo.getDate();
 		if (dateFromDate.isAfter(dateToDate)) {
@@ -654,7 +682,8 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 				dateFrom.getDateStartOfDay(),
 				dateTo.getDateStartOfDay(),
 				isEnter,
-				deathReasonSelected
+				deathReasonSelected,
+				isDischarged
 			);
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
@@ -723,7 +752,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 		public DeathBrowserModel() throws OHServiceException {
 			LocalDateTime now = TimeTools.getNow();
 			LocalDateTime old = now.minusWeeks(1);
-			model = new DeathBrowserModel("", "", old, now, isEnter,"");
+			model = new DeathBrowserModel("", "", old, now, isEnter, "", null);
 		}
 
 		public DeathBrowserModel(
@@ -734,6 +763,18 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 			boolean isEnter,
 			String deathReasonCode
 		) throws OHServiceException {
+			this(patientName, wardCode, dateFrom, dateTo, isEnter, deathReasonCode, null);
+		}
+
+		public DeathBrowserModel(
+			String patientName,
+			String wardCode,
+			LocalDateTime dateFrom,
+			LocalDateTime dateTo,
+			boolean isEnter,
+			String deathReasonCode,
+			Boolean isDischarged
+		) throws OHServiceException {
 			Page<Death> deathsPages = deathManager.getMortuariesPageable(
 				patientName,
 				wardCode,
@@ -741,6 +782,7 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 				dateTo,
 				deathReasonCode,
 				isEnter,
+				isDischarged,
 				CURRENT_PAGE,
 				GeneralData.PAGINATIONPAGESIZE
 			);
@@ -799,7 +841,13 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 			} else if (c == 6) {
 				return death.getEstimatedDischargeDate().toLocalDate();
 			} else if (c == 7) {
+				return death.getDaysInMortuary();
+			} else if (c == 8) {
 				return deathReason.getTitle();
+			} else if (c == 9) {
+				return death.getDischargeDate() != null
+					? MessageBundle.getMessage("angal.common.yes")
+					: MessageBundle.getMessage("angal.common.no");
 			}
 			return null;
 		}

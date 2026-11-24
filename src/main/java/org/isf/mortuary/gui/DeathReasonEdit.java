@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -110,6 +110,17 @@ public class DeathReasonEdit extends JDialog {
 		insert = inserting;
 		deathReason = old;
 		initialize();
+	}
+
+	public DeathReasonEdit(JDialog parent, DeathReason old, boolean inserting) {
+		super(parent, true);
+		insert = inserting;
+		deathReason = old;
+		initialize();
+	}
+
+	public DeathReason getDeathReason() {
+		return deathReason;
 	}
 
 	private void initialize() {

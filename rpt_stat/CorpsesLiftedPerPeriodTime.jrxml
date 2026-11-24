@@ -14,6 +14,7 @@
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="IMAGE_PATH" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="state" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT	1 AS DEATH_COUNT,
 	DATE_FORMAT(D.DTH_DISCHARGE_DATE, '%T') AS TIME, 
@@ -27,8 +28,18 @@ FROM OH_DEATH D
 LEFT JOIN OH_PATIENT P ON D.DTH_PAT_ID = P.PAT_ID
 LEFT JOIN OH_DEATHREASON M ON D.DTH_DTHR_ID = M.DTHR_ID
 WHERE D.DTH_DELETED = 0
-  AND DATE(D.DTH_DISCHARGE_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})
-ORDER BY D.DTH_DISCHARGE_DATE ASC]]>
+  AND (
+    ($P{state} = 'LIFTED' AND D.DTH_DISCHARGE_DATE IS NOT NULL AND DATE(D.DTH_DISCHARGE_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}))
+    OR
+    ($P{state} = 'NOT_LIFTED' AND D.DTH_DISCHARGE_DATE IS NULL AND DATE(D.DTH_ADMISSION_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}))
+    OR
+    (($P{state} = 'ALL' OR $P{state} IS NULL) AND (
+      (D.DTH_DISCHARGE_DATE IS NOT NULL AND DATE(D.DTH_DISCHARGE_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}))
+      OR
+      (D.DTH_DISCHARGE_DATE IS NULL AND DATE(D.DTH_ADMISSION_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate}))
+    ))
+  )
+ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 	</queryString>
 	<field name="DEATH_COUNT" class="java.lang.Integer"/>
 	<field name="TIME" class="java.lang.String"/>
@@ -52,21 +63,21 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC]]>
 					<reportElement key="rectangle-2" x="0" y="1" width="535" height="20" forecolor="#9999FF" backcolor="#6699FF"/>
 					<graphicElement/>
 				</rectangle>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-28" x="5" y="2" width="30" height="18" forecolor="#FFFFFF"/>
 					<box/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="11" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.on")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE} != null ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.on") : ""]]></textFieldExpression>
 				</textField>
-				<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-29" x="35" y="2" width="240" height="18" forecolor="#FFFFFF"/>
 					<box leftPadding="2"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="11" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE} != null ? $F{DECES_DATE_SORTIE} : "-"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
 					<reportElement key="textField-18" x="0" y="24" width="125" height="18"/>
@@ -259,13 +270,13 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DECES_DATE_ENTREE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="205" y="2" width="55" height="15"/>
 				<box/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{TIME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{TIME} != null ? $F{TIME} : "-"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-25" x="260" y="2" width="135" height="15"/>
