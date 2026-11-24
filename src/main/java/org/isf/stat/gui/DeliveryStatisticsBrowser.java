@@ -172,7 +172,6 @@ public class DeliveryStatisticsBrowser extends ModalJFrame {
 		JPanel newbornPanel = buildNewbornFiltersPanel();
 		JPanel diseasesPanel = buildDiseasesFiltersPanel();
 
-		List<AccordionPanel> siblings = new ArrayList<>();
 		AccordionPanel generalAccordion = new AccordionPanel(
 				MessageBundle.getMessage("angal.stat.title.general"), generalPanel, true);
 		AccordionPanel deliveryAccordion = new AccordionPanel(
@@ -181,15 +180,6 @@ public class DeliveryStatisticsBrowser extends ModalJFrame {
 				MessageBundle.getMessage("angal.stat.title.newborn"), newbornPanel, false);
 		AccordionPanel diseasesAccordion = new AccordionPanel(
 				MessageBundle.getMessage("angal.stat.title.diseases"), diseasesPanel, false);
-
-		siblings.add(generalAccordion);
-		siblings.add(deliveryAccordion);
-		siblings.add(newbornAccordion);
-		siblings.add(diseasesAccordion);
-		generalAccordion.setSiblings(siblings);
-		deliveryAccordion.setSiblings(siblings);
-		newbornAccordion.setSiblings(siblings);
-		diseasesAccordion.setSiblings(siblings);
 
 		accordions.add(generalAccordion);
 		accordions.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -829,7 +819,6 @@ public class DeliveryStatisticsBrowser extends ModalJFrame {
 		private final JPanel contentPanel;
 		private final JLabel toggleLabel;
 		private boolean expanded;
-		private List<AccordionPanel> siblings = new ArrayList<>();
 
 		public AccordionPanel(String title, JPanel content, boolean defaultExpanded) {
 			setLayout(new BorderLayout());
@@ -866,19 +855,10 @@ public class DeliveryStatisticsBrowser extends ModalJFrame {
 			});
 		}
 
-		public void setSiblings(List<AccordionPanel> siblings) {
-			this.siblings = siblings;
-		}
-
 		public void toggle() {
 			expanded = !expanded;
 
 			if (expanded) {
-				siblings.forEach(s -> {
-					if (s != this && s.expanded) {
-						s.toggle();
-					}
-				});
 				add(contentPanel, BorderLayout.CENTER);
 			} else {
 				remove(contentPanel);
