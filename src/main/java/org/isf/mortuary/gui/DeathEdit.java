@@ -1,6 +1,6 @@
 /*
  * Open Hospital (www.open-hospital.org)
- * Copyright © 2006-2025 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
+ * Copyright © 2006-2026 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
  *
  * Open Hospital is a free and open source software for healthcare data management.
  *
@@ -81,6 +81,8 @@ public class DeathEdit extends JDialog {
 	private JPanel dataPanel;
 	private JButton cancelButton;
 	private JButton okButton;
+	private JPanel deathReasonPanel;
+	private JButton newDeathReasonButton;
 	private JComboBox<Object> deathReasonCombo;
 	private JComboBox<Object> provenanceCombo;
 	private JCheckBox bodyLiftCheckBox;
@@ -282,7 +284,7 @@ public class DeathEdit extends JDialog {
 		gbcDeathReasonCombo.insets = new Insets(0, 0, 5, 0);
 		gbcDeathReasonCombo.gridx = 1;
 		gbcDeathReasonCombo.gridy = 6;
-		deathNewsPanel.add(getDeathReasonCombo(), gbcDeathReasonCombo);
+		deathNewsPanel.add(getDeathReasonPanel(), gbcDeathReasonCombo);
 
 		return deathNewsPanel;
 	}
@@ -382,10 +384,63 @@ public class DeathEdit extends JDialog {
 		return estimatedDischargeDate;
 	}
 
+	private JPanel getDeathReasonPanel() {
+		if (deathReasonPanel == null) {
+			deathReasonPanel = new JPanel(new BorderLayout(5, 0));
+			deathReasonPanel.add(getDeathReasonCombo(), BorderLayout.CENTER);
+			deathReasonPanel.add(getNewDeathReasonButton(), BorderLayout.EAST);
+		}
+		return deathReasonPanel;
+	}
+
+	private JButton getNewDeathReasonButton() {
+		if (newDeathReasonButton == null) {
+			newDeathReasonButton = new JButton();
+			newDeathReasonButton.setIcon(new ImageIcon("rsc/icons/plus_button.png"));
+			newDeathReasonButton.setPreferredSize(new Dimension(27, 27));
+			newDeathReasonButton.setToolTipText(MessageBundle.getMessage("angal.mortuary.causeofdeath.newcauseofdeath.title"));
+			newDeathReasonButton.addActionListener(e -> {
+				DeathReason newReason = new DeathReason(0, "", "", false);
+				DeathReasonEdit editDialog = new DeathReasonEdit(DeathEdit.this, newReason, true);
+				editDialog.addDeathReasonListener(new DeathReasonEdit.DeathReasonListener() {
+					@Override
+					public void deathReasonUpdated(AWTEvent event) {}
+
+					@Override
+					public void deathReasonInserted(AWTEvent event) {
+						refreshDeathReasonCombo(editDialog.getDeathReason());
+					}
+				});
+				editDialog.setVisible(true);
+			});
+		}
+		return newDeathReasonButton;
+	}
+
+	private void refreshDeathReasonCombo(DeathReason selectedReason) {
+		try {
+			List<DeathReason> deathReasons = deathReasonManager.getAll();
+			deathReasonCombo.removeAllItems();
+			deathReasonCombo.addItem("");
+			DeathReason toSelect = null;
+			for (DeathReason reason : deathReasons) {
+				deathReasonCombo.addItem(reason);
+				if (selectedReason != null && Objects.equals(reason.getTitle(), selectedReason.getTitle())) {
+					toSelect = reason;
+				}
+			}
+			if (toSelect != null) {
+				deathReasonCombo.setSelectedItem(toSelect);
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+		}
+	}
+
 	private JComboBox<Object> getDeathReasonCombo() {
 		if (deathReasonCombo == null) {
 			deathReasonCombo = new JComboBox<Object>();
-			deathReasonCombo.setPreferredSize(new Dimension(270, 27));
+			deathReasonCombo.setPreferredSize(new Dimension(240, 27));
 		}
 
 		List<DeathReason> deathReasons = new ArrayList<>();
@@ -643,7 +698,18 @@ public class DeathEdit extends JDialog {
 
 		List<BodyCompartment> bodyCompartments = new ArrayList<>();
 		try {
-			bodyCompartments = bodyCompartmentManager.getBodyCompartments();
+			if (insert) {
+				bodyCompartments = bodyCompartmentManager.getAvailableBodyCompartments();
+			} else {
+				bodyCompartments = bodyCompartmentManager.getAvailableBodyCompartments();
+				if (death.getBodyCompartment() != null) {
+					boolean currentIncluded = bodyCompartments.stream()
+						.anyMatch(bc -> bc.getId() == death.getBodyCompartment().getId());
+					if (!currentIncluded) {
+						bodyCompartments.add(0, death.getBodyCompartment());
+					}
+				}
+			}
 		} catch (OHServiceException e) {
 			OHServiceExceptionUtil.showMessages(e);
 		}
@@ -651,7 +717,7 @@ public class DeathEdit extends JDialog {
 		bodyCompartmentCombo.addItem("");
 		for (BodyCompartment bodyCompartment : bodyCompartments) {
 			bodyCompartmentCombo.addItem(bodyCompartment);
-			if (!insert) {
+			if (!insert && death.getBodyCompartment() != null) {
 				if (bodyCompartment.getLabel().equals(death.getBodyCompartment().getLabel())) {
 					bodyCompartmentCombo.setSelectedItem(bodyCompartment);
 				}

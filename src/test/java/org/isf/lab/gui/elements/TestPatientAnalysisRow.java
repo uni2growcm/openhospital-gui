@@ -56,4 +56,14 @@ class TestPatientAnalysisRow {
 		java.io.File jasperFile = new java.io.File("rpt_base/PatientAnalysisReport.jasper");
 		assertThat(jasperFile).exists().isNotEmpty();
 	}
+
+	@Test
+	void testCompileCorpsesLiftedReport() throws Exception {
+		net.sf.jasperreports.engine.JasperCompileManager.compileReportToFile(
+				"rpt_stat/CorpsesLiftedPerPeriodTime.jrxml",
+				"rpt_stat/CorpsesLiftedPerPeriodTime.jasper"
+		);
+		java.io.File jasperFile = new java.io.File("rpt_stat/CorpsesLiftedPerPeriodTime.jasper");
+		assertThat(jasperFile).exists().isNotEmpty();
+	}
 }
