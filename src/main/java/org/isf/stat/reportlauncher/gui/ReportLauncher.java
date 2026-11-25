@@ -40,6 +40,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +59,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
@@ -124,6 +128,9 @@ public class ReportLauncher extends ModalJFrame {
     private JComboBox<Object> jOperationTypeComboBox;
 
     private JComboBox<String> jRptComboBox;
+    private JTextField jReportSearchField;
+    private List<String> allReportTitles = new ArrayList<>();
+    private boolean updatingReportCombo = false;
 
     private Map<String, File> reportNameFileMap;
     private Map<String, List<String>> folderNameFileNameMap;
@@ -219,13 +226,45 @@ public class ReportLauncher extends ModalJFrame {
 
             jContentPanel = new JPanel(new BorderLayout());
 
+            JPanel northPanel = new JPanel(new BorderLayout());
+            northPanel.add(getReportSearchPanel(), BorderLayout.NORTH);
+
             JPanel rep1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             rep1 = setMyBorder(rep1, MessageBundle.getMessage("angal.stat.parametersselectionframe") + ' ');
             rep1.add(getJParameterSelectionPanel());
+            northPanel.add(rep1, BorderLayout.CENTER);
 
-            jContentPanel.add(rep1, BorderLayout.NORTH);
+            jContentPanel.add(northPanel, BorderLayout.NORTH);
         }
         return jContentPanel;
+    }
+
+    private JPanel getReportSearchPanel() {
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel searchLabel = new JLabel(MessageBundle.getMessage("angal.stat.searchreport") + ':');
+
+        jReportSearchField = new JTextField(30);
+        jReportSearchField.setToolTipText(MessageBundle.getMessage("angal.stat.searchreport.tooltip"));
+        jReportSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterReports();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterReports();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterReports();
+            }
+        });
+
+        searchPanel.add(searchLabel);
+        searchPanel.add(jReportSearchField);
+        return searchPanel;
     }
 
     private JPanel getJParameterSelectionPanel() {
@@ -288,6 +327,7 @@ public class ReportLauncher extends ModalJFrame {
                 }
 
                 Collections.sort(jRptComboBoxList);
+                allReportTitles = new ArrayList<>(jRptComboBoxList);
                 jRptComboBoxList.forEach(t -> jRptComboBox.addItem(t));
 
             } catch (IOException e) {
@@ -295,6 +335,9 @@ public class ReportLauncher extends ModalJFrame {
             }
 
             jRptComboBox.addActionListener(actionEvent -> {
+                if (updatingReportCombo) {
+                    return;
+                }
                 if (actionEvent.getActionCommand() != null && actionEvent.getActionCommand().equalsIgnoreCase("comboBoxChanged")) {
                     selectAction();
                 }
@@ -471,8 +514,50 @@ public class ReportLauncher extends ModalJFrame {
         return firstDayOfMonth.plusWeeks(weekNumber - 1);
     }
 
+    private void filterReports() {
+        if (jRptComboBox == null || jReportSearchField == null) {
+            return;
+        }
+        String query = jReportSearchField.getText().trim().toLowerCase();
+        Object previousSelection = jRptComboBox.getSelectedItem();
+
+        updatingReportCombo = true;
+        try {
+            jRptComboBox.removeAllItems();
+            for (String title : allReportTitles) {
+                if (query.isEmpty() || title.toLowerCase().contains(query)) {
+                    jRptComboBox.addItem(title);
+                }
+            }
+            if (previousSelection != null && containsReport(previousSelection.toString())) {
+                jRptComboBox.setSelectedItem(previousSelection);
+            } else if (jRptComboBox.getItemCount() > 0) {
+                jRptComboBox.setSelectedIndex(0);
+            }
+        } finally {
+            updatingReportCombo = false;
+        }
+
+        if (jRptComboBox.getSelectedItem() != null) {
+            selectAction();
+        }
+    }
+
+    private boolean containsReport(String title) {
+        for (int i = 0; i < jRptComboBox.getItemCount(); i++) {
+            if (jRptComboBox.getItemAt(i).equals(title)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void selectAction() {
-        File jasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
+        Object selectedReport = jRptComboBox.getSelectedItem();
+        if (selectedReport == null) {
+            return;
+        }
+        File jasperFile = reportNameFileMap.get(selectedReport.toString());
         if (jasperFile != null) {
             try {
                 JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperFile);
