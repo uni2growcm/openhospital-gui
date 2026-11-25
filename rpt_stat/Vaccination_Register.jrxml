@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created for Open Hospital - Vaccination Register -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="Vaccination_Register" 
+              pageWidth="842" 
+              pageHeight="595" 
+              orientation="Landscape" 
+              whenNoDataType="NoDataSection" 
+              columnWidth="782" 
+              leftMargin="30" 
+              rightMargin="30" 
+              topMargin="20" 
+              bottomMargin="20" 
+              isFloatColumnFooter="true" 
+              resourceBundle="Vaccination_Register" 
+              whenResourceMissingType="Key" 
+              isSummaryWithPageHeaderAndFooter="true"
+              uuid="b1100001-0001-0001-0001-000000000001">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="java.text.SimpleDateFormat"/>
+	<import value="java.util.Date"/>
+	<subDataset name="VaccineBreakdownDataset" uuid="b1100001-0001-0001-0001-000000000002">
+		<parameter name="fromdate" class="java.util.Date"/>
+		<parameter name="todate" class="java.util.Date"/>
+		<parameter name="TOTAL_COUNT" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT
+				COALESCE(vt.VACT_DESC, v.VAC_VACT_ID_A, '-') AS VACCINE_TYPE_NAME,
+				v.VAC_ID_A AS VACCINE_CODE,
+				v.VAC_DESC AS VACCINE_NAME,
+				COUNT(pv.PAV_ID) AS DOSE_COUNT
+			FROM OH_PATIENTVACCINE pv
+			JOIN OH_VACCINE v ON v.VAC_ID_A = pv.PAV_VAC_ID_A
+			LEFT JOIN OH_VACCINETYPE vt ON vt.VACT_ID_A = v.VAC_VACT_ID_A
+			WHERE DATE(pv.PAV_DATE) >= DATE($P{fromdate})
+				AND DATE(pv.PAV_DATE) <= DATE($P{todate})
+			GROUP BY v.VAC_ID_A, v.VAC_DESC, vt.VACT_DESC, v.VAC_VACT_ID_A
+			ORDER BY VACCINE_TYPE_NAME ASC, DOSE_COUNT DESC, VACCINE_NAME ASC]]>
+		</queryString>
+		<field name="VACCINE_TYPE_NAME" class="java.lang.String"/>
+		<field name="VACCINE_CODE" class="java.lang.String"/>
+		<field name="VACCINE_NAME" class="java.lang.String"/>
+		<field name="DOSE_COUNT" class="java.lang.Long"/>
+	</subDataset>
+	<parameter name="fromdate" class="java.util.Date"/>
+	<parameter name="todate" class="java.util.Date"/>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Currency" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PeriodLabel" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT
+			pv.PAV_ID AS VACCINE_ID,
+			pv.PAV_YPROG AS DOSE_NUMBER,
+			DATE_FORMAT(pv.PAV_DATE, '%d/%m/%Y') AS VACCINE_DATE_STR,
+			COALESCE(pv.PAV_VILLAGE, '') AS VILLAGE,
+			p.PAT_ID AS PATIENT_ID,
+			p.PAT_NAME AS PATIENT_NAME,
+			p.PAT_SEX AS PATIENT_SEX,
+			IF(p.PAT_BDATE IS NOT NULL, TIMESTAMPDIFF(YEAR, p.PAT_BDATE, pv.PAV_DATE), p.PAT_AGE) AS PATIENT_AGE,
+			COALESCE(p.PAT_NEXT_KIN, '') AS PATIENT_NEXT_KIN,
+			COALESCE(p.PAT_TELE, '') AS PATIENT_TELE,
+			COALESCE(vt.VACT_DESC, '-') AS VACCINE_TYPE,
+			v.VAC_ID_A AS VACCINE_CODE,
+			v.VAC_DESC AS VACCINE_NAME
+		FROM OH_PATIENTVACCINE pv
+		JOIN OH_PATIENT p ON p.PAT_ID = pv.PAV_PAT_ID
+		JOIN OH_VACCINE v ON v.VAC_ID_A = pv.PAV_VAC_ID_A
+		LEFT JOIN OH_VACCINETYPE vt ON vt.VACT_ID_A = v.VAC_VACT_ID_A
+		WHERE DATE(pv.PAV_DATE) >= DATE($P{fromdate})
+			AND DATE(pv.PAV_DATE) <= DATE($P{todate})
+		ORDER BY pv.PAV_DATE ASC, pv.PAV_ID ASC]]>
+	</queryString>
+	<field name="VACCINE_ID" class="java.lang.Integer"/>
+	<field name="DOSE_NUMBER" class="java.lang.Integer"/>
+	<field name="VACCINE_DATE_STR" class="java.lang.String"/>
+	<field name="VILLAGE" class="java.lang.String"/>
+	<field name="PATIENT_ID" class="java.lang.Integer"/>
+	<field name="PATIENT_NAME" class="java.lang.String"/>
+	<field name="PATIENT_SEX" class="java.lang.String"/>
+	<field name="PATIENT_AGE" class="java.lang.Integer"/>
+	<field name="PATIENT_NEXT_KIN" class="java.lang.String"/>
+	<field name="PATIENT_TELE" class="java.lang.String"/>
+	<field name="VACCINE_TYPE" class="java.lang.String"/>
+	<field name="VACCINE_CODE" class="java.lang.String"/>
+	<field name="VACCINE_NAME" class="java.lang.String"/>
+	<variable name="TOTAL_COUNT" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{VACCINE_ID}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="120" splitType="Stretch">
+			<!-- Header Left (French) -->
+			<textField>
+				<reportElement x="0" y="0" width="380" height="14" uuid="b1100001-0001-0001-0001-000000000010"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="14" width="380" height="12" uuid="b1100001-0001-0001-0001-000000000011"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="26" width="380" height="14" uuid="b1100001-0001-0001-0001-000000000012"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<!-- Header Right (English) -->
+			<textField>
+				<reportElement x="402" y="0" width="380" height="14" uuid="b1100001-0001-0001-0001-000000000013"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="14" width="380" height="12" uuid="b1100001-0001-0001-0001-000000000014"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="26" width="380" height="14" uuid="b1100001-0001-0001-0001-000000000015"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<!-- Report Title -->
+			<textField>
+				<reportElement x="0" y="42" width="782" height="20" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000016"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<!-- Period Subtitle -->
+			<textField>
+				<reportElement x="0" y="62" width="782" height="15" forecolor="#4B5563" uuid="b1100001-0001-0001-0001-000000000017"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<!-- Facility Details (Left & Right) -->
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="80" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000018"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_district} + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="93" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000019"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_adresse} + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="80" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000020"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_structure} + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="93" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000021"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_telephone} + " " + ($P{Telephone} != null ? $P{Telephone} : "") + " | " + $R{label_email} + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<!-- Separator Line -->
+			<line>
+				<reportElement x="0" y="112" width="782" height="1" uuid="b1100001-0001-0001-0001-000000000022"/>
+				<graphicElement>
+					<pen lineWidth="0.75" lineColor="#9CA3AF"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="24" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="782" height="24" backcolor="#E5E7EB" uuid="b1100001-0001-0001-0001-000000000030"/>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<leftPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<bottomPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<rightPen lineWidth="0.5" lineColor="#9CA3AF"/>
+				</box>
+				<textField>
+					<reportElement x="0" y="0" width="24" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000031"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_num}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="24" y="0" width="56" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000032"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="80" y="0" width="40" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000033"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_code}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="120" y="0" width="125" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000034"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="245" y="0" width="25" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000035"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_sex}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="0" width="28" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000036"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_age}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="298" y="0" width="80" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000037"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_village}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="378" y="0" width="85" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000038"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_next_kin}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="463" y="0" width="65" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000039"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_tele}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="528" y="0" width="90" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000040"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="618" y="0" width="126" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000041"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_vaccine}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="744" y="0" width="38" height="24" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000042"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{col_dose}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="782" height="18" backcolor="#FFFFFF" uuid="b1100001-0001-0001-0001-000000000050"/>
+				<box>
+					<leftPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+					<rightPen lineWidth="0.25" lineColor="#E5E7EB"/>
+				</box>
+				<textField isBlankWhenNull="true">
+					<reportElement x="0" y="0" width="24" height="18" uuid="b1100001-0001-0001-0001-000000000051"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="24" y="0" width="56" height="18" uuid="b1100001-0001-0001-0001-000000000052"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{VACCINE_DATE_STR}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="80" y="0" width="40" height="18" uuid="b1100001-0001-0001-0001-000000000053"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_ID}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="120" y="0" width="125" height="18" uuid="b1100001-0001-0001-0001-000000000054"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="245" y="0" width="25" height="18" uuid="b1100001-0001-0001-0001-000000000055"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_SEX}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="270" y="0" width="28" height="18" uuid="b1100001-0001-0001-0001-000000000056"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_AGE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="298" y="0" width="80" height="18" uuid="b1100001-0001-0001-0001-000000000057"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{VILLAGE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="378" y="0" width="85" height="18" uuid="b1100001-0001-0001-0001-000000000058"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_NEXT_KIN}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="463" y="0" width="65" height="18" uuid="b1100001-0001-0001-0001-000000000059"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PATIENT_TELE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="528" y="0" width="90" height="18" uuid="b1100001-0001-0001-0001-000000000060"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{VACCINE_TYPE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="618" y="0" width="126" height="18" uuid="b1100001-0001-0001-0001-000000000061"/>
+					<box leftPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{VACCINE_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="744" y="0" width="38" height="18" uuid="b1100001-0001-0001-0001-000000000062"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{DOSE_NUMBER}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="22" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="b1100001-0001-0001-0001-000000000070"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#9CA3AF"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="0" y="4" width="250" height="16" uuid="b1100001-0001-0001-0001-000000000071"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="580" y="4" width="160" height="16" uuid="b1100001-0001-0001-0001-000000000072"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="740" y="4" width="42" height="16" uuid="b1100001-0001-0001-0001-000000000073"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="22" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="2" width="782" height="1" uuid="b1100001-0001-0001-0001-000000000074"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#9CA3AF"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="0" y="4" width="250" height="16" uuid="b1100001-0001-0001-0001-000000000075"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="580" y="4" width="160" height="16" uuid="b1100001-0001-0001-0001-000000000076"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of} + " "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="740" y="4" width="42" height="16" uuid="b1100001-0001-0001-0001-000000000077"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="115" splitType="Prevent">
+			<line>
+				<reportElement x="0" y="4" width="782" height="1" uuid="b1100001-0001-0001-0001-000000000080"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineColor="#374151"/>
+				</graphicElement>
+			</line>
+			<!-- Summary Section Title & Total Vaccinations -->
+			<textField>
+				<reportElement x="0" y="8" width="460" height="16" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000081"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="24" width="460" height="15" forecolor="#374151" uuid="b1100001-0001-0001-0001-000000000082"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{summary_total} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
+			</textField>
+			<!-- Breakdown Table Header -->
+			<frame>
+				<reportElement mode="Opaque" x="0" y="42" width="460" height="18" backcolor="#F3F4F6" uuid="b1100001-0001-0001-0001-000000000083"/>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#D1D5DB"/>
+					<leftPen lineWidth="0.5" lineColor="#D1D5DB"/>
+					<bottomPen lineWidth="0.5" lineColor="#D1D5DB"/>
+					<rightPen lineWidth="0.5" lineColor="#D1D5DB"/>
+				</box>
+				<textField>
+					<reportElement x="0" y="0" width="115" height="18" uuid="b1100001-0001-0001-0001-000000000084"/>
+					<box leftPadding="4"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_vaccine_type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="115" y="0" width="55" height="18" uuid="b1100001-0001-0001-0001-000000000085"/>
+					<box leftPadding="2"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_vaccine_code}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="0" width="180" height="18" uuid="b1100001-0001-0001-0001-000000000086"/>
+					<box leftPadding="2"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_vaccine_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="350" y="0" width="55" height="18" uuid="b1100001-0001-0001-0001-000000000087"/>
+					<box rightPadding="4"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_doses}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="405" y="0" width="55" height="18" uuid="b1100001-0001-0001-0001-000000000088"/>
+					<box rightPadding="4"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{summary_pct}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<!-- Breakdown List (subDataset) -->
+			<componentElement>
+				<reportElement positionType="Float" x="0" y="60" width="460" height="16" uuid="b1100001-0001-0001-0001-000000000090"/>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="VaccineBreakdownDataset" uuid="b1100001-0001-0001-0001-000000000091">
+						<datasetParameter name="fromdate">
+							<datasetParameterExpression><![CDATA[$P{fromdate}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="todate">
+							<datasetParameterExpression><![CDATA[$P{todate}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="TOTAL_COUNT">
+							<datasetParameterExpression><![CDATA[$V{TOTAL_COUNT}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:listContents height="16" width="460">
+						<frame>
+							<reportElement x="0" y="0" width="460" height="16" uuid="b1100001-0001-0001-0001-000000000092"/>
+							<box>
+								<leftPen lineWidth="0.25" lineColor="#E5E7EB"/>
+								<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
+								<rightPen lineWidth="0.25" lineColor="#E5E7EB"/>
+							</box>
+							<textField isBlankWhenNull="true">
+								<reportElement x="0" y="0" width="115" height="16" uuid="b1100001-0001-0001-0001-000000000093"/>
+								<box leftPadding="4"/>
+								<textElement verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{VACCINE_TYPE_NAME}]]></textFieldExpression>
+							</textField>
+							<textField isBlankWhenNull="true">
+								<reportElement x="115" y="0" width="55" height="16" uuid="b1100001-0001-0001-0001-000000000094"/>
+								<box leftPadding="2"/>
+								<textElement verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{VACCINE_CODE}]]></textFieldExpression>
+							</textField>
+							<textField isBlankWhenNull="true">
+								<reportElement x="170" y="0" width="180" height="16" uuid="b1100001-0001-0001-0001-000000000095"/>
+								<box leftPadding="2"/>
+								<textElement verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{VACCINE_NAME}]]></textFieldExpression>
+							</textField>
+							<textField isBlankWhenNull="true">
+								<reportElement x="350" y="0" width="55" height="16" uuid="b1100001-0001-0001-0001-000000000096"/>
+								<box rightPadding="4"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{DOSE_COUNT}]]></textFieldExpression>
+							</textField>
+							<textField isBlankWhenNull="true">
+								<reportElement x="405" y="0" width="55" height="16" uuid="b1100001-0001-0001-0001-000000000097"/>
+								<box rightPadding="4"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[($P{TOTAL_COUNT} != null && $P{TOTAL_COUNT}.intValue() > 0 && $F{DOSE_COUNT} != null) ? String.format("%.1f %%", ($F{DOSE_COUNT}.doubleValue() / $P{TOTAL_COUNT}.doubleValue()) * 100.0) : "-"]]></textFieldExpression>
+							</textField>
+						</frame>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<!-- Signature Box (Right) -->
+			<frame>
+				<reportElement positionType="Float" x="495" y="8" width="287" height="100" uuid="b1100001-0001-0001-0001-000000000100"/>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<leftPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<bottomPen lineWidth="0.5" lineColor="#9CA3AF"/>
+					<rightPen lineWidth="0.5" lineColor="#9CA3AF"/>
+				</box>
+				<textField>
+					<reportElement x="0" y="6" width="287" height="16" uuid="b1100001-0001-0001-0001-000000000101"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{signature_title}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="12" y="78" width="263" height="16" uuid="b1100001-0001-0001-0001-000000000102"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{signature_date}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</summary>
+	<noData>
+		<band height="180" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="380" height="15" uuid="b1100001-0001-0001-0001-000000000110"/>
+				<textElement textAlignment="Left">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="15" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000111"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="28" width="380" height="15" uuid="b1100001-0001-0001-0001-000000000112"/>
+				<textElement textAlignment="Left">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="0" width="380" height="15" uuid="b1100001-0001-0001-0001-000000000113"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="15" width="380" height="13" uuid="b1100001-0001-0001-0001-000000000114"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="28" width="380" height="15" uuid="b1100001-0001-0001-0001-000000000115"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="52" width="782" height="22" forecolor="#1F2937" uuid="b1100001-0001-0001-0001-000000000116"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="74" width="782" height="16" forecolor="#4B5563" uuid="b1100001-0001-0001-0001-000000000117"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="100" width="782" height="1" uuid="b1100001-0001-0001-0001-000000000118"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineColor="#9CA3AF"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="130" width="782" height="24" forecolor="#6B7280" uuid="b1100001-0001-0001-0001-000000000120"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{nodata}]]></textFieldExpression>
+			</textField>
+		</band>
+	</noData>
+</jasperReport>

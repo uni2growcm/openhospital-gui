@@ -665,7 +665,7 @@ public class HomeVisitBrowser extends ModalJFrame {
         } else {
             jPageLabel.setText("/ 0 " + MessageBundle.getMessage("angal.common.pages.txt"));
         }
-        jTotalLabel.setText(MessageBundle.formatMessage("angal.common.total.label", totalElements));
+        jTotalLabel.setText(MessageBundle.formatMessage("angal.homevisit.total.label", totalElements));
     }
 
     private void generateReport() {

@@ -69,9 +69,12 @@ import org.isf.exa.manager.ExamRowBrowsingManager;
 import org.isf.exa.model.Exam;
 import org.isf.exa.model.ExamRow;
 import org.isf.generaldata.MessageBundle;
+import org.isf.maternity.model.PregnancyStatus;
+import org.isf.maternity.model.RiskLevel;
 import org.isf.menu.manager.Context;
 import org.isf.patient.model.Patient;
 import org.isf.stat2.manager.StatsBrowserManager;
+import org.isf.stat2.model.PregnancyStatsRange;
 import org.isf.typology.model.Family;
 import org.isf.typology.model.Typology;
 import org.isf.utils.exception.OHServiceException;
@@ -87,6 +90,32 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private static final long serialVersionUID = 1L;
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
+
+    private static final Integer[] COUNT_0_3PLUS_MIN = {null, 0, 1, 2, 3};
+    private static final Integer[] COUNT_0_3PLUS_MAX = {null, 0, 1, 2, null};
+
+    private static final Integer[] GRAVIDITY_MIN = {null, 0, 1, 2, 3, 4};
+    private static final Integer[] GRAVIDITY_MAX = {null, 0, 1, 2, 3, null};
+
+    private static final Integer[] GEST_AGE_MIN = {null, 0, 12, 24, 36};
+    private static final Integer[] GEST_AGE_MAX = {null, 12, 24, 36, null};
+
+    private static final Integer[] VISIT_COUNT_MIN = {null, 1, 2, 2, 4, 8};
+    private static final Integer[] VISIT_COUNT_MAX = {null, 1, 2, 3, 7, null};
+    private static final String[] MATERNAL_WEIGHT_CODES = {null, PregnancyStatsRange.MATERNAL_WEIGHT_LT50,
+            PregnancyStatsRange.MATERNAL_WEIGHT_50_70, PregnancyStatsRange.MATERNAL_WEIGHT_70_90,
+            PregnancyStatsRange.MATERNAL_WEIGHT_GE90};
+    private static final String[] SYSTOLIC_CODES = {null, PregnancyStatsRange.SYSTOLIC_LT120,
+            PregnancyStatsRange.SYSTOLIC_120_139, PregnancyStatsRange.SYSTOLIC_GE140};
+    private static final String[] DIASTOLIC_CODES = {null, PregnancyStatsRange.DIASTOLIC_LT80,
+            PregnancyStatsRange.DIASTOLIC_80_89, PregnancyStatsRange.DIASTOLIC_GE90};
+    private static final String[] URINE_PROTEIN_VALUES = {null, "-", "+", "++", "+++"};
+
+    private static final String[] EDEMA_KEYS = {null, "angal.maternity.edema.none", "angal.maternity.edema.mild",
+            "angal.maternity.edema.moderate", "angal.maternity.edema.severe"};
+    private static final String[] PRESENTATION_KEYS = {null, "angal.maternity.presentation.cephalic",
+            "angal.maternity.presentation.breech", "angal.maternity.presentation.transverse",
+            "angal.maternity.presentation.other"};
 
     private JPanel filtersPanel;
     private JPanel dataPanel;
@@ -141,8 +170,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     private JTextField respMaxField;
 
     private JPanel pregnancyPanel;
-    private JComboBox<String> riskLevelCombo;
-    private JComboBox<String> statusCombo;
+    private JComboBox<RiskLevel> riskLevelCombo;
+    private JComboBox<PregnancyStatus> statusCombo;
     private JComboBox<String> gravidityCombo;
     private JComboBox<String> parityCombo;
     private JComboBox<String> miscarriageCombo;
@@ -285,6 +314,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
 
         visitTypeCombo = new JComboBox<>();
+        visitTypeCombo.setRenderer(allRenderer());
         visitTypeCombo.addItem(null);
         for (Typology t : visitTypesData) {
             visitTypeCombo.addItem(t);
@@ -399,13 +429,9 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         gridPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         JPanel riskPanel = createFilterPanel(
-                MessageBundle.getMessage("angal.maternity.risklevel.label"),
-                riskLevelCombo = new JComboBox<>(new String[]{
-                        MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.maternity.risklevel.low"),
-                        MessageBundle.getMessage("angal.maternity.risklevel.medium"),
-                        MessageBundle.getMessage("angal.maternity.risklevel.high")
-                })        );
+                MessageBundle.getMessage("angal.stat.risk.level"),
+                riskLevelCombo = enumCombo(RiskLevel.values())
+        );
         gridPanel.add(riskPanel);
 
         JPanel parityPanel = createFilterPanel(
@@ -432,18 +458,15 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         JPanel statusPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.status"),
-                statusCombo = new JComboBox<>(new String[]{
-                        MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.maternity.pregnancystatus.ongoing"),
-                        MessageBundle.getMessage("angal.maternity.pregnancystatus.completed"),
-                        MessageBundle.getMessage("angal.maternity.pregnancystatus.terminated")
-                })        );
+                statusCombo = enumCombo(PregnancyStatus.values())
+        );
         gridPanel.add(statusPanel);
 
         JPanel gravidityPanel = createFilterPanel(
                 MessageBundle.getMessage("angal.stat.gravidity"),
                 gravidityCombo = new JComboBox<>(new String[]{
                         MessageBundle.getMessage("angal.stat.all"),
+                        MessageBundle.getMessage("angal.stat.count.0"),
                         MessageBundle.getMessage("angal.stat.count.1"),
                         MessageBundle.getMessage("angal.stat.count.2"),
                         MessageBundle.getMessage("angal.stat.count.3"),
@@ -464,6 +487,17 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
         pregnancyPanel.add(gridPanel);
         return pregnancyPanel;
+    }
+
+    /** Combo with a null "All" entry followed by the given enum values (shown translated). */
+    private static <E extends Enum<E>> JComboBox<E> enumCombo(E[] values) {
+        JComboBox<E> combo = new JComboBox<>();
+        combo.setRenderer(allRenderer());
+        combo.addItem(null);
+        for (E value : values) {
+            combo.addItem(value);
+        }
+        return combo;
     }
 
     private JPanel createFilterPanel(String label, JComboBox<?> combo) {
@@ -591,8 +625,8 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             return periodAndAgePanel;
         }
 
-        JLabel periodFromLabel = new JLabel(MessageBundle.getMessage("angal.stat.admissiondatefrom"));
-        JLabel periodToLabel = new JLabel(MessageBundle.getMessage("angal.common.dateTo"));
+        JLabel periodFromLabel = new JLabel(MessageBundle.getMessage("angal.stat.periodfrom"));
+        JLabel periodToLabel = new JLabel(MessageBundle.getMessage("angal.stat.periodto"));
         periodFromDateChooser = new GoodDateChooser(null);
         periodToDateChooser = new GoodDateChooser(null);
 
@@ -616,7 +650,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         periodAndAgePanel.add(ageToLabel);
         periodAndAgePanel.add(ageToField);
 
-        periodAndAgePanel = setPanelBorder(periodAndAgePanel, MessageBundle.getMessage("angal.stat.admissionperiod"));
+        periodAndAgePanel = setPanelBorder(periodAndAgePanel, MessageBundle.getMessage("angal.stat.visitperiodandage"));
 
         return periodAndAgePanel;
     }
@@ -669,7 +703,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         }
 
         JPanel examsFlowPanel = new JPanel(new FlowLayout());
-        JLabel examsLabel = new JLabel(MessageBundle.getMessage("angal.reduction.exam"));
+        JLabel examsLabel = new JLabel(MessageBundle.getMessage("angal.stat.exam"));
 
         try {
             examsData = examsManager.getExams();
@@ -688,7 +722,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         examsFlowPanel.add(examsCombo);
 
         JPanel examResultsFlowPanel = new JPanel(new FlowLayout());
-        JLabel examResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operationresult"));
+        JLabel examResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.examresult"));
         examResultsCombo = new JComboBox<>();
         examResultsFlowPanel.add(examResultsLabel);
         examResultsFlowPanel.add(examResultsCombo);
@@ -908,13 +942,13 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         diastolicMaxField = new JTextField(5);
         restrictToNumeric(diastolicMaxField, true);
         pressurePanel.add(arterialPressureCheck);
-        pressurePanel.add(new JLabel("Systolique Min:"));
+        pressurePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.systolic.min")));
         pressurePanel.add(systolicMinField);
-        pressurePanel.add(new JLabel("Max:"));
+        pressurePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.max")));
         pressurePanel.add(systolicMaxField);
-        pressurePanel.add(new JLabel("Diastolique Min:"));
+        pressurePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.diastolic.min")));
         pressurePanel.add(diastolicMinField);
-        pressurePanel.add(new JLabel("Max:"));
+        pressurePanel.add(new JLabel(MessageBundle.getMessage("angal.stat.max")));
         pressurePanel.add(diastolicMaxField);
         systolicMinField.setEnabled(false);
         systolicMaxField.setEnabled(false);
@@ -1356,7 +1390,7 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
             paginationCombo.addItem(page);
         }
 
-        paginationLabel.setText("/" + totalPages + " Pages");
+        paginationLabel.setText("/" + totalPages + " " + MessageBundle.getMessage("angal.stat.pages"));
         setPaginationButtons();
     }
 
@@ -1534,150 +1568,67 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         return panel;
     }
 
+    private static <T> T valueAt(JComboBox<?> combo, T[] values) {
+        int index = combo.getSelectedIndex();
+        return (index < 0 || index >= values.length) ? null : values[index];
+    }
+
+    private static String messageAt(JComboBox<?> combo, String[] keys) {
+        String key = valueAt(combo, keys);
+        return key == null ? null : MessageBundle.getMessage(key);
+    }
+
+    private static DefaultListCellRenderer allRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                Object shown = value == null ? MessageBundle.getMessage("angal.stat.all") : value;
+                return super.getListCellRendererComponent(list, shown, index, isSelected, cellHasFocus);
+            }
+        };
+    }
+
     private String getSelectedRiskLevel() {
-        switch (riskLevelCombo.getSelectedIndex()) {
-            case 1:
-                return "LOW";
-            case 2:
-                return "MEDIUM";
-            case 3:
-                return "HIGH";
-            default:
-                return null;
-        }
+        RiskLevel selected = (RiskLevel) riskLevelCombo.getSelectedItem();
+        return selected == null ? null : selected.name();
     }
 
     private String getSelectedStatus() {
-        switch (statusCombo.getSelectedIndex()) {
-            case 1:
-                return "ONGOING";
-            case 2:
-                return "COMPLETED";
-            case 3:
-                return "TERMINATED";
-            default:
-                return null;
-        }
+        PregnancyStatus selected = (PregnancyStatus) statusCombo.getSelectedItem();
+        return selected == null ? null : selected.name();
     }
 
     private Integer getGravidityMin() {
-        switch (gravidityCombo.getSelectedIndex()) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 3;
-            case 4:
-                return 4;
-            default:
-                return null;
-        }
+        return valueAt(gravidityCombo, GRAVIDITY_MIN);
     }
 
     private Integer getGravidityMax() {
-        switch (gravidityCombo.getSelectedIndex()) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 3;
-            case 4:
-                return Integer.MAX_VALUE;
-            default:
-                return null;
-        }
+        return valueAt(gravidityCombo, GRAVIDITY_MAX);
     }
 
     private Integer getParityMin() {
-        switch (parityCombo.getSelectedIndex()) {
-            case 1:
-                return 0;
-            case 2:
-                return 1;
-            case 3:
-                return 2;
-            case 4:
-                return 3;
-            default:
-                return null;
-        }
+        return valueAt(parityCombo, COUNT_0_3PLUS_MIN);
     }
 
     private Integer getParityMax() {
-        switch (parityCombo.getSelectedIndex()) {
-            case 1:
-                return 0;
-            case 2:
-                return 1;
-            case 3:
-                return 2;
-            case 4:
-                return Integer.MAX_VALUE;
-            default:
-                return null;
-        }
+        return valueAt(parityCombo, COUNT_0_3PLUS_MAX);
     }
 
     private Integer getMiscarriageMin() {
-        switch (miscarriageCombo.getSelectedIndex()) {
-            case 1:
-                return 0;
-            case 2:
-                return 1;
-            case 3:
-                return 2;
-            case 4:
-                return 3;
-            default:
-                return null;
-        }
+        return valueAt(miscarriageCombo, COUNT_0_3PLUS_MIN);
     }
 
     private Integer getMiscarriageMax() {
-        switch (miscarriageCombo.getSelectedIndex()) {
-            case 1:
-                return 0;
-            case 2:
-                return 1;
-            case 3:
-                return 2;
-            case 4:
-                return Integer.MAX_VALUE;
-            default:
-                return null;
-        }
+        return valueAt(miscarriageCombo, COUNT_0_3PLUS_MAX);
     }
 
     private Integer getGestationalAgeMin() {
-        switch (gestationalAgeCombo.getSelectedIndex()) {
-            case 1:
-                return 0;
-            case 2:
-                return 12;
-            case 3:
-                return 24;
-            case 4:
-                return 36;
-            default:
-                return null;
-        }
+        return valueAt(gestationalAgeCombo, GEST_AGE_MIN);
     }
 
     private Integer getGestationalAgeMax() {
-        switch (gestationalAgeCombo.getSelectedIndex()) {
-            case 1:
-                return 11;
-            case 2:
-                return 24;
-            case 3:
-                return 36;
-            case 4:
-                return Integer.MAX_VALUE;
-            default:
-                return null;
-        }
+        return valueAt(gestationalAgeCombo, GEST_AGE_MAX);
     }
 
     private String getSelectedVisitType() {
@@ -1689,110 +1640,35 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     }
 
     private String getSelectedMaternalWeight() {
-        switch (maternalWeightCombo.getSelectedIndex()) {
-            case 1:
-                return "< 50 kg";
-            case 2:
-                return "50-70 kg";
-            case 3:
-                return "70-90 kg";
-            case 4:
-                return "90+ kg";
-            default:
-                return null;
-        }
+        return valueAt(maternalWeightCombo, MATERNAL_WEIGHT_CODES);
     }
 
     private String getSelectedUrineProtein() {
-        switch (urineProteinCombo.getSelectedIndex()) {
-            case 1:
-                return "-";
-            case 2:
-                return "+";
-            case 3:
-                return "++";
-            case 4:
-                return "+++";
-            default:
-                return null;
-        }
+        return valueAt(urineProteinCombo, URINE_PROTEIN_VALUES);
     }
 
     private String getSelectedEdema() {
-        if (edemaCombo.getSelectedIndex() <= 0) {
-            return null;
-        }
-        Object selected = edemaCombo.getSelectedItem();
-        return selected != null ? selected.toString() : null;
+        return messageAt(edemaCombo, EDEMA_KEYS);
     }
 
     private String getSelectedFetalPresentation() {
-        if (fetalPresentationCombo.getSelectedIndex() <= 0) {
-            return null;
-        }
-        Object selected = fetalPresentationCombo.getSelectedItem();
-        return selected != null ? selected.toString() : null;
+        return messageAt(fetalPresentationCombo, PRESENTATION_KEYS);
     }
 
     private String getSelectedSystolicBp() {
-        switch (systolicBpCombo.getSelectedIndex()) {
-            case 1:
-                return "< 120";
-            case 2:
-                return "120-139";
-            case 3:
-                return "140+";
-            default:
-                return null;
-        }
+        return valueAt(systolicBpCombo, SYSTOLIC_CODES);
     }
 
     private String getSelectedDiastolicBp() {
-        switch (diastolicBpCombo.getSelectedIndex()) {
-            case 1:
-                return "< 80";
-            case 2:
-                return "80-89";
-            case 3:
-                return "90+";
-            default:
-                return null;
-        }
+        return valueAt(diastolicBpCombo, DIASTOLIC_CODES);
     }
 
     private Integer getVisitCountMin() {
-        switch (visitCountCombo.getSelectedIndex()) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 2;
-            case 4:
-                return 4;
-            case 5:
-                return 8;
-            default:
-                return null;
-        }
-
+        return valueAt(visitCountCombo, VISIT_COUNT_MIN);
     }
 
     private Integer getVisitCountMax() {
-        switch (visitCountCombo.getSelectedIndex()) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 3;
-            case 4:
-                return 7;
-            case 5:
-                return Integer.MAX_VALUE;
-            default:
-                return null;
-        }
+        return valueAt(visitCountCombo, VISIT_COUNT_MAX);
     }
 
     private class StatsPregnancyBrowsingTableModel extends DefaultTableModel {
