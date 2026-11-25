@@ -140,6 +140,7 @@ public class SelectPatient extends JDialog implements PatientListener {
 
 	private Integer minAge;
 	private Integer maxAge;
+	private Integer maxAgeInMonths;
 
 	public SelectPatient(JFrame owner, Patient pat) {
 		super(owner, true);
@@ -308,12 +309,21 @@ public class SelectPatient extends JDialog implements PatientListener {
 							GeneralData.PAGINATIONPAGESIZE,
 							org.springframework.data.domain.Sort.by("name"));
 
-			Page<Patient> page = patientBrowserManager.getPatientsByOneOfFieldsLikeWith(
-					keyword,
-					femalesOnly,
-					minAge,
-					maxAge,
-					pageable);
+			Page<Patient> page;
+			if (maxAgeInMonths != null) {
+				page = patientBrowserManager.getPatientsByOneOfFieldsLikeWithMaxAgeInMonths(
+						keyword,
+						femalesOnly,
+						maxAgeInMonths,
+						pageable);
+			} else {
+				page = patientBrowserManager.getPatientsByOneOfFieldsLikeWith(
+						keyword,
+						femalesOnly,
+						minAge,
+						maxAge,
+						pageable);
+			}
 
 			patSearch = new ArrayList<>(page.getContent());
 
@@ -846,6 +856,27 @@ public class SelectPatient extends JDialog implements PatientListener {
 		super(owner, true);
 		this.minAge = minAge;
 		this.maxAge = maxAge;
+		this.femalesOnly = false;
+		ps = new PatientSummary(patient);
+		initializeDialog();
+		getButtonNew().setVisible(enableAddPatient);
+		if (searchText != null) {
+			jTextFieldSearchPatient.setText(searchText);
+		}
+		loadPatientPage();
+	}
+
+	/**
+	 * Patient selection restricted to the patients whose age, computed from the birth date, does not exceed the given number of months.
+	 *
+	 * @param owner the owner dialog
+	 * @param searchText the initial search text
+	 * @param enableAddPatient {@code true} to show the "new patient" button
+	 * @param maxAgeInMonths the maximum age in completed months (inclusive)
+	 */
+	public SelectPatient(JDialog owner, String searchText, boolean enableAddPatient, int maxAgeInMonths) {
+		super(owner, true);
+		this.maxAgeInMonths = maxAgeInMonths;
 		this.femalesOnly = false;
 		ps = new PatientSummary(patient);
 		initializeDialog();

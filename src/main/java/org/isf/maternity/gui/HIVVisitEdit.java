@@ -25,12 +25,18 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.EventListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -43,6 +49,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
 
 import org.isf.generaldata.MessageBundle;
@@ -98,10 +107,21 @@ public class HIVVisitEdit extends JDialog {
         }
     }
 
+    // the sections are displayed on two columns when the form is at least this wide
+    private static final int TWO_COLUMNS_MIN_WIDTH = 900;
+    // the dialog never takes more than this part of the screen
+    private static final double MAX_SCREEN_RATIO = 0.9;
+    private static final Dimension MIN_SIZE = new Dimension(480, 400);
+    // default width, large enough to display the sections on two columns
+    private static final int DEFAULT_WIDTH = 1000;
+
     // Panels
     private JPanel mainPanel;
     private JPanel infoPanel;
     private JPanel dataPanel;
+    private JPanel sectionsPanel;
+    private List<JPanel> sections;
+    private boolean twoColumns;
     private JPanel buttonPanel;
 
     // Buttons
@@ -111,11 +131,8 @@ public class HIVVisitEdit extends JDialog {
     // Date field
     private GoodDateTimeSpinnerChooser visitDateField;
 
-    // Clinical data fields
-    private VoLimitedTextField weightField;
-    private VoLimitedTextField heightField;
+    // Clinical data fields (weight, height and temperature are recorded through the patient examination)
     private VoLimitedTextField headCircumferenceField;
-    private VoLimitedTextField temperatureField;
     private JTextArea clinicalStatusArea;
 
     // Lab fields
@@ -154,7 +171,7 @@ public class HIVVisitEdit extends JDialog {
         this.insert = inserting;
         initManagers();
         initialize();
-        pack();
+        fitToScreen();
         setLocationRelativeTo(owner);
     }
 
@@ -168,8 +185,21 @@ public class HIVVisitEdit extends JDialog {
         if (!insert) {
             loadExistingData();
         }
-        pack();
+        fitToScreen();
         setLocationRelativeTo(owner);
+    }
+
+    /**
+     * Sizes the dialog on its content, without exceeding the available screen space (the content scrolls if needed).
+     */
+    private void fitToScreen() {
+        pack();
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int maxWidth = (int) (screen.width * MAX_SCREEN_RATIO);
+        int maxHeight = (int) (screen.height * MAX_SCREEN_RATIO);
+        Dimension preferred = getPreferredSize();
+        setMinimumSize(new Dimension(Math.min(MIN_SIZE.width, maxWidth), Math.min(MIN_SIZE.height, maxHeight)));
+        setSize(Math.min(Math.max(preferred.width, DEFAULT_WIDTH), maxWidth), Math.min(preferred.height, maxHeight));
     }
 
     private void initManagers() {
@@ -183,8 +213,7 @@ public class HIVVisitEdit extends JDialog {
         } else {
             setTitle(MessageBundle.getMessage("angal.hiv.visit.edit.title"));
         }
-        setMinimumSize(new Dimension(650, 750));
-        setPreferredSize(new Dimension(700, 850));
+        setResizable(true);
         add(getMainPanel(), BorderLayout.CENTER);
         add(getButtonPanel(), BorderLayout.SOUTH);
     }
@@ -194,17 +223,8 @@ public class HIVVisitEdit extends JDialog {
             if (visit.getVisitDate() != null) {
                 visitDateField.setDateTime(visit.getVisitDate());
             }
-            if (visit.getWeight() != null) {
-                weightField.setText(String.valueOf(visit.getWeight()));
-            }
-            if (visit.getHeight() != null) {
-                heightField.setText(String.valueOf(visit.getHeight()));
-            }
             if (visit.getHeadCircumference() != null) {
                 headCircumferenceField.setText(String.valueOf(visit.getHeadCircumference()));
-            }
-            if (visit.getTemperature() != null) {
-                temperatureField.setText(String.valueOf(visit.getTemperature()));
             }
             if (visit.getClinicalStatus() != null) {
                 clinicalStatusArea.setText(visit.getClinicalStatus());
@@ -223,19 +243,20 @@ public class HIVVisitEdit extends JDialog {
 
     private JPanel getMainPanel() {
         if (mainPanel == null) {
-            mainPanel = new JPanel();
-            mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+            mainPanel = new JPanel(new BorderLayout());
             JScrollPane scrollPane = new JScrollPane(getDataPanel());
             scrollPane.setBorder(null);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-            mainPanel.add(scrollPane);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
         }
         return mainPanel;
     }
 
     private JPanel getDataPanel() {
         if (dataPanel == null) {
-            dataPanel = new JPanel(new GridBagLayout());
+            dataPanel = new ScrollablePanel(new GridBagLayout());
             dataPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.hiv.visit.data.border")));
 
             GridBagConstraints gbc = new GridBagConstraints();
@@ -265,6 +286,7 @@ public class HIVVisitEdit extends JDialog {
             gbc.gridy = row;
             gbc.gridwidth = 1;
             gbc.weightx = 0.0;
+            gbc.fill = GridBagConstraints.NONE;
             dataPanel.add(new JLabel(MessageBundle.getMessage("angal.maternity.visitdate.col") + " *:"), gbc);
 
             gbc.gridx = 1;
@@ -273,33 +295,13 @@ public class HIVVisitEdit extends JDialog {
             dataPanel.add(getVisitDateField(), gbc);
             row++;
 
-            // Clinical Data
+            // Clinical data, treatment, side effects and follow-up
             gbc.gridx = 0;
             gbc.gridy = row;
             gbc.gridwidth = 2;
             gbc.weightx = 1.0;
-            dataPanel.add(getClinicalDataPanel(), gbc);
-            row++;
-
-            // Treatment Data
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            dataPanel.add(getTreatmentPanel(), gbc);
-            row++;
-
-            // Side Effects
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            dataPanel.add(getSideEffectsPanel(), gbc);
-            row++;
-
-            // Follow-up
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            gbc.gridwidth = 2;
-            dataPanel.add(getFollowUpPanel(), gbc);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            dataPanel.add(getSectionsPanel(), gbc);
             row++;
 
             // Add vertical filler
@@ -308,8 +310,91 @@ public class HIVVisitEdit extends JDialog {
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.VERTICAL;
             dataPanel.add(new JPanel(), gbc);
+
+            dataPanel.addComponentListener(new ComponentAdapter() {
+
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    boolean wide = dataPanel.getWidth() >= TWO_COLUMNS_MIN_WIDTH;
+                    if (wide != twoColumns) {
+                        layoutSections(wide);
+                    }
+                }
+            });
         }
         return dataPanel;
+    }
+
+    private JPanel getSectionsPanel() {
+        if (sectionsPanel == null) {
+            sectionsPanel = new JPanel(new GridBagLayout());
+            sections = List.of(getClinicalDataPanel(), getTreatmentPanel(), getSideEffectsPanel(), getFollowUpPanel());
+            layoutSections(false);
+        }
+        return sectionsPanel;
+    }
+
+    /**
+     * Places the sections on two columns (wide window) or on a single column (narrow window).
+     *
+     * @param onTwoColumns {@code true} for two columns
+     */
+    private void layoutSections(boolean onTwoColumns) {
+        twoColumns = onTwoColumns;
+        sectionsPanel.removeAll();
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        for (int i = 0; i < sections.size(); i++) {
+            gbc.gridx = onTwoColumns ? i % 2 : 0;
+            gbc.gridy = onTwoColumns ? i / 2 : i;
+            if (onTwoColumns) {
+                gbc.insets = new Insets(0, gbc.gridx == 0 ? 0 : 5, 5, 0);
+            }
+            sectionsPanel.add(sections.get(i), gbc);
+        }
+        sectionsPanel.revalidate();
+        sectionsPanel.repaint();
+    }
+
+    /**
+     * Panel following the width of the scroll pane viewport, so that the form is laid out again when the dialog is resized
+     * (only vertical scrolling).
+     */
+    private static class ScrollablePanel extends JPanel implements Scrollable {
+
+        private static final long serialVersionUID = 1L;
+
+        ScrollablePanel(LayoutManager layout) {
+            super(layout);
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return getParent() instanceof JViewport viewport && viewport.getHeight() > getPreferredSize().height;
+        }
     }
 
     private JPanel getInfantInfoPanel() {
@@ -320,7 +405,7 @@ public class HIVVisitEdit extends JDialog {
         Patient patient = infant.getPatient();
         if (patient != null) {
             JLabel nameLabel = new JLabel(MessageBundle.getMessage("angal.hiv.label.patient") + ": " + patient.getFirstName() + " " + patient.getSecondName() + " (" + patient.getCode() + ")");
-            JLabel ageLabel = new JLabel(MessageBundle.getMessage("angal.common.age.txt") + ": " + patient.getAge() + " mois");
+            JLabel ageLabel = new JLabel(MessageBundle.getMessage("angal.common.age.txt") + ": " + HIVInfantEdit.formatAge(patient));
             JLabel statusLabel = new JLabel(MessageBundle.getMessage("angal.hiv.label.status") + ": " + (infant.getStatus() != null ? infant.getStatus().getDescription() : ""));
             JLabel motherLabel = new JLabel(MessageBundle.getMessage("angal.hiv.label.mother") + ": " + (infant.getMother() != null ? infant.getMother().getFirstName() + " " + infant.getMother().getSecondName() : "N/A"));
             JLabel feedingLabel = new JLabel(MessageBundle.getMessage("angal.hiv.filter.feeding") + ": " + (infant.getFeedingType() != null ? infant.getFeedingType().getDescription() : "N/A"));
@@ -346,42 +431,15 @@ public class HIVVisitEdit extends JDialog {
 
         int row = 0;
 
-        // Weight
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0.0;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weights") + "*:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        panel.add(getWeightField(), gbc);
-        row++;
-
-        // Height
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.height") + " (cm):"), gbc);
-
-        gbc.gridx = 1;
-        panel.add(getHeightField(), gbc);
-        row++;
-
         // Head Circumference
         gbc.gridx = 0;
         gbc.gridy = row;
+        gbc.weightx = 0.0;
         panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.head.circumference") + " (cm):"), gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 1.0;
         panel.add(getHeadCircumferenceField(), gbc);
-        row++;
-
-        // Temperature
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        panel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.temperature") + " (°C):"), gbc);
-
-        gbc.gridx = 1;
-        panel.add(getTemperatureField(), gbc);
         row++;
 
         // Clinical Status
@@ -565,6 +623,9 @@ public class HIVVisitEdit extends JDialog {
         if (buttonPanel == null) {
             buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
             buttonPanel.add(getOkButton());
+            if (VisitExaminationLauncher.isExaminationAllowed()) {
+                buttonPanel.add(VisitExaminationLauncher.createExaminationButton(this, infant != null ? infant.getPatient() : null));
+            }
             buttonPanel.add(getCancelButton());
         }
         return buttonPanel;
@@ -579,36 +640,12 @@ public class HIVVisitEdit extends JDialog {
         return visitDateField;
     }
 
-    private VoLimitedTextField getWeightField() {
-        if (weightField == null) {
-            weightField = new VoLimitedTextField(5, 2);
-            weightField.setColumns(8);
-        }
-        return weightField;
-    }
-
-    private VoLimitedTextField getHeightField() {
-        if (heightField == null) {
-            heightField = new VoLimitedTextField(5, 1);
-            heightField.setColumns(8);
-        }
-        return heightField;
-    }
-
     private VoLimitedTextField getHeadCircumferenceField() {
         if (headCircumferenceField == null) {
             headCircumferenceField = new VoLimitedTextField(5, 1);
             headCircumferenceField.setColumns(8);
         }
         return headCircumferenceField;
-    }
-
-    private VoLimitedTextField getTemperatureField() {
-        if (temperatureField == null) {
-            temperatureField = new VoLimitedTextField(4, 1);
-            temperatureField.setColumns(6);
-        }
-        return temperatureField;
     }
 
     private JTextArea getClinicalStatusArea() {
@@ -764,7 +801,13 @@ public class HIVVisitEdit extends JDialog {
         try {
             LocalDateTime visitDate = visitDateField.getLocalDateTime();
             if (visitDate == null) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavaliddate.msg"));
+                MessageDialog.error(this, "angal.common.pleaseinsertavaliddate.msg");
+                return;
+            }
+
+            if (infant != null && infant.getRegistrationDate() != null
+                    && visitDate.toLocalDate().isBefore(infant.getRegistrationDate().toLocalDate())) {
+                MessageDialog.error(this, "angal.hiv.message.visit.date.before.registration");
                 return;
             }
 
@@ -776,38 +819,15 @@ public class HIVVisitEdit extends JDialog {
 
                 if (nextAppointment.isBefore(visitDateLocal)) {
                     MessageDialog.error(this,
-                            MessageBundle.getMessage("angal.hiv.message.next.appointment.before.visit"));
+                            "angal.hiv.message.next.appointment.before.visit");
                     return;
                 }
             }
-            String weightText = weightField.getText().trim();
-            if (weightText.isEmpty()) {
-                MessageDialog.error(this,
-                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
-                return;
-            }
-
-            visit.setWeight(Double.parseDouble(weightText));
-
-            String heightText = heightField.getText().trim();
-            if (!heightText.isEmpty()) {
-                visit.setHeight(Double.parseDouble(heightText));
-            } else {
-                visit.setHeight(null);
-            }
-
             String headCircText = headCircumferenceField.getText().trim();
             if (!headCircText.isEmpty()) {
                 visit.setHeadCircumference(Double.parseDouble(headCircText));
             } else {
                 visit.setHeadCircumference(null);
-            }
-
-            String tempText = temperatureField.getText().trim();
-            if (!tempText.isEmpty()) {
-                visit.setTemperature(Double.parseDouble(tempText));
-            } else {
-                visit.setTemperature(null);
             }
 
             String clinicalStatus = clinicalStatusArea.getText();
@@ -831,7 +851,7 @@ public class HIVVisitEdit extends JDialog {
 
                 if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
                     MessageDialog.error(this,
-                            MessageBundle.getMessage("angal.hiv.message.treatment.end.before.start"));
+                            "angal.hiv.message.treatment.end.before.start");
                     return;
                 }
             }
@@ -853,7 +873,7 @@ public class HIVVisitEdit extends JDialog {
                     dispose();
                 } else {
                     MessageDialog.error(this,
-                            MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
+                            "angal.common.datacouldnotbesaved.msg");
                 }
             } else {
                 HIVVisit updated = visitManager.updateVisit(visit);
@@ -863,12 +883,12 @@ public class HIVVisitEdit extends JDialog {
                     dispose();
                 } else {
                     MessageDialog.error(this,
-                            MessageBundle.getMessage("angal.common.datacouldnotbesaved.msg"));
+                            "angal.common.datacouldnotbesaved.msg");
                 }
             }
 
         } catch (NumberFormatException ex) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseentervalidnumbers.msg"));
+            MessageDialog.error(this, "angal.common.pleaseentervalidnumbers.msg");
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
         }

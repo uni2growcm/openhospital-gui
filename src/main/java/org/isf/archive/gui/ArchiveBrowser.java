@@ -62,6 +62,7 @@ import org.isf.menu.manager.Context;
 import org.isf.menu.manager.UserBrowsingManager;
 import org.isf.menu.model.User;
 import org.isf.patient.gui.SelectPatient;
+import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
 import org.isf.stat.gui.report.GenericReportBill;
 import org.isf.stat.gui.report.GenericReportFromDateToDate;
@@ -166,6 +167,7 @@ public class ArchiveBrowser extends ModalJFrame {
     private String user = UserBrowsingManager.getCurrentUser();
     private List<String> users;
     private UserBrowsingManager userBrowserManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
+    private PatientBrowserManager patientBrowserManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
     private int closedCurrentPage = 0;
     private long closedTotalRows = 0;
@@ -400,6 +402,9 @@ public class ArchiveBrowser extends ModalJFrame {
                 SelectPatient selectPatient = new SelectPatient(ArchiveBrowser.this, false, true);
                 selectPatient.setVisible(true);
                 Patient pat = selectPatient.getPatient();
+                if (pat == null) {
+                    return;
+                }
 
                 try {
                     patientSelected(pat);
@@ -799,10 +804,13 @@ public class ArchiveBrowser extends ModalJFrame {
                 LocalDate newDate = event.getNewDate();
                 if (newDate != null) {
                     dateFrom = newDate.atStartOfDay();
-                    closedCurrentPage = 0;
                     jButtonToday.setEnabled(true);
-                    loadClosedBillsPage();
-                    updateTotals();
+                    if (jCalendarTo != null && jCalendarTo.getDate() != null && newDate.isAfter(jCalendarTo.getDate())) {
+                        // the "to" listener reloads the data
+                        jCalendarTo.setDate(newDate);
+                        return;
+                    }
+                    applyFilters();
                 }
             });
         }
@@ -866,10 +874,13 @@ public class ArchiveBrowser extends ModalJFrame {
                 LocalDate newDate = event.getNewDate();
                 if (newDate != null) {
                     dateTo = newDate.atTime(LocalTime.MAX);
-                    closedCurrentPage = 0;
                     jButtonToday.setEnabled(true);
-                    loadClosedBillsPage();
-                    updateTotals();
+                    if (jCalendarFrom != null && jCalendarFrom.getDate() != null && newDate.isBefore(jCalendarFrom.getDate())) {
+                        // the "from" listener reloads the data
+                        jCalendarFrom.setDate(newDate);
+                        return;
+                    }
+                    applyFilters();
                 }
             });
         }
@@ -885,7 +896,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 dateTo = dateToday24;
                 jCalendarFrom.setDate(dateFrom.toLocalDate());
                 jCalendarTo.setDate(dateTo.toLocalDate());
-                updateTotals();
+                applyFilters();
                 jButtonToday.setEnabled(false);
             });
             jButtonToday.setEnabled(false);
@@ -911,9 +922,7 @@ public class ArchiveBrowser extends ModalJFrame {
                 user = (String) jComboUsers.getSelectedItem();
                 jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.todaycolon.txt") + "</b></html>", 0, 0);
                 jTableUser.setValueAt("<html><b>" + user + ' ' + MessageBundle.getMessage("angal.billbrowser.periodcolon.txt") + "</b></html>", 0, 2);
-                updateTotals();
-                closedCurrentPage = 0;
-                updateTables();
+                applyFilters();
             });
         }
         return jComboUsers;
@@ -933,10 +942,7 @@ public class ArchiveBrowser extends ModalJFrame {
             }
             jComboBoxGuarantor.setPreferredSize(new Dimension(150, 25));
             jComboBoxGuarantor.setFont(new Font("Arial", Font.PLAIN, 14));
-            jComboBoxGuarantor.addActionListener(actionEvent -> {
-                updateTables();
-                updateTotals();
-            });
+            jComboBoxGuarantor.addActionListener(actionEvent -> applyFilters());
         }
         return jComboBoxGuarantor;
     }
@@ -945,19 +951,12 @@ public class ArchiveBrowser extends ModalJFrame {
         if (jComboBoxMonths == null) {
             jComboBoxMonths = new JMonthChooser();
             jComboBoxMonths.addPropertyChangeListener("month", propertyChangeEvent -> {
+                if (jCalendarFrom == null || jCalendarTo == null) {
+                    return;
+                }
                 month = jComboBoxMonths.getMonth() + 1;
-                dateFrom = dateFrom.toLocalDate()
-                        .withMonth(month)
-                        .withDayOfMonth(1)
-                        .atStartOfDay();
-                dateTo = dateTo.toLocalDate()
-                        .withMonth(month)
-                        .withDayOfMonth(YearMonth.of(dateFrom.getYear(), month).lengthOfMonth())
-                        .atStartOfDay()
-                        .toLocalDate()
-                        .atTime(LocalTime.MAX);
-                jCalendarFrom.setDate(dateFrom.toLocalDate());
-                jCalendarTo.setDate(dateTo.toLocalDate());
+                int selectedYear = jComboBoxYears != null ? jComboBoxYears.getYear() : dateFrom.getYear();
+                setPeriod(YearMonth.of(selectedYear, month).atDay(1), YearMonth.of(selectedYear, month).atEndOfMonth());
             });
         }
         return jComboBoxMonths;
@@ -967,21 +966,11 @@ public class ArchiveBrowser extends ModalJFrame {
         if (jComboBoxYears == null) {
             jComboBoxYears = new JYearChooser();
             jComboBoxYears.getModel().addChangeListener(e -> {
+                if (jCalendarFrom == null || jCalendarTo == null) {
+                    return;
+                }
                 year = jComboBoxYears.getYear();
-                dateFrom = LocalDate.now()
-                        .withYear(year)
-                        .withMonth(1)
-                        .withDayOfMonth(1)
-                        .atStartOfDay();
-                dateTo = LocalDate.now()
-                        .withYear(year)
-                        .withMonth(12)
-                        .withDayOfMonth(YearMonth.of(year, 12).lengthOfMonth())
-                        .atStartOfDay()
-                        .toLocalDate()
-                        .atTime(LocalTime.MAX);
-                jCalendarFrom.setDate(dateFrom.toLocalDate());
-                jCalendarTo.setDate(dateTo.toLocalDate());
+                setPeriod(LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31));
             });
         }
         return jComboBoxYears;
@@ -1079,16 +1068,37 @@ public class ArchiveBrowser extends ModalJFrame {
     public void patientSelected(Patient patient) throws OHServiceException {
         patientParent = patient;
         jAffiliatePersonJTextField.setText(patientParent != null ? patientParent.getName() : "");
-
-        if (patientParent != null) {
-            updateTables();
-            updateTotals();
-        }
+        applyFilters();
     }
 
     private void refreshAfterChange() {
-        updateTables();
+        applyFilters();
+    }
+
+    /**
+     * Reloads the archived bills and the totals with the current filters, starting from the first page.
+     */
+    private void applyFilters() {
+        closedCurrentPage = 0;
+        loadClosedBillsPage();
         updateTotals();
+    }
+
+    /**
+     * Sets the period filter (from the beginning of the first day to the end of the last day) and reloads the data.
+     */
+    private void setPeriod(LocalDate from, LocalDate to) {
+        // update "to" first when moving forward and "from" first when moving backward, so that from <= to at any time
+        if (jCalendarTo.getDate() != null && from.isAfter(jCalendarTo.getDate())) {
+            jCalendarTo.setDate(to);
+            jCalendarFrom.setDate(from);
+        } else {
+            jCalendarFrom.setDate(from);
+            jCalendarTo.setDate(to);
+        }
+        dateFrom = from.atStartOfDay();
+        dateTo = to.atTime(LocalTime.MAX);
+        applyFilters();
     }
 
     private void initComponents() {
@@ -1245,10 +1255,16 @@ public class ArchiveBrowser extends ModalJFrame {
                     ArchivedBill bill = (ArchivedBill) target.getValueAt(row, -1);
                     Integer patId = bill.getBillPatientId();
                     if (patId != null && patId > 0) {
-                        Patient pat = new Patient();
-                        pat.setCode(patId);
                         try {
+                            Patient pat = patientBrowserManager.getPatientById(patId);
+                            if (pat == null) {
+                                pat = new Patient();
+                                pat.setCode(patId);
+                            }
                             patientSelected(pat);
+                            if (pat.getName() == null) {
+                                jAffiliatePersonJTextField.setText(bill.getPatName());
+                            }
                         } catch (OHServiceException ohServiceException) {
                             MessageDialog.showExceptions(ohServiceException);
                         }

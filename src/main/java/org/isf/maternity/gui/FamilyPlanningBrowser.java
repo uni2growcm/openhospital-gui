@@ -39,7 +39,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 
 import javax.swing.BorderFactory;
@@ -66,9 +68,11 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.isf.generaldata.GeneralData;
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.FamilyPlanningBrowserManager;
+import org.isf.maternity.manager.FamilyPlanningMethodHistoryBrowserManager;
 import org.isf.maternity.manager.FamilyPlanningVisitBrowserManager;
 import org.isf.maternity.model.FPStatus;
 import org.isf.maternity.model.FamilyPlanning;
+import org.isf.maternity.model.FamilyPlanningMethodHistory;
 import org.isf.maternity.model.FamilyPlanningVisit;
 import org.isf.menu.gui.MainMenu;
 import org.isf.menu.manager.Context;
@@ -112,10 +116,12 @@ public class FamilyPlanningBrowser extends ModalJFrame {
             MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
             MessageBundle.getMessage("angal.familyplanning.method.col").toUpperCase(),
             MessageBundle.getMessage("angal.familyplanning.status.col").toUpperCase(),
-            MessageBundle.getMessage("angal.maternity.lmp.col").toUpperCase()
+            MessageBundle.getMessage("angal.common.date.txt").toUpperCase(),
+            MessageBundle.getMessage("angal.familyplanning.stopdate.col").toUpperCase(),
+            MessageBundle.getMessage("angal.familyplanning.stopreason.col").toUpperCase()
     };
 
-    private final int[] columnWidths = { 50, 70, 150, 100, 90, 120 };
+    private final int[] columnWidths = { 50, 70, 150, 100, 90, 120, 100, 250 };
 
     private final String[] visitColumns = {
             MessageBundle.getMessage("angal.familyplanning.visitdate.col").toUpperCase(),
@@ -128,9 +134,12 @@ public class FamilyPlanningBrowser extends ModalJFrame {
     private final FamilyPlanningBrowser myFrame;
     private List<FamilyPlanning> fpList = new ArrayList<>();
     private List<FamilyPlanningVisit> visitList = new ArrayList<>();
+    // stop information (date and reason) of the stopped family plannings of the current page, by family planning id
+    private Map<Integer, FamilyPlanningMethodHistory> stopHistories = new HashMap<>();
 
     private FamilyPlanningBrowserManager fpManager;
     private FamilyPlanningVisitBrowserManager visitManager;
+    private FamilyPlanningMethodHistoryBrowserManager methodHistoryManager;
 
     private JTable fpTable;
     private JTable visitTable;
@@ -186,6 +195,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
     private void initManagers() {
         fpManager = Context.getApplicationContext().getBean(FamilyPlanningBrowserManager.class);
         visitManager = Context.getApplicationContext().getBean(FamilyPlanningVisitBrowserManager.class);
+        methodHistoryManager = Context.getApplicationContext().getBean(FamilyPlanningMethodHistoryBrowserManager.class);
     }
 
     private void initComponents() {
@@ -637,6 +647,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                     CURRENT_PAGE - 1, GeneralData.PAGINATIONPAGESIZE);
 
             fpList = pagedResult.getContent();
+            loadStopHistories();
             TOTAL_RECORDS = pagedResult.getTotalElements();
             TOTAL_PAGES = pagedResult.getTotalPages();
 
@@ -651,6 +662,38 @@ public class FamilyPlanningBrowser extends ModalJFrame {
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
         }
+    }
+
+    /**
+     * Loads, for the stopped family plannings of the current page, the method history record holding the stop date and reason.
+     */
+    private void loadStopHistories() throws OHServiceException {
+        stopHistories = new HashMap<>();
+        for (FamilyPlanning fp : fpList) {
+            if (fp.getStatus() != FPStatus.STOPPED) {
+                continue;
+            }
+            FamilyPlanningMethodHistory lastStop = null;
+            for (FamilyPlanningMethodHistory history : methodHistoryManager.getMethodHistoryByFamilyPlanning(fp.getId())) {
+                if (history.getEndDate() != null
+                        && (lastStop == null || !history.getEndDate().isBefore(lastStop.getEndDate()))) {
+                    lastStop = history;
+                }
+            }
+            if (lastStop != null) {
+                stopHistories.put(fp.getId(), lastStop);
+            }
+        }
+    }
+
+    private String getStopDate(FamilyPlanning fp, DateTimeFormatter formatter) {
+        FamilyPlanningMethodHistory stop = stopHistories.get(fp.getId());
+        return stop != null && stop.getEndDate() != null ? stop.getEndDate().format(formatter) : "";
+    }
+
+    private String getStopReason(FamilyPlanning fp) {
+        FamilyPlanningMethodHistory stop = stopHistories.get(fp.getId());
+        return stop != null && stop.getStopReason() != null ? stop.getStopReason() : "";
     }
 
     private void updatePaginationUI() {
@@ -776,22 +819,48 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                 JOptionPane.YES_NO_OPTION);
 
         if (confirmed == JOptionPane.YES_OPTION) {
+            String reason = askStopReason();
+            if (reason == null) {
+                return;
+            }
             try {
-                String reason = JOptionPane.showInputDialog(this,
-                        MessageBundle.getMessage("angal.familyplanning.stopreason.label"));
-                if (reason != null) {
-                    fpManager.stopFamilyPlanning(selectedFP.getId(), LocalDateTime.now(), reason);
-                    performSearch();
-                }
+                fpManager.stopFamilyPlanning(selectedFP.getId(), LocalDateTime.now(), reason);
+                performSearch();
             } catch (OHServiceException ex) {
                 OHServiceExceptionUtil.showMessages(ex);
             }
         }
     }
 
+    /**
+     * Asks the (mandatory) reason for stopping the family planning until a non-blank value is entered.
+     *
+     * @return the reason, or {@code null} if the user cancelled
+     */
+    private String askStopReason() {
+        while (true) {
+            String reason = JOptionPane.showInputDialog(this,
+                    MessageBundle.getMessage("angal.familyplanning.stopreason.label") + " *");
+            if (reason == null) {
+                return null;
+            }
+            if (!reason.isBlank()) {
+                return reason.trim();
+            }
+            MessageDialog.error(this, "angal.maternity.fpstopreasonrequired.msg");
+        }
+    }
+
     private void deleteFP() {
         if (selectedFP == null) {
             MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
+            return;
+        }
+
+        try {
+            fpManager.validateDeletion(selectedFP);
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
             return;
         }
 
@@ -937,6 +1006,10 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                 return fp.getStatus() != null ? getEnumDisplayName(fp.getStatus()) : "";
             } else if (c == 5) {
                 return fp.getRegistrationDate() != null ? fp.getRegistrationDate().format(formatter) : "";
+            } else if (c == 6) {
+                return getStopDate(fp, formatter);
+            } else if (c == 7) {
+                return getStopReason(fp);
             }
             return null;
         }
@@ -1034,7 +1107,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
 
     private void exportToExcel() {
         if (fpList == null || fpList.isEmpty()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.familyplanning.export.nodata.msg"));
+            MessageDialog.error(this, "angal.familyplanning.export.nodata.msg");
             return;
         }
 
@@ -1057,7 +1130,7 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                 MessageDialog.info(this, MessageBundle.formatMessage("angal.common.export.success.msg", exportFile.getAbsolutePath()));
             }
         } catch (IOException ex) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.export.error.msg"));
+            MessageDialog.error(this, "angal.common.export.error.msg");
         }
     }
 
@@ -1083,7 +1156,9 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                     MessageBundle.getMessage("angal.common.name.txt"),
                     MessageBundle.getMessage("angal.familyplanning.method.col"),
                     MessageBundle.getMessage("angal.familyplanning.status.col"),
-                    MessageBundle.getMessage("angal.maternity.lmp.col")
+                    MessageBundle.getMessage("angal.common.date.txt"),
+                    MessageBundle.getMessage("angal.familyplanning.stopdate.col"),
+                    MessageBundle.getMessage("angal.familyplanning.stopreason.col")
             };
 
             for (int i = 0; i < headers.length; i++) {
@@ -1106,6 +1181,8 @@ public class FamilyPlanningBrowser extends ModalJFrame {
                 row.createCell(3).setCellValue(fp.getCurrentMethod() != null ? fp.getCurrentMethod().getDescription() : "");
                 row.createCell(4).setCellValue(fp.getStatus() != null ? getEnumDisplayName(fp.getStatus()) : "");
                 row.createCell(5).setCellValue(fp.getRegistrationDate() != null ? fp.getRegistrationDate().format(formatter) : "");
+                row.createCell(6).setCellValue(getStopDate(fp, formatter));
+                row.createCell(7).setCellValue(getStopReason(fp));
             }
             try (FileOutputStream fileOut = new FileOutputStream(file)) {
                 workbook.write(fileOut);

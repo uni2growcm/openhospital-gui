@@ -252,7 +252,7 @@ public class SupplierEdit extends JDialog {
 
 				supplier.setSupName(nameTextField.getText());
 				supplier.setSupAddress(addressTexField.getText().trim());
-				supplier.setSupTaxcode(taxcodeTestField.getText());
+				supplier.setSupTaxcode(taxcodeTestField.getText().trim());
 				supplier.setSupPhone(phoneTextField.getText());
 				supplier.setSupFax(faxTextField.getText());
 				supplier.setSupEmail(emailTextField.getText());

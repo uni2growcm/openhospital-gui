@@ -576,7 +576,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
      */
     private void exportToExcel() {
         if (infantList == null || infantList.isEmpty()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.export.nodata.msg"));
+            MessageDialog.error(this, "angal.hiv.export.nodata.msg");
             return;
         }
 
@@ -607,7 +607,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
                 Desktop.getDesktop().open(exportFile);
             } catch (IOException exc) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.export.error.msg"));
+                MessageDialog.error(this, "angal.hiv.export.error.msg");
             }
         }
     }
@@ -814,13 +814,13 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         int viewRow = infantTable.getSelectedRow();
         if (viewRow < 0) {
             MessageDialog.error(this,
-                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+                    "angal.common.pleaseselectarow.msg");
             return;
         }
         int modelRow = infantTable.convertRowIndexToModel(viewRow);
         if (modelRow < 0 || modelRow >= infantList.size()) {
             MessageDialog.error(this,
-                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+                    "angal.common.pleaseselectarow.msg");
             return;
         }
 
@@ -844,17 +844,23 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
         int viewRow = infantTable.getSelectedRow();
         if (viewRow < 0) {
             MessageDialog.error(this,
-                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+                    "angal.common.pleaseselectarow.msg");
             return;
         }
         int modelRow = infantTable.convertRowIndexToModel(viewRow);
         if (modelRow < 0 || modelRow >= infantList.size()) {
             MessageDialog.error(this,
-                    MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+                    "angal.common.pleaseselectarow.msg");
             return;
         }
 
         HIVInfant infant = infantList.get(modelRow);
+        try {
+            infantManager.validateDeletion(infant);
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+            return;
+        }
         int answer = MessageDialog.yesNo(this,
                 MessageBundle.getMessage("angal.hiv.message.delete.confirm"));
         if (answer == JOptionPane.YES_OPTION) {
@@ -862,7 +868,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 infantManager.deleteInfant(infant);
                 performSearch();
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.hiv.message.delete.success"));
+                        "angal.hiv.message.delete.success");
             } catch (OHServiceException ex) {
                 OHServiceExceptionUtil.showMessages(ex);
             }
@@ -871,7 +877,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     private void newVisit() {
         if (selectedInfant == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            MessageDialog.error(this, "angal.hiv.message.select.infant");
             return;
         }
 
@@ -894,12 +900,12 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     private void updateVisit() {
         if (selectedInfant == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            MessageDialog.error(this, "angal.hiv.message.select.infant");
             return;
         }
 
         if (selectedVisitRow < 0 || selectedVisitRow >= visitList.size()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
 
@@ -923,12 +929,12 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
     }
     private void deleteVisit() {
         if (selectedInfant == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            MessageDialog.error(this, "angal.hiv.message.select.infant");
             return;
         }
 
         if (selectedVisitRow < 0 || selectedVisitRow >= visitList.size()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
 
@@ -941,7 +947,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 filterVisits();
                 performSearch();
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.hiv.message.visit.delete.success"));
+                        "angal.hiv.message.visit.delete.success");
             } catch (OHServiceException ex) {
                 OHServiceExceptionUtil.showMessages(ex);
             }
@@ -950,7 +956,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
 
     private void therapy() {
         if (selectedInfant == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.select.infant"));
+            MessageDialog.error(this, "angal.hiv.message.select.infant");
             return;
         }
 
@@ -1016,7 +1022,7 @@ public class HIVFollowUpBrowser extends JFrame implements SelectionListener {
                 return patient != null
                         ? patient.getFirstName() + " " + patient.getSecondName() : "";
             else if (c == 2)
-                return patient != null ? patient.getAge() + " mois" : "";
+                return patient != null ? HIVInfantEdit.formatAge(patient) : "";
             else if (c == 3)
                 return infant.getStatus() != null
                         ? infant.getStatus().getDescription() : "";

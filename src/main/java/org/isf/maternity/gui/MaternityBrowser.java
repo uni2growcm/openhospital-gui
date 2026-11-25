@@ -972,7 +972,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         int modelRow = pregnancyTable.convertRowIndexToModel(viewRow);
         if (modelRow < 0 || modelRow >= pregnancyList.size()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
 
@@ -1003,11 +1003,18 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
         int modelRow = pregnancyTable.convertRowIndexToModel(viewRow);
         if (modelRow < 0 || modelRow >= pregnancyList.size()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
 
         Pregnancy selectedPregnancy = pregnancyList.get(modelRow);
+
+        try {
+            pregnancyManager.validateDeletion(selectedPregnancy);
+        } catch (OHServiceException ex) {
+            OHServiceExceptionUtil.showMessages(ex);
+            return;
+        }
 
         String confirmMessage = MessageBundle.getMessage("angal.maternity.deletepregnancy.confirm.msg");
         int answer = MessageDialog.yesNo(this, confirmMessage);
@@ -1027,7 +1034,7 @@ public class MaternityBrowser extends JFrame implements PatientInsert.PatientLis
 
     private void viewPregnancyDetails(Pregnancy pregnancy) {
         if (pregnancy == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectarow.msg"));
+            MessageDialog.error(this, "angal.common.pleaseselectarow.msg");
             return;
         }
 

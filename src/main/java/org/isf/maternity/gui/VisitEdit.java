@@ -120,10 +120,6 @@ public class VisitEdit extends JDialog {
     private GoodDateTimeSpinnerChooser visitDateField;
     private JComboBox<Typology> typologyCombo;
     private JTextField gestationalAgeField;   // only shown when hasDelivery == false
-    private JTextField maternalWeightField;
-    private JTextField systolicBPField;
-    private JTextField diastolicBPField;
-    private JTextField temperatureField;
     private JTextField fundalHeightField;
     private JTextField abdominalCircumferenceField;
     private JTextField fetalHeartRateField;
@@ -202,18 +198,6 @@ public class VisitEdit extends JDialog {
         }
         if (visit.getVisitType() != null) {
             typologyCombo.setSelectedItem(visit.getVisitType());
-        }
-        if (visit.getMaternalWeight() != null) {
-            maternalWeightField.setText(String.valueOf(visit.getMaternalWeight()));
-        }
-        if (visit.getSystolicBP() != null) {
-            systolicBPField.setText(String.valueOf(visit.getSystolicBP()));
-        }
-        if (visit.getDiastolicBP() != null) {
-            diastolicBPField.setText(String.valueOf(visit.getDiastolicBP()));
-        }
-        if (visit.getTemperature() != null) {
-            temperatureField.setText(String.valueOf(visit.getTemperature()));
         }
         if (visit.getFundalHeight() != null) {
             fundalHeightField.setText(String.valueOf(visit.getFundalHeight()));
@@ -301,27 +285,7 @@ public class VisitEdit extends JDialog {
                         row++);
             }
 
-            // --- Maternal Weight ---
-            addFormRow(dataPanel,
-                    new JLabel(MessageBundle.getMessage("angal.maternity.maternal.weight") + " (kg)"),
-                    getMaternalWeightField(),
-                    row++);
-
-            // --- Blood Pressure (systolic / diastolic side by side) ---
-            JPanel bpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-            bpPanel.add(getSystolicBPField());
-            bpPanel.add(new JLabel(" / "));
-            bpPanel.add(getDiastolicBPField());
-            addFormRow(dataPanel,
-                    new JLabel(MessageBundle.getMessage("angal.maternity.blood.pressure") + " (mmHg)"),
-                    bpPanel,
-                    row++);
-
-            // --- Temperature ---
-            addFormRow(dataPanel,
-                    new JLabel(MessageBundle.getMessage("angal.maternity.temperature") + " (\u00b0C)"),
-                    getTemperatureField(),
-                    row++);
+            // Maternal weight, blood pressure and temperature are recorded through the patient examination ("parameters" button)
 
             // --- Fundal Height ---
             addFormRow(dataPanel,
@@ -431,6 +395,9 @@ public class VisitEdit extends JDialog {
         if (buttonPanel == null) {
             buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
             buttonPanel.add(getOkButton());
+            if (VisitExaminationLauncher.isExaminationAllowed()) {
+                buttonPanel.add(VisitExaminationLauncher.createExaminationButton(this, pregnancy != null ? pregnancy.getPatient() : null));
+            }
             buttonPanel.add(getCancelButton());
         }
         return buttonPanel;
@@ -472,38 +439,6 @@ public class VisitEdit extends JDialog {
             gestationalAgeField.setEnabled(false);
         }
         return gestationalAgeField;
-    }
-
-    private JTextField getMaternalWeightField() {
-        if (maternalWeightField == null) {
-            maternalWeightField = new VoLimitedTextField(5, 2);
-            maternalWeightField.setColumns(8);
-        }
-        return maternalWeightField;
-    }
-
-    private JTextField getSystolicBPField() {
-        if (systolicBPField == null) {
-            systolicBPField = new VoLimitedTextField(3, 0);
-            systolicBPField.setColumns(4);
-        }
-        return systolicBPField;
-    }
-
-    private JTextField getDiastolicBPField() {
-        if (diastolicBPField == null) {
-            diastolicBPField = new VoLimitedTextField(3, 0);
-            diastolicBPField.setColumns(4);
-        }
-        return diastolicBPField;
-    }
-
-    private JTextField getTemperatureField() {
-        if (temperatureField == null) {
-            temperatureField = new VoLimitedTextField(4, 1);
-            temperatureField.setColumns(6);
-        }
-        return temperatureField;
     }
 
     private JTextField getFundalHeightField() {
@@ -620,6 +555,12 @@ public class VisitEdit extends JDialog {
                 return;
             }
 
+            if (pregnancy != null && pregnancy.getDate() != null
+                    && visitDate.toLocalDate().isBefore(pregnancy.getDate().toLocalDate())) {
+                MessageDialog.error(this, "angal.maternity.visitdatebeforepregnancy.msg");
+                return;
+            }
+
             Typology typology = (Typology) typologyCombo.getSelectedItem();
             if (typology == null) {
                 MessageDialog.error(this, "angal.maternity.typology.required");
@@ -630,34 +571,6 @@ public class VisitEdit extends JDialog {
             visit.setVisitType(typology);
 
             // --- Optional numeric fields ---
-            String weightText = maternalWeightField.getText().trim();
-            if (!weightText.isEmpty()) {
-                visit.setMaternalWeight(Double.parseDouble(weightText));
-            } else {
-                visit.setMaternalWeight(null);
-            }
-
-            String systolicText = systolicBPField.getText().trim();
-            if (!systolicText.isEmpty()) {
-                visit.setSystolicBP(Integer.parseInt(systolicText));
-            } else {
-                visit.setSystolicBP(null);
-            }
-
-            String diastolicText = diastolicBPField.getText().trim();
-            if (!diastolicText.isEmpty()) {
-                visit.setDiastolicBP(Integer.parseInt(diastolicText));
-            } else {
-                visit.setDiastolicBP(null);
-            }
-
-            String tempText = temperatureField.getText().trim();
-            if (!tempText.isEmpty()) {
-                visit.setTemperature(Double.parseDouble(tempText));
-            } else {
-                visit.setTemperature(null);
-            }
-
             String fundalText = fundalHeightField.getText().trim();
             if (!fundalText.isEmpty()) {
                 visit.setFundalHeight(Double.parseDouble(fundalText));

@@ -489,7 +489,7 @@ public class PregnancyDetailsView extends JDialog {
 
     private void printBirthDeclaration(ActionEvent e, Newborn newborn) {
         if (newborn == null) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.declaration.msg"));
+            MessageDialog.error(this, "angal.maternity.cannot.generate.declaration.msg");
             return;
         }
         new GenericReportPregnancyBirthDeclaration(newborn.getId().longValue());
@@ -498,7 +498,7 @@ public class PregnancyDetailsView extends JDialog {
 
     private void printBirthCertificate(ActionEvent e) {
         if (delivery == null || newborns == null || newborns.isEmpty()) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.maternity.cannot.generate.certificate.msg"));
+            MessageDialog.error(this, "angal.maternity.cannot.generate.certificate.msg");
             return;
         }
         new GenericReportPregnancyCertificateOfDeclaration(pregnancy.getId().longValue());

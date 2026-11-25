@@ -32,6 +32,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.Optional;
@@ -142,8 +143,6 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
     private JCheckBox addFirstVisitCheckBox;
     private JPanel firstVisitPanel;
     private GoodDateChooser firstVisitDateField;
-    private VoLimitedTextField firstVisitWeightField;
-    private VoLimitedTextField firstVisitHeightField;
     private JComboBox<PCRResult> firstVisitPcrCombo;
     private JTextArea firstVisitNotesArea;
 
@@ -210,6 +209,9 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
 
     private void loadExistingData() {
         if (infant != null && !insert) {
+            if (infant.getRegistrationDate() != null) {
+                registrationDateField.setDateTime(infant.getRegistrationDate());
+            }
             if (infant.getBirthWeight() != null) {
                 birthWeightField.setText(String.valueOf(infant.getBirthWeight()));
             }
@@ -300,9 +302,38 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
         trashMotherButton.setEnabled(false);
     }
 
+    /**
+     * Returns the age of the patient in completed months, computed from the birth date when available.
+     *
+     * @param patient the patient
+     * @return the age in months
+     */
+    static int getAgeInMonths(Patient patient) {
+        if (patient.getBirthDate() != null) {
+            return (int) Period.between(patient.getBirthDate(), LocalDate.now()).toTotalMonths();
+        }
+        return patient.getAge() * 12;
+    }
+
+    /**
+     * Formats the age of the patient in months, followed, from one year, by the approximate age in years and months.
+     * Example: "38 months (3 year(s) 2 month(s))".
+     *
+     * @param patient the patient
+     * @return the formatted age
+     */
+    static String formatAge(Patient patient) {
+        int months = getAgeInMonths(patient);
+        String age = MessageBundle.formatMessage("angal.hiv.age.months.fmt", months);
+        if (months >= 12) {
+            age += " (" + MessageBundle.formatMessage("angal.hiv.age.yearsmonths.fmt", months / 12, months % 12) + ")";
+        }
+        return age;
+    }
+
     private void searchPatient(String searchText) {
-        int maxAgeYears = (int) Math.ceil(GeneralData.HIV_INFANT_MAX_AGE_MONTHS / 12.0);
-        SelectPatient sp = new SelectPatient(this, searchText, true, 0, maxAgeYears);
+        // only the patients not older than the configured maximum age (HIV_INFANT_MAX_AGE_MONTHS) are listed
+        SelectPatient sp = new SelectPatient(this, searchText, true, GeneralData.HIV_INFANT_MAX_AGE_MONTHS);
         sp.addSelectionListener(this);
         sp.setVisible(true);
     }
@@ -426,7 +457,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             gbc.gridx = 0;
             gbc.gridwidth = 1;
             gbc.weightx = 0.0;
-            patientPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.mother") + ":"), gbc);
+            patientPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.mother") + " *:"), gbc);
 
             // Champ search mother
             gbc.gridx = 1;
@@ -704,24 +735,6 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             firstVisitPanel.add(getFirstVisitDateField(), gbc);
             row++;
 
-            // Weight
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.weights") + " (kg)*:"), gbc);
-
-            gbc.gridx = 1;
-            firstVisitPanel.add(getFirstVisitWeightField(), gbc);
-            row++;
-
-            // Height
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            firstVisitPanel.add(new JLabel(MessageBundle.getMessage("angal.hiv.label.height") + " (cm):"), gbc);
-
-            gbc.gridx = 1;
-            firstVisitPanel.add(getFirstVisitHeightField(), gbc);
-            row++;
-
             // Next Appointment
             gbc.gridx = 0;
             gbc.gridy = row;
@@ -751,6 +764,20 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.BOTH;
             firstVisitPanel.add(getFirstVisitNotesScrollPane(), gbc);
+            row++;
+
+            // Parameters (weight, height, ...) are recorded through the patient examination
+            if (VisitExaminationLauncher.isExaminationAllowed()) {
+                gbc.gridx = 1;
+                gbc.gridy = row;
+                gbc.weighty = 0.0;
+                gbc.fill = GridBagConstraints.NONE;
+                gbc.anchor = GridBagConstraints.WEST;
+                JButton examinationButton = new JButton(MessageBundle.getMessage("angal.admission.examination.btn"));
+                examinationButton.setMnemonic(MessageBundle.getMnemonic("angal.admission.examination.btn.key"));
+                examinationButton.addActionListener(e -> VisitExaminationLauncher.openExamination(this, selectedPatient));
+                firstVisitPanel.add(examinationButton, gbc);
+            }
         }
         return firstVisitPanel;
     }
@@ -760,22 +787,6 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
             firstVisitDateField = new GoodDateChooser(LocalDate.now());
         }
         return firstVisitDateField;
-    }
-
-    private VoLimitedTextField getFirstVisitWeightField() {
-        if (firstVisitWeightField == null) {
-            firstVisitWeightField = new VoLimitedTextField(5, 6);
-            firstVisitWeightField.setColumns(10);
-        }
-        return firstVisitWeightField;
-    }
-
-    private VoLimitedTextField getFirstVisitHeightField() {
-        if (firstVisitHeightField == null) {
-            firstVisitHeightField = new VoLimitedTextField(5, 6);
-            firstVisitHeightField.setColumns(10);
-        }
-        return firstVisitHeightField;
     }
 
     private JComboBox<PCRResult> getFirstVisitPcrCombo() {
@@ -823,33 +834,47 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
     private void saveInfant() {
         try {
             if (selectedPatient == null && (infant.getPatient() == null)) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseselectapatient.msg"));
+                MessageDialog.error(this, "angal.common.pleaseselectapatient.msg");
+                return;
+            }
+
+            if (selectedMother == null && infant.getMother() == null) {
+                MessageDialog.error(this, "angal.hiv.message.mother.required");
                 return;
             }
 
             LocalDateTime registrationDate = registrationDateField.getLocalDateTime();
             if (registrationDate == null) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavaliddate.msg"));
+                MessageDialog.error(this, "angal.common.pleaseinsertavaliddate.msg");
+                return;
+            }
+            if (registrationDate.isAfter(TimeTools.getNow())) {
+                MessageDialog.error(this, "angal.hiv.message.registration.date.future");
                 return;
             }
 
             LocalDate followUpStart = followUpStartDateField.getDate();
             if (followUpStart == null) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseinsertavaliddate.msg"));
+                MessageDialog.error(this, "angal.common.pleaseinsertavaliddate.msg");
                 return;
             }
 
             LocalDate followUpEnd = followUpEndDateField.getDate();
             if (followUpEnd != null && followUpEnd.isBefore(followUpStart)) {
-                MessageDialog.error(this, MessageBundle.getMessage("angal.hiv.message.followup.end.before.start"));
+                MessageDialog.error(this, "angal.hiv.message.followup.end.before.start");
                 return;
             }
 
-            if (insert && addFirstVisitCheckBox.isSelected()
-                    && firstVisitWeightField.getText().trim().isEmpty()) {
-                MessageDialog.error(this,
-                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
-                return;
+            if (insert && addFirstVisitCheckBox.isSelected()) {
+                LocalDate firstVisitDate = firstVisitDateField.getDate();
+                if (firstVisitDate == null) {
+                    MessageDialog.error(this, "angal.common.pleaseinsertavaliddate.msg");
+                    return;
+                }
+                if (firstVisitDate.isBefore(registrationDate.toLocalDate())) {
+                    MessageDialog.error(this, "angal.hiv.message.visit.date.before.registration");
+                    return;
+                }
             }
             if (selectedPatient != null) {
                 infant.setPatient(selectedPatient);
@@ -859,14 +884,10 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                 infant.setMother(selectedMother);
             }
 
-            if (insert) {
-                infant.setRegistrationDate(TimeTools.getNow());
-            } else {
-                infant.setRegistrationDate(registrationDate);
-            }
+            infant.setRegistrationDate(registrationDate);
             if (birthWeightField.getText().trim().isEmpty()) {
                 MessageDialog.error(this,
-                        MessageBundle.getMessage("angal.hiv.message.weight.required"));
+                        "angal.hiv.message.weight.required");
                 return;
             }
             infant.setBirthWeight(Double.parseDouble(birthWeightField.getText().trim()));
@@ -890,11 +911,6 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                     firstVisit.setHivInfant(savedInfant);
                     firstVisit.setVisitDate(firstVisitDateField.getDate().atStartOfDay());
 
-                    firstVisit.setWeight(Double.parseDouble(firstVisitWeightField.getText().trim()));
-
-                    if (!firstVisitHeightField.getText().trim().isEmpty()) {
-                        firstVisit.setHeight(Double.parseDouble(firstVisitHeightField.getText().trim()));
-                    }
                     firstVisit.setPcrResult((PCRResult) firstVisitPcrCombo.getSelectedItem());
                     firstVisit.setNotes(firstVisitNotesArea.getText());
 
@@ -905,19 +921,19 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
                     visitManager.newVisit(firstVisit);
                 }
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.hiv.message.save.success"));
+                        "angal.hiv.message.save.success");
                 dispose();
             } else {
                 savedInfant = infantManager.updateInfant(infant);
                 fireInfantUpdated(savedInfant);
 
                 MessageDialog.info(this,
-                        MessageBundle.getMessage("angal.hiv.message.save.success"));
+                        "angal.hiv.message.save.success");
                 dispose();
             }
 
         } catch (NumberFormatException ex) {
-            MessageDialog.error(this, MessageBundle.getMessage("angal.common.pleaseentervalidnumbers.msg"));
+            MessageDialog.error(this, "angal.common.pleaseentervalidnumbers.msg");
         } catch (OHServiceException ex) {
             OHServiceExceptionUtil.showMessages(ex);
         }
@@ -926,7 +942,7 @@ public class HIVInfantEdit extends JDialog implements SelectionListener, Patient
     @Override
     public void patientSelected(Patient patient) {
         if (patient != null) {
-            int ageInMonths = patient.getAge();
+            int ageInMonths = getAgeInMonths(patient);
             if (ageInMonths > GeneralData.HIV_INFANT_MAX_AGE_MONTHS) {
                 MessageDialog.error(this, MessageBundle.formatMessage("angal.hiv.message.age.constraint", GeneralData.HIV_INFANT_MAX_AGE_MONTHS));
                 return;

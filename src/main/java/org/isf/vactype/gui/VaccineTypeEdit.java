@@ -202,7 +202,7 @@ public class VaccineTypeEdit extends JDialog {
 			okButton.setMnemonic(MessageBundle.getMnemonic("angal.common.ok.btn.key"));
 			okButton.addActionListener(actionEvent -> {
 
-				vaccineType.setDescription(descriptionTextField.getText());
+				vaccineType.setDescription(descriptionTextField.getText().trim());
 				vaccineType.setCode(codeTextField.getText());
 
 				if (insert) {	// inserting

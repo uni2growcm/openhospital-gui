@@ -420,9 +420,18 @@ public class FamilyPlanningEdit extends JDialog
             gbc.gridx = 1;
             gbc.gridwidth = 3;
             gbc.weightx = 1.0;
-            statusCombo = new JComboBox<>(FPStatus.values());
+            statusCombo = new JComboBox<>();
+            // "Stopped" is set only with the "Stop FP" button, which asks for the stop reason:
+            // it is listed only to keep the current status of an already stopped family planning,
+            // which can still be changed here to another status
+            boolean alreadyStopped = !insert && fp != null && fp.getStatus() == FPStatus.STOPPED;
+            for (FPStatus status : FPStatus.values()) {
+                if (status != FPStatus.STOPPED || alreadyStopped) {
+                    statusCombo.addItem(status);
+                }
+            }
+            statusCombo.setSelectedItem(alreadyStopped ? FPStatus.STOPPED : FPStatus.ACTIVE);
             statusCombo.setPreferredSize(new Dimension(180, 25));
-            statusCombo.setSelectedItem(FPStatus.ACTIVE);
             statusCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index,
