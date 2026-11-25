@@ -27,6 +27,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -151,7 +152,15 @@ public class DeathBrowser extends ModalJFrame implements DeathEdit.DeathListener
 	private void initialize() {
 		this.setTitle(MessageBundle.getMessage("angal.mortuary.browser.title"));
 		this.setContentPane(getJContainPanel());
-		this.setMinimumSize(new Dimension(700 + getJTableWidth(), 700));
+		this.setResizable(true);
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		Dimension screensize = kit.getScreenSize();
+		int minWidth = Math.min(1050, screensize.width - 50);
+		int minHeight = Math.min(650, screensize.height - 50);
+		this.setMinimumSize(new Dimension(minWidth, minHeight));
+		int prefWidth = Math.min(1250, screensize.width - 50);
+		int prefHeight = Math.min(750, screensize.height - 80);
+		this.setSize(new Dimension(prefWidth, prefHeight));
 	}
 
 	/**

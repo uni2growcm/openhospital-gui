@@ -72,12 +72,12 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE} != null ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.on") : ""]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
-					<reportElement key="textField-29" x="35" y="2" width="240" height="18" forecolor="#FFFFFF"/>
+					<reportElement key="textField-29" x="35" y="2" width="350" height="18" forecolor="#FFFFFF"/>
 					<box leftPadding="2"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="11" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE} != null ? $F{DECES_DATE_SORTIE} : "-"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{DECES_DATE_SORTIE} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($F{DECES_DATE_SORTIE}) : $R{label_corpses_not_lifted}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
 					<reportElement key="textField-18" x="0" y="24" width="125" height="18"/>
@@ -194,7 +194,7 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["NOT_LIFTED".equals($P{state}) ? $R{titre_rapport_not_lifted} : ("ALL".equals($P{state}) ? $R{titre_rapport_all} : $R{titre_rapport_lifted})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-periode" x="0" y="75" width="535" height="16"/>
@@ -335,7 +335,7 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 				<textElement verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalliftedfrom") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + "  " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.prescriberexams.to") + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[("NOT_LIFTED".equals($P{state}) ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalnotliftedfrom") : ("ALL".equals($P{state}) ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalallfrom") : $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalliftedfrom"))) + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + "  " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.prescriberexams.to") + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Report">
 				<reportElement key="textField-2" mode="Opaque" x="420" y="3" width="115" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
