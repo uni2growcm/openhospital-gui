@@ -68,7 +68,6 @@ import org.isf.stat2.model.ExamStat;
 import org.isf.stat2.model.OperationStat;
 import org.isf.stat2.model.VaccineStat;
 import org.isf.utils.exception.OHServiceException;
-import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.GoodDateChooser;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
@@ -81,9 +80,11 @@ public class StatsBrowsing extends ModalJFrame {
 
     @Serial
     private static final long serialVersionUID = 3534376108035586486L;
+    private static final int FILTER_PANEL_WIDTH = 410;
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter PATIENT_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public enum ResultatType {
         REUSSIE,
@@ -93,12 +94,16 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private JPanel filtersPanel;
+    private JScrollPane filtersScrollPane;
     private JPanel dataPanel;
     private JPanel paginationPanel;
 
     private JPanel periodPanel;
     private JPanel ageAndSexPanel;
     private JPanel wardsPanel;
+    private JPanel serviceFiltersPanel;
+    private JComboBox<String> homeVisitFilterCombo;
+    private JComboBox<String> tuberculosisFilterCombo;
     private JPanel vaccinesPanel;
     private JPanel examsPanel;
     private JPanel operationsPanel;
@@ -149,7 +154,7 @@ public class StatsBrowsing extends ModalJFrame {
     private int resultCount = 0;
     private JButton filterBtn;
     private JButton filterResetBtn;
-    private boolean isApplyFilter = false;
+    private boolean isUpdatingPagination;
 
     private final String[] sexData = { "", "F", "M" };
     private List<Exam> examsData;
@@ -174,9 +179,14 @@ public class StatsBrowsing extends ModalJFrame {
     private List<OperationStat> operationsList = new ArrayList<>();
 
     private final String[] jDataTableColumns = {
+            MessageBundle.getMessage("angal.common.code.txt"),
             MessageBundle.getMessage("angal.patient.firstname1"),
             MessageBundle.getMessage("angal.patient.sex"),
-            MessageBundle.getMessage("angal.report.labregister.age")
+            MessageBundle.getMessage("angal.report.labregister.age"),
+            MessageBundle.getMessage("angal.patient.birthdate"),
+            MessageBundle.getMessage("angal.common.address.txt"),
+            MessageBundle.getMessage("angal.common.city.txt"),
+            MessageBundle.getMessage("angal.common.telephone.txt")
     };
     private final String[] vaccinesTableColumns = {
             MessageBundle.getMessage("angal.stat.vaccine"),
@@ -199,7 +209,7 @@ public class StatsBrowsing extends ModalJFrame {
             MessageBundle.getMessage("angal.stat.women")
     };
 
-    private final int[] jDataTableColumnWidth = { 200, 50, 50 };
+    private final int[] jDataTableColumnWidth = { 70, 200, 55, 50, 100, 160, 100, 120 };
 
     private int _start_index = 0;
     private static int _items_per_page = 100;
@@ -216,6 +226,8 @@ public class StatsBrowsing extends ModalJFrame {
     private String _selectedDischargeType = "";
     private String _period_from = "";
     private String _period_to = "";
+    private Boolean _hasHomeVisit;
+    private Boolean _hasTuberculosis;
     private String _exam_period_from = "";
     private String _exam_period_to = "";
     private String _vaccine_period_from = "";
@@ -256,12 +268,14 @@ public class StatsBrowsing extends ModalJFrame {
         setTitle(MessageBundle.getMessage("angal.stat.generalstatsbrowsing"));
 
         initComponents();
+        resetFilters(true);
         pack();
 
-        int frameMinWidth = getContentPane().getPreferredSize().width;
-        int frameMinHeight = getContentPane().getPreferredSize().height;
-
-        setMinimumSize(new Dimension(frameMinWidth + 30, frameMinHeight + 40));
+        Rectangle screenBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int frameWidth = Math.min(1250, screenBounds.width - 24);
+        int frameHeight = Math.min(800, screenBounds.height - 24);
+        setMinimumSize(new Dimension(Math.min(760, frameWidth), Math.min(500, frameHeight)));
+        setSize(frameWidth, frameHeight);
         setLocationRelativeTo(null);
 
         setVisible(true);
@@ -291,14 +305,15 @@ public class StatsBrowsing extends ModalJFrame {
         getContentPane().add(getPaginationPanel(), BorderLayout.SOUTH);
     }
 
-    private JPanel getFiltersPanel() {
-        if (filtersPanel != null) return filtersPanel;
+    private JScrollPane getFiltersPanel() {
+        if (filtersScrollPane != null) return filtersScrollPane;
 
         filtersPanel = new JPanel();
         filtersPanel.setLayout(new BoxLayout(filtersPanel, BoxLayout.Y_AXIS));
 
         filtersPanel.add(getPeriodPanel());
         filtersPanel.add(getAgeAndSexPanel());
+        filtersPanel.add(getServiceFiltersPanel());
         filtersPanel.add(getWardsPanel());
         filtersPanel.add(getVaccinesPanel());
         filtersPanel.add(getExamsPanel());
@@ -306,24 +321,34 @@ public class StatsBrowsing extends ModalJFrame {
         filtersPanel.add(getDiseasesAndDischargeTypesPanel());
         filtersPanel.add(getFilterButtonsPanel());
 
-        JPanel filtersNorthPanel = new JPanel(new BorderLayout());
-        filtersNorthPanel.add(filtersPanel, BorderLayout.NORTH);
+        for (Component component : filtersPanel.getComponents()) {
+            if (component instanceof JPanel panel) {
+                panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            }
+        }
+        filtersPanel.setPreferredSize(new Dimension(
+                FILTER_PANEL_WIDTH - 24, filtersPanel.getPreferredSize().height));
+        filtersPanel.setMaximumSize(new Dimension(
+                FILTER_PANEL_WIDTH - 24, Integer.MAX_VALUE));
 
-        return filtersNorthPanel;
+        filtersScrollPane = new JScrollPane(filtersPanel);
+        filtersScrollPane.setBorder(null);
+        filtersScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        filtersScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        Rectangle screenBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        filtersScrollPane.setPreferredSize(new Dimension(
+                FILTER_PANEL_WIDTH, Math.max(300, Math.min(620, screenBounds.height - 120))));
+        return filtersScrollPane;
     }
 
     private JPanel getDataPanel() {
         if (dataPanel != null) return dataPanel;
 
-        dataPanel = new JPanel();
+        dataPanel = new JPanel(new BorderLayout());
         JScrollPane tableScroll = getDataTableScrollPane();
+        tableScroll.setPreferredSize(new Dimension(760, 520));
 
-        Dimension filtersPanelDimension = filtersPanel.getPreferredSize();
-        filtersPanelDimension.width = tableScroll.getPreferredSize().width;
-        filtersPanelDimension.height -= 40;
-        tableScroll.setPreferredSize(filtersPanelDimension);
-
-        dataPanel.add(tableScroll);
+        dataPanel.add(tableScroll, BorderLayout.CENTER);
         return dataPanel;
     }
 
@@ -336,9 +361,9 @@ public class StatsBrowsing extends ModalJFrame {
 
         jDataTable = new JTable(jDataTableModel);
 
-        jDataTable.getColumnModel().getColumn(0).setMinWidth(jDataTableColumnWidth[0]);
-        jDataTable.getColumnModel().getColumn(1).setMinWidth(jDataTableColumnWidth[1]);
-        jDataTable.getColumnModel().getColumn(2).setMinWidth(jDataTableColumnWidth[2]);
+        for (int column = 0; column < jDataTableColumnWidth.length; column++) {
+            jDataTable.getColumnModel().getColumn(column).setPreferredWidth(jDataTableColumnWidth[column]);
+        }
 
         JScrollPane tableScrollPane = new JScrollPane(jDataTable);
         tableScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -368,15 +393,14 @@ public class StatsBrowsing extends ModalJFrame {
     private JPanel getPeriodPanel() {
         if (periodPanel != null) return periodPanel;
 
-        periodFromLabel = new JLabel(MessageBundle.getMessage("angal.common.dateFrom"));
+        periodFromLabel = new JLabel(MessageBundle.getMessage("angal.common.datefrom.label"));
         periodFromDateChooser = new GoodDateChooser(LocalDate.now().minusDays(7));
         periodToLabel = new JLabel(MessageBundle.getMessage("angal.common.dateTo"));
         periodToDateChooser = new GoodDateChooser(LocalDate.now());
-        periodPanel = new JPanel(new FlowLayout());
-        periodPanel.add(periodFromLabel);
-        periodPanel.add(periodFromDateChooser);
-        periodPanel.add(periodToLabel);
-        periodPanel.add(periodToDateChooser);
+        setDateChooserPreferredWidth(periodFromDateChooser, 140);
+        setDateChooserPreferredWidth(periodToDateChooser, 140);
+        periodPanel = new JPanel();
+        periodPanel.add(createDateRangeRow(periodFromLabel, periodFromDateChooser, periodToLabel, periodToDateChooser));
         periodPanel = setPanelBorder(periodPanel, MessageBundle.getMessage("angal.stat.admissionperiod"));
 
         return periodPanel;
@@ -436,14 +460,86 @@ public class StatsBrowsing extends ModalJFrame {
         return ageAndSexPanel;
     }
 
+    private JPanel getServiceFiltersPanel() {
+        if (serviceFiltersPanel != null) return serviceFiltersPanel;
+
+        String[] presenceOptions = {
+                MessageBundle.getMessage("angal.common.all.label"),
+                MessageBundle.getMessage("angal.common.yes.label"),
+                MessageBundle.getMessage("angal.common.no.label")
+        };
+        homeVisitFilterCombo = new JComboBox<>(presenceOptions);
+        tuberculosisFilterCombo = new JComboBox<>(presenceOptions.clone());
+        setComboPreferredWidth(homeVisitFilterCombo, 78);
+        setComboPreferredWidth(tuberculosisFilterCombo, 78);
+        homeVisitFilterCombo.addActionListener(e -> _hasHomeVisit = selectedPresence(homeVisitFilterCombo));
+        tuberculosisFilterCombo.addActionListener(e -> _hasTuberculosis = selectedPresence(tuberculosisFilterCombo));
+
+        serviceFiltersPanel = new JPanel(new GridBagLayout());
+        addServiceFilterCell(0, MessageBundle.getMessage("angal.admission.patientfolder.homevisit.title"),
+                homeVisitFilterCombo);
+        addServiceFilterCell(2, MessageBundle.getMessage("angal.admission.patientfolder.tuberculosis.title"),
+                tuberculosisFilterCombo);
+        return setPanelBorder(serviceFiltersPanel, MessageBundle.getMessage("angal.stat.homevisitandtuberculosis"));
+    }
+
+    private void addServiceFilterCell(int column, String labelText, JComboBox<String> filter) {
+        GridBagConstraints labelConstraints = new GridBagConstraints();
+        labelConstraints.gridx = column;
+        labelConstraints.gridy = 0;
+        labelConstraints.anchor = GridBagConstraints.WEST;
+        labelConstraints.insets = new Insets(2, 4, 2, 8);
+        serviceFiltersPanel.add(new JLabel(labelText), labelConstraints);
+
+        GridBagConstraints filterConstraints = new GridBagConstraints();
+        filterConstraints.gridx = column + 1;
+        filterConstraints.gridy = 0;
+        filterConstraints.anchor = GridBagConstraints.WEST;
+        filterConstraints.insets = new Insets(2, 0, 2, 4);
+        serviceFiltersPanel.add(filter, filterConstraints);
+    }
+
+    private Boolean selectedPresence(JComboBox<String> combo) {
+        if (combo.getSelectedIndex() == 1) return true;
+        if (combo.getSelectedIndex() == 2) return false;
+        return null;
+    }
+
+    private JPanel createDateRangeRow(
+            JLabel fromLabel,
+            GoodDateChooser fromChooser,
+            JLabel toLabel,
+            GoodDateChooser toChooser) {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+        row.add(fromLabel);
+        row.add(fromChooser);
+        row.add(toLabel);
+        row.add(toChooser);
+        return row;
+    }
+
+    private void setDateChooserPreferredWidth(GoodDateChooser chooser, int width) {
+        Component datePicker = chooser.getComponent(0);
+        Dimension preferredSize = datePicker.getPreferredSize();
+        Dimension compactSize = new Dimension(width, preferredSize.height);
+        datePicker.setPreferredSize(compactSize);
+        chooser.setPreferredSize(compactSize);
+    }
+
+    private void setComboPreferredWidth(JComboBox<?> combo, int width) {
+        Dimension preferredSize = combo.getPreferredSize();
+        combo.setPreferredSize(new Dimension(width, preferredSize.height));
+    }
+
     private JPanel getWardsPanel() {
         if (wardsPanel != null) return wardsPanel;
 
         wardsCombo = new JComboBox<>();
+        setComboPreferredWidth(wardsCombo, 340);
         try {
             wardsData = wardsManager.getWards();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             wardsData = new ArrayList<>();
         }
 
@@ -484,11 +580,12 @@ public class StatsBrowsing extends ModalJFrame {
         try {
             vaccinesData = vaccinesManager.getVaccine();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             vaccinesData = new ArrayList<>();
         }
 
         vaccinesCombo = new JComboBox<>();
+        setComboPreferredWidth(vaccinesCombo, 340);
         vaccinesCombo.addItem(MessageBundle.getMessage("angal.stat.allvaccines"));
 
         for (Vaccine vaccine : vaccinesData) {
@@ -508,6 +605,8 @@ public class StatsBrowsing extends ModalJFrame {
 
         vaccinePeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
         vaccinePeriodTo = new GoodDateChooser(LocalDate.now());
+        setDateChooserPreferredWidth(vaccinePeriodFrom, 140);
+        setDateChooserPreferredWidth(vaccinePeriodTo, 140);
 
         allVaccinesCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.allvaccinescheck"));
         allVaccinesCheck.addActionListener(e -> {
@@ -528,11 +627,11 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        JPanel vaccinePeriodPanel = new JPanel(new FlowLayout());
-        vaccinePeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodfrom")));
-        vaccinePeriodPanel.add(vaccinePeriodFrom);
-        vaccinePeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodto")));
-        vaccinePeriodPanel.add(vaccinePeriodTo);
+        JPanel vaccinePeriodPanel = new JPanel();
+        vaccinePeriodPanel.setLayout(new BoxLayout(vaccinePeriodPanel, BoxLayout.Y_AXIS));
+        vaccinePeriodPanel.add(createDateRangeRow(
+                new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")), vaccinePeriodFrom,
+                new JLabel(MessageBundle.getMessage("angal.common.dateTo")), vaccinePeriodTo));
         vaccinePeriodPanel.add(allVaccinesCheck);
 
         vaccinesPanel = new JPanel();
@@ -552,11 +651,12 @@ public class StatsBrowsing extends ModalJFrame {
         try {
             examsData = examsManager.getExams();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             examsData = new ArrayList<>();
         }
 
         examsCombo = new JComboBox<>();
+        setComboPreferredWidth(examsCombo, 260);
         examsCombo.addItem(MessageBundle.getMessage("angal.stat.allexams"));
         for (Exam exam : examsData) {
             examsCombo.addItem(exam.getDescription());
@@ -568,6 +668,7 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel examResultsFlowPanel = new JPanel(new FlowLayout());
         examResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.examresult"));
         examResultsCombo = new JComboBox<>();
+        setComboPreferredWidth(examResultsCombo, 220);
         examResultsFlowPanel.add(examResultsLabel);
         examResultsFlowPanel.add(examResultsCombo);
 
@@ -597,7 +698,7 @@ public class StatsBrowsing extends ModalJFrame {
                         examResultsData = new ArrayList<>();
                     }
                 } catch (OHServiceException ex) {
-                    OHServiceExceptionUtil.showMessages(ex);
+                    MessageDialog.showExceptions(ex);
                     examResultsData = new ArrayList<>();
                 }
 
@@ -621,6 +722,8 @@ public class StatsBrowsing extends ModalJFrame {
 
         examPeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
         examPeriodTo = new GoodDateChooser(LocalDate.now());
+        setDateChooserPreferredWidth(examPeriodFrom, 140);
+        setDateChooserPreferredWidth(examPeriodTo, 140);
 
         allExamsCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.allexamscheck"));
         allExamsCheck.addActionListener(e -> {
@@ -641,11 +744,11 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        JPanel examPeriodPanel = new JPanel(new FlowLayout());
-        examPeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodfrom")));
-        examPeriodPanel.add(examPeriodFrom);
-        examPeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodto")));
-        examPeriodPanel.add(examPeriodTo);
+        JPanel examPeriodPanel = new JPanel();
+        examPeriodPanel.setLayout(new BoxLayout(examPeriodPanel, BoxLayout.Y_AXIS));
+        examPeriodPanel.add(createDateRangeRow(
+                new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")), examPeriodFrom,
+                new JLabel(MessageBundle.getMessage("angal.common.dateTo")), examPeriodTo));
         examPeriodPanel.add(allExamsCheck);
 
         examsPanel = new JPanel();
@@ -664,12 +767,13 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel operationsFlowPanel = new JPanel(new FlowLayout());
         operationsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operation"));
         operationsCombo = new JComboBox<>();
+        setComboPreferredWidth(operationsCombo, 260);
         operationsCombo.addItem(MessageBundle.getMessage("angal.stat.alloperations"));
 
         try {
             operationsData = operationsManager.getOperation();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             operationsData = new ArrayList<>();
         }
 
@@ -683,6 +787,7 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel operationResultsFlowPanel = new JPanel(new FlowLayout());
         operationResultsLabel = new JLabel(MessageBundle.getMessage("angal.stat.operationresult"));
         operationResultsCombo = new JComboBox<>();
+        setComboPreferredWidth(operationResultsCombo, 220);
         operationResultsCombo.addItem(MessageBundle.getMessage("angal.stat.allresults"));
         for (ResultatType result : ResultatType.values()) {
             operationResultsCombo.addItem(result.toString());
@@ -703,15 +808,17 @@ public class StatsBrowsing extends ModalJFrame {
         });
 
         operationResultsCombo.addActionListener(e -> {
-            if (operationResultsCombo.getSelectedItem() != null) {
-                _selectedOperationResult = operationResultsCombo.getSelectedItem().toString();
-            } else {
-                _selectedOperationResult = "";
-            }
+            Object selected = operationResultsCombo.getSelectedItem();
+            _selectedOperationResult = selected == null
+                    || selected.toString().equals(MessageBundle.getMessage("angal.stat.allresults"))
+                    ? ""
+                    : selected.toString();
         });
 
         operationPeriodFrom = new GoodDateChooser(LocalDate.now().minusDays(7));
         operationPeriodTo = new GoodDateChooser(LocalDate.now());
+        setDateChooserPreferredWidth(operationPeriodFrom, 140);
+        setDateChooserPreferredWidth(operationPeriodTo, 140);
 
         allOperationsCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.alloperationscheck"));
         allOperationsCheck.addActionListener(e -> {
@@ -732,11 +839,11 @@ public class StatsBrowsing extends ModalJFrame {
             }
         });
 
-        JPanel operationPeriodPanel = new JPanel(new FlowLayout());
-        operationPeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodfrom")));
-        operationPeriodPanel.add(operationPeriodFrom);
-        operationPeriodPanel.add(new JLabel(MessageBundle.getMessage("angal.stat.periodto")));
-        operationPeriodPanel.add(operationPeriodTo);
+        JPanel operationPeriodPanel = new JPanel();
+        operationPeriodPanel.setLayout(new BoxLayout(operationPeriodPanel, BoxLayout.Y_AXIS));
+        operationPeriodPanel.add(createDateRangeRow(
+                new JLabel(MessageBundle.getMessage("angal.common.datefrom.label")), operationPeriodFrom,
+                new JLabel(MessageBundle.getMessage("angal.common.dateTo")), operationPeriodTo));
         operationPeriodPanel.add(allOperationsCheck);
 
         operationsPanel = new JPanel();
@@ -755,10 +862,11 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel diseasesPanel = new JPanel(new FlowLayout());
         diseasesLabel = new JLabel(MessageBundle.getMessage("angal.stat.disease"));
         diseasesCombo = new JComboBox<>();
+        setComboPreferredWidth(diseasesCombo, 270);
         try {
             diseasesData = diseasesManager.getDiseaseAll();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             diseasesData = new ArrayList<>();
         }
         allDiseasesCheck = new JCheckBox(MessageBundle.getMessage("angal.stat.alldiseasescheck"));
@@ -783,10 +891,11 @@ public class StatsBrowsing extends ModalJFrame {
         JPanel dischargeTypesPanel = new JPanel(new FlowLayout());
         dischargeTypesLabel = new JLabel(MessageBundle.getMessage("angal.stat.dischargetype"));
         dischargeTypesCombo = new JComboBox<>();
+        setComboPreferredWidth(dischargeTypesCombo, 260);
         try {
             dischargeTypesData = admissionsManager.getDischargeType();
         } catch (OHServiceException e) {
-            OHServiceExceptionUtil.showMessages(e);
+            MessageDialog.showExceptions(e);
             dischargeTypesData = new ArrayList<>();
         }
 
@@ -806,7 +915,6 @@ public class StatsBrowsing extends ModalJFrame {
         }
         dischargeTypesPanel.add(dischargeTypesLabel);
         dischargeTypesPanel.add(dischargeTypesCombo);
-        dischargeTypesPanel.add(allDiseasesCheck);
 
         diseasesCombo.addActionListener(e -> {
             Object selected = diseasesCombo.getSelectedItem();
@@ -848,6 +956,7 @@ public class StatsBrowsing extends ModalJFrame {
         diseasesAndDischargeTypesPanel.setLayout(new BoxLayout(diseasesAndDischargeTypesPanel, BoxLayout.Y_AXIS));
         diseasesAndDischargeTypesPanel.add(diseasesPanel);
         diseasesAndDischargeTypesPanel.add(dischargeTypesPanel);
+        diseasesAndDischargeTypesPanel.add(allDiseasesCheck);
         diseasesAndDischargeTypesPanel = setPanelBorder(diseasesAndDischargeTypesPanel,
                 MessageBundle.getMessage("angal.stat.diseasesanddischargetypes"));
 
@@ -873,6 +982,7 @@ public class StatsBrowsing extends ModalJFrame {
             if (!checkVaccinePeriod()) return;
             if (!checkExamPeriod()) return;
             if (!checkOperationPeriod()) return;
+            resultCount = 0;
             try {
                 switch (_selectedFilter) {
                     case "exam":
@@ -883,7 +993,8 @@ public class StatsBrowsing extends ModalJFrame {
                                 _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                                 _selectedOperation, _selectedOperationResult,
                                 _operation_period_from, _operation_period_to,
-                                _selectedDisease, _selectedDischargeType);
+                                _selectedDisease, _selectedDischargeType,
+                                _hasHomeVisit, _hasTuberculosis);
                         break;
                     case "vaccine":
                         resultCount = statsManager.getVaccinesStatsCount(
@@ -894,7 +1005,8 @@ public class StatsBrowsing extends ModalJFrame {
                                 _vaccine_period_from, _vaccine_period_to,
                                 _selectedOperation, _selectedOperationResult,
                                 _operation_period_from, _operation_period_to,
-                                _selectedDisease, _selectedDischargeType);
+                                _selectedDisease, _selectedDischargeType,
+                                _hasHomeVisit, _hasTuberculosis);
                         break;
                     case "disease":
                         resultCount = statsManager.getDiseasesStatsCount(
@@ -905,7 +1017,7 @@ public class StatsBrowsing extends ModalJFrame {
                                 _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                                 _selectedOperation, _selectedOperationResult,
                                 _operation_period_from, _operation_period_to,
-                                _selectedDischargeType);
+                                _selectedDischargeType, _hasHomeVisit, _hasTuberculosis);
                         break;
                     case "operation":
                         resultCount = statsManager.getOperationsStatsCount(
@@ -916,7 +1028,8 @@ public class StatsBrowsing extends ModalJFrame {
                                 _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                                 _selectedOperationResult,
                                 _operation_period_from, _operation_period_to,
-                                _selectedDisease, _selectedDischargeType);
+                                _selectedDisease, _selectedDischargeType,
+                                _hasHomeVisit, _hasTuberculosis);
                         break;
                     default:
                         resultCount = statsManager.getPatientsStatsCount(
@@ -927,11 +1040,16 @@ public class StatsBrowsing extends ModalJFrame {
                                 _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                                 _selectedOperation, _selectedOperationResult,
                                 _operation_period_from, _operation_period_to,
-                                _selectedDisease, _selectedDischargeType);
+                                _selectedDisease, _selectedDischargeType,
+                                _hasHomeVisit, _hasTuberculosis);
                         break;
                 }
             } catch (OHServiceException ex) {
-                OHServiceExceptionUtil.showMessages(ex);
+                MessageDialog.showExceptions(ex);
+                emptyJDataTable();
+                resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : 0");
+                initializePaginationCombo();
+                return;
             }
 
             if (resultCount == 0) {
@@ -950,71 +1068,84 @@ public class StatsBrowsing extends ModalJFrame {
         if (filterResetBtn != null) return filterResetBtn;
 
         filterResetBtn = new JButton(MessageBundle.getMessage("angal.stat.btn.resetfilter"));
-        filterResetBtn.addActionListener(e -> {
-            _start_index = 0;
-            _items_per_page = 100;
-            _selectedFilter = "general";
-            _age_from = 0;
-            _age_to = 0;
-            _selectedSex = "";
-            _selectedWard = "";
-            _selectedExam = "";
-            _selectedExamResult = "";
-            _selectedVaccine = "";
-            _selectedOperation = "";
-            _selectedOperationResult = "";
-            _selectedDisease = "";
-            _selectedDischargeType = "";
-            _period_from = "";
-            _period_to = "";
-            _exam_period_from = "";
-            _exam_period_to = "";
-            _vaccine_period_from = "";
-            _vaccine_period_to = "";
-            _operation_period_from = "";
-            _operation_period_to = "";
-
-            periodFromDateChooser.setDate(null);
-            periodToDateChooser.setDate(null);
-            sexCombo.setSelectedItem(null);
-            ageFromField.setText("");
-            ageToField.setText("");
-            vaccinesCombo.setSelectedItem(null);
-            wardsCombo.setSelectedItem(null);
-            vaccinePeriodFrom.setDate(null);
-            vaccinePeriodTo.setDate(null);
-            examsCombo.setSelectedItem(null);
-            examResultsCombo.setSelectedItem(null);
-            examPeriodFrom.setDate(null);
-            examPeriodTo.setDate(null);
-            operationsCombo.setSelectedItem(null);
-            operationResultsCombo.setSelectedItem(null);
-            operationPeriodFrom.setDate(null);
-            operationPeriodTo.setDate(null);
-            diseasesCombo.setSelectedItem(null);
-            dischargeTypesCombo.setSelectedItem(null);
-            allDiseasesCheck.setSelected(false);
-            allDiseasesCheck.setEnabled(true);
-            allExamsCheck.setSelected(false);
-            allExamsCheck.setEnabled(true);
-            allVaccinesCheck.setSelected(false);
-            allVaccinesCheck.setEnabled(true);
-            allOperationsCheck.setSelected(false);
-            allOperationsCheck.setEnabled(true);
-            sexCombo.setEnabled(true);
-            diseasesCombo.setEnabled(true);
-            vaccinesCombo.setEnabled(true);
-            examsCombo.setEnabled(true);
-            operationsCombo.setEnabled(true);
-
-            emptyJDataTable();
-            resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : 0");
-            initializePaginationCombo();
-
-            System.out.println("Filter reset");
-        });
+        filterResetBtn.addActionListener(e -> resetFilters(false));
 
         return filterResetBtn;
+    }
+
+    private void resetFilters(boolean preserveAdmissionDates) {
+        _start_index = 0;
+        _items_per_page = 100;
+        _selectedFilter = "general";
+        resultCount = 0;
+        _age_from = 0;
+        _age_to = 0;
+        _selectedSex = "";
+        _selectedWard = "";
+        _selectedExam = "";
+        _selectedExamResult = "";
+        _selectedVaccine = "";
+        _selectedOperation = "";
+        _selectedOperationResult = "";
+        _selectedDisease = "";
+        _selectedDischargeType = "";
+        _hasHomeVisit = null;
+        _hasTuberculosis = null;
+        _exam_period_from = "";
+        _exam_period_to = "";
+        _vaccine_period_from = "";
+        _vaccine_period_to = "";
+        _operation_period_from = "";
+        _operation_period_to = "";
+
+        if (preserveAdmissionDates) {
+            LocalDate admissionFrom = periodFromDateChooser.getDate();
+            LocalDate admissionTo = periodToDateChooser.getDate();
+            _period_from = admissionFrom == null ? "" : admissionFrom.format(DATE_FORMATTER);
+            _period_to = admissionTo == null ? "" : admissionTo.format(DATE_FORMATTER);
+        } else {
+            _period_from = "";
+            _period_to = "";
+            periodFromDateChooser.setDate(null);
+            periodToDateChooser.setDate(null);
+        }
+
+        homeVisitFilterCombo.setSelectedIndex(0);
+        tuberculosisFilterCombo.setSelectedIndex(0);
+        sexCombo.setSelectedItem(null);
+        ageFromField.setText("");
+        ageToField.setText("");
+        vaccinesCombo.setSelectedItem(null);
+        wardsCombo.setSelectedItem(null);
+        vaccinePeriodFrom.setDate(null);
+        vaccinePeriodTo.setDate(null);
+        examsCombo.setSelectedItem(null);
+        examResultsCombo.setSelectedItem(null);
+        examPeriodFrom.setDate(null);
+        examPeriodTo.setDate(null);
+        operationsCombo.setSelectedItem(null);
+        operationResultsCombo.setSelectedItem(null);
+        operationPeriodFrom.setDate(null);
+        operationPeriodTo.setDate(null);
+        diseasesCombo.setSelectedItem(null);
+        dischargeTypesCombo.setSelectedItem(null);
+        allDiseasesCheck.setSelected(false);
+        allDiseasesCheck.setEnabled(true);
+        allExamsCheck.setSelected(false);
+        allExamsCheck.setEnabled(true);
+        allVaccinesCheck.setSelected(false);
+        allVaccinesCheck.setEnabled(true);
+        allOperationsCheck.setSelected(false);
+        allOperationsCheck.setEnabled(true);
+        sexCombo.setEnabled(true);
+        diseasesCombo.setEnabled(true);
+        vaccinesCombo.setEnabled(true);
+        examsCombo.setEnabled(true);
+        operationsCombo.setEnabled(true);
+
+        emptyJDataTable();
+        resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : 0");
+        initializePaginationCombo();
     }
 
     private void applyFilters() {
@@ -1037,14 +1168,14 @@ public class StatsBrowsing extends ModalJFrame {
                 generalFilter();
                 break;
         }
-        isApplyFilter = true;
     }
 
     private void generalFilter() {
+        jDataTable.setModel(jDataTableModel);
         try {
             if (resultCount > 0) {
                 patientList = statsManager.getPatientsStats(
-                        _start_index, _start_index + _items_per_page,
+                        _start_index, _items_per_page,
                         _age_from, _age_to,
                         _period_from, _period_to,
                         _selectedSex, _selectedWard,
@@ -1053,7 +1184,8 @@ public class StatsBrowsing extends ModalJFrame {
                         _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                         _selectedOperation, _selectedOperationResult,
                         _operation_period_from, _operation_period_to,
-                        _selectedDisease, _selectedDischargeType);
+                        _selectedDisease, _selectedDischargeType,
+                        _hasHomeVisit, _hasTuberculosis);
             } else {
                 patientList = new ArrayList<>();
             }
@@ -1068,15 +1200,16 @@ public class StatsBrowsing extends ModalJFrame {
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
+            MessageDialog.showExceptions(ex);
         }
     }
 
     private void vaccineFilter() {
+        jDataTable.setModel(jVaccineTableModel);
         try {
             if (resultCount > 0) {
                 vaccinesList = statsManager.getVaccinesStats(
-                        _start_index, _start_index + _items_per_page,
+                        _start_index, _items_per_page,
                         _age_from, _age_to,
                         _period_from, _period_to,
                         _selectedWard,
@@ -1085,7 +1218,8 @@ public class StatsBrowsing extends ModalJFrame {
                         _vaccine_period_from, _vaccine_period_to,
                         _selectedOperation, _selectedOperationResult,
                         _operation_period_from, _operation_period_to,
-                        _selectedDisease, _selectedDischargeType);
+                        _selectedDisease, _selectedDischargeType,
+                        _hasHomeVisit, _hasTuberculosis);
             } else {
                 vaccinesList = new ArrayList<>();
             }
@@ -1100,15 +1234,16 @@ public class StatsBrowsing extends ModalJFrame {
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
+            MessageDialog.showExceptions(ex);
         }
     }
 
     private void examFilter() {
+        jDataTable.setModel(jExamTableModel);
         try {
             if (resultCount > 0) {
                 examsList = statsManager.getExamsStats(
-                        _start_index, _start_index + _items_per_page,
+                        _start_index, _items_per_page,
                         _age_from, _age_to,
                         _period_from, _period_to,
                         _selectedWard,
@@ -1117,7 +1252,8 @@ public class StatsBrowsing extends ModalJFrame {
                         _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                         _selectedOperation, _selectedOperationResult,
                         _operation_period_from, _operation_period_to,
-                        _selectedDisease, _selectedDischargeType);
+                        _selectedDisease, _selectedDischargeType,
+                        _hasHomeVisit, _hasTuberculosis);
             } else {
                 examsList = new ArrayList<>();
             }
@@ -1132,15 +1268,16 @@ public class StatsBrowsing extends ModalJFrame {
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
+            MessageDialog.showExceptions(ex);
         }
     }
 
     private void diseaseFilter() {
+        jDataTable.setModel(jDiseaseTableModel);
         try {
             if (resultCount > 0) {
                 diseasesList = statsManager.getDiseasesStats(
-                        _start_index, _start_index + _items_per_page,
+                        _start_index, _items_per_page,
                         _age_from, _age_to,
                         _period_from, _period_to,
                         _selectedWard,
@@ -1149,7 +1286,7 @@ public class StatsBrowsing extends ModalJFrame {
                         _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                         _selectedOperation, _selectedOperationResult,
                         _operation_period_from, _operation_period_to,
-                        _selectedDischargeType);
+                        _selectedDischargeType, _hasHomeVisit, _hasTuberculosis);
             } else {
                 diseasesList = new ArrayList<>();
             }
@@ -1164,7 +1301,7 @@ public class StatsBrowsing extends ModalJFrame {
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
+            MessageDialog.showExceptions(ex);
         }
     }
 
@@ -1182,10 +1319,11 @@ public class StatsBrowsing extends ModalJFrame {
     }
 
     private void operationFilter() {
+        jDataTable.setModel(jOperationTableModel);
         try {
             if (resultCount > 0) {
                 operationsList = statsManager.getOperationsStats(
-                        _start_index, _start_index + _items_per_page,
+                        _start_index, _items_per_page,
                         _age_from, _age_to,
                         _period_from, _period_to,
                         _selectedWard,
@@ -1194,7 +1332,8 @@ public class StatsBrowsing extends ModalJFrame {
                         _selectedVaccine, _vaccine_period_from, _vaccine_period_to,
                         _selectedOperationResult,
                         _operation_period_from, _operation_period_to,
-                        _selectedDisease, _selectedDischargeType);
+                        _selectedDisease, _selectedDischargeType,
+                        _hasHomeVisit, _hasTuberculosis);
             } else {
                 operationsList = new ArrayList<>();
             }
@@ -1209,7 +1348,7 @@ public class StatsBrowsing extends ModalJFrame {
 
             resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : " + resultCount);
         } catch (OHServiceException ex) {
-            OHServiceExceptionUtil.showMessages(ex);
+            MessageDialog.showExceptions(ex);
         }
     }
 
@@ -1222,7 +1361,6 @@ public class StatsBrowsing extends ModalJFrame {
             _start_index = 0;
             setPaginationButtons();
             paginationCombo.setSelectedItem(_start_index / _items_per_page + 1);
-            applyFilters();
         });
 
         return paginationFirstBtn;
@@ -1237,7 +1375,6 @@ public class StatsBrowsing extends ModalJFrame {
             _start_index -= _items_per_page;
             setPaginationButtons();
             paginationCombo.setSelectedItem(_start_index / _items_per_page + 1);
-            applyFilters();
         });
 
         return paginationPrevBtn;
@@ -1248,7 +1385,7 @@ public class StatsBrowsing extends ModalJFrame {
 
         paginationCombo = new JComboBox<>();
         paginationCombo.addActionListener(e -> {
-            if (paginationCombo.getItemCount() > 0) {
+            if (!isUpdatingPagination && paginationCombo.getItemCount() > 0) {
                 Integer pageNumber = (Integer) paginationCombo.getSelectedItem();
                 if (pageNumber != null) {
                     _start_index = (pageNumber - 1) * _items_per_page;
@@ -1270,7 +1407,6 @@ public class StatsBrowsing extends ModalJFrame {
             _start_index += _items_per_page;
             setPaginationButtons();
             paginationCombo.setSelectedItem(_start_index / _items_per_page + 1);
-            applyFilters();
         });
 
         return paginationNextBtn;
@@ -1282,44 +1418,36 @@ public class StatsBrowsing extends ModalJFrame {
         paginationLastBtn = new JButton(">>");
         paginationLastBtn.setEnabled(false);
         paginationLastBtn.addActionListener(e -> {
+            int lastPage = Math.max(0, (resultCount - 1) / _items_per_page);
+            _start_index = lastPage * _items_per_page;
+            paginationCombo.setSelectedItem(lastPage + 1);
         });
 
         return paginationLastBtn;
     }
 
     public void initializePaginationCombo() {
+        isUpdatingPagination = true;
         paginationCombo.removeAllItems();
-        int totalPages = resultCount / _items_per_page;
+        int totalPages = (resultCount + _items_per_page - 1) / _items_per_page;
         for (int i = 0; i < totalPages; i++) {
             paginationCombo.addItem(i + 1);
         }
-        if (totalPages * _items_per_page < resultCount) {
-            paginationCombo.addItem(totalPages + 1);
-            paginationLabel.setText("/" + (resultCount / _items_per_page + 1 + " Pages"));
-        } else if (isApplyFilter) {
-            paginationLabel.setText("/" + (resultCount / _items_per_page + 1 + " Pages"));
-        } else {
-            paginationLabel.setText("/" + resultCount / _items_per_page + " Pages");
+        if (totalPages > 0) {
+            paginationCombo.setSelectedItem(_start_index / _items_per_page + 1);
         }
+        paginationLabel.setText("/" + totalPages + " Pages");
+        isUpdatingPagination = false;
         setPaginationButtons();
     }
 
     private void setPaginationButtons() {
-        if (_start_index + _items_per_page > resultCount) {
-            paginationNextBtn.setEnabled(false);
-            paginationLastBtn.setEnabled(false);
-        } else {
-            paginationNextBtn.setEnabled(true);
-            paginationLastBtn.setEnabled(true);
-        }
-
-        if (_start_index < _items_per_page) {
-            paginationPrevBtn.setEnabled(false);
-            paginationFirstBtn.setEnabled(false);
-        } else {
-            paginationPrevBtn.setEnabled(true);
-            paginationFirstBtn.setEnabled(true);
-        }
+        boolean hasPrevious = _start_index > 0;
+        boolean hasNext = _start_index + _items_per_page < resultCount;
+        paginationPrevBtn.setEnabled(hasPrevious);
+        paginationFirstBtn.setEnabled(hasPrevious);
+        paginationNextBtn.setEnabled(hasNext);
+        paginationLastBtn.setEnabled(hasNext);
     }
 
     private JPanel getResultCountPanel() {
@@ -1332,6 +1460,9 @@ public class StatsBrowsing extends ModalJFrame {
     private boolean checkAdmissionPeriod() {
         LocalDate dateFrom = periodFromDateChooser.getDate();
         LocalDate dateTo = periodToDateChooser.getDate();
+
+        _period_from = dateFrom == null ? "" : dateFrom.format(DATE_FORMATTER);
+        _period_to = dateTo == null ? "" : dateTo.format(DATE_FORMATTER);
 
         if (dateFrom == null && dateTo == null) {
             return true;
@@ -1347,46 +1478,41 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (dateFrom != null) {
-            _period_from = dateFrom.format(DATE_FORMATTER);
-        }
-        if (dateTo != null) {
-            _period_to = dateTo.format(DATE_FORMATTER);
-        }
-
         return true;
     }
 
     private boolean checkAge() {
-        if (ageFromField.getText().isEmpty() && ageToField.getText().isEmpty()) {
-            return true;
-        }
-
-        if (!ageFromField.getText().isEmpty()) {
-            _age_from = Integer.parseInt(ageFromField.getText());
-        }
-
-        if (!ageToField.getText().isEmpty()) {
-            _age_to = Integer.parseInt(ageToField.getText());
-        }
-
-        if (_age_to > 0 && _age_from > _age_to) {
+        int ageFrom;
+        int ageTo;
+        try {
+            ageFrom = ageFromField.getText().isEmpty() ? 0 : Integer.parseInt(ageFromField.getText());
+            ageTo = ageToField.getText().isEmpty() ? 0 : Integer.parseInt(ageToField.getText());
+        } catch (NumberFormatException e) {
             MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidagerange");
             return false;
         }
 
+        if (ageFromField.getText().isEmpty() && ageToField.getText().isEmpty()) {
+            _age_from = 0;
+            _age_to = 0;
+            return true;
+        }
+
+        if (ageTo > 0 && ageFrom > ageTo) {
+            MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidagerange");
+            return false;
+        }
+
+        _age_from = ageFrom;
+        _age_to = ageTo;
         return true;
     }
 
     private boolean checkVaccinePeriod() {
-
-        if (allVaccinesCheck.isSelected()) {
-            _vaccine_period_from = "";
-            _vaccine_period_to = "";
-            return true;
-        }
         LocalDate vaccineDateFrom = vaccinePeriodFrom.getDate();
         LocalDate vaccineDateTo = vaccinePeriodTo.getDate();
+        _vaccine_period_from = vaccineDateFrom == null ? "" : vaccineDateFrom.format(DATE_FORMATTER);
+        _vaccine_period_to = vaccineDateTo == null ? "" : vaccineDateTo.format(DATE_FORMATTER);
 
         if (vaccineDateFrom == null && vaccineDateTo == null) {
             return true;
@@ -1402,26 +1528,14 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (vaccineDateFrom != null) {
-            _vaccine_period_from = vaccineDateFrom.format(DATE_FORMATTER);
-        }
-        if (vaccineDateTo != null) {
-            _vaccine_period_to = vaccineDateTo.format(DATE_FORMATTER);
-        }
-
         return true;
     }
 
     private boolean checkExamPeriod() {
-
-        if (allExamsCheck.isSelected()) {
-            _exam_period_from = "";
-            _exam_period_to = "";
-            return true;
-        }
-
         LocalDate examDateFrom = examPeriodFrom.getDate();
         LocalDate examDateTo = examPeriodTo.getDate();
+        _exam_period_from = examDateFrom == null ? "" : examDateFrom.format(DATE_FORMATTER);
+        _exam_period_to = examDateTo == null ? "" : examDateTo.format(DATE_FORMATTER);
 
         if (examDateFrom == null && examDateTo == null) {
             return true;
@@ -1437,25 +1551,14 @@ public class StatsBrowsing extends ModalJFrame {
             return false;
         }
 
-        if (examDateFrom != null) {
-            _exam_period_from = examDateFrom.format(DATE_FORMATTER);
-        }
-        if (examDateTo != null) {
-            _exam_period_to = examDateTo.format(DATE_FORMATTER);
-        }
-
         return true;
     }
 
     private boolean checkOperationPeriod() {
-
-        if (allOperationsCheck.isSelected()) {
-            _operation_period_from = "";
-            _operation_period_to = "";
-            return true;
-        }
         LocalDate operationDateFrom = operationPeriodFrom.getDate();
         LocalDate operationDateTo = operationPeriodTo.getDate();
+        _operation_period_from = operationDateFrom == null ? "" : operationDateFrom.format(DATE_FORMATTER);
+        _operation_period_to = operationDateTo == null ? "" : operationDateTo.format(DATE_FORMATTER);
 
         if (operationDateFrom == null && operationDateTo == null) {
             return true;
@@ -1469,13 +1572,6 @@ public class StatsBrowsing extends ModalJFrame {
         if (operationDateTo != null && operationDateTo.isBefore(operationDateFrom)) {
             MessageDialog.error(StatsBrowsing.this, "angal.stat.error.pleaseinsertvalidoperationperiod");
             return false;
-        }
-
-        if (operationDateFrom != null) {
-            _operation_period_from = operationDateFrom.format(DATE_FORMATTER);
-        }
-        if (operationDateTo != null) {
-            _operation_period_to = operationDateTo.format(DATE_FORMATTER);
         }
 
         return true;
@@ -1496,6 +1592,10 @@ public class StatsBrowsing extends ModalJFrame {
         operationsList = new ArrayList<>();
         diseasesList = new ArrayList<>();
         jDataTableModel.fireTableDataChanged();
+        jVaccineTableModel.fireTableDataChanged();
+        jExamTableModel.fireTableDataChanged();
+        jDiseaseTableModel.fireTableDataChanged();
+        jOperationTableModel.fireTableDataChanged();
         jDataTable.updateUI();
     }
 
@@ -1520,14 +1620,29 @@ public class StatsBrowsing extends ModalJFrame {
 
         @Override
         public Object getValueAt(int r, int c) {
-            if (c == 0) {
-                return patientList.get(r).getName();
-            } else if (c == 1) {
-                return patientList.get(r).getSex();
-            } else if (c == 2) {
-                return patientList.get(r).getAge();
+            Patient patient = patientList.get(r);
+            switch (c) {
+                case 0:
+                    return patient.getCode();
+                case 1:
+                    return patient.getName();
+                case 2:
+                    return patient.getSex();
+                case 3:
+                    return patient.getAge();
+                case 4:
+                    return patient.getBirthDate() == null
+                            ? ""
+                            : patient.getBirthDate().format(PATIENT_DATE_FORMATTER);
+                case 5:
+                    return patient.getAddress();
+                case 6:
+                    return patient.getCity();
+                case 7:
+                    return patient.getTelephone();
+                default:
+                    return null;
             }
-            return null;
         }
 
         @Override

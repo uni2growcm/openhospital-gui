@@ -34,11 +34,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractCellEditor;
@@ -65,7 +62,6 @@ import org.isf.command.model.CommandRow;
 import org.isf.generaldata.MessageBundle;
 import org.isf.medicals.manager.MedicalBrowsingManager;
 import org.isf.medicals.model.Medical;
-import org.isf.medicalstock.manager.MovStockInsertingManager;
 import org.isf.menu.manager.Context;
 import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
@@ -109,7 +105,6 @@ public class NewCommandDialog extends JDialog {
 
 	private final CommandBrowserManager commandBrowserManager = Context.getApplicationContext().getBean(CommandBrowserManager.class);
 	private final MedicalBrowsingManager medicalBrowsingManager = Context.getApplicationContext().getBean(MedicalBrowsingManager.class);
-	private final MovStockInsertingManager movStockInsertingManager = Context.getApplicationContext().getBean(MovStockInsertingManager.class);
 
 	private JPanel jContentPane;
 	private JPanel topPanel;
@@ -397,15 +392,6 @@ public class NewCommandDialog extends JDialog {
 			List<Medical> allMedicals = medicalBrowsingManager.getMedicals();
 			List<Integer> usedMedicalIds = commandBrowserManager.getMedicalIdsAlreadyInCommandRows();
 
-			List<Integer> codes = allMedicals.stream().map(Medical::getCode).collect(Collectors.toList());
-			Map<Integer, LocalDate> nearestExpiryMap = null;
-			try {
-				nearestExpiryMap = movStockInsertingManager.getNearestExpiryDateByMedicals(codes);
-			} catch (Exception ex) {
-				nearestExpiryMap = Collections.emptyMap();
-			}
-			LocalDate today = LocalDate.now();
-
 			for (Medical med : allMedicals) {
 				if (med.getDeleted() == 'Y') {
 					continue;
@@ -416,10 +402,8 @@ public class NewCommandDialog extends JDialog {
 				double currentStock = med.getInitialqty() + med.getInqty() - med.getOutqty();
 				boolean isCritical = med.getMinqty() > 0 && currentStock <= med.getMinqty();
 				boolean isZeroStock = currentStock == 0;
-				LocalDate nearestExpiry = nearestExpiryMap != null ? nearestExpiryMap.get(med.getCode()) : null;
-				boolean isExpired = nearestExpiry != null && nearestExpiry.isBefore(today);
 
-				if (isCritical || isZeroStock || isExpired) {
+				if (isCritical || isZeroStock) {
 					ProductRow pr = new ProductRow();
 					pr.medical = med;
 					pr.currentStock = currentStock;
