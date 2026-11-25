@@ -268,6 +268,7 @@ public class StatsBrowsing extends ModalJFrame {
         setTitle(MessageBundle.getMessage("angal.stat.generalstatsbrowsing"));
 
         initComponents();
+        resetFilters(true);
         pack();
 
         Rectangle screenBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
@@ -1067,76 +1068,84 @@ public class StatsBrowsing extends ModalJFrame {
         if (filterResetBtn != null) return filterResetBtn;
 
         filterResetBtn = new JButton(MessageBundle.getMessage("angal.stat.btn.resetfilter"));
-        filterResetBtn.addActionListener(e -> {
-            _start_index = 0;
-            _items_per_page = 100;
-            _selectedFilter = "general";
-            resultCount = 0;
-            _age_from = 0;
-            _age_to = 0;
-            _selectedSex = "";
-            _selectedWard = "";
-            _selectedExam = "";
-            _selectedExamResult = "";
-            _selectedVaccine = "";
-            _selectedOperation = "";
-            _selectedOperationResult = "";
-            _selectedDisease = "";
-            _selectedDischargeType = "";
-            _period_from = "";
-            _period_to = "";
-            _hasHomeVisit = null;
-            _hasTuberculosis = null;
-            _exam_period_from = "";
-            _exam_period_to = "";
-            _vaccine_period_from = "";
-            _vaccine_period_to = "";
-            _operation_period_from = "";
-            _operation_period_to = "";
-
-            periodFromDateChooser.setDate(null);
-            periodToDateChooser.setDate(null);
-            homeVisitFilterCombo.setSelectedIndex(0);
-            tuberculosisFilterCombo.setSelectedIndex(0);
-            sexCombo.setSelectedItem(null);
-            ageFromField.setText("");
-            ageToField.setText("");
-            vaccinesCombo.setSelectedItem(null);
-            wardsCombo.setSelectedItem(null);
-            vaccinePeriodFrom.setDate(null);
-            vaccinePeriodTo.setDate(null);
-            examsCombo.setSelectedItem(null);
-            examResultsCombo.setSelectedItem(null);
-            examPeriodFrom.setDate(null);
-            examPeriodTo.setDate(null);
-            operationsCombo.setSelectedItem(null);
-            operationResultsCombo.setSelectedItem(null);
-            operationPeriodFrom.setDate(null);
-            operationPeriodTo.setDate(null);
-            diseasesCombo.setSelectedItem(null);
-            dischargeTypesCombo.setSelectedItem(null);
-            allDiseasesCheck.setSelected(false);
-            allDiseasesCheck.setEnabled(true);
-            allExamsCheck.setSelected(false);
-            allExamsCheck.setEnabled(true);
-            allVaccinesCheck.setSelected(false);
-            allVaccinesCheck.setEnabled(true);
-            allOperationsCheck.setSelected(false);
-            allOperationsCheck.setEnabled(true);
-            sexCombo.setEnabled(true);
-            diseasesCombo.setEnabled(true);
-            vaccinesCombo.setEnabled(true);
-            examsCombo.setEnabled(true);
-            operationsCombo.setEnabled(true);
-
-            emptyJDataTable();
-            resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : 0");
-            initializePaginationCombo();
-
-            System.out.println("Filter reset");
-        });
+        filterResetBtn.addActionListener(e -> resetFilters(false));
 
         return filterResetBtn;
+    }
+
+    private void resetFilters(boolean preserveAdmissionDates) {
+        _start_index = 0;
+        _items_per_page = 100;
+        _selectedFilter = "general";
+        resultCount = 0;
+        _age_from = 0;
+        _age_to = 0;
+        _selectedSex = "";
+        _selectedWard = "";
+        _selectedExam = "";
+        _selectedExamResult = "";
+        _selectedVaccine = "";
+        _selectedOperation = "";
+        _selectedOperationResult = "";
+        _selectedDisease = "";
+        _selectedDischargeType = "";
+        _hasHomeVisit = null;
+        _hasTuberculosis = null;
+        _exam_period_from = "";
+        _exam_period_to = "";
+        _vaccine_period_from = "";
+        _vaccine_period_to = "";
+        _operation_period_from = "";
+        _operation_period_to = "";
+
+        if (preserveAdmissionDates) {
+            LocalDate admissionFrom = periodFromDateChooser.getDate();
+            LocalDate admissionTo = periodToDateChooser.getDate();
+            _period_from = admissionFrom == null ? "" : admissionFrom.format(DATE_FORMATTER);
+            _period_to = admissionTo == null ? "" : admissionTo.format(DATE_FORMATTER);
+        } else {
+            _period_from = "";
+            _period_to = "";
+            periodFromDateChooser.setDate(null);
+            periodToDateChooser.setDate(null);
+        }
+
+        homeVisitFilterCombo.setSelectedIndex(0);
+        tuberculosisFilterCombo.setSelectedIndex(0);
+        sexCombo.setSelectedItem(null);
+        ageFromField.setText("");
+        ageToField.setText("");
+        vaccinesCombo.setSelectedItem(null);
+        wardsCombo.setSelectedItem(null);
+        vaccinePeriodFrom.setDate(null);
+        vaccinePeriodTo.setDate(null);
+        examsCombo.setSelectedItem(null);
+        examResultsCombo.setSelectedItem(null);
+        examPeriodFrom.setDate(null);
+        examPeriodTo.setDate(null);
+        operationsCombo.setSelectedItem(null);
+        operationResultsCombo.setSelectedItem(null);
+        operationPeriodFrom.setDate(null);
+        operationPeriodTo.setDate(null);
+        diseasesCombo.setSelectedItem(null);
+        dischargeTypesCombo.setSelectedItem(null);
+        allDiseasesCheck.setSelected(false);
+        allDiseasesCheck.setEnabled(true);
+        allExamsCheck.setSelected(false);
+        allExamsCheck.setEnabled(true);
+        allVaccinesCheck.setSelected(false);
+        allVaccinesCheck.setEnabled(true);
+        allOperationsCheck.setSelected(false);
+        allOperationsCheck.setEnabled(true);
+        sexCombo.setEnabled(true);
+        diseasesCombo.setEnabled(true);
+        vaccinesCombo.setEnabled(true);
+        examsCombo.setEnabled(true);
+        operationsCombo.setEnabled(true);
+
+        emptyJDataTable();
+        resultCountLabel.setText(MessageBundle.getMessage("angal.stat.total") + " : 0");
+        initializePaginationCombo();
     }
 
     private void applyFilters() {
