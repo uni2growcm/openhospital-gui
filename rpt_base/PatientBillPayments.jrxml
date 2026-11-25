@@ -86,7 +86,7 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="17" splitType="Stretch">
+		<band height="17" splitType="Prevent">
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
 				<reportElement key="textField" x="292" y="0" width="88" height="17" uuid="694b1383-ff15-4dce-9350-0d285243524b"/>
 				<box>

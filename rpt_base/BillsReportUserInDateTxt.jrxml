@@ -170,7 +170,7 @@ AND BLP_USR_ID_A like $P{user}]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="66" splitType="Stretch">
+		<band height="66" splitType="Prevent">
 			<textField>
 				<reportElement key="staticText-7" x="0" y="0" width="84" height="25" uuid="46225eec-3625-474f-bc41-de162b22e809"/>
 				<box>

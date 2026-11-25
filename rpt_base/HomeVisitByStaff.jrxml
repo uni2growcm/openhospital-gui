@@ -106,7 +106,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="20" splitType="Prevent">
 			<textField>
 				<reportElement x="0" y="0" width="130" height="20" uuid="c2000001-0002-0002-0002-000000000005"/>
 				<box topPadding="2" leftPadding="6">

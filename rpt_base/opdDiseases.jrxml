@@ -42,7 +42,7 @@ where   DIS_ID_A IN (
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="28" splitType="Stretch">
+		<band height="28" splitType="Prevent">
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="93" height="28" isPrintInFirstWholeBand="true" uuid="7bf11cd9-67ef-48ac-b601-cbc8d71c78f2"/>
 				<box>

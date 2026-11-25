@@ -41,110 +41,125 @@
 	<parameter name="homeVisitsCompleted" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="homeVisitsCancelled" class="java.lang.Long" isForPrompting="false"/>
 	<parameter name="homeVisitsPostponed" class="java.lang.Long" isForPrompting="false"/>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT 1]]>
 	</queryString>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<title>
-		<band splitType="Stretch"/>
-	</title>
 	<pageHeader>
-		<band height="160" splitType="Prevent">
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-1" x="0" y="0" width="390" height="16" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"/>
+		<band height="158" splitType="Prevent">
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="ba396aea-36d1-4893-9deb-9b17d364ff30"/>
 				<textElement>
-					<font fontName="SansSerif" size="11" isBold="true"/>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{republique_camerounf}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.fr")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-2" x="30" y="16" width="360" height="14" uuid="2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_fr" x="15" y="16" width="340" height="14" uuid="70f20338-5f26-4060-8c31-f8dd3ac588d1"/>
 				<textElement>
-					<font fontName="SansSerif" size="8"/>
+					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{paix_travail_patrief}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.fr")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-3" x="0" y="30" width="390" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_fr" x="0" y="30" width="355" height="16" uuid="f19b0c7e-00d1-447f-b1e3-eec10ccb2939"/>
 				<textElement>
-					<font fontName="SansSerif" size="11" isBold="true"/>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{ministere_santef}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.fr")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-4" x="392" y="0" width="390" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_en" x="427" y="0" width="355" height="16" uuid="c4d9ea70-724c-43ee-aace-9656ce29d271"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="11" isBold="true"/>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{republique_cameroune}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.en")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-5" x="411" y="16" width="360" height="14" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a9b"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_en" x="427" y="16" width="355" height="14" uuid="38920205-a39a-4036-ba4b-8610979c64e7"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8"/>
+					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{paix_travail_patriee}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.en")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-6" x="392" y="30" width="390" height="16" uuid="6f7a8b9c-0d1e-4f2a-3b4c-5d6e7f8a9b0c"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_en" x="427" y="30" width="355" height="16" uuid="6bb268da-1d05-4fe9-9075-c16438f0f819"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="11" isBold="true"/>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{ministere_santee}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.en")]]></textFieldExpression>
 			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="header_logo" x="361" y="0" width="60" height="46" uuid="910b988b-dba5-4246-8263-edaa0e978412">
+					<printWhenExpression><![CDATA[$P{HOSPITAL_LOGO} != null && new java.io.File($P{HOSPITAL_LOGO}).isFile()]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
+			</image>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-7" x="0" y="55" width="782" height="30" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d"/>
-				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="15" isBold="true"/>
+				<reportElement key="textField-header-7" x="0" y="52" width="782" height="30" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d" mode="Transparent"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-8" x="0" y="90" width="782" height="16" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e"/>
+				<reportElement key="textField-header-8" x="0" y="138" width="782" height="16" uuid="8b9c0d1e-2f3a-4b4c-5d6e-7f8a9b0c1d2e"/>
 				<textElement textAlignment="Center">
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{label_year} + " " + $P{year}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-header-9" x="0" y="110" width="390" height="14" uuid="9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f"/>
+				<reportElement key="header_district" x="0" y="86" width="380" height="14" uuid="2288d4ff-b18e-4a7f-abfa-c2e452a9476f"/>
 				<textElement>
-					<font fontName="SansSerif" size="9"/>
+					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_district} + " " + $P{City}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.district") + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-header-10" x="0" y="124" width="390" height="14" uuid="0d1e2f3a-4b5c-4d6e-7f8a-9b0c1d2e3f4a"/>
+				<reportElement key="header_address" x="0" y="100" width="380" height="14" uuid="236092b2-dedc-4740-9cf1-27e302b770fe"/>
 				<textElement>
-					<font fontName="SansSerif" size="9"/>
+					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_adresse} + " " + $P{Address}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.address") + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-header-11" x="392" y="110" width="390" height="14" uuid="1e2f3a4b-5c6d-4e7f-8a9b-0c1d2e3f4a5b"/>
+				<reportElement key="header_structure" x="402" y="86" width="380" height="14" uuid="6a07cef4-c382-4a21-987a-46c4e7f43fba"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_structure} + " " + $P{Hospital}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.structure") + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-header-12" x="392" y="124" width="390" height="14" uuid="2f3a4b5c-6d7e-4f8a-9b0c-1d2e3f4a5b6c"/>
+				<reportElement key="header_telephone" x="402" y="100" width="380" height="14" uuid="63545a35-067f-422f-b9f0-1e4e3d948be3"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9"/>
+					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_telephone} + " " + $P{Telephone}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.telephone") + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-header-13" x="392" y="138" width="390" height="14" uuid="3a4b5c6d-7e8f-4a9b-0c1d-2e3f4a5b6c7d"/>
+				<reportElement key="header_email" x="402" y="114" width="380" height="14" uuid="efcefe82-353d-4816-8ad3-57850b5a138b"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9"/>
+					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_email} + " " + $P{Email}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.email") + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-header-1" mode="Opaque" x="0" y="155" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="4b5c6d7e-8f9a-4b0c-1d2e-3f4a5b6c7d8e"/>
+				<reportElement key="header_line" x="0" y="132" width="782" height="1" uuid="05993c93-be0a-4a93-9dd7-eef7aade7019"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
 			</line>
 		</band>
 	</pageHeader>
@@ -572,20 +587,29 @@
 	</columnFooter>
 	<pageFooter>
 		<band height="20" splitType="Stretch">
-			<textField>
-				<reportElement x="0" y="0" width="200" height="16" uuid="3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e72"/>
-				<textElement><font fontName="SansSerif" size="8"/></textElement>
-				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="782" height="1" uuid="0bbe5faf-d2bb-4582-8e76-835c7cbdee67"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="bd0f3f49-b96f-44bf-a41b-f5cdcea54baf"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="4fae6859-55a5-4694-b6b8-010fa3fec7e6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="632" y="0" width="100" height="16" uuid="4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f83"/>
-				<textElement textAlignment="Right"><font fontName="SansSerif" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report">
-				<reportElement x="736" y="0" width="46" height="16" uuid="5e6f7a8b-9c0d-4e1f-2a3b-4c5d6e7f8a94"/>
-				<textElement textAlignment="Left"><font fontName="SansSerif" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="582" y="4" width="200" height="14" uuid="99f893ad-c86c-4a5b-a253-8984f81ff6cb"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

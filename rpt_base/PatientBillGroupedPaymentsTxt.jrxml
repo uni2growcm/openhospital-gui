@@ -52,7 +52,7 @@ ORDER BY BLP_DATE ASC]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
+		<band height="18" splitType="Prevent">
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
 				<reportElement key="textField-9" x="0" y="0" width="314" height="18" uuid="ee459024-92f5-4859-8ebf-7b145ceaaccf"/>
 				<box>

@@ -31,7 +31,7 @@ WHERE $X{IN ,BLP_ID_BILL, collectionbillsId } ORDER BY BLP_DATE ASC]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band splitType="Stretch"/>
+		<band splitType="Prevent"/>
 	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>

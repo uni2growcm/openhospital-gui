@@ -153,7 +153,7 @@ LIMIT $P{TopN}]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="20" splitType="Prevent">
 			<textField textAdjust="StretchHeight">
 				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="120" height="20" uuid="c3000001-0003-0003-0003-000000000005"/>
 				<box topPadding="2" leftPadding="6">
