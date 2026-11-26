@@ -15,6 +15,20 @@
 	<parameter name="todate" class="java.util.Date">
 		<parameterDescription><![CDATA[ending date of period]]></parameterDescription>
 	</parameter>
+	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Address" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select wardid, ward, beds, admissions, deads, patient_days,
     round(patient_days / admissions, 2) f,
@@ -76,12 +90,116 @@ SELECT 	WRD_ID_A wardid,
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch" height="164">
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="468a21cd-695e-48a8-884f-ce93401f3e14"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_fr" x="15" y="16" width="216" height="14" uuid="60f9e76f-e64e-44de-ad67-fe57ddb581fb"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_fr" x="0" y="30" width="231" height="16" uuid="4760c11b-4d6c-406e-aba9-d32a2ef9a58c"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_en" x="304" y="0" width="231" height="16" uuid="0c19bf7f-f487-46eb-99ce-4ae243bb06e3"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_en" x="304" y="16" width="231" height="14" uuid="181f00a3-2e63-4375-a0d0-c94b88286379"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_en" x="304" y="30" width="231" height="16" uuid="b5c67d29-8f0e-47f8-870e-86bfbe85122b"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.en")]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="header_logo" x="237" y="0" width="60" height="46" uuid="0375bc60-5b61-4db3-a538-9964231b6611">
+					<printWhenExpression><![CDATA[$P{HOSPITAL_LOGO} != null && new java.io.File($P{HOSPITAL_LOGO}).isFile()]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_district" x="0" y="92" width="256" height="14" uuid="702907a8-e029-4b25-a8e2-bbce0f09d723"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.district") + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_address" x="0" y="106" width="256" height="14" uuid="07dee903-b409-4cf9-a9f6-1d7d68bd9b21"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.address") + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_structure" x="279" y="92" width="256" height="14" uuid="fc37f13e-9ce6-4084-92c7-0555d89f3031"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.structure") + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_telephone" x="279" y="106" width="256" height="14" uuid="7ec856bb-4454-44f0-84c3-c3e0aed32beb"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.telephone") + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_email" x="279" y="120" width="256" height="14" uuid="220d348d-7d21-49b6-a3f9-c55fcdf930d0"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.email") + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="header_line" x="0" y="138" width="535" height="1" uuid="41b788f2-c901-4b2b-ab5f-7eadbb75c4f2"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="144" width="535" height="16" uuid="9f29fda4-20a8-42a3-b145-6c80748220a0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="staticText-15" mode="Transparent" x="0" y="52" width="535" height="36" uuid="654cbc74-0563-4168-b551-4aed456c7103"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Hmis108InpatientMonthlyReport}]]></textFieldExpression>
+			</textField>
+		</band>
 	</title>
 	<pageHeader>
-		<band height="153" splitType="Stretch">
+		<band height="119" splitType="Stretch">
 			<textField>
-				<reportElement key="staticText-3" x="239" y="92" width="57" height="51" uuid="e272c3d4-8192-4aeb-9d32-573a23ac67e7"/>
+				<reportElement key="staticText-3" x="239" y="58" width="57" height="51" uuid="e272c3d4-8192-4aeb-9d32-573a23ac67e7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -94,7 +212,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{ePatientDays}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-4" x="296" y="92" width="70" height="51" uuid="104f1d52-17a2-4bba-b17c-2989082b80bf"/>
+				<reportElement key="staticText-4" x="296" y="58" width="70" height="51" uuid="104f1d52-17a2-4bba-b17c-2989082b80bf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -107,7 +225,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{AverageStay}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-8" x="452" y="92" width="83" height="51" uuid="54160604-a323-41fe-83d3-2616f1b2c5ff"/>
+				<reportElement key="staticText-8" x="452" y="58" width="83" height="51" uuid="54160604-a323-41fe-83d3-2616f1b2c5ff"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -120,7 +238,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{BedOccupancy}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-9" x="365" y="92" width="88" height="51" uuid="2f349eea-1632-4d7f-ae07-eeeee2f11f22"/>
+				<reportElement key="staticText-9" x="365" y="58" width="88" height="51" uuid="2f349eea-1632-4d7f-ae07-eeeee2f11f22"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,46 +251,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{AverageOccupancy}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-15" mode="Opaque" x="0" y="0" width="421" height="36" forecolor="#FFFFFF" backcolor="#000000" uuid="654cbc74-0563-4168-b551-4aed456c7103"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="18" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Hmis108InpatientMonthlyReport}]]></textFieldExpression>
-			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="465" y="4" width="68" height="15" uuid="66f18c63-aed0-4806-ad97-5fde7cb81364"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
-			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="464" y="19" width="69" height="15" uuid="f7c7b01b-7eab-4f18-a8f4-8dd22f8d946e"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-19" x="0" y="72" width="238" height="14" uuid="1b279ba2-0e17-4d49-a870-d2de3ca6d160"/>
+				<reportElement key="staticText-19" x="0" y="38" width="238" height="14" uuid="1b279ba2-0e17-4d49-a870-d2de3ca6d160"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -185,7 +264,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{CensusInformation}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-20" x="1" y="92" width="93" height="51" uuid="ce1ac614-b09e-466d-afb8-682c76dbbd9e"/>
+				<reportElement key="staticText-20" x="1" y="58" width="93" height="51" uuid="ce1ac614-b09e-466d-afb8-682c76dbbd9e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -198,7 +277,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{ListOfWards}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-21" x="94" y="92" width="41" height="51" uuid="946c44f2-8979-47be-bec8-4d8b45777b0c"/>
+				<reportElement key="staticText-21" x="94" y="58" width="41" height="51" uuid="946c44f2-8979-47be-bec8-4d8b45777b0c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -211,7 +290,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{Beds}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-22" x="135" y="92" width="63" height="51" uuid="1f7304ec-bb9e-4ebd-85c0-e58882811555"/>
+				<reportElement key="staticText-22" x="135" y="58" width="63" height="51" uuid="1f7304ec-bb9e-4ebd-85c0-e58882811555"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -224,7 +303,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{Admissions}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-23" x="198" y="92" width="41" height="51" uuid="de849798-ed5f-4d22-89be-6024e608ad0d"/>
+				<reportElement key="staticText-23" x="198" y="58" width="41" height="51" uuid="de849798-ed5f-4d22-89be-6024e608ad0d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -237,35 +316,7 @@ SELECT 	WRD_ID_A wardid,
 				<textFieldExpression><![CDATA[$R{Deaths}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-32" mode="Transparent" x="426" y="4" width="35" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="503d0d9c-893b-4c5d-9421-143e361ce871"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
-					<font fontName="DejaVu Sans" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{From}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-33" mode="Transparent" x="426" y="19" width="35" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="504c10fa-b54c-4354-8ac6-233dd8e6986a"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
-					<font fontName="DejaVu Sans" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-34" mode="Transparent" x="0" y="36" width="421" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="d9b8534f-e7c9-49e5-8cfe-f5aab23cb43c"/>
+				<reportElement key="staticText-34" mode="Transparent" x="0" y="2" width="421" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="d9b8534f-e7c9-49e5-8cfe-f5aab23cb43c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -284,8 +335,8 @@ SELECT 	WRD_ID_A wardid,
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="16" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+		<band height="16" splitType="Prevent">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="94" height="16" uuid="fe2159d5-800d-4ac8-961f-4b380012b0c5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -298,7 +349,7 @@ SELECT 	WRD_ID_A wardid,
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ward}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField" x="94" y="0" width="41" height="16" uuid="5c4ea24e-e008-4364-b3b9-8a46c6c3adbf"/>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -309,7 +360,7 @@ SELECT 	WRD_ID_A wardid,
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{beds}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{beds} != null ? $F{beds} : 0]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="135" y="0" width="63" height="16" uuid="014150ab-a8d9-4ac1-81f5-69c7f8c3440c"/>
@@ -395,88 +446,58 @@ SELECT 	WRD_ID_A wardid,
 		<band height="20" splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="16" splitType="Stretch">
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="0" y="0" width="100" height="15" uuid="f29bedc9-80c7-4020-a334-52be1513b8bd"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		<band height="20" splitType="Stretch">
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="535" height="1" uuid="0e390dad-ac5d-474e-809d-539ac843ef88"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="9659d3d7-4383-43c5-9bdd-4445e7dcff6c"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="ef100fe5-b93b-4a2f-8ab7-dac0e0e9f500"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="294" y="0" width="192" height="15" uuid="8f526a0a-9d64-482d-ab2d-b32dbdcd8d89"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="335" y="4" width="200" height="14" uuid="f6cf36ec-94cb-400b-aa43-1e47b2ad0936"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" isBlankWhenNull="false">
-				<reportElement key="textField" x="493" y="0" width="42" height="15" uuid="8139470c-eaaa-4111-93f3-6d16a8bc8422"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="18" splitType="Stretch">
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="0" y="0" width="100" height="18" uuid="0702eb63-363b-411d-bc56-0ae17a61b70f"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+		<band height="20" splitType="Stretch">
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="535" height="1" uuid="9e48b4b6-fc1f-4cbd-9cbb-f1471b66cae2"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="09e4abc1-6f17-460d-a0c8-c98f02cec502"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="9170f4a3-43b0-496e-8152-908556f5cafe"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-6" x="292" y="0" width="192" height="17" uuid="57d254b3-2513-4b9c-9ed0-0e9e1fd48316"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="335" y="4" width="200" height="14" uuid="9ee2d16f-b29d-4858-b611-2c2bb19a9a3f"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" isBlankWhenNull="false">
-				<reportElement key="textField-7" x="491" y="0" width="42" height="17" uuid="447d6e46-0afd-4cd7-968f-9854e89e7bc5"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>

@@ -34,6 +34,15 @@
 	</parameter>
 	<parameter name="WardCode" class="java.lang.String"/>
 	<parameter name="WardName" class="java.lang.String"/>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT MDSR_ID
 
@@ -57,10 +66,10 @@ AND MMV_WRD_ID_A = $P{WardCode}
 	<group name="PRODUCT" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{MDSR_ID}]]></groupExpression>
 		<groupHeader>
-			<band splitType="Stretch"/>
+			<band splitType="Prevent"/>
 		</groupHeader>
 		<groupFooter>
-			<band splitType="Stretch"/>
+			<band splitType="Prevent"/>
 		</groupFooter>
 	</group>
 	<background>
@@ -76,7 +85,7 @@ AND MMV_WRD_ID_A = $P{WardCode}
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="66" splitType="Stretch">
+		<band height="66" splitType="Prevent">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="-30" y="0" width="842" height="66" uuid="669b6eaa-a7da-4bfb-a5f2-df0fc8df624c"/>
 				<subreportParameter name="Hospital">
@@ -121,7 +130,32 @@ AND MMV_WRD_ID_A = $P{WardCode}
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch" height="20">
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="782" height="1" uuid="b0fa46e5-1ce2-4284-9d94-17e5ffd359e3"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="6ef0315a-c0bd-4c13-8929-2fd17cf5c660"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="008818de-1523-4c28-8a56-64fefb6eb1a6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="582" y="4" width="200" height="14" uuid="0c48fad5-387d-42d3-b9ef-d110e7293dcb"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
+			</textField>
+		</band>
 	</pageFooter>
 	<summary>
 		<band height="100" splitType="Stretch">

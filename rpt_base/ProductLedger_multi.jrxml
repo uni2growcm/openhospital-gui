@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ProductLedger_multi" pageWidth="842" pageHeight="595" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryNewPage="true" resourceBundle="ProductLedger" whenResourceMissingType="Key" uuid="becf25da-2b38-446a-92d6-811b2d2176b8">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ProductLedger_multi" pageWidth="842" pageHeight="595" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryNewPage="true" resourceBundle="ProductLedger_multi" whenResourceMissingType="Key" uuid="becf25da-2b38-446a-92d6-811b2d2176b8">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -34,6 +34,15 @@
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["./"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT DISTINCT(MDSR_ID), MDSR_CODE, MDSR_DESC, MDSRT_DESC
 FROM OH_MEDICALDSRSTOCKMOV
@@ -49,10 +58,10 @@ ORDER BY LENGTH(MDSR_CODE) ASC, MDSR_CODE ASC, MDSR_DESC ASC]]>
 	<group name="PRODUCT" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{MDSR_ID}]]></groupExpression>
 		<groupHeader>
-			<band splitType="Stretch"/>
+			<band splitType="Prevent"/>
 		</groupHeader>
 		<groupFooter>
-			<band splitType="Stretch"/>
+			<band splitType="Prevent"/>
 		</groupFooter>
 	</group>
 	<background>
@@ -68,7 +77,7 @@ ORDER BY LENGTH(MDSR_CODE) ASC, MDSR_CODE ASC, MDSR_DESC ASC]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="66" splitType="Stretch">
+		<band height="66" splitType="Prevent">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="-30" y="0" width="842" height="66" uuid="112134d7-cfea-44ab-81f6-e0105a5256bb"/>
 				<subreportParameter name="Hospital">
@@ -110,7 +119,32 @@ ORDER BY LENGTH(MDSR_CODE) ASC, MDSR_CODE ASC, MDSR_DESC ASC]]>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch" height="20">
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="782" height="1" uuid="fdf5595e-9894-4b20-b816-3aeef0f51213"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="12d9d228-3b43-4b68-bfde-bd6234caeed6"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="77e8f724-2143-46e9-9c75-2f119826cb1c"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="582" y="4" width="200" height="14" uuid="11d1ee58-f372-422d-a5f5-c534f3e2c274"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
+			</textField>
+		</band>
 	</pageFooter>
 	<summary>
 		<band height="100" splitType="Stretch">

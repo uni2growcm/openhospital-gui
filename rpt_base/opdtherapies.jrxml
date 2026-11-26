@@ -33,7 +33,7 @@ where   MDSR_ID IN (
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="28" splitType="Stretch">
+		<band height="28" splitType="Prevent">
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="93" height="28" uuid="a7fa9daf-370f-4263-8b08-bec228990935"/>
 				<box>

@@ -17,9 +17,17 @@
 	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="LOGO_PATH" class="java.lang.String"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String">
 		<defaultValueExpression><![CDATA["./rpt/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT 
@@ -150,52 +158,109 @@ Order by LAB_ID]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="78" splitType="Stretch">
-			<rectangle radius="0">
-				<reportElement key="rectangle-1" mode="Opaque" x="0" y="1" width="1130" height="34" forecolor="#00CCCC" backcolor="#000099" uuid="36e2d255-71db-4773-b05f-3dac9080fd0c"/>
-			</rectangle>
-			<image>
-				<reportElement key="image-1" x="1074" y="5" width="56" height="30" uuid="e9a7a076-6d9f-4f88-b46d-0fd62e042999"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<imageExpression><![CDATA[$P{LOGO_PATH}]]></imageExpression>
+		<band height="158" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_fr" x="0" y="0" width="529" height="16" uuid="fe43e5ca-2ba4-4e15-a01f-989146b9adfb"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_fr" x="15" y="16" width="514" height="14" uuid="1e0ae58d-3ca0-4bc4-9643-4bab376b7ef0"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_fr" x="0" y="30" width="529" height="16" uuid="cf68437f-d41b-4f96-8d76-98a03f32b3e2"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_en" x="601" y="0" width="529" height="16" uuid="a88de994-9284-4c3b-add4-42323190d065"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_en" x="601" y="16" width="529" height="14" uuid="f21d7cef-2dc4-4929-9118-48cfdf0d736d"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_en" x="601" y="30" width="529" height="16" uuid="90cabdcd-c6e5-4e98-b622-2c985e529057"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.en")]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="header_logo" x="535" y="0" width="60" height="46" uuid="732bbb74-f62c-4115-84d9-804cb315ed8a">
+					<printWhenExpression><![CDATA[$P{HOSPITAL_LOGO} != null && new java.io.File($P{HOSPITAL_LOGO}).isFile()]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="922" y="35" width="208" height="18" uuid="123c4dbd-613e-44d3-b52d-0084b042a5c4"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="599" y="55" width="531" height="18" uuid="64ab2856-01be-427b-915b-a89ed9339bfe"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="SansSerif"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}+",  "+$P{Email}+",  "+$P{Telephone}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-13" x="0" y="5" width="1074" height="30" forecolor="#FFFFFF" uuid="a52bc01d-e54d-4c83-9786-d13a58fa26dd"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="16" pdfEncoding="Cp1252"/>
+				<reportElement key="textField-13" x="0" y="52" width="1130" height="30" uuid="a52bc01d-e54d-4c83-9786-d13a58fa26dd" mode="Transparent"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$R{title}+" [ "+$P{fromdate}+"  -  "+$P{todate}+"  ]"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_district" x="0" y="86" width="554" height="14" uuid="2833f1d3-9077-46da-b465-156b6a36516c"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.district") + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_address" x="0" y="100" width="554" height="14" uuid="c2657432-b53a-49be-ab1d-c8167496fc77"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.address") + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_structure" x="576" y="86" width="554" height="14" uuid="737e8ed4-e835-4e7a-95fe-19c76138eeab"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.structure") + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_telephone" x="576" y="100" width="554" height="14" uuid="f3632afb-1177-45f4-b306-3b397612781e"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.telephone") + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_email" x="576" y="114" width="554" height="14" uuid="e2d24c5b-e77c-46db-af67-73c53d0519dd"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.email") + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="header_line" x="0" y="132" width="1130" height="1" uuid="97dc9425-e4ee-4378-a0ca-f50ee7d25726"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="138" width="1130" height="16" uuid="e34a716b-8182-432a-b0f6-81b5836e09b4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -2482,7 +2547,7 @@ Order by LAB_ID]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="37" splitType="Stretch">
+		<band height="37" splitType="Prevent">
 			<textField pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField" x="139" y="0" width="12" height="37" uuid="04f67c4c-046e-460c-801f-4fc8f3d836e6"/>
 				<box>
@@ -2507,7 +2572,7 @@ Order by LAB_ID]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAT_ID}+""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_ID}, "")+""]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="41" y="0" width="86" height="37" uuid="13b0f706-c714-4317-85dd-1628ccfcb365"/>
@@ -2520,7 +2585,7 @@ Order by LAB_ID]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+java.util.Objects.toString($F{PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
 			<textField pattern="#0.0" isBlankWhenNull="true">
 				<reportElement key="textField" x="251" y="0" width="12" height="37" uuid="0e8ea016-e88e-48d1-944f-5bdbde77b478"/>
@@ -3464,114 +3529,66 @@ Order by LAB_ID]]>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="27" splitType="Stretch">
-			<rectangle radius="0">
-				<reportElement key="rectangle-2" mode="Opaque" x="0" y="5" width="1129" height="20" forecolor="#000099" backcolor="#000099" uuid="739f9b46-ffcc-4518-b16d-12393d139cb7"/>
-			</rectangle>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Transparent" x="920" y="4" width="174" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="1550c40a-080e-44cc-843f-e893d1b07cf7"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Transparent" x="1094" y="4" width="36" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="e7ba57be-9fef-436a-b06f-b76e3d3c7261"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
+		<band height="20" splitType="Stretch">
 			<line>
-				<reportElement key="line" mode="Opaque" x="0" y="1" width="1130" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="cea91c04-b449-4b7c-8888-3db4a06fe86b"/>
+				<reportElement key="footer_line" x="0" y="2" width="1130" height="1" uuid="3f40b49e-cd11-4962-8fb4-c4c4defadd51"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
 			</line>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField" x="3" y="6" width="209" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="dd61b15b-fd66-4bbf-97ee-e6dffd0bc45e"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="2bf1ec5b-7b5e-49d9-913a-66835fd3737d"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="661bcc6d-da18-4501-a7a3-7e16f0498da8"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="930" y="4" width="200" height="14" uuid="4f646102-4d36-49e0-acd0-bd8669577f3d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="26" splitType="Stretch">
-			<rectangle radius="0">
-				<reportElement key="rectangle-3" mode="Opaque" x="0" y="6" width="1130" height="20" forecolor="#000099" backcolor="#000099" uuid="8c995192-ef54-48c0-83fb-da6c16bd7f62"/>
-			</rectangle>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-10" mode="Transparent" x="920" y="5" width="174" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="3fc5623d-993e-48d7-a915-a6e08e25ae57"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{page} +" "+ $V{PAGE_NUMBER} +" "+ $R{of}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-11" mode="Transparent" x="1094" y="5" width="36" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="74215197-ae45-430a-81df-8b3dd9f8f560"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
+		<band height="20" splitType="Stretch">
 			<line>
-				<reportElement key="line-1" mode="Opaque" x="0" y="-2" width="1130" height="4" forecolor="#000000" backcolor="#FFFFFF" uuid="d8b88749-03ea-4522-a9d5-237a5d95968b"/>
+				<reportElement key="footer_line" x="0" y="2" width="1130" height="1" uuid="36352d21-5ac3-4f76-a99c-cb6ee57e6cc6"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
 			</line>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-12" x="1" y="7" width="209" height="19" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="0446343b-5ca0-4bed-a182-e3c84ceda133"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="6e97ae1e-b4c0-4e55-aa43-14e320f51975"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="95284af2-63ee-4613-bf8a-2a66fed01c03"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="930" y="4" width="200" height="14" uuid="096ca6ab-0013-41ca-972a-d102b51ebea7"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>
 	<summary>
 		<band height="25" splitType="Stretch">
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-2" x="1076" y="5" width="51" height="20" forecolor="#000066" backcolor="#FFFFFF" uuid="5ee40631-2275-45c5-96fb-6100899c4e6b"/>
-				<box>
+				<box leftPadding="4">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
@@ -3588,7 +3605,7 @@ Order by LAB_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" pdfEncoding="CP1252"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{title}+" "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

@@ -52,8 +52,8 @@ ORDER BY BLP_DATE ASC]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+		<band height="18" splitType="Prevent">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-9" x="0" y="0" width="314" height="18" uuid="ee459024-92f5-4859-8ebf-7b145ceaaccf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -66,7 +66,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLP_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-13" x="330" y="0" width="185" height="18" uuid="de4068fd-2026-43b6-aec9-172ca8f60be1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -77,7 +77,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLP_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLP_AMOUNT} != null ? $F{BLP_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -89,7 +89,7 @@ ORDER BY BLP_DATE ASC]]>
 	</pageFooter>
 	<summary>
 		<band height="36" splitType="Stretch">
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-11" x="330" y="0" width="185" height="18" uuid="597c07d3-9191-4d5f-b4fb-b8a39eff760b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -100,9 +100,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-23" x="330" y="18" width="185" height="18" uuid="39b3d23f-04ad-48ca-bf00-22741a43bc18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -113,7 +113,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLL_BALANCE} != null ? $F{BLL_BALANCE} : 0d]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-24" x="0" y="0" width="314" height="18" uuid="85548e91-dc40-463d-887f-8987cfe071f0"/>

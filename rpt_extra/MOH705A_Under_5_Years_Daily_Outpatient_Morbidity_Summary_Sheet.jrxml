@@ -10,6 +10,18 @@
 	<parameter name="Hospital" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="month" class="java.lang.String"/>
 	<parameter name="year" class="java.lang.String"/>
+	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OH_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_report.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="HEADER_BUNDLE" class="java.util.ResourceBundle" isForPrompting="false">
+		<defaultValueExpression><![CDATA[java.util.ResourceBundle.getBundle("ReportHeader", $P{REPORT_LOCALE} != null ? $P{REPORT_LOCALE} : java.util.Locale.getDefault())]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[#Diarrhoea
 
@@ -2136,22 +2148,57 @@ WHERE OPD_REFERRAL_TO = 'R'
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="15" splitType="Stretch">
-			<textField>
-				<reportElement key="staticText-1" x="313" y="0" width="157" height="10" uuid="0b6e2cd9-facb-4961-99ca-9c9fcdd980c0"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="7"/>
+		<band height="132" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="fc78b33e-ddb2-4ab4-9d21-dd9c785f7d28"/>
+				<textElement>
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{RepublicOfKenyaMinistryOfHealth}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.fr")]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_fr" x="15" y="16" width="340" height="14" uuid="167e58e6-55ef-4872-982b-c14220226a87"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_fr" x="0" y="30" width="355" height="16" uuid="cce1678c-b5c0-465f-b88d-1c8714d3cfae"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.fr")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_country_en" x="427" y="0" width="355" height="16" uuid="202ee4ab-ef07-4192-ab7e-a525af1b5d47"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.country.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_motto_en" x="427" y="16" width="355" height="14" uuid="cc06f7ba-059d-4f26-a25d-ff91f4921d2d"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.motto.en")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_ministry_en" x="427" y="30" width="355" height="16" uuid="8659e697-4b75-41bc-8923-8dccc4fc7eb8"/>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.ministry.en")]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="header_logo" x="361" y="0" width="60" height="46" uuid="85feb3f4-f0cc-408b-83d1-c813c1366409">
+					<printWhenExpression><![CDATA[$P{HOSPITAL_LOGO} != null && new java.io.File($P{HOSPITAL_LOGO}).isFile()]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
+			</image>
 			<textField>
-				<reportElement key="staticText-2" x="728" y="0" width="54" height="15" uuid="80469fcf-6db7-496d-8fc2-b6890d8e5406"/>
+				<reportElement key="staticText-2" x="728" y="52" width="54" height="15" uuid="80469fcf-6db7-496d-8fc2-b6890d8e5406"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -2164,132 +2211,83 @@ WHERE OPD_REFERRAL_TO = 'R'
 				<textFieldExpression><![CDATA["MOH 705A"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-3" x="0" y="0" width="242" height="14" uuid="50a9a6ff-688a-456c-8045-5bb830403f72"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font size="7" isBold="true"/>
+				<reportElement key="staticText-3" x="64" y="52" width="654" height="20" uuid="50a9a6ff-688a-456c-8045-5bb830403f72" mode="Transparent"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Under5YearsDailyOutpatientMorbiditySummarySheet}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_district" x="0" y="76" width="380" height="14" uuid="5142c5fc-6719-4205-9b32-aac3fa4cb74a"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.district") + " " + ($P{City} != null ? $P{City} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_address" x="0" y="90" width="380" height="14" uuid="6a2bdccd-e492-41f3-a431-8afa1c4e4462"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.address") + " " + ($P{Address} != null ? $P{Address} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_structure" x="402" y="76" width="380" height="14" uuid="3958d263-a3b9-4fee-9c9b-d68a8f1509a7"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.structure") + " " + ($P{Hospital} != null ? $P{Hospital} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_telephone" x="402" y="90" width="380" height="14" uuid="51c690fc-12bc-4a6e-adbd-fc3a3b0c4048"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.telephone") + " " + ($P{Telephone} != null ? $P{Telephone} : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_email" x="402" y="104" width="380" height="14" uuid="b3a016d8-526b-4c77-ade0-0d4cfed5a77c"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.email") + " " + ($P{Email} != null ? $P{Email} : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="header_line" x="0" y="122" width="782" height="1" uuid="18d8135e-97c4-440b-8676-73f06f93e73f"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="27" splitType="Stretch">
+		<band height="18" splitType="Stretch">
 			<elementGroup>
 				<elementGroup>
 					<elementGroup>
 						<textField>
-							<reportElement key="staticText-4" x="109" y="6" width="40" height="12" uuid="aadeaeee-2343-48d3-a513-b89a57da593e"/>
+							<reportElement key="staticText-5" x="249" y="6" width="130" height="12" uuid="a5bb9398-296b-4ed6-b588-63ac7ffce7e4"/>
 							<box>
 								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								<bottomPen lineWidth="0.0" lineColor="#000000"/>
 								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							</box>
-							<textElement textAlignment="Right" verticalAlignment="Middle">
-								<font size="7"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$R{District}+":"]]></textFieldExpression>
-						</textField>
-						<textField>
-							<reportElement key="staticText-5" x="249" y="6" width="40" height="12" uuid="a5bb9398-296b-4ed6-b588-63ac7ffce7e4"/>
-							<box>
-								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<bottomPen lineWidth="0.0" lineColor="#000000"/>
-								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Right" verticalAlignment="Middle">
+							<textElement textAlignment="Left" verticalAlignment="Middle">
 								<font size="7"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$R{Facility}+":"]]></textFieldExpression>
 						</textField>
-						<textField>
-							<reportElement key="staticText-6" x="389" y="6" width="40" height="12" uuid="2427ea95-431d-437c-b517-292c43ceef51"/>
-							<box>
-								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<bottomPen lineWidth="0.0" lineColor="#000000"/>
-								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Right" verticalAlignment="Middle">
+						<textField isBlankWhenNull="true">
+							<reportElement key="header_period" x="389" y="6" width="280" height="12" uuid="96b6ff12-896d-4876-9a9d-3367f30d13da"/>
+							<textElement textAlignment="Left" verticalAlignment="Middle">
 								<font size="7"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$R{Month}+":"]]></textFieldExpression>
-						</textField>
-						<textField>
-							<reportElement key="staticText-7" x="529" y="6" width="40" height="12" uuid="3fe0cbdd-cdcf-4bb4-b820-de6abd718830"/>
-							<box>
-								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								<bottomPen lineWidth="0.0" lineColor="#000000"/>
-								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Right" verticalAlignment="Middle">
-								<font size="7"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$R{Year}+":"]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.month") + " " + ($P{month} != null && !$P{month}.trim().isEmpty() ? $P{HEADER_BUNDLE}.getString("header.month." + Integer.parseInt($P{month}.trim())) + " " : "") + ($P{year} != null ? $P{year} : "")]]></textFieldExpression>
 						</textField>
 					</elementGroup>
 				</elementGroup>
 			</elementGroup>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="149" y="6" width="100" height="12" uuid="eb3640e0-50e7-4996-9fc7-a8415860eb96"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Address}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-2" x="289" y="6" width="100" height="12" uuid="4b87fb68-6aab-4f25-ac76-3afa0931ca41"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-3" x="429" y="6" width="100" height="12" uuid="f47811f6-67de-48bd-aba9-d21cdafdbbda"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{month}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-4" x="569" y="6" width="100" height="12" uuid="9f907a99-ccdc-492a-b065-9cc7637ff1fe"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{year}]]></textFieldExpression>
-			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -2726,8 +2724,8 @@ WHERE OPD_REFERRAL_TO = 'R'
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="10" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+		<band height="10" splitType="Prevent">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="20" y="0" width="110" height="10" uuid="d83bc546-c99c-4a84-ae78-b75842396f18"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2740,7 +2738,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DIS_DESC}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="130" y="0" width="20" height="10" uuid="87120e69-c497-41d3-87b4-392a99c56ac1"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2753,7 +2751,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY1}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="150" y="0" width="20" height="10" uuid="90446e0b-dae9-422b-8d39-3d61962b5b9b"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2766,7 +2764,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY2}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-9" x="170" y="0" width="20" height="10" uuid="ba13bb1a-8afe-47e1-96ec-8118fcaba5a5"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2779,7 +2777,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY3}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-10" x="190" y="0" width="20" height="10" uuid="76f3fd1b-d2a4-49b0-b157-7587e348c137"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2792,7 +2790,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY4}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-11" x="210" y="0" width="20" height="10" uuid="9a28dc7f-c407-44f1-aed7-41b31ae0b0c9"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2805,7 +2803,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY5}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="230" y="0" width="20" height="10" uuid="0632fcba-4b44-4a82-94b8-92effed69960"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2818,7 +2816,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY6}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-13" x="250" y="0" width="20" height="10" uuid="2de083d7-27c1-41fa-b63a-1962724b5cf6"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2831,7 +2829,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY7}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-14" x="270" y="0" width="20" height="10" uuid="cecb7271-dbb2-47ec-9699-6fdd5b5e404b"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2844,7 +2842,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY8}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-15" x="290" y="0" width="20" height="10" uuid="b4433f88-5ac9-4a31-8648-ed8474dac784"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2857,7 +2855,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY9}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-16" x="310" y="0" width="20" height="10" uuid="e999f6a9-7ed2-462b-ae73-87c70500b25f"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2870,7 +2868,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY10}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-17" x="330" y="0" width="20" height="10" uuid="1874e1bd-15be-4235-a684-da79a010ff7a"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2883,7 +2881,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY11}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-18" x="350" y="0" width="20" height="10" uuid="c50c3b11-93b2-459e-8e4a-fd591c12a404"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2896,7 +2894,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY12}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-19" x="370" y="0" width="20" height="10" uuid="25d0c4dc-2db8-41b7-8995-fb4785079348"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2909,7 +2907,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY13}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-20" x="390" y="0" width="20" height="10" uuid="5ce4b409-8c6d-4a47-a1b5-e8f2c5853112"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2922,7 +2920,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY14}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-21" x="410" y="0" width="20" height="10" uuid="e809d83e-5776-4df8-ac0b-63da710dcf6e"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2935,7 +2933,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY15}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-22" x="430" y="0" width="20" height="10" uuid="a26214fe-28a8-47df-966b-aa371608e340"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2948,7 +2946,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY16}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-23" x="450" y="0" width="20" height="10" uuid="be2f4968-8f16-46eb-b3ce-524599eb2f52"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2961,7 +2959,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY17}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-24" x="470" y="0" width="20" height="10" uuid="3df7cb9c-e35b-4912-ab4b-6e0e4822eb1e"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2974,7 +2972,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY18}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-25" x="490" y="0" width="20" height="10" uuid="8944c9a0-108b-4aa9-b681-2af1d2a218a8"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -2987,7 +2985,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY19}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-26" x="510" y="0" width="20" height="10" uuid="d935e33e-7252-42d3-bc01-c97710acadcf"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3000,7 +2998,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY20}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-27" x="530" y="0" width="20" height="10" uuid="dcf52fa8-8448-4b75-9e59-8cef9b616987"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3013,7 +3011,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY21}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-28" x="550" y="0" width="20" height="10" uuid="5a8424ff-b7af-4628-893e-83fbe0b067f7"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3026,7 +3024,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY22}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-29" x="570" y="0" width="20" height="10" uuid="0f922901-6c3f-472f-acd1-1cfb75e6c4bd"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3039,7 +3037,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY23}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-30" x="590" y="0" width="20" height="10" uuid="3cca1965-3d01-4e98-bd26-b0cfb2ebd7a9"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3052,7 +3050,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY24}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-31" x="610" y="0" width="20" height="10" uuid="cc78b760-552f-48d6-b149-1a17118ec579"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3065,7 +3063,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY25}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-32" x="630" y="0" width="20" height="10" uuid="e325bd18-fd0d-45b8-8b0e-0d25b05a4ec3"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3078,7 +3076,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY26}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-33" x="650" y="0" width="20" height="10" uuid="06a334a6-191b-40a1-b334-8534911309af"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3091,7 +3089,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY27}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-34" x="670" y="0" width="20" height="10" uuid="7eb9a292-0f89-4221-918f-f6936a2d8d6f"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3104,7 +3102,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY28}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-35" x="690" y="0" width="20" height="10" uuid="0c7d5cef-058b-40b6-8e5b-22447d91901d"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3117,7 +3115,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY29}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-36" x="710" y="0" width="20" height="10" uuid="0b3995b4-ad42-4423-884e-47b3d6a7bd68"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3130,7 +3128,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY30}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-37" x="730" y="0" width="20" height="10" uuid="24741913-97b0-4f8f-a373-69f7b28edddf"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3143,7 +3141,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DAY31}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-38" mode="Opaque" x="750" y="0" width="31" height="10" backcolor="#CCCCCC" uuid="c2382273-6292-4c13-96fd-014bfc7f3b5f"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3156,7 +3154,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{TOTAL}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-39" x="0" y="0" width="20" height="10" uuid="74ba6011-db86-4bd7-aa17-6ad6c129df32"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -3167,7 +3165,7 @@ WHERE OPD_REFERRAL_TO = 'R'
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{COLUMN_COUNT}.toString() + "."]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}.toString() + "."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -3177,8 +3175,31 @@ WHERE OPD_REFERRAL_TO = 'R'
 		</band>
 	</columnFooter>
 	<pageFooter>
-		<band splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean(false)]]></printWhenExpression>
+		<band splitType="Stretch" height="20">
+			<line>
+				<reportElement key="footer_line" x="0" y="2" width="782" height="1" uuid="90c37277-0896-4a85-abfe-4bfc0af9aabd"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement key="footer_oh_logo" x="0" y="4" width="14" height="14" uuid="b100db04-0de0-4217-80f2-5a135e482c87"/>
+				<imageExpression><![CDATA[$P{OH_LOGO}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="footer_printdate" x="18" y="4" width="282" height="14" uuid="9ed3685e-7205-48e8-923a-ebd44ccf9edd"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement key="footer_page" x="582" y="4" width="200" height="14" uuid="f97fd7d5-b527-43cc-9152-e7f541765e30"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("footer.page") + " " + $V{MASTER_CURRENT_PAGE} + " " + $P{HEADER_BUNDLE}.getString("footer.of") + " " + $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageFooter>
 	<summary>

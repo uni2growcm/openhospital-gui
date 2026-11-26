@@ -34,7 +34,7 @@ ORDER BY BLP_DATE ASC]]>
 	</background>
 	<title>
 		<band height="96" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-18" x="0" y="0" width="555" height="18" uuid="41474a11-cd7f-4acf-8bd9-612d10e8b722"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -47,7 +47,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-19" x="0" y="18" width="555" height="18" uuid="e8eb1198-33e1-4803-a74f-2215bb83b40c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -58,9 +58,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($P{Address}, "") + " - " + java.util.Objects.toString($P{City}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="0" y="36" width="555" height="18" uuid="48e3ac1e-17a0-44b6-8912-2f1feb182762"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -73,7 +73,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-21" x="0" y="54" width="555" height="18" uuid="6475066b-0810-4d0f-aee2-f96ef2b03b8f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -90,7 +90,7 @@ ORDER BY BLP_DATE ASC]]>
 	</title>
 	<pageHeader>
 		<band height="72" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="0" width="555" height="18" uuid="08f3891d-daaa-471c-b7f1-dd4b019c5fd6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,9 +101,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["BILL N. " + $F{BLL_ID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["BILL N. " + java.util.Objects.toString($F{BLL_ID}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="0" y="54" width="555" height="18" uuid="04e53f9e-4b48-497b-aed7-a80de85fd77f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -116,7 +116,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA["Date: " + $F{BLL_UPDATE}.toLocaleString()]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="0" y="18" width="555" height="18" uuid="6931689b-4028-4c91-8ed7-025dd2a17b6b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -127,9 +127,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["PAT. N. " + $F{BLL_ID_PAT} + " - " + $F{BLL_PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["PAT. N. " + java.util.Objects.toString($F{BLL_ID_PAT}, "") + " - " + java.util.Objects.toString($F{BLL_PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-22" x="0" y="36" width="555" height="18" uuid="36ecac4c-8976-4f82-9cf6-5b035533c03c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -140,7 +140,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Cashier: " + $F{BLL_USR_ID_A}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Cashier: " + java.util.Objects.toString($F{BLL_USR_ID_A}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -162,8 +162,8 @@ ORDER BY BLP_DATE ASC]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+		<band height="18" splitType="Prevent">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-9" x="0" y="0" width="389" height="18" uuid="33023721-ec46-48d5-bf65-2989043acaeb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -176,7 +176,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLP_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-13" x="389" y="0" width="166" height="18" uuid="9fb2c2ba-88e9-45fd-8177-d968728a9f17"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -187,7 +187,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLP_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLP_AMOUNT} != null ? $F{BLP_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -199,7 +199,7 @@ ORDER BY BLP_DATE ASC]]>
 	</pageFooter>
 	<summary>
 		<band height="36" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-11" x="389" y="0" width="166" height="18" uuid="1c8cec33-568c-4a7d-b389-d2480cddd64e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +210,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-7" x="0" y="0" width="389" height="18" uuid="7198e88c-5b0c-4a3c-a0c9-c4df0c3f69d7"/>
@@ -238,7 +238,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Balance}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-23" x="389" y="18" width="166" height="18" uuid="d98f7061-969f-43fb-9e7b-4a17b9c03b03"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -249,7 +249,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font fontName="DejaVu Sans Mono" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLL_BALANCE} != null ? $F{BLL_BALANCE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

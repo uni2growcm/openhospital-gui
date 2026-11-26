@@ -12,8 +12,8 @@
 	<parameter name="City" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Email" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Telephone" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="LOGO_PATH" class="java.lang.String">
-		<defaultValueExpression><![CDATA["./rsc/images/"]]></defaultValueExpression>
+	<parameter name="HOSPITAL_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./rsc/images/logo_hospital.png"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT BLL_ID, BLL_ID_PAT, BLL_PAT_NAME, BLL_UPDATE, BLL_USR_ID_A, BLI_ID_PRICE, BLI_ITEM_DESC, BLI_ITEM_AMOUNT, BLI_QTY, BLP_USR_ID_A
@@ -42,9 +42,15 @@ WHERE BLL_ID = $P{billID}]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="90" splitType="Stretch">
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-12" x="0" y="46" width="148" height="11" uuid="96449978-a695-4ef8-8991-6a7759e0b921"/>
+		<band height="132" splitType="Stretch">
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement isRemoveLineWhenBlank="true" key="receipt_logo" x="54" y="2" width="40" height="40" uuid="74d12611-6499-4c88-8c96-5b03dd5a28b2">
+					<printWhenExpression><![CDATA[$P{HOSPITAL_LOGO} != null && new java.io.File($P{HOSPITAL_LOGO}).isFile()]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-12" x="0" y="88" width="148" height="11" uuid="96449978-a695-4ef8-8991-6a7759e0b921"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -54,10 +60,10 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement>
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA["BILL N. " + $P{billID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["BILL N. " + java.util.Objects.toString($P{billID}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-16" x="31" y="65" width="117" height="9" uuid="35c7e017-cc2f-42dc-b1a8-e36a85e49882"/>
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="31" y="107" width="117" height="9" uuid="35c7e017-cc2f-42dc-b1a8-e36a85e49882"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -69,8 +75,8 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_USR_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-17" x="31" y="57" width="117" height="9" uuid="2b1c72f6-6ccf-46bd-9512-eabbe9b096d2"/>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-17" x="31" y="99" width="117" height="9" uuid="2b1c72f6-6ccf-46bd-9512-eabbe9b096d2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -80,10 +86,10 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement verticalAlignment="Bottom">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_ID_PAT} + " - " + $F{BLL_PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{BLL_ID_PAT}, "") + " - " + java.util.Objects.toString($F{BLL_PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-8" x="0" y="57" width="31" height="9" uuid="892e4bb3-70a0-43fe-a50c-c9dd0037a7ae"/>
+				<reportElement key="staticText-8" x="0" y="99" width="31" height="9" uuid="892e4bb3-70a0-43fe-a50c-c9dd0037a7ae"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -96,7 +102,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textFieldExpression><![CDATA[$R{Patient}+":"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-9" x="0" y="65" width="31" height="9" uuid="a97ff447-b4ea-414d-b246-7c6e129cadf5"/>
+				<reportElement key="staticText-9" x="0" y="107" width="31" height="9" uuid="a97ff447-b4ea-414d-b246-7c6e129cadf5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -109,7 +115,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textFieldExpression><![CDATA[$R{Cashier}+":"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-10" x="0" y="73" width="31" height="9" uuid="3058aeb0-3ca6-4e95-bdac-92f0a191b629"/>
+				<reportElement key="staticText-10" x="0" y="115" width="31" height="9" uuid="3058aeb0-3ca6-4e95-bdac-92f0a191b629"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -121,8 +127,8 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-23" x="31" y="73" width="117" height="9" uuid="36513a41-9ee8-437f-a3e1-8bfff017f446"/>
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-23" x="31" y="115" width="117" height="9" uuid="36513a41-9ee8-437f-a3e1-8bfff017f446"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -134,8 +140,8 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_UPDATE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-24" x="0" y="7" width="148" height="8" uuid="da5ac3d5-a11c-4d57-9a9a-8bbdbfa3a32d"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-24" x="0" y="49" width="148" height="8" uuid="da5ac3d5-a11c-4d57-9a9a-8bbdbfa3a32d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -147,8 +153,8 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-25" x="0" y="15" width="148" height="8" uuid="65eb069f-9a52-426b-b336-ab7bd4bbf391"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-25" x="0" y="57" width="148" height="8" uuid="65eb069f-9a52-426b-b336-ab7bd4bbf391"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -158,10 +164,10 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans Mono" size="6" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($P{Address}, "") + " - " + java.util.Objects.toString($P{City}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-26" x="0" y="23" width="148" height="8" uuid="cf08a2fe-cba1-43bd-81e7-469bb8335e82"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-26" x="0" y="65" width="148" height="8" uuid="cf08a2fe-cba1-43bd-81e7-469bb8335e82"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,8 +179,8 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
-				<reportElement key="textField-27" x="0" y="31" width="148" height="8" uuid="eb6d6c76-e81d-4a79-89d6-6cc48457da23"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-27" x="0" y="73" width="148" height="8" uuid="eb6d6c76-e81d-4a79-89d6-6cc48457da23"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -195,8 +201,8 @@ WHERE BLL_ID = $P{billID}]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="33" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+		<band height="33" splitType="Prevent">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="0" y="0" width="148" height="11" uuid="6900565b-c2bb-4658-92b2-13150695eb68"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -209,7 +215,7 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-9" x="0" y="11" width="94" height="11" uuid="09a0e995-f091-4593-9eca-5978216885af"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -222,7 +228,7 @@ WHERE BLL_ID = $P{billID}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_AMOUNT}.toString() + " x " + $F{BLI_QTY}.toString()]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-13" x="93" y="11" width="54" height="11" uuid="10cf8061-01d4-4374-a113-f893978f5d53"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -233,7 +239,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_ITEM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_ITEM} != null ? $V{TOTAL_ITEM} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -245,7 +251,7 @@ WHERE BLL_ID = $P{billID}]]>
 	</pageFooter>
 	<summary>
 		<band height="11" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-11" x="94" y="-1" width="54" height="12" uuid="1d428a9e-30aa-4288-8452-e7e87e53803c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,7 +262,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_BILL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_BILL} != null ? $V{TOTAL_BILL} : 0d]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-7" x="0" y="-1" width="94" height="12" uuid="1106cc03-f8e8-4f79-a747-2c5d881aef0c"/>

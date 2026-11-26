@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.19.0.final using JasperReports Library version 6.19.0-646c68931cebf1a58bc65c4359d1f0ca223c5e94  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="BillsReportMonthly" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoPages" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" resourceBundle="BillsReportMonthly" whenResourceMissingType="Key" uuid="7f85e4fa-219a-4405-9a51-3004ff09e965">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="BillsReportMonthly" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoPages" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" resourceBundle="BillsReportMonthlyWard_subreport" whenResourceMissingType="Key" uuid="7f85e4fa-219a-4405-9a51-3004ff09e965">
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -131,8 +131,8 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
-			<textField pattern="MMMMM-yy" isBlankWhenNull="false">
+		<band height="20" splitType="Prevent">
+			<textField pattern="MMMMM-yy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="0" y="0" width="73" height="20" uuid="8f00e69e-6dfc-4ab1-bbc5-0239f626eef9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -145,7 +145,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-38" x="73" y="0" width="144" height="20" uuid="8706a44a-8755-4248-a06e-7fbc452ed7a1"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -154,9 +154,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BILLED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BILLED} != null ? $F{BILLED} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-39" x="319" y="0" width="144" height="20" uuid="a12bc004-26ef-42ce-89a0-515644b09caa"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -165,9 +165,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{INCOME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{INCOME} != null ? $F{INCOME} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-40" x="565" y="0" width="144" height="20" uuid="5e5224e7-4223-4ca6-ad33-b26481c2dbb0"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -176,13 +176,13 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{RECEIVABLE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{RECEIVABLE} != null ? $F{RECEIVABLE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<columnFooter>
 		<band height="62" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-50" x="73" y="0" width="144" height="20" uuid="b71e5e92-710a-4f20-bb6e-59acf31a2724"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -193,9 +193,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_BILLED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_BILLED} != null ? $V{TOTAL_BILLED} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-51" x="319" y="0" width="144" height="20" uuid="0631ea68-ceec-4765-a70b-d540ccf9691f"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -206,9 +206,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_INCOME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_INCOME} != null ? $V{TOTAL_INCOME} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-52" x="565" y="0" width="144" height="20" uuid="aa91225d-379a-4e9d-9f4a-914ab244f3e7"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -219,7 +219,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_RECEIVABLE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_RECEIVABLE} != null ? $V{TOTAL_RECEIVABLE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnFooter>

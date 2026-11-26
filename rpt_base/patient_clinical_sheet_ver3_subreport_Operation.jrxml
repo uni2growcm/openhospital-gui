@@ -53,7 +53,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 	<detail>
 		<band height="102" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField" x="127" y="32" width="328" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="b668f4b7-66e5-4a77-89aa-04987a4c6b60"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -79,7 +79,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Result}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField" x="127" y="0" width="328" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="53c25872-0e43-46e9-a15b-03d0ff1158f0">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
@@ -107,7 +107,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 				</textElement>
 				<textFieldExpression><![CDATA[$R{OperationDate}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField" x="127" y="64" width="328" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="e5fd1021-d934-4a8a-a73e-9e18b2150568"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,7 +133,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Remarks}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="">
 				<reportElement key="textField" x="127" y="48" width="328" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="ce7af26e-a625-44d7-ac7b-bc7612baf87e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -144,7 +144,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{OPER_TRANS_UNIT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{OPER_TRANS_UNIT} != null ? $F{OPER_TRANS_UNIT} : 0f]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText" positionType="Float" x="0" y="48" width="77" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="fb6dea41-6f3d-4242-ad09-7224767c520a"/>
@@ -159,7 +159,7 @@ WHERE ($P{type} like 'Opd%' AND OPER_OPD_ID = $P{id})
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Trans.Unit}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField" x="127" y="16" width="328" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="96455db0-2dc2-4fc1-82dd-7c56e9f51d90"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

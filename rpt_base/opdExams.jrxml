@@ -29,7 +29,7 @@ where   LAB_PAT_ID = $P{idPatient}
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="28" splitType="Stretch">
+		<band height="28" splitType="Prevent">
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="83" height="28" uuid="2f203a0f-3549-45eb-9918-ce1aabbb28fc"/>
 				<box>

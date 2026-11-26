@@ -128,6 +128,7 @@ public class ReportLauncher extends ModalJFrame {
     private JComboBox<Object> jOperationTypeComboBox;
 
     private JComboBox<String> jRptComboBox;
+    private boolean weekWardReport;
     private JTextField jReportSearchField;
     private List<String> allReportTitles = new ArrayList<>();
     private boolean updatingReportCombo = false;
@@ -566,9 +567,8 @@ public class ReportLauncher extends ModalJFrame {
                 List<JRParameter> userInputParams = Arrays.asList(params).stream().filter(t -> !t.isSystemDefined() && t.isForPrompting())
                         .collect(Collectors.toList());
                 userInputParamNames = userInputParams.stream().map(t -> t.getName()).collect(Collectors.toList());
-                String jasperFileName = jasperFile.getName().toLowerCase();
-                boolean isWeekWardReport = jasperFileName.contains("week")
-                        || (userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
+                boolean isWeekWardReport = isWeekWardReport(userInputParams);
+                weekWardReport = isWeekWardReport;
                 boolean isIncomesPerSurgeryAct = jasperFile.getName().equals(INCOMES_PER_SURGERY_ACT_FILENAME + ".jasper");
                 boolean hasState = userInputParamNames.contains("state");
 
@@ -706,11 +706,8 @@ public class ReportLauncher extends ModalJFrame {
     protected void generateReport(boolean toExcel) {
         if (jRptComboBox.getSelectedItem() != null) {
             File jasperFile = reportNameFileMap.get(jRptComboBox.getSelectedItem().toString());
-            String checkName = jasperFile != null ? jasperFile.getName().toLowerCase() : "";
-            boolean isWeekWardReport = checkName.contains("week")
-                    || (userInputParamNames != null && userInputParamNames.contains("fromdate") && userInputParamNames.contains("ward_id") && userInputParamNames.contains("status"));
 
-            if (isWeekWardReport) {
+            if (weekWardReport) {
                 int month = jMonthComboBox.getSelectedIndex() + 1;
                 int year = Integer.parseInt((String) jYearComboBox.getSelectedItem());
                 int weekNumber = jWeekIndexComboBox.getSelectedIndex() + 1;
@@ -879,6 +876,19 @@ public class ReportLauncher extends ModalJFrame {
                 }
             }
         }
+    }
+
+    /**
+     * A "week / ward" report receives the week bounds as ISO strings ("yyyy-MM-dd") together with a ward and/or a status filter.
+     * Reports whose "fromdate" parameter is a {@link Date} (e.g. HMIS 033 weekly epidemiological surveillance) must be launched
+     * as plain from/to date reports, otherwise Jasper fails with an incompatible parameter type.
+     */
+    private static boolean isWeekWardReport(List<JRParameter> userInputParams) {
+        JRParameter fromDate = userInputParams.stream().filter(p -> "fromdate".equals(p.getName())).findFirst().orElse(null);
+        if (fromDate == null || !String.class.equals(fromDate.getValueClass())) {
+            return false;
+        }
+        return userInputParams.stream().anyMatch(p -> "ward_id".equals(p.getName()) || "status".equals(p.getName()));
     }
 
     /**

@@ -17,7 +17,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="30" splitType="Stretch">
+		<band height="30" splitType="Prevent">
 			<textField>
 				<reportElement x="380" y="0" width="68" height="25" uuid="eda43522-44b4-4844-8d80-71ee52a68e3f"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -25,12 +25,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amount_to_pay}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement x="460" y="0" width="75" height="25" forecolor="#FF0000" uuid="339a4561-6e4b-41f9-b33c-f9424d6aa856"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BALANCE} != null ? $F{BALANCE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

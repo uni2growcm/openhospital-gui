@@ -53,7 +53,7 @@
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PLANNED_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PLANNED_COUNT} != null ? $F{PLANNED_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="15" y="30" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000006"/>
@@ -69,12 +69,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="255" y="30" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000008"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{COMPLETED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{COMPLETED_COUNT}, "0") + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{COMPLETED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="15" y="50" width="220" height="18" uuid="c1000001-0001-0001-0001-000000000009"/>
@@ -90,12 +90,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="255" y="50" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000002"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{CANCELLED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{CANCELLED_COUNT}, "0") + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{CANCELLED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="15" y="70" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000003"/>
@@ -111,12 +111,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[":"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="255" y="70" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000005"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT} + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{POSTPONED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{POSTPONED_COUNT}, "0") + " (" + ($F{TOTAL_VISITS} == 0 ? 0 : Math.round($F{POSTPONED_COUNT} * 100.0 / $F{TOTAL_VISITS})) + "%)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="15" y="94" width="220" height="18" uuid="c100000a-0001-0001-0001-000000000006"/>
@@ -137,7 +137,7 @@
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PATIENT_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PATIENT_COUNT} != null ? $F{PATIENT_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

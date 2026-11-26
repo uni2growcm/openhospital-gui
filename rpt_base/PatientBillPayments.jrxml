@@ -86,8 +86,8 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="17" splitType="Stretch">
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+		<band height="17" splitType="Prevent">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField" x="292" y="0" width="88" height="17" uuid="694b1383-ff15-4dce-9350-0d285243524b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -100,7 +100,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLP_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" x="460" y="0" width="75" height="17" uuid="5601cf50-955e-45d6-be89-8b0ea4ccdf17"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -111,7 +111,7 @@
 				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLP_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLP_AMOUNT} != null ? $F{BLP_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -130,7 +130,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Paid}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-1" x="460" y="0" width="75" height="25" uuid="e83bf802-4912-4694-a482-3df74a5814ca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,7 +141,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="380" y="25" width="68" height="25" uuid="eda43522-44b4-4844-8d80-71ee52a68e3f"/>
@@ -156,7 +156,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amount_to_pay}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement x="460" y="25" width="75" height="25" forecolor="#FF0000" uuid="339a4561-6e4b-41f9-b33c-f9424d6aa856"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -167,7 +167,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BALANCE} != null ? $F{BALANCE} : 0d]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="300" y="55" width="235" height="18" uuid="c1a1a111-2222-4111-8111-a11111111112"/>
