@@ -85,7 +85,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.supplier")]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-supName" x="80" y="3" width="280" height="18" forecolor="#FFFFFF"/>
 					<box leftPadding="2"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -173,21 +173,21 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 						<pen lineWidth="0.5" lineColor="#CCCCCC"/>
 					</graphicElement>
 				</line>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-gfLabel" x="0" y="3" width="370" height="18"/>
 					<box leftPadding="4"/>
 					<textElement verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.totalsupplier") + " (" + $V{GRP_COUNT} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.items") + ") :"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.totalsupplier") + " (" + java.util.Objects.toString($V{GRP_COUNT}, "0") + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.items") + ") :"]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="SUPPLIER_GROUP">
+				<textField pattern="#,##0" evaluationTime="Group" evaluationGroup="SUPPLIER_GROUP">
 					<reportElement key="textField-gfTotalQty" x="370" y="3" width="55" height="18"/>
 					<box rightPadding="2"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_ORDER_QTY_TOTAL}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_ORDER_QTY_TOTAL} != null ? $V{GRP_ORDER_QTY_TOTAL} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -252,13 +252,6 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement key="textField-periode" x="0" y="128" width="535" height="16"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="098bb395-76ac-4cf9-98b9-8c367f8cb63f"/>
 				<textElement>
@@ -300,11 +293,18 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="51230d42-a3e0-4bcc-a626-7c288b02495d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="td-refno" x="0" y="1" width="80" height="16"/>
 				<box leftPadding="2"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -312,7 +312,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CMD_REFNO}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="td-date" x="80" y="1" width="65" height="16"/>
 				<box/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -320,7 +320,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CMD_DATE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="td-code" x="145" y="1" width="60" height="16"/>
 				<box leftPadding="2"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -328,7 +328,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CMR_MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="td-desc" x="205" y="1" width="165" height="16"/>
 				<box leftPadding="2"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -336,23 +336,23 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CMR_MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="td-orderqty" x="370" y="1" width="55" height="16"/>
 				<box rightPadding="2"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{CMR_ORDER_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{CMR_ORDER_QTY} != null ? $F{CMR_ORDER_QTY} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="td-stock" x="425" y="1" width="50" height="16"/>
 				<box rightPadding="2"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{CMR_QTY_IN_STORE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{CMR_QTY_IN_STORE} != null ? $F{CMR_QTY_IN_STORE} : 0d]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="td-status" x="475" y="1" width="60" height="16"/>
 				<box/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -392,7 +392,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 	</pageFooter>
 	<summary>
 		<band height="30" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-summaryLabel" mode="Opaque" x="0" y="3" width="410" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
 				<box leftPadding="5"/>
 				<textElement verticalAlignment="Middle">
@@ -400,7 +400,7 @@ ORDER BY SUP_NAME ASC, C.CMD_DATE DESC, C.CMD_REFNO ASC, CR.CMR_MDSR_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.totalgeneral") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "") + " (" + $V{REPORT_COUNT} + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.command.report.items") + ") :"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Report">
+			<textField pattern="#,##0" isBlankWhenNull="true" evaluationTime="Report">
 				<reportElement key="textField-summaryTotal" mode="Opaque" x="410" y="3" width="125" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
 				<box rightPadding="5"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">

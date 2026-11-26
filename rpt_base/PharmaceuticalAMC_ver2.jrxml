@@ -182,7 +182,7 @@ GROUP BY MDSR_CODE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SOHatDate}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-39" x="170" y="138" width="80" height="20" uuid="3a4ccfcf-f3ad-4ed8-aeb7-1fcd5d89ee80"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,7 +208,7 @@ GROUP BY MDSR_CODE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ReferencePeriod}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-40" x="170" y="158" width="80" height="20" uuid="c744b3c3-db6a-413e-a7a0-2eb2271aad17"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -221,7 +221,7 @@ GROUP BY MDSR_CODE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{START_DATE}.toLocalDate()]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-41" x="250" y="158" width="80" height="20" uuid="035d3411-1236-41cc-a8a1-19525171582f"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -367,7 +367,7 @@ GROUP BY MDSR_CODE]]>
 				</textElement>
 				<text><![CDATA[AVG 6]]></text>
 			</staticText>
-			<textField textAdjust="ScaleFont" pattern="MMM-yy" isBlankWhenNull="false">
+			<textField textAdjust="ScaleFont" pattern="MMM-yy" isBlankWhenNull="true">
 				<reportElement key="textField-42" x="349" y="0" width="63" height="17" forecolor="#030303" uuid="6d24b72f-2506-48b9-a959-49f098181132"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -531,7 +531,7 @@ GROUP BY MDSR_CODE]]>
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="52" height="18" uuid="02d5215a-5841-4f44-8008-45508c5bc39c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -542,7 +542,7 @@ GROUP BY MDSR_CODE]]>
 				<textElement verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="57" y="0" width="157" height="18" uuid="63c0a3b0-3762-4cac-b8cd-fbf705bdbb48"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -553,7 +553,7 @@ GROUP BY MDSR_CODE]]>
 				<textElement verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-9" x="509" y="0" width="45" height="18" forecolor="#000000" uuid="4af4e19e-fe35-49b9-92cd-7bf73a119074"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -562,9 +562,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{AVG_12_MONTHS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AVG_12_MONTHS} != null ? $F{AVG_12_MONTHS} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-10" x="554" y="0" width="54" height="18" forecolor="#000000" uuid="7da31f39-77ce-4d7c-8b1a-265f0d0deb0e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -575,9 +575,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{CONS_12_MONTHS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{CONS_12_MONTHS} != null ? $F{CONS_12_MONTHS} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-24" x="611" y="0" width="54" height="18" forecolor="#000000" uuid="0b831645-e2ec-4ca0-afba-3a4ac893437b"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -586,9 +586,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{AVG_STOCK_12_MONTHS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AVG_STOCK_12_MONTHS} != null ? $F{AVG_STOCK_12_MONTHS} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-25" style="CritivalValue" x="279" y="0" width="70" height="18" uuid="42f63198-ae58-49f6-bf39-05b2444050d0"/>
 				<box rightPadding="5">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -598,9 +598,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{SOH}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{SOH} != null ? $F{SOH} : 0L]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-29" x="214" y="0" width="65" height="18" uuid="f90ea3bc-fa4a-4b6b-ab08-a78fe1ba601b"/>
 				<box rightPadding="5">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -610,9 +610,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI} != null ? $F{MDSR_MIN_STOCK_QTI} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-31" x="464" y="0" width="45" height="18" forecolor="#000000" uuid="14da3ad2-7ad8-4b73-90b0-0d06a3719301"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -621,9 +621,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{AVG_6_MONTHS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AVG_6_MONTHS} != null ? $F{AVG_6_MONTHS} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-32" x="349" y="0" width="63" height="18" forecolor="#030303" uuid="3ce5658f-04e5-4da3-84ad-1363549596af"/>
 				<box rightPadding="5">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -633,7 +633,7 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{CONS_THIS_MONTH}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{CONS_THIS_MONTH} != null ? $F{CONS_THIS_MONTH} : 0d]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement key="textField-33" x="412" y="0" width="52" height="18" forecolor="#000000" uuid="36778d9e-8d62-43e4-896a-4e165147374f"/>
@@ -647,7 +647,7 @@ GROUP BY MDSR_CODE]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{AVG_3_MONTHS}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-44" x="665" y="0" width="45" height="18" forecolor="#000000" uuid="77e3d908-d722-4897-8a78-5913f88013ec"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -656,9 +656,9 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{DOS_12_MONTHS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{DOS_12_MONTHS} != null ? $F{DOS_12_MONTHS} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0.00" isBlankWhenNull="true">
+			<textField pattern="###0.00">
 				<reportElement key="textField-46" x="710" y="0" width="36" height="18" forecolor="#000000" uuid="ec908828-4401-40c2-bdb8-bc64687cf33e"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -667,7 +667,7 @@ GROUP BY MDSR_CODE]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{IR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{IR} != null ? $F{IR} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField pattern="#.##" isBlankWhenNull="true">
 				<reportElement key="textField-48" x="746" y="0" width="36" height="18" forecolor="#000000" uuid="138239cc-4c71-4e99-899a-09d0a6e46f48"/>

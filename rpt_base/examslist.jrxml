@@ -38,7 +38,7 @@ order by EXC_DESC, EXA_DESC, EXR_DESC]]>
 		<groupExpression><![CDATA[$F{EXC_DESC}]]></groupExpression>
 		<groupHeader>
 			<band height="12" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="2" y="1" width="257" height="11" uuid="0c25a9d8-290b-4748-b7b8-87a37c2ec6aa"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -64,7 +64,7 @@ order by EXC_DESC, EXA_DESC, EXR_DESC]]>
 		<groupExpression><![CDATA[$F{EXA_DESC}]]></groupExpression>
 		<groupHeader>
 			<band height="26" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="10" y="2" width="249" height="11" uuid="faf89261-b136-47f3-8ab7-ac8caebc5fc4"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -77,7 +77,7 @@ order by EXC_DESC, EXA_DESC, EXR_DESC]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{EXA_DESC}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="286" y="2" width="17" height="11" uuid="0c239f0f-18bd-47fc-88b2-f4b846cf1bbd"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -90,7 +90,7 @@ order by EXC_DESC, EXA_DESC, EXR_DESC]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{EXA_PROC}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="308" y="2" width="223" height="11" uuid="d564f7fb-b587-4c71-afa7-d4a14789ea8c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

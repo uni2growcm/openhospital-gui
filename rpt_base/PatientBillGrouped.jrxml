@@ -186,7 +186,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PATIENT_BILLS_SUMMARY}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="70" y="45" width="465" height="15" uuid="725bd5ec-28d0-414c-82aa-69e64cd04c02"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -199,7 +199,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_USR_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="70" y="31" width="465" height="15" uuid="6882d07b-a9e4-43c0-bdfe-3b2cd7f26ccc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,9 +210,9 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				<textElement verticalAlignment="Top">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_ID_PAT} + " - " + $F{PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{BLL_ID_PAT}, "") + " - " + java.util.Objects.toString($F{PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-23" x="70" y="60" width="172" height="15" uuid="3f595b30-9461-4a08-acdb-ec21f9feea05"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -315,7 +315,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="2" width="49" height="15" uuid="ad2bb335-5480-4f71-b201-42b038eded1b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -328,7 +328,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ID_PRICE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="54" y="2" width="245" height="15" uuid="c96e12ac-43d4-4210-8cba-1e0b1494e3b1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,7 +341,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-9" x="305" y="2" width="71" height="15" uuid="b5c9428a-41c2-4429-9cb5-71c8aa6a522d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -352,9 +352,9 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLI_ITEM_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLI_ITEM_AMOUNT} != null ? $F{BLI_ITEM_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField-10" x="382" y="2" width="74" height="15" uuid="4efb1d8a-aaea-442c-a06f-9675013d63e3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -365,9 +365,9 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				<textElement textAlignment="Center">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLI_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLI_QTY} != null ? $F{BLI_QTY} : 0]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-13" x="460" y="2" width="75" height="15" uuid="e669777e-2bcb-42f8-85b0-9e429c1d85f5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -378,7 +378,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_ITEM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_ITEM} != null ? $V{TOTAL_ITEM} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -415,7 +415,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 	</pageFooter>
 	<summary>
 		<band height="100" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-11" x="460" y="0" width="75" height="25" uuid="6b357080-e083-4d45-acad-6702332cfcab"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -426,7 +426,7 @@ WHERE $X{IN ,BLL_ID, collectionbillsId }]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_BILL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_BILL} != null ? $V{TOTAL_BILL} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-30" x="382" y="0" width="74" height="25" uuid="f092b526-bdf2-4668-b37e-db905ef1a4de"/>

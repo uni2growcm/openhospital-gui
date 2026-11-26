@@ -377,7 +377,7 @@ null : $V{OUT_QTY} :
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="52" width="782" height="22" uuid="c8a503dc-e7f3-48b1-80ea-5a001d37c17f" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
@@ -464,7 +464,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Prod.Code}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement x="72" y="148" width="72" height="18" uuid="3e72c0c3-8ca3-4ec6-b6da-8ee404a4cf8f"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -490,7 +490,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Medical}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement x="144" y="148" width="176" height="18" uuid="d3bfcfd6-f120-4d69-a684-3ac9f4b65063"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -516,7 +516,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{MedicalType}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement x="320" y="148" width="150" height="18" uuid="f8748f64-622f-47a8-ac06-79ab0f48cd38"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -542,7 +542,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DateFrom}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement x="470" y="148" width="90" height="18" uuid="4415a012-8224-45da-90d0-6fac4383edbe"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -568,7 +568,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DateTo}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement x="560" y="148" width="90" height="18" uuid="89cdf895-cbcf-4a0b-b9e8-13a8fbf67ea7"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -620,7 +620,7 @@ null : $V{OUT_QTY} :
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Curr.}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement x="710" y="148" width="72" height="18" uuid="ed0f3502-e48f-4ccf-9961-56623dbf1beb"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid"/>
@@ -881,7 +881,7 @@ $R{ClosingBalance} : null]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MMV_LT_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement style="Opening" x="344" y="0" width="76" height="16" uuid="8b98762d-901c-4088-b73a-1863e76b7f52"/>
 				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

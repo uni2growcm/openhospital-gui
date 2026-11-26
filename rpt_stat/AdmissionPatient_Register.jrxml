@@ -156,13 +156,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="138" width="782" height="16"/>
-				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{header} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{toDate} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="86" width="380" height="14" uuid="1c39f3bd-0703-4d3f-96c4-88aa9116f591"/>
 				<textElement>
@@ -204,6 +197,13 @@
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="138" width="782" height="16" uuid="06aa5a2b-638e-4345-a811-e34ff46569a4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -224,14 +224,14 @@
 	<detail>
 		<band height="62" splitType="Prevent">
 			<textField isBlankWhenNull="true"><reportElement x="0" y="0" width="24" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_MPROG}]]></textFieldExpression></textField>
-			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="24" y="0" width="148" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{PAT_NAME} + "\n" + $R{patientCode} + ": " + $F{PAT_ID} + " | " + $R{sex} + ": " + $F{PAT_SEX} + " | " + $R{age} + ": " + $F{age} + "\n" + $R{status} + ": " + $F{PAT_STATUS} + " | " + $R{profession} + ": " + $F{PAT_OCCUPATION} + "\n" + $R{residence} + ": " + $F{PAT_ADDR} + " / " + $F{PAT_CITY} + "\n" + $R{contact} + ": " + $F{PAT_TELE} + " / " + $F{PAT_NEXT_KIN}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="24" y="0" width="148" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_NAME}, "") + "\n" + $R{patientCode} + ": " + java.util.Objects.toString($F{PAT_ID}, "") + " | " + $R{sex} + ": " + java.util.Objects.toString($F{PAT_SEX}, "") + " | " + $R{age} + ": " + java.util.Objects.toString($F{age}, "N/A") + "\n" + $R{status} + ": " + java.util.Objects.toString($F{PAT_STATUS}, "") + " | " + $R{profession} + ": " + java.util.Objects.toString($F{PAT_OCCUPATION}, "") + "\n" + $R{residence} + ": " + java.util.Objects.toString($F{PAT_ADDR}, "") + " / " + java.util.Objects.toString($F{PAT_CITY}, "") + "\n" + $R{contact} + ": " + java.util.Objects.toString($F{PAT_TELE}, "") + " / " + java.util.Objects.toString($F{PAT_NEXT_KIN}, "")]]></textFieldExpression></textField>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement x="172" y="0" width="48" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_DATE_ADM}]]></textFieldExpression></textField>
 			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="220" y="0" width="75" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{disease_in}]]></textFieldExpression></textField>
 			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="295" y="0" width="70" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{exams_requested}]]></textFieldExpression></textField>
 			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="365" y="0" width="80" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{treatment}]]></textFieldExpression></textField>
-			<textField isBlankWhenNull="true"><reportElement x="445" y="0" width="40" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{duration} + " " + $R{days}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="445" y="0" width="40" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[($F{duration} != null ? $F{duration} + " " + $R{days} : "N/A")]]></textFieldExpression></textField>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement x="485" y="0" width="48" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_DATE_DIS}]]></textFieldExpression></textField>
-			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="533" y="0" width="75" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{disease_out_1} + ($F{disease_out_2}.isEmpty() ? "" : ", " + $F{disease_out_2}) + ($F{disease_out_3}.isEmpty() ? "" : ", " + $F{disease_out_3})]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="533" y="0" width="75" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[java.util.Objects.toString($F{disease_out_1}, "") + ($F{disease_out_2}.isEmpty() ? "" : ", " + java.util.Objects.toString($F{disease_out_2}, "")) + ($F{disease_out_3}.isEmpty() ? "" : ", " + java.util.Objects.toString($F{disease_out_3}, ""))]]></textFieldExpression></textField>
 			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="608" y="0" width="60" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{DIST_DESC}]]></textFieldExpression></textField>
 			<textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement x="668" y="0" width="114" height="62"/><box><pen lineWidth="0.5" lineColor="#B0C4DE"/></box><textElement verticalAlignment="Top"><font fontName="SansSerif" size="6"/></textElement><textFieldExpression><![CDATA[$F{ADM_NOTE}]]></textFieldExpression></textField>
 		</band>
@@ -266,7 +266,7 @@
 	</pageFooter>
 	<summary>
 		<band height="28" splitType="Stretch">
-			<textField><reportElement x="0" y="4" width="500" height="20" forecolor="#1E3A8A"/><textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + $V{TOTAL}]]></textFieldExpression></textField>
+			<textField isBlankWhenNull="true"><reportElement x="0" y="4" width="500" height="20" forecolor="#1E3A8A"/><textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + java.util.Objects.toString($V{TOTAL}, "0")]]></textFieldExpression></textField>
 		</band>
 	</summary>
 </jasperReport>

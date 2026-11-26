@@ -106,14 +106,14 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC;]]>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{patientCode} + " " + $F{PAT_ID}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{patientCode} + " " + java.util.Objects.toString($F{PAT_ID}, "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="118" y="19" width="200" height="14" uuid="b0000001-0001-0001-0001-000000000004"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{patientName} + " " + $F{PAT_NAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{patientName} + " " + java.util.Objects.toString($F{PAT_NAME}, "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="323" y="19" width="75" height="14" uuid="b0000001-0001-0001-0001-000000000005"/>
@@ -134,14 +134,14 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC;]]>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{patientPhone} + " " + $F{PAT_TELEPHONE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{patientPhone} + " " + java.util.Objects.toString($F{PAT_TELEPHONE}, "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="643" y="19" width="131" height="14" uuid="b0000001-0001-0001-0001-000000000007"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{PAT_CITY} + ($F{PAT_ADDRESS} != null && !$F{PAT_ADDRESS}.equals("-") ? " (" + $F{PAT_ADDRESS} + ")" : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_CITY}, "") + ($F{PAT_ADDRESS} != null && !$F{PAT_ADDRESS}.equals("-") ? " (" + $F{PAT_ADDRESS} + ")" : "")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -162,7 +162,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC;]]>
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{pregnancy_title} + " : " + $F{PREGNANCY_NUM} + "  [" + $R{status} + " " + ($F{PRG_STATUS}.equals("DELIVERED") ? $R{status_delivered} : ($F{PRG_STATUS}.equals("INTERRUPTED") ? $R{status_interrupted} : $R{status_ongoing})) + "]"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{pregnancy_title} + " : " + java.util.Objects.toString($F{PREGNANCY_NUM}, "") + "  [" + $R{status} + " " + ($F{PRG_STATUS}.equals("DELIVERED") ? $R{status_delivered} : ($F{PRG_STATUS}.equals("INTERRUPTED") ? $R{status_interrupted} : $R{status_ongoing})) + "]"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="315" y="4" width="220" height="12" uuid="b0000001-0001-0001-0001-000000000012"/>

@@ -40,7 +40,7 @@
 		<groupExpression><![CDATA[$F{OCL_DESC}]]></groupExpression>
 		<groupHeader>
 			<band height="15" splitType="Prevent">
-				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement key="textField" x="0" y="0" width="535" height="13" uuid="7c7cd7a2-3f60-4b7b-bdd5-0bbead1b98d7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -197,7 +197,7 @@
 	</columnHeader>
 	<detail>
 		<band height="13" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="6" y="0" width="389" height="11" uuid="6b9188ab-3640-4732-8c03-95c00f3f1c3a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +210,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OPE_DESC}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="405" y="0" width="65" height="11" uuid="9ec8ba67-3ca3-4fba-8c09-e407b8a44022"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

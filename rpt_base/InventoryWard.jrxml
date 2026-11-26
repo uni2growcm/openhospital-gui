@@ -111,12 +111,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Inventory}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="148" width="530" height="20" uuid="990b59c1-0740-46a3-b668-d9dfdd0ab5f2"/>
 				<textElement>
 					<font size="13" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{WardInventoryID}+ ":" + $P{inventoryId}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{WardInventoryID}+ ":" + java.util.Objects.toString($P{inventoryId}, "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="96" width="256" height="14" uuid="968783d7-e8d8-4804-bdbe-b95910be7ebc"/>
@@ -163,14 +163,14 @@
 	</title>
 	<pageHeader>
 		<band height="122" splitType="Stretch">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="6" width="510" height="20" uuid="30375be1-b715-484d-8b27-0574efc07c57"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{WardName}+ ":" + $P{ward}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{WardName}+ ":" + java.util.Objects.toString($P{ward}, "")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-13" x="0" y="52" width="273" height="17" uuid="c36a0f89-2260-4f94-83f3-5ae60fe10808"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -181,9 +181,9 @@
 				<textElement textAlignment="Left">
 					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Reference}+ ":" + $P{inventoryReference}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Reference}+ ":" + java.util.Objects.toString($P{inventoryReference}, "")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-6" x="0" y="30" width="273" height="22" uuid="d71f71cb-0165-4c70-8707-4a245b2a6071"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -196,7 +196,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{InventoryDate} + ":" + ($P{inventoryDate} != null ? $P{inventoryDate} : "")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="0" y="74" width="238" height="22" uuid="aeadc7e4-d6e3-4097-8705-74f5a99ab30d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -207,7 +207,7 @@
 				<textElement textAlignment="Left">
 					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Status}+ ":" + $P{inventoryStatus}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Status}+ ":" + java.util.Objects.toString($P{inventoryStatus}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -262,7 +262,7 @@
 	</columnHeader>
 	<detail>
 		<band height="23" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="-1" width="40" height="22" uuid="55fde793-5aca-4fa9-8f90-423828e25c86"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -273,7 +273,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="40" y="-1" width="120" height="22" uuid="de714e10-0741-4045-84e1-12e17e6981bd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -284,7 +284,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-9" x="160" y="-1" width="130" height="24" uuid="ba83aa2d-a3f0-4b19-a0c8-da949ae318be"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -295,7 +295,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{LT_ID_A}==null?"":$F{LT_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#0" isBlankWhenNull="false">
+			<textField pattern="#0">
 				<reportElement key="textField-10" x="370" y="-1" width="89" height="23" uuid="3cbbd069-d372-4aae-9462-2217e1904c53"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -304,9 +304,9 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{MINVTR_THEORETIC_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MINVTR_THEORETIC_QTY} != null ? $F{MINVTR_THEORETIC_QTY} : 0f]]></textFieldExpression>
 			</textField>
-			<textField pattern="#0" isBlankWhenNull="false">
+			<textField pattern="#0" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="460" y="-1" width="74" height="22" uuid="7055826f-b2ab-45ff-8a5c-19f4aa9b50c1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -315,9 +315,9 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[($P{printRealQty}.intValue() == 1 ? "" : new DecimalFormat("0").format($F{MINVTR_REAL_QTY}) + "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{printRealQty}.intValue() == 1 ? "" : ($F{MINVTR_REAL_QTY} != null ? new DecimalFormat("0").format($F{MINVTR_REAL_QTY}) : "N/A")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-25" x="290" y="0" width="80" height="23" uuid="30872397-c9dc-49eb-a3e3-746e5f63d17b"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{LT_DUE_DATE}==null?"":$F{LT_DUE_DATE}]]></textFieldExpression>

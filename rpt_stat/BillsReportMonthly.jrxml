@@ -83,7 +83,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="148" splitType="Stretch">
+		<band height="170" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="0df5c202-0ba8-43ba-b488-51f28ce315c6"/>
 				<textElement>
@@ -187,63 +187,18 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="150" width="782" height="16" uuid="1def6417-8b8d-4261-ad45-3f577cfe7d05"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="47" splitType="Stretch">
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-35" x="313" y="0" width="98" height="21" uuid="5f5329e7-1d06-4edc-a293-d0da98b5fead"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-21" x="411" y="0" width="26" height="21" uuid="a604e348-abf7-4a74-9f3c-02c219c4afac"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
-			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-36" x="437" y="0" width="98" height="21" uuid="6c7628aa-064e-4916-966a-d4f9bb9791a1"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-22" x="158" y="0" width="155" height="21" uuid="195fb59f-3a4a-4901-a570-859fb7aa99b2"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Report.From}]]></textFieldExpression>
-			</textField>
-		</band>
+		<band height="26" splitType="Stretch">
+			</band>
 	</pageHeader>
 	<columnHeader>
 		<band height="32" splitType="Stretch">
@@ -303,7 +258,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Prevent">
-			<textField pattern="MMMMM-yy" isBlankWhenNull="false">
+			<textField pattern="MMMMM-yy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="0" y="0" width="73" height="20" uuid="8f00e69e-6dfc-4ab1-bbc5-0239f626eef9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -316,7 +271,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-38" x="73" y="0" width="144" height="20" uuid="8706a44a-8755-4248-a06e-7fbc452ed7a1"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -325,9 +280,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BILLED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BILLED} != null ? $F{BILLED} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-39" x="319" y="0" width="144" height="20" uuid="a12bc004-26ef-42ce-89a0-515644b09caa"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -336,9 +291,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{INCOME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{INCOME} != null ? $F{INCOME} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-40" x="565" y="0" width="144" height="20" uuid="5e5224e7-4223-4ca6-ad33-b26481c2dbb0"/>
 				<box rightPadding="5">
 					<leftPen lineWidth="0.25"/>
@@ -347,13 +302,13 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{RECEIVABLE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{RECEIVABLE} != null ? $F{RECEIVABLE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<columnFooter>
 		<band height="62" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-50" x="73" y="0" width="144" height="20" uuid="b71e5e92-710a-4f20-bb6e-59acf31a2724"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -364,9 +319,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_BILLED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_BILLED} != null ? $V{TOTAL_BILLED} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-51" x="319" y="0" width="144" height="20" uuid="0631ea68-ceec-4765-a70b-d540ccf9691f"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -377,9 +332,9 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_INCOME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_INCOME} != null ? $V{TOTAL_INCOME} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-52" x="565" y="0" width="144" height="20" uuid="aa91225d-379a-4e9d-9f4a-914ab244f3e7"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.25"/>
@@ -390,7 +345,7 @@ GROUP BY YEAR(DATE), MONTH(DATE)]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_RECEIVABLE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_RECEIVABLE} != null ? $V{TOTAL_RECEIVABLE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnFooter>

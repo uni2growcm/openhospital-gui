@@ -249,7 +249,7 @@ ORDER BY VST_DATE ASC]]>
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-22" x="0" y="130" width="535" height="18" uuid="145fae70-5e1a-4e23-a4f1-2004bed0f808"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -262,7 +262,7 @@ ORDER BY VST_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{WRD_NAME}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-7" x="103" y="161" width="213" height="20" uuid="e691b626-f883-46f4-b987-7b4c12768c3d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -425,7 +425,7 @@ ORDER BY VST_DATE ASC]]>
 			<line>
 				<reportElement key="line-1" x="0" y="17" width="525" height="2" forecolor="#808080" backcolor="#FFFFFF" uuid="2856a619-de8f-4bdf-98f8-e4af46806829"/>
 			</line>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-23" x="263" y="0" width="79" height="17" forecolor="#000000" uuid="6c93e6b2-292b-4f68-941f-38f327d33997"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -438,7 +438,7 @@ ORDER BY VST_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_NAME}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="0" y="0" width="94" height="17" forecolor="#000000" uuid="da24aa03-518c-4020-8ae4-4d8ff91fbd7e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -451,7 +451,7 @@ ORDER BY VST_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{VST_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-25" x="342" y="0" width="79" height="17" forecolor="#000000" uuid="b96b0d7d-c08a-4013-8b91-0b91d357497a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -464,7 +464,7 @@ ORDER BY VST_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ID}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="">
 				<reportElement key="textField-26" x="184" y="0" width="79" height="17" forecolor="#000000" uuid="ac639f2e-da56-4b9c-af24-d5a22b734244"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -475,9 +475,9 @@ ORDER BY VST_DATE ASC]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{VST_DURATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{VST_DURATION} != null ? $F{VST_DURATION} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-27" x="94" y="0" width="90" height="17" forecolor="#000000" uuid="98b6ed84-b64f-43f5-b170-7edc74774a1f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

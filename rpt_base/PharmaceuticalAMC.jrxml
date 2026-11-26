@@ -168,7 +168,7 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="true">
 				<reportElement key="textField-22" x="44" y="130" width="219" height="20" uuid="709a8dec-0ed1-49af-84b3-69dd4791e2a0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -250,21 +250,21 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Description}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-26" x="590" y="0" width="64" height="17" forecolor="#000000" uuid="8d887f74-1df3-4c39-9439-af5f822f2ea5"/>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MONTH_LABEL_2}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-27" x="654" y="0" width="64" height="17" forecolor="#000000" uuid="f33d56a1-724a-4846-9ba5-12f11552ba60"/>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MONTH_LABEL_3}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-28" x="718" y="0" width="64" height="17" forecolor="#000000" uuid="266cd401-b1ff-432d-a296-9b505a8a13b8"/>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12" isBold="true"/>
@@ -299,7 +299,7 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Critical}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-30" x="526" y="0" width="64" height="17" forecolor="#999999" uuid="0976d782-53a8-4b1d-9c6b-f6310ec5a895"/>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12" isBold="true"/>
@@ -320,7 +320,7 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{AvgValue}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="staticText-14" x="493" y="0" width="32" height="17" forecolor="#000000" uuid="e7c96e01-cdd3-4869-800b-5463dfcfd105"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -338,7 +338,7 @@ GROUP BY MDSR_ID]]>
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="52" height="18" uuid="7f4b30e5-f995-4023-beb5-b811a644aaf0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -351,7 +351,7 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="57" y="0" width="199" height="18" uuid="52e0467a-498b-4d35-8e77-2591673d933a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +364,7 @@ GROUP BY MDSR_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-9" x="590" y="0" width="64" height="18" forecolor="#000000" uuid="256f7b67-f6b6-4b89-94f5-f379c533275e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -375,9 +375,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MONTH_2}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MONTH_2} != null ? $F{MONTH_2} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-10" x="654" y="0" width="64" height="18" forecolor="#000000" uuid="201bd037-b922-4ce6-ac60-a722555a1a5a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -388,9 +388,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MONTH_3}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MONTH_3} != null ? $F{MONTH_3} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-24" x="718" y="0" width="64" height="18" forecolor="#000000" uuid="2395788a-e626-4b9d-9965-eca92100312e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -401,9 +401,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MONTH_4}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MONTH_4} != null ? $F{MONTH_4} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-25" style="CritivalValue" x="321" y="0" width="70" height="18" uuid="a915869f-8351-45fa-9d16-78df4a8e6d39"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -415,9 +415,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{AVG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{AVG} != null ? $V{AVG} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-29" x="256" y="0" width="65" height="18" uuid="eca3125b-f512-48a9-aa9b-5129306f0727"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -429,9 +429,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI} != null ? $F{MDSR_MIN_STOCK_QTI} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-31" x="526" y="0" width="64" height="18" forecolor="#999999" uuid="f3e16c0c-e1c1-43cc-a2f6-f5a9fabb6eb4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -442,9 +442,9 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MONTH_1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MONTH_1} != null ? $F{MONTH_1} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-32" x="391" y="0" width="101" height="18" forecolor="#0066CC" uuid="40fc3a75-a4a6-4d8f-83e4-ae2b9d92d07f"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -456,7 +456,7 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{AVG_VALUE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{AVG_VALUE} != null ? $V{AVG_VALUE} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement key="textField-33" x="493" y="0" width="32" height="18" forecolor="#0066CC" uuid="35fa33e9-036e-475c-bbdb-7419fb6bfc9a"/>
@@ -546,7 +546,7 @@ GROUP BY MDSR_ID]]>
 	</pageFooter>
 	<summary>
 		<band height="27" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-34" x="390" y="9" width="101" height="18" forecolor="#0066CC" uuid="07e30dd5-005a-43ec-8efc-8550cd2ae4cf"/>
 				<box rightPadding="10">
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -558,7 +558,7 @@ GROUP BY MDSR_ID]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{AVG_TOTAL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{AVG_TOTAL} != null ? $V{AVG_TOTAL} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement key="textField-35" x="492" y="9" width="32" height="18" forecolor="#0066CC" uuid="c03efd90-a371-4bbf-baa5-10194f4fc063"/>

@@ -51,7 +51,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</graphicElement>
 				</rectangle>
-				<textField evaluationTime="Auto" pattern="" isBlankWhenNull="false">
+				<textField evaluationTime="Auto" pattern="" isBlankWhenNull="true">
 					<reportElement key="textField" x="0" y="2" width="258" height="21" forecolor="#000066" backcolor="#FFFFFF" uuid="bc604cae-943b-4900-b1cb-4014c535f073"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -63,7 +63,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 						<font fontName="DejaVu Sans" size="16" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{EXA_DESC} + " ( " + $V{TOTAL_EXAM} + " )"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[java.util.Objects.toString($F{EXA_DESC}, "") + " ( " + java.util.Objects.toString($V{TOTAL_EXAM}, "0") + " )"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="staticText-1" x="258" y="11" width="66" height="11" forecolor="#000066" uuid="ebb8f622-cb1c-4ad3-9618-16e62e49bdcd"/>
@@ -117,7 +117,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="169" splitType="Stretch">
+		<band height="168" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="07560d5f-7f2d-41b4-925a-00e7b7d9d6a0"/>
 				<textElement>
@@ -174,58 +174,6 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="65" y="148" width="64" height="17" uuid="ecbf3e39-9c0e-4cd2-96ad-0dc7e857b613"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-5" x="0" y="148" width="65" height="17" uuid="f9be218a-d881-4eb1-93d1-d6ed96427b29"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{From}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-6" x="129" y="148" width="65" height="17" uuid="cf20e423-6f7d-4eda-a15b-2598beeffcf5"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="194" y="148" width="64" height="17" uuid="3b12eb06-ba56-435a-8f0a-d81a093b057d"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="96" width="256" height="14" uuid="a947f655-5543-42e1-9ed3-4282de17128a"/>
 				<textElement>
@@ -267,6 +215,13 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="148" width="535" height="16" uuid="ea5eacb6-9514-4f84-8980-9dff920d1664"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -277,7 +232,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 	</columnHeader>
 	<detail>
 		<band height="14" splitType="Prevent">
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="258" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="7bf29e93-af05-45b9-a3d1-067d3bfef234"/>
 				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -291,7 +246,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LAB_RES}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField" x="258" y="0" width="66" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="15bd4a0f-e98c-43de-a61a-cde610cbb02b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -305,7 +260,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LAB_SEX}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="">
 				<reportElement key="textField" x="324" y="0" width="66" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="6312bf8a-bceb-4436-b8c7-2ce89e383604"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,9 +272,9 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{LAB_AGE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{LAB_AGE} != null ? $F{LAB_AGE} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="">
 				<reportElement key="textField" x="390" y="0" width="66" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="1856d56b-d0a2-417a-b5a2-b842cf9acd11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,9 +286,9 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{COUNT(*)}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{COUNT(*)} != null ? $F{COUNT(*)} : 0L]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-7" x="456" y="0" width="79" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="8474b8be-2de9-4168-ad19-254ab1e42a13"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -345,7 +300,7 @@ ORDER BY EXA_DESC, LAB_RES, LAB_SEX, LAB_AGE, PAT_CITY, PAT_ADDR]]>
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAT_CITY}+", "+$F{PAT_ADDR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_CITY}, "")+", "+java.util.Objects.toString($F{PAT_ADDR}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

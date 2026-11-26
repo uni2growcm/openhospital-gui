@@ -59,7 +59,7 @@ order by 1,2,3,4 desc]]>
 		<groupExpression><![CDATA[$F{DCL_DESC}]]></groupExpression>
 		<groupHeader>
 			<band height="17" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="3" y="0" width="326" height="13" uuid="4295c0dc-d38d-4ce9-93a3-1b331d07d871"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -82,7 +82,7 @@ order by 1,2,3,4 desc]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="157" splitType="Stretch">
+		<band height="151" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="df0564b2-d6af-4816-843a-8d5cc30c345d"/>
 				<textElement>
@@ -138,58 +138,6 @@ order by 1,2,3,4 desc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-7" x="355" y="142" width="100" height="11" uuid="70f587fd-2df0-4c5a-80d5-876f213c43c8"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{year}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-8" x="355" y="131" width="100" height="11" uuid="a50fc8d9-65e0-4dd4-945b-2330da422d8a"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="DejaVu Sans" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{month}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-10" x="283" y="131" width="61" height="11" uuid="669c1d52-a7a3-4886-8891-a02fda84abed"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="DejaVu Sans" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Month}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-11" x="283" y="142" width="61" height="11" uuid="96b81950-8e6f-4175-b9ba-057a71d93888"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="DejaVu Sans" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Year}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="79" width="256" height="14" uuid="67c0b530-7b49-44ec-9a53-7a2675b4be9a"/>
 				<textElement>
@@ -231,6 +179,13 @@ order by 1,2,3,4 desc]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="131" width="535" height="16" uuid="60a334b3-44c6-4033-91c1-ec9d11e6ab78"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.month") + " " + ($P{month} != null && !$P{month}.trim().isEmpty() ? $P{HEADER_BUNDLE}.getString("header.month." + Integer.parseInt($P{month}.trim())) + " " : "") + ($P{year} != null ? $P{year} : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -294,7 +249,7 @@ order by 1,2,3,4 desc]]>
 	</columnHeader>
 	<detail>
 		<band height="11" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="2" y="0" width="327" height="11" uuid="a98c344f-9d80-48bd-a9c8-78fd03904799"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -307,7 +262,7 @@ order by 1,2,3,4 desc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DIS_DESC}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField" x="444" y="0" width="69" height="11" uuid="ef0e012f-8a38-4fc4-8778-0ce7a53178df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -318,9 +273,9 @@ order by 1,2,3,4 desc]]>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{COUNT} != null ? $F{COUNT} : 0L]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="400" y="0" width="37" height="11" uuid="61bd4cd7-4b48-4b8b-9687-6e37ce3237d1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,7 +288,7 @@ order by 1,2,3,4 desc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OPD_SEX}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="332" y="0" width="51" height="11" uuid="3193f10f-1e22-4037-ace4-650d6a5d8e3b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -147,14 +147,14 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label_tel} + " " + $F{PATIENT_TELEPHONE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{label_tel} + " " + java.util.Objects.toString($F{PATIENT_TELEPHONE}, "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="645" y="4" width="132" height="12" uuid="c4000001-0001-0001-0001-000000000084"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label_ville} + " " + $F{PATIENT_CITY}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{label_ville} + " " + java.util.Objects.toString($F{PATIENT_CITY}, "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="5" y="16" width="180" height="11" uuid="c4000001-0001-0001-0001-000000000085"/>
@@ -375,13 +375,6 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="130" width="782" height="16" uuid="c4000001-0001-0001-0001-000000000017"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="78" width="380" height="14" uuid="dfa94cf6-0e14-4212-a6dc-17f1ee278a48"/>
 				<textElement>
@@ -423,6 +416,13 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="767b905e-7a1b-494e-98d1-2195034bff7f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>
@@ -587,28 +587,28 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="8" y="30" width="230" height="14" uuid="c4000001-0001-0001-0001-000000000403"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="245" y="30" width="220" height="14" uuid="c4000001-0001-0001-0001-000000000404"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{summary_distinct_patients} + " " + ($V{DISTINCT_PATIENTS} != null ? $V{DISTINCT_PATIENTS} : 0)]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="8" y="46" width="460" height="13" uuid="c4000001-0001-0001-0001-000000000406"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{summary_hta} + " " + ($V{COUNT_HTA} != null ? $V{COUNT_HTA} : 0)]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="8" y="60" width="460" height="13" uuid="c4000001-0001-0001-0001-000000000407"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
@@ -665,21 +665,21 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
 						<jr:listContents height="14" width="460">
-							<textField textAdjust="StretchHeight">
+							<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 								<reportElement x="8" y="0" width="285" height="13" uuid="c4000001-0001-0001-0001-000000000522"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA["• " + $F{VISIT_TYPE_NAME}]]></textFieldExpression>
+								<textFieldExpression><![CDATA["• " + java.util.Objects.toString($F{VISIT_TYPE_NAME}, "")]]></textFieldExpression>
 							</textField>
 							<textField>
 								<reportElement x="297" y="0" width="65" height="13" uuid="c4000001-0001-0001-0001-000000000523"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{VISIT_TYPE_COUNT}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{VISIT_TYPE_COUNT} != null ? $F{VISIT_TYPE_COUNT} : 0L]]></textFieldExpression>
 							</textField>
-							<textField>
+							<textField isBlankWhenNull="true">
 								<reportElement x="367" y="0" width="70" height="13" uuid="c4000001-0001-0001-0001-000000000524"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
@@ -716,7 +716,7 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 		</band>
 	</summary>
 	<noData>
-		<band height="192" splitType="Stretch">
+		<band height="174" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="551c49aa-6eeb-470f-8a46-433b733c7a6e"/>
 				<textElement>
@@ -772,13 +772,6 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="130" width="782" height="16" uuid="c4000001-0001-0001-0001-000000000517"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="78" width="380" height="14" uuid="c4f3b458-f4e9-40a0-8f1f-4b2cf252828b"/>
 				<textElement>
@@ -820,8 +813,15 @@ ORDER BY pat.PAT_NAME ASC, pr.PRG_ID ASC, pv.PRGV_DATE ASC, pv.PRGV_ID ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="765009f4-f530-4941-9033-836111e65214"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 			<textField>
-				<reportElement x="0" y="168" width="782" height="20" uuid="c4000001-0001-0001-0001-000000000530"/>
+				<reportElement x="0" y="150" width="782" height="20" uuid="c4000001-0001-0001-0001-000000000530"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="11" isItalic="true"/>
 				</textElement>

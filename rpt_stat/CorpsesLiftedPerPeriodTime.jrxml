@@ -139,13 +139,13 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("angal.medicalstock.totalm")]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Group" evaluationGroup="BELIFTED_GROUP">
+				<textField pattern="#,##0" evaluationTime="Group" evaluationGroup="BELIFTED_GROUP">
 					<reportElement key="textField-17" x="420" y="2" width="115" height="20"/>
 					<box rightPadding="4"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_TOTAL}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_TOTAL} != null ? $V{GRP_TOTAL} : 0]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -203,19 +203,12 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-titre" x="0" y="52" width="535" height="20" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["NOT_LIFTED".equals($P{state}) ? $R{titre_rapport_not_lifted} : ("ALL".equals($P{state}) ? $R{titre_rapport_all} : $R{titre_rapport_lifted})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-periode" x="0" y="128" width="535" height="16"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " " + $R{to} + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="e2c4b304-30a8-4600-8ddc-0f539420b5de"/>
@@ -258,6 +251,13 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="aadb649d-c404-4179-a68e-ef3748f7c6d9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -268,15 +268,15 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-23" x="0" y="2" width="125" height="15"/>
 				<box leftPadding="2"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAT_FNAME} + " " + $F{PAT_SNAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_FNAME}, "") + " " + java.util.Objects.toString($F{PAT_SNAME}, "")]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="125" y="2" width="80" height="15"/>
 				<box/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -343,7 +343,7 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 	</pageFooter>
 	<summary>
 		<band height="30" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-10" mode="Opaque" x="0" y="3" width="420" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
 				<box leftPadding="5"/>
 				<textElement verticalAlignment="Middle">
@@ -351,13 +351,13 @@ ORDER BY D.DTH_DISCHARGE_DATE ASC, D.DTH_ADMISSION_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[("NOT_LIFTED".equals($P{state}) ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalnotliftedfrom") : ("ALL".equals($P{state}) ? $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalallfrom") : $P{REPORT_RESOURCE_BUNDLE}.getString("angal.deathreason.totalliftedfrom"))) + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + "  " + $P{REPORT_RESOURCE_BUNDLE}.getString("angal.report.prescriberexams.to") + " " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false" evaluationTime="Report">
+			<textField pattern="#,##0" evaluationTime="Report">
 				<reportElement key="textField-2" mode="Opaque" x="420" y="3" width="115" height="23" forecolor="#FFFFFF" backcolor="#0000FF"/>
 				<box rightPadding="5"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{DEATH_COUNT_TOTAL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{DEATH_COUNT_TOTAL} != null ? $V{DEATH_COUNT_TOTAL} : 0]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

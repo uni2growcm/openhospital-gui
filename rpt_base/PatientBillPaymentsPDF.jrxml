@@ -43,7 +43,7 @@ ORDER BY BLP_DATE ASC]]>
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="88" width="148" height="11" uuid="d48945b8-c4d9-40a9-b646-6358955999ec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -54,9 +54,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement>
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA["BILL N. " + $P{billID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["BILL N. " + java.util.Objects.toString($P{billID}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="31" y="107" width="117" height="9" uuid="af326dc0-b47d-43cf-aaf3-1beab64b7005"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -69,7 +69,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_USR_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="31" y="99" width="117" height="9" uuid="737b70b5-c5e9-4178-b042-2c1b2ec1d386"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -80,7 +80,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement verticalAlignment="Bottom">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_ID_PAT} + " - " + $F{BLL_PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{BLL_ID_PAT}, "") + " - " + java.util.Objects.toString($F{BLL_PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-8" x="0" y="99" width="31" height="9" uuid="f993d514-a19a-4c66-91b3-d4a8ec798f3d"/>
@@ -121,7 +121,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-23" x="31" y="115" width="117" height="9" uuid="4c9f1c02-7507-4840-9398-347e8d3c9e99"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -134,7 +134,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_UPDATE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-28" x="0" y="55" width="148" height="8" uuid="1f6818c7-d233-46c3-885f-0ebc32b13c02"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -147,7 +147,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Hospital}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-29" x="0" y="63" width="148" height="8" uuid="9340f711-bfea-4a2f-8ade-07ac8d5de2ff"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -158,9 +158,9 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right">
 					<font size="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Address} + " - " + $P{City}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($P{Address}, "") + " - " + java.util.Objects.toString($P{City}, "")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-30" x="0" y="71" width="148" height="8" uuid="4633322f-74b9-4964-a5db-10e44c9d6390"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,7 +173,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-31" x="0" y="79" width="148" height="8" uuid="6650e58d-b020-4c97-880d-00af53ad120a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -196,7 +196,7 @@ ORDER BY BLP_DATE ASC]]>
 	</columnHeader>
 	<detail>
 		<band height="10" splitType="Prevent">
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="0" y="0" width="73" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="acfb9385-e1b4-4504-9b2e-4bfcca4162ef"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -209,7 +209,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLP_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-25" x="72" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4eae1a25-dc39-4178-8831-ca3a3da84132"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,7 +220,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLP_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLP_AMOUNT} != null ? $F{BLP_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -245,7 +245,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-26" x="93" y="0" width="55" height="10" uuid="6e03c072-dc2c-4d5b-8f7c-ad4feab387ed"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,7 +256,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-11" x="0" y="10" width="94" height="11" uuid="2e16520b-e405-4962-baed-6be96e00a73a"/>
@@ -271,7 +271,7 @@ ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Balance}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-27" x="93" y="10" width="55" height="10" uuid="5549df65-238b-41e7-8696-ac581b3721a5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -282,7 +282,7 @@ ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLL_BALANCE} != null ? $F{BLL_BALANCE} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

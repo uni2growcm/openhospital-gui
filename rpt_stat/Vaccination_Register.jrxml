@@ -88,7 +88,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="147" splitType="Stretch">
+		<band height="148" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="eae2529c-cfe4-410e-8be9-dddfc8dcf50b"/>
 				<textElement>
@@ -148,13 +148,6 @@
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
 			<!-- Period Subtitle -->
-			<textField>
-				<reportElement x="0" y="128" width="782" height="15" forecolor="#4B5563" uuid="b1100001-0001-0001-0001-000000000017"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<!-- Facility Details (Left & Right) -->
 			<!-- Separator Line -->
 			<textField isBlankWhenNull="true">
@@ -198,6 +191,13 @@
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="782" height="16" uuid="206e3257-0803-4d4f-aa70-9e954ded547f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -478,7 +478,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="24" width="460" height="15" forecolor="#374151" uuid="b1100001-0001-0001-0001-000000000082"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9" isBold="true"/>
@@ -630,7 +630,7 @@
 		</band>
 	</summary>
 	<noData>
-		<band height="211" splitType="Stretch">
+		<band height="178" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="e35aab40-77cf-4009-bcf9-c9e766eb4f71"/>
 				<textElement>
@@ -686,13 +686,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="130" width="782" height="16" forecolor="#4B5563" uuid="b1100001-0001-0001-0001-000000000117"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="78" width="380" height="14" uuid="5766e8e7-f9cd-4bd5-af0f-bd541c4f201f"/>
 				<textElement>
@@ -734,8 +727,15 @@
 					<pen lineWidth="1.0" lineColor="#9CA3AF"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="a107d7c8-3cb4-425d-afec-c104276a4ccd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 			<textField>
-				<reportElement x="0" y="183" width="782" height="24" forecolor="#6B7280" uuid="b1100001-0001-0001-0001-000000000120"/>
+				<reportElement x="0" y="150" width="782" height="24" forecolor="#6B7280" uuid="b1100001-0001-0001-0001-000000000120"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="11" isItalic="true"/>
 				</textElement>

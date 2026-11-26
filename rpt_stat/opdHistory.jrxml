@@ -136,13 +136,6 @@ WHERE DATE(o.OPD_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-8" x="0" y="138" width="782" height="16" uuid="8b9c0d1e-2f3a-4b4c-9d5e-6f7a8b9c0d1e"/>
-				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{header} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{toDate} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="86" width="380" height="14" uuid="392ae957-51e0-46be-8c0c-e26909f6cdcc"/>
 				<textElement>
@@ -184,6 +177,13 @@ WHERE DATE(o.OPD_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="138" width="782" height="16" uuid="1ff909cc-bea7-4f61-8f3f-0d643a7040de"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -450,7 +450,7 @@ WHERE DATE(o.OPD_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+java.util.Objects.toString($F{PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
 			<textField pattern="#0.0" isBlankWhenNull="true">
 				<reportElement key="textField" x="239" y="2" width="27" height="28" uuid="1cf4f7d9-8ac9-41fb-b94d-5bbd7943612f"/>
@@ -636,7 +636,7 @@ WHERE DATE(o.OPD_DATE) BETWEEN DATE($P{fromdate}) AND DATE($P{todate})]]>
 	</lastPageFooter>
 	<summary>
 		<band height="25" splitType="Stretch">
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-2" x="731" y="5" width="51" height="20" forecolor="#000066" backcolor="#FFFFFF" uuid="fa1c1683-78a8-4a83-b42a-07c496810c71"/>
 				<box>
 					<topPen lineStyle="Solid" lineColor="#000000"/>

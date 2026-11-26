@@ -154,7 +154,7 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="130" splitType="Stretch">
+		<band height="152" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="434" height="16" uuid="7fc9c54b-2070-4586-90e1-ea7772d8c57b"/>
 				<textElement>
@@ -251,6 +251,13 @@ ORDER BY
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="132" width="940" height="16" uuid="f2546599-f97b-4a38-87ce-5a2b0e8fabcd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -437,37 +444,37 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="35" width="200" height="15" uuid="e1d98cd2-362e-47ba-9f58-13289b6dcf9d"/>
-				<textFieldExpression><![CDATA[$R{summary_total_infants} + " " + $V{TOTAL_INFANTS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_total_infants} + " " + java.util.Objects.toString($V{TOTAL_INFANTS}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="220" y="35" width="180" height="15" uuid="2f6f3680-0fc0-4825-b7d8-081a41aac5b5"/>
-				<textFieldExpression><![CDATA[$R{summary_active} + " " + $V{TOTAL_ACTIVE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_active} + " " + java.util.Objects.toString($V{TOTAL_ACTIVE}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="420" y="35" width="180" height="15" uuid="0eb58d3d-1158-4b5b-a102-663bb345506b"/>
-				<textFieldExpression><![CDATA[$R{summary_inactive} + " " + $V{TOTAL_INACTIVE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_inactive} + " " + java.util.Objects.toString($V{TOTAL_INACTIVE}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="620" y="35" width="200" height="15" uuid="201c8c75-bbc0-4e13-a7d1-d9a8a9b41346"/>
-				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + $V{TOTAL_VISITS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + java.util.Objects.toString($V{TOTAL_VISITS}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="58" width="180" height="15" uuid="66976e5e-6acd-4b89-a153-918805514185"/>
-				<textFieldExpression><![CDATA[$R{summary_in_followup} + " " + $V{TOTAL_IN_FOLLOWUP}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_in_followup} + " " + java.util.Objects.toString($V{TOTAL_IN_FOLLOWUP}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="220" y="58" width="180" height="15" uuid="356990ff-c2fa-4ab1-bdc9-447bb56d63d2"/>
-				<textFieldExpression><![CDATA[$R{summary_exited} + " " + $V{TOTAL_EXITED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_exited} + " " + java.util.Objects.toString($V{TOTAL_EXITED}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="420" y="58" width="180" height="15" uuid="5d0d0916-889e-4ba8-9a96-03484d166282"/>
-				<textFieldExpression><![CDATA[$R{summary_deceased} + " " + $V{TOTAL_DECEASED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_deceased} + " " + java.util.Objects.toString($V{TOTAL_DECEASED}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="620" y="58" width="200" height="15" uuid="d95ad34d-5574-4cd4-a206-74da5928a066"/>
-				<textFieldExpression><![CDATA[$R{summary_lost} + " " + $V{TOTAL_LOST}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_lost} + " " + java.util.Objects.toString($V{TOTAL_LOST}, "0")]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

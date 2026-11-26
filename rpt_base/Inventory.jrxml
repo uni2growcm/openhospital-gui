@@ -160,18 +160,18 @@ ORDER BY MDSR_DESC asc]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="52" width="535" height="25" uuid="1253f3b6-cc61-4d3e-a244-4f2a584fc828" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{MainStoreInventoryID} + " " +  $P{inventoryId}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{MainStoreInventoryID} + " " +  java.util.Objects.toString($P{inventoryId}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<pageHeader>
 		<band height="96" splitType="Stretch">
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="65" y="39" width="470" height="13" uuid="219427bb-1c1e-48a9-9363-e1dd74cbae86"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -184,7 +184,7 @@ ORDER BY MDSR_DESC asc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{inventoryState}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="65" y="24" width="470" height="13" uuid="1a9fe13f-f96f-4855-93c2-ceaf1b4a984e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -218,7 +218,7 @@ ORDER BY MDSR_DESC asc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Reference}+": "]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-29" x="65" y="9" width="470" height="15" uuid="9186ecad-feba-44ee-948b-053b6105d6aa"/>
 				<textElement>
 					<font size="11"/>
@@ -340,7 +340,7 @@ ORDER BY MDSR_DESC asc]]>
 	</columnHeader>
 	<detail>
 		<band height="17" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="2" width="49" height="15" uuid="17b663c7-d64b-4477-8d0d-b7e868240c2d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -350,7 +350,7 @@ ORDER BY MDSR_DESC asc]]>
 				</box>
 				<textFieldExpression><![CDATA[$F{MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="54" y="1" width="194" height="16" uuid="5b23bc2d-4d75-4211-926e-3e31c66807fd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -360,7 +360,7 @@ ORDER BY MDSR_DESC asc]]>
 				</box>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-9" x="253" y="2" width="69" height="15" uuid="90ffd161-a9df-4097-9e4b-d981952930f9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -371,7 +371,7 @@ ORDER BY MDSR_DESC asc]]>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{LT_ID_A}==null?"":$F{LT_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#0" isBlankWhenNull="false">
+			<textField pattern="#0">
 				<reportElement key="textField-10" x="386" y="2" width="37" height="15" uuid="c2337ad9-5c23-44ba-9f86-6b13af876068"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -380,9 +380,9 @@ ORDER BY MDSR_DESC asc]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{MINVTR_REAL_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MINVTR_REAL_QTY} != null ? $F{MINVTR_REAL_QTY} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="470" y="2" width="65" height="15" uuid="e89801aa-6ee1-4ef1-9c30-fde4cde195b6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -393,14 +393,14 @@ ORDER BY MDSR_DESC asc]]>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression><![CDATA[$F{PU} == null? 0.0 : $V{calcul_total}.doubleValue()]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yy" isBlankWhenNull="true">
 				<reportElement key="textField-25" x="326" y="2" width="59" height="15" uuid="2312ce82-5540-4a00-b102-d6e9008dca61"/>
 				<textElement textAlignment="Right">
 					<font isBold="false" pdfFontName="Helvetica"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LT_DUE_DATE}==null?"":$F{LT_DUE_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-41" x="423" y="2" width="47" height="15" uuid="ef8f85a4-451f-4945-9b06-2b1ba973da54"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -459,7 +459,7 @@ ORDER BY MDSR_DESC asc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Totals}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="#,##0.000" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="#,##0.000">
 				<reportElement key="textField-43" mode="Opaque" x="385" y="22" width="150" height="26" backcolor="#9999FF" uuid="865dd3af-d418-4d96-9658-7f00f1bd3100"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -470,7 +470,7 @@ ORDER BY MDSR_DESC asc]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{STOCK_TOTAL_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{STOCK_TOTAL_AMOUNT} != null ? $V{STOCK_TOTAL_AMOUNT} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

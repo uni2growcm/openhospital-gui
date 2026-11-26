@@ -74,42 +74,42 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 		<groupExpression><![CDATA[$F{BLP_USR_ID_A}]]></groupExpression>
 		<groupHeader>
 			<band height="23" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-42" x="0" y="1" width="534" height="20" uuid="f2eacb51-1da8-4e4d-a973-d10bac58617e"/>
 					<textElement textAlignment="Left">
 						<font fontName="SansSerif" size="12" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{cashier}+" "+ $F{BLP_USR_ID_A}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{cashier}+" "+ java.util.Objects.toString($F{BLP_USR_ID_A}, "")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="24" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" x="0" y="1" width="47" height="18" uuid="835fb1cd-6e76-4f70-b167-68641d3abe0b"/>
 					<textElement>
 						<font fontName="SansSerif"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{User_COUNT}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-43" x="47" y="1" width="381" height="18" uuid="e95973d0-e8ef-40fb-9ae0-6f190666bd45"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{totals}+" "+ $F{BLP_USR_ID_A}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{totals}+" "+ java.util.Objects.toString($F{BLP_USR_ID_A}, "")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement key="line-1" x="0" y="22" width="535" height="1" uuid="14d67a22-d402-49a3-bbac-960d1cd850bc"/>
 				</line>
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-49" x="428" y="1" width="107" height="18" isRemoveLineWhenBlank="true" uuid="591956d2-34bc-4a57-9d09-4dd84183d8d6">
 						<printWhenExpression><![CDATA[new Boolean ($F{PAID}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="SansSerif"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{PAID_USER}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{PAID_USER} != null ? $V{PAID_USER} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -118,7 +118,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="127" splitType="Stretch">
+		<band height="149" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="590fdbfe-494f-4a60-a0e9-802e823b4f76"/>
 				<textElement>
@@ -208,12 +208,19 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="129" width="535" height="16" uuid="7867c31d-311f-48ac-8b10-f2970696796e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-32" x="0" y="52" width="535" height="21" uuid="eda8f266-c973-4368-9e6e-82019a34966e" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{title} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{fromdate}) + " " + $R{to2} + " " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{todate})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -255,7 +262,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="48" height="18" uuid="07645516-7275-4fab-a0d2-6c44edee5367">
 					<printWhenExpression><![CDATA[new Boolean ($F{PAID}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 				</reportElement>
@@ -270,7 +277,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_ID}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="132" y="0" width="296" height="18" uuid="1eb65f0b-7368-49c3-b65a-d0ec29aa47e1">
 					<printWhenExpression><![CDATA[new Boolean ($F{PAID}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 				</reportElement>
@@ -285,7 +292,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_PAT_NAME}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="48" y="0" width="84" height="18" uuid="01cf9c6d-932f-4c9c-b178-6090feff9bda">
 					<printWhenExpression><![CDATA[new Boolean ($F{PAID}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 				</reportElement>
@@ -300,7 +307,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLP_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-46" x="428" y="0" width="107" height="18" isRemoveLineWhenBlank="true" uuid="b97d84d1-d307-4c35-95c1-d35d225ccdb6">
 					<printWhenExpression><![CDATA[new Boolean ($F{PAID}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 				</reportElement>
@@ -313,7 +320,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PAID} != null ? $F{PAID} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -357,7 +364,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totals}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-48" x="428" y="1" width="107" height="24" uuid="fdca9c80-1809-4c80-952e-1119343d2b05"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -368,7 +375,7 @@ ORDER BY BLP_USR_ID_A, BLP_DATE]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="SansSerif" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

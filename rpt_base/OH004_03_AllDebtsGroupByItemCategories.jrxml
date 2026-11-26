@@ -94,7 +94,7 @@ ORDER BY BLI.BLI_ITEM_GROUP, BLI.BLI_ITEM_DESC]]>
 		<groupExpression><![CDATA[$F{BLI_ITEM_GROUP}]]></groupExpression>
 		<groupHeader>
 			<band height="42" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" mode="Opaque" x="0" y="3" width="535" height="22" forecolor="#FFFFFF" backcolor="#6699FF" uuid="18555617-151e-47c2-b037-0a34aceb92cc"/>
 					<textElement verticalAlignment="Middle">
 						<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -137,7 +137,7 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 		</groupHeader>
 		<groupFooter>
 			<band height="38" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-1" x="3" y="2" width="220" height="20" uuid="5f785c98-4bb9-44ff-8b72-91f99bc1cbd9"/>
 					<textElement verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -149,21 +149,21 @@ $F{BLI_ITEM_GROUP}.equals("EXA")?$R{Exams}:
 $F{BLI_ITEM_GROUP}.equals("OPE")?$R{Operations}:
 $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField" x="224" y="2" width="100" height="20" uuid="e4bf3baa-fe0a-4fb4-a042-d7c33edd9fde"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_TOTAL_SALES_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_TOTAL_SALES_AMOUNT} != null ? $V{GRP_TOTAL_SALES_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-26" x="324" y="2" width="103" height="20" uuid="1fb3b970-9dde-42ef-b5a1-6e91d0a0b8f5"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_TOTAL_PAYMENTS_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_TOTAL_PAYMENTS_AMOUNT} != null ? $V{GRP_TOTAL_PAYMENTS_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-29" x="429" y="2" width="105" height="20" uuid="71595e33-094e-4011-b8e1-b69f110133f2"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -177,7 +177,7 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="164" splitType="Stretch">
+		<band height="160" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="7386c456-1dba-46b8-a081-844b925b9de5"/>
 				<textElement>
@@ -233,14 +233,6 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-4" x="3" y="140" width="456" height="20" uuid="1823624f-b38a-43e7-8f8b-8623bb10cd25" mode="Transparent"/>
-				<textElement textAlignment="Center">
-					<font size="16" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{From}+ " " + $P{fromdate} + 
-"  " + $R{To} + " " + $P{todate}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="88" width="256" height="14" uuid="7fe18427-a6fb-4eb9-9172-731aad3dd9fc"/>
 				<textElement>
@@ -282,6 +274,13 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="140" width="535" height="16" uuid="ea9124a3-221e-4953-8e1d-b93afd76257f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -292,21 +291,21 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 	</columnHeader>
 	<detail>
 		<band height="23" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="3" y="2" width="220" height="20" isRemoveLineWhenBlank="true" uuid="95d6c4e1-1775-4871-ac9a-8b43b3eb18c6"/>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" x="224" y="1" width="98" height="20" isRemoveLineWhenBlank="true" uuid="6540d11a-940c-48a1-a773-5011d0d295c1"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{ITEM_SALES}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{ITEM_SALES} != null ? $V{ITEM_SALES} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-25" x="324" y="1" width="104" height="20" isRemoveLineWhenBlank="true" uuid="4cad008d-cc54-4f22-af23-b4e515999906"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{ITEM_PAYMENT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{ITEM_PAYMENT} != null ? $V{ITEM_PAYMENT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-28" x="429" y="1" width="104" height="20" isRemoveLineWhenBlank="true" uuid="d7603af5-4e45-435d-8f49-c3914edc17ff"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[new java.lang.Double(  ($V{ITEM_SALES}.doubleValue()) -($V{ITEM_PAYMENT}.doubleValue()) )]]></textFieldExpression>
@@ -354,21 +353,21 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{Other}:" ")]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-23" mode="Opaque" x="222" y="3" width="100" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="e4b0a93d-14dd-42c1-8821-77f918ff1f6b"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_SALES_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_SALES_AMOUNT} != null ? $V{TOTAL_SALES_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-31" mode="Opaque" x="323" y="3" width="104" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="68180d60-c059-47bd-90c6-2b70b8bb0b50"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENTS_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENTS_AMOUNT} != null ? $V{TOTAL_PAYMENTS_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-32" mode="Opaque" x="427" y="3" width="106" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="40c664ee-d441-4ddd-b8b6-31d5bf1a0e5a"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>

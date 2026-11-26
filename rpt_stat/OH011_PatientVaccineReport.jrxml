@@ -103,7 +103,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="128" width="782" height="16" uuid="e0000001-0000-0000-0000-000000000017"/>
 				<textElement textAlignment="Center">
 					<font size="10"/>
@@ -364,14 +364,14 @@
 				<box>
 					<pen lineWidth="0.5" lineColor="#D1D5DB"/>
 				</box>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="10" y="0" width="370" height="26" uuid="e0000001-0000-0000-0000-000000000063"/>
 					<textElement verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{total_vaccinations} + " : " + ($P{totalVaccinations} != null ? $P{totalVaccinations} : 0)]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="390" y="0" width="380" height="26" uuid="e0000001-0000-0000-0000-000000000064"/>
 					<textElement verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
@@ -445,7 +445,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{maleCount} != null ? $P{maleCount} : 0]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="280" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000077"/>
 					<box rightPadding="5">
 						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
@@ -476,7 +476,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{femaleCount} != null ? $P{femaleCount} : 0]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="280" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000080"/>
 					<box rightPadding="5">
 						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
@@ -578,7 +578,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{under1Count} != null ? $P{under1Count} : 0]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="282" y="34" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000097"/>
 					<box rightPadding="5">
 						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
@@ -609,7 +609,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{from1To5Count} != null ? $P{from1To5Count} : 0]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="282" y="50" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000100"/>
 					<box rightPadding="5">
 						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>
@@ -640,7 +640,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{over5Count} != null ? $P{over5Count} : 0]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="282" y="66" width="100" height="16" uuid="e0000001-0000-0000-0000-000000000103"/>
 					<box rightPadding="5">
 						<bottomPen lineWidth="0.25" lineColor="#E5E7EB"/>

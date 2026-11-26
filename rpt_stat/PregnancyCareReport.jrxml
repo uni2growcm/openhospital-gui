@@ -415,13 +415,6 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pregnancyCareStat}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="128" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{from} + " " + new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{to} + " " + new SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="c844a33d-c50b-490c-a999-8f49036ba205"/>
 				<textElement>
@@ -463,6 +456,13 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="d2b3da2e-26a8-46de-a3ee-b8e211b3f406"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -513,7 +513,7 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 	</columnHeader>
 	<detail>
 		<band height="14" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-1" x="0" y="0" width="180" height="14" uuid="8a665c25-e272-4b4c-ae17-1b45cb992668"/>
 				<box leftPadding="4">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -527,7 +527,7 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[( $F{METRIC} == null || $F{METRIC}.isEmpty() ) ? "" : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey($F{METRIC}) ? $P{REPORT_RESOURCE_BUNDLE}.getString($F{METRIC}) : $F{METRIC} )]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-14" x="180" y="0" width="165" height="14" uuid="af033a8a-e3d0-4f6f-bec4-ce021a76d682"/>
 				<box leftPadding="2">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -541,7 +541,7 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[( $F{DES} == null || $F{DES}.trim().isEmpty() ) ? "" : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey("delivery.mode." + $F{DES}.trim()) ? $P{REPORT_RESOURCE_BUNDLE}.getString("delivery.mode." + $F{DES}.trim()) : ( $P{REPORT_RESOURCE_BUNDLE} != null && $P{REPORT_RESOURCE_BUNDLE}.containsKey($F{DES}) ? $P{REPORT_RESOURCE_BUNDLE}.getString($F{DES}) : $F{DES} ) )]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-2" x="345" y="0" width="85" height="14" uuid="6b892e22-cfd7-46f8-931f-3183cdc5fa57"/>
 				<box leftPadding="2">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -555,7 +555,7 @@ WHERE PRGV_DATE BETWEEN $P{fromdate} AND $P{todate};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{COUNT}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-13" x="430" y="0" width="105" height="14" uuid="a8214354-6cbf-4662-a93d-c182b58e4b22"/>
 				<box leftPadding="2">
 					<pen lineWidth="1.0" lineStyle="Solid"/>

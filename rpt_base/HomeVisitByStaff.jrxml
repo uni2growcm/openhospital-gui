@@ -107,7 +107,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Prevent">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="130" height="20" uuid="c2000001-0002-0002-0002-000000000005"/>
 				<box topPadding="2" leftPadding="6">
 					<pen lineWidth="0.5"/>
@@ -125,7 +125,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{TOTAL_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{TOTAL_COUNT} != null ? $F{TOTAL_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="180" y="0" width="72" height="20" uuid="c2000001-0002-0002-0002-00000000000e"/>
@@ -135,7 +135,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PLANNED_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PLANNED_COUNT} != null ? $F{PLANNED_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="252" y="0" width="72" height="20" uuid="c2000001-0002-0002-0002-00000000000f"/>
@@ -145,7 +145,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{COMPLETED_COUNT} != null ? $F{COMPLETED_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="324" y="0" width="72" height="20" uuid="c2000001-0002-0002-0002-000000000010"/>
@@ -155,7 +155,7 @@ ORDER BY TOTAL_COUNT DESC]]>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{CANCELLED_COUNT} != null ? $F{CANCELLED_COUNT} : 0L]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="396" y="0" width="68" height="20" uuid="c2000001-0002-0002-0002-000000000011"/>
@@ -165,9 +165,9 @@ ORDER BY TOTAL_COUNT DESC]]>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{POSTPONED_COUNT} != null ? $F{POSTPONED_COUNT} : 0L]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="464" y="0" width="71" height="20" uuid="c2000001-0002-0002-0002-000000000007"/>
 				<box topPadding="2" leftPadding="4">
 					<pen lineWidth="0.5"/>

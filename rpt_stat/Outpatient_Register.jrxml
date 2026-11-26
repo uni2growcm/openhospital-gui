@@ -293,13 +293,6 @@ ORDER BY o.OPD_ID]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-header-8" x="0" y="138" width="782" height="16" uuid="c9d0e1f2-3a4b-4c5d-6e7f-809102132435"/>
-				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{header} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{toDate} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="86" width="380" height="14" uuid="6df2768a-d86a-48ec-9917-849a8364bec4"/>
 				<textElement>
@@ -341,6 +334,13 @@ ORDER BY o.OPD_ID]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="138" width="782" height="16" uuid="2a7a1345-8a7f-4c94-be24-2b5de22e623c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -824,12 +824,12 @@ ORDER BY o.OPD_ID]]>
 	</pageFooter>
 	<summary>
 		<band height="30" splitType="Stretch">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="4" width="400" height="20" forecolor="#1E3A8A" uuid="e568798a-0b12-4cc6-65e7-879a0b122c32"/>
 				<textElement>
 					<font fontName="SansSerif" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + $V{TOTAL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{totalOnPeriod} + " " + java.util.Objects.toString($V{TOTAL}, "0")]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

@@ -582,7 +582,7 @@ WHERE PEX_ID = $P{examId}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PEX_NOTE}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="staticText-6" positionType="Float" x="90" y="30" width="55" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="8ac26936-13f0-4ade-9538-0c68b12ec7f9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

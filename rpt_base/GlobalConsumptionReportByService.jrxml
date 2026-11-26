@@ -76,7 +76,7 @@ ORDER BY
 		<groupExpression><![CDATA[$F{MMV_WRD_NAME}]]></groupExpression>
 		<groupHeader>
 			<band height="32" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-62" mode="Opaque" x="0" y="0" width="535" height="32" backcolor="#CCCCFF" uuid="49fba953-3513-42bf-a519-513e81ce86c3"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -88,13 +88,13 @@ ORDER BY
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("label_service")+ ": " + $F{MMV_WRD_NAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("label_service") + " " + java.util.Objects.toString($F{MMV_WRD_NAME}, "")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="30" splitType="Prevent">
-				<textField evaluationTime="Group" evaluationGroup="Service Group" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="Service Group" isBlankWhenNull="true">
 					<reportElement key="textField-75" mode="Opaque" x="0" y="0" width="185" height="30" backcolor="#CCCCFF" uuid="f781a775-a05c-4d9f-b2c4-022bb60d9f05"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -106,9 +106,9 @@ ORDER BY
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{MMV_WRD_NAME} + " - " + $P{REPORT_RESOURCE_BUNDLE}.getString( "label_total" ) + " : "]]></textFieldExpression>
+					<textFieldExpression><![CDATA[java.util.Objects.toString($F{MMV_WRD_NAME}, "") + " - " + $P{REPORT_RESOURCE_BUNDLE}.getString( "label_total" )]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00">
 					<reportElement key="textField-76" mode="Opaque" x="185" y="0" width="127" height="30" backcolor="#CCCCFF" uuid="2d3ee77b-96e4-4ff9-b525-2757aab7945d"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -120,9 +120,9 @@ ORDER BY
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTAL_PRICE_SERVICE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTAL_PRICE_SERVICE} != null ? $V{TOTAL_PRICE_SERVICE} : "N/A"]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00">
 					<reportElement key="textField-77" mode="Opaque" x="312" y="0" width="125" height="30" backcolor="#CCCCFF" uuid="832775ed-7d63-4ce7-a689-919aaa8720c6"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -134,9 +134,9 @@ ORDER BY
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTAL_QTY_SERVICE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTAL_QTY_SERVICE} != null ? $V{TOTAL_QTY_SERVICE} : 0d]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField evaluationTime="Group" evaluationGroup="Service Group" pattern="#,##0.00">
 					<reportElement key="textField-78" mode="Opaque" x="437" y="0" width="98" height="30" backcolor="#CCCCFF" uuid="cbb3a236-444a-4b26-ba3c-cae588bd97d8"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -148,7 +148,7 @@ ORDER BY
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT_SEVICE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT_SEVICE} != null ? $V{TOTAL_AMOUNT_SEVICE} : "N/A"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -213,15 +213,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("titre_rapport_consommation")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="128" width="535" height="16" uuid="b1000001-0000-0000-0000-000000000008"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString("label_periode") + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("label_du") + " " +
-	(new SimpleDateFormat("dd/MM/yy").format((new SimpleDateFormat("yyyy-MM-dd").parse($P{fromdate})))) + " " + $P{REPORT_RESOURCE_BUNDLE}.getString("label_au") + " " +
-	(new SimpleDateFormat("dd/MM/yy").format((new SimpleDateFormat("yyyy-MM-dd").parse($P{todate}))))]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="d73ab0e0-53a6-4626-809f-130c2bc64738"/>
 				<textElement>
@@ -263,6 +254,13 @@ ORDER BY
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="51b99dc2-e235-4598-8979-8d691fd974b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{fromdate})) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{todate})) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -327,7 +325,7 @@ ORDER BY
 	</columnHeader>
 	<detail>
 		<band height="30" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-8" mode="Opaque" x="312" y="0" width="125" height="30" uuid="5dc0f3d9-1550-4c12-a308-7f09b19d8983"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -337,9 +335,9 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{ITEM_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ITEM_QTY} != null ? $F{ITEM_QTY} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yy" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-24" mode="Opaque" x="185" y="0" width="127" height="30" uuid="ed1ad738-718a-4e90-9ee0-10a5f62bc000"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -349,9 +347,9 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{ITEM_COST}+ ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ITEM_COST} != null ? $F{ITEM_COST} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-25" mode="Opaque" x="437" y="0" width="98" height="30" uuid="3aa9ff28-3df1-4650-a975-75343c4c09a6"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -361,9 +359,9 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{ITEM_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ITEM_AMOUNT} != null ? $F{ITEM_AMOUNT} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Opaque" x="0" y="0" width="185" height="30" uuid="77b8af0e-92f8-477c-a67f-6daf5935f3ad"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -424,9 +422,9 @@ ORDER BY
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "label_total" ) + " : "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}.getString( "label_total" )]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField evaluationTime="Report" pattern="#,##0.00">
 				<reportElement key="textField-70" mode="Opaque" x="185" y="0" width="127" height="27" backcolor="#CCCCFF" uuid="1eac1f04-7954-43a7-a6af-7c15f63af564"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -438,9 +436,9 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_PRICE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_PRICE} != null ? $V{TOTAL_PRICE} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField evaluationTime="Report" pattern="#,##0.00">
 				<reportElement key="textField-71" mode="Opaque" x="312" y="0" width="125" height="27" backcolor="#CCCCFF" uuid="0764b897-5e5c-4b58-831f-ff252c74881f"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -452,9 +450,9 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_QTY} != null ? $V{TOTAL_QTY} : 0d]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField evaluationTime="Report" pattern="#,##0.00">
 				<reportElement key="textField-72" mode="Opaque" x="437" y="0" width="98" height="27" backcolor="#CCCCFF" uuid="b61a7041-0c4c-4bce-99b8-aa942ad49158"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -466,7 +464,7 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT} != null ? $V{TOTAL_AMOUNT} : "N/A"]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

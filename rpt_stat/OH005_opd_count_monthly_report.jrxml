@@ -136,17 +136,6 @@ order by 1,2,3 desc]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="128" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[($P{month} != null && $P{year} != null && !$P{month}.trim().isEmpty() && !$P{year}.trim().isEmpty()) ? 
-					($R{label_mois} + " " + 
-					 Character.toUpperCase(Month.of(Integer.parseInt($P{month}.trim())).getDisplayName(TextStyle.FULL, $P{REPORT_LOCALE}).charAt(0)) + 
-					 Month.of(Integer.parseInt($P{month}.trim())).getDisplayName(TextStyle.FULL, $P{REPORT_LOCALE}).substring(1) + 
-					 " " + $P{year}.trim()) : ""]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="5eab0a6a-5692-429c-ab91-55a3d048337e"/>
 				<textElement>
@@ -188,6 +177,13 @@ order by 1,2,3 desc]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="71132316-550d-4022-8380-d6dcb4808ffa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.month") + " " + ($P{month} != null && !$P{month}.trim().isEmpty() ? $P{HEADER_BUNDLE}.getString("header.month." + Integer.parseInt($P{month}.trim())) + " " : "") + ($P{year} != null ? $P{year} : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>

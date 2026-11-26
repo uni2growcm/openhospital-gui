@@ -48,7 +48,7 @@
 		<groupExpression><![CDATA[$F{date}]]></groupExpression>
 		<groupHeader>
 			<band height="13" splitType="Prevent">
-				<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-12" x="3" y="0" width="70" height="13" uuid="a431dbea-5790-4715-bc96-4fad80ed269b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -74,7 +74,7 @@
 		</groupHeader>
 		<groupFooter>
 			<band height="13" splitType="Prevent">
-				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement key="textField" x="149" y="0" width="132" height="13" uuid="ea6bedda-b145-410a-b7f0-9fe94b86c7da"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -87,7 +87,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{medical}.toString()]]></textFieldExpression>
 				</textField>
-				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight">
 					<reportElement key="textField-10" x="483" y="0" width="52" height="13" uuid="fd8ab686-0434-4465-9ae3-c6bc510fb9d9">
 						<printWhenExpression><![CDATA[new Boolean($V{MEDICAL_TOTAL}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 					</reportElement>
@@ -100,9 +100,9 @@
 					<textElement textAlignment="Right">
 						<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{MEDICAL_TOTAL}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{MEDICAL_TOTAL} != null ? $V{MEDICAL_TOTAL} : 0d]]></textFieldExpression>
 				</textField>
-				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement key="textField-24" x="97" y="0" width="52" height="13" uuid="cf1a7210-c684-4d32-bd2c-146300e7275c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -115,7 +115,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$V{MEDICAL_COUNT}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
+				<textField>
 					<reportElement key="textField-25" x="406" y="0" width="77" height="13" uuid="d27aad99-83f1-4084-96b2-bd482c237b78">
 						<printWhenExpression><![CDATA[new Boolean($V{MEDICAL_RECTIFY}.compareTo( new Double(0) ) != 0)]]></printWhenExpression>
 					</reportElement>
@@ -128,9 +128,9 @@
 					<textElement textAlignment="Right">
 						<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{MEDICAL_RECTIFY}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{MEDICAL_RECTIFY} != null ? $V{MEDICAL_RECTIFY} : 0d]]></textFieldExpression>
 				</textField>
-				<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement key="textField-26" x="276" y="0" width="132" height="13" uuid="4e760c6a-a525-4ffc-a7f6-6e6f0a7cb813"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -199,12 +199,12 @@
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-22" x="0" y="52" width="535" height="20" uuid="e0a220ef-976f-487d-a1f5-aeb3e3e7176f" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["" + $F{ward} + " " + $R{OutgoingDrugs}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + java.util.Objects.toString($F{ward}, "") + " " + $R{OutgoingDrugs}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="2027f4e8-1142-4899-a285-2b3adc7d6eb8"/>

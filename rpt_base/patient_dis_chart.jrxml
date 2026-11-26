@@ -219,7 +219,7 @@ where adm.ADM_DELETED = 'N'
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Ward}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-14" x="107" y="35" width="128" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="7348639b-8115-4cb9-a38a-bd1f55da3bcf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -336,7 +336,7 @@ where adm.ADM_DELETED = 'N'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ADM_DATE_DIS}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-18" x="107" y="7" width="128" height="14" uuid="9cce8e99-201c-4211-91c8-44bcf89ce9f2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -440,7 +440,7 @@ where adm.ADM_DELETED = 'N'
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DISEASEOUT}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-23" x="107" y="21" width="128" height="14" uuid="a1a0df39-4067-4d6b-b474-119f8c6b995a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

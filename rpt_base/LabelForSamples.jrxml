@@ -48,7 +48,7 @@ WHERE PAT_ID Like $P{patientID}]]>
 	</columnHeader>
 	<detail>
 		<band height="56" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-2" x="50" y="5" width="39" height="10" uuid="92c0bd73-0287-4431-b0d8-0961b4004c07"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

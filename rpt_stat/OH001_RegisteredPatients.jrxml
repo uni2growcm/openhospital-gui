@@ -52,7 +52,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 		<groupExpression><![CDATA[new Integer($F{DATE}.getYear())]]></groupExpression>
 		<groupHeader>
 			<band height="33" splitType="Prevent">
-				<textField pattern="YYYY" isBlankWhenNull="false">
+				<textField pattern="YYYY" isBlankWhenNull="true">
 					<reportElement key="textField" x="1" y="10" width="132" height="23" forecolor="#000066" backcolor="#FFFFFF" uuid="9d98ff0a-ac63-49c3-a5d9-a06e2e8d645f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -79,7 +79,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 				<rectangle radius="0">
 					<reportElement key="rectangle" mode="Opaque" x="0" y="28" width="535" height="2" forecolor="#000099" backcolor="#000099" uuid="8ab2d2be-d0a3-4bac-b1b9-70eddbebf4e7"/>
 				</rectangle>
-				<textField pattern="MMMMM" isBlankWhenNull="false">
+				<textField pattern="MMMMM" isBlankWhenNull="true">
 					<reportElement key="textField" x="5" y="2" width="132" height="23" forecolor="#000066" backcolor="#FFFFFF" uuid="67e34615-a2bf-4848-bcd4-729f1c5de7af"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -97,7 +97,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 		</groupHeader>
 		<groupFooter>
 			<band height="23" splitType="Prevent">
-				<textField evaluationTime="Group" evaluationGroup="MONTH" pattern="" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="MONTH" pattern="">
 					<reportElement key="textField-1" x="137" y="0" width="132" height="23" forecolor="#000066" backcolor="#FFFFFF" uuid="45befddc-996d-4371-9f75-24df575caf42"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -109,7 +109,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 						<font fontName="DejaVu Sans" size="16" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{MONTH_TOTAL}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{MONTH_TOTAL} != null ? $V{MONTH_TOTAL} : 0L]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -118,7 +118,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="169" splitType="Stretch">
+		<band height="168" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="bd0b859e-5bc4-4754-a2ec-6cc764b4ace0"/>
 				<textElement>
@@ -175,58 +175,6 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-8" x="238" y="148" width="86" height="17" uuid="eb7d8d73-d25d-4000-b6eb-584e231b0418"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-3" x="151" y="148" width="87" height="17" uuid="90c96b0a-2d40-434c-abb6-b8abcc9aadd6"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-9" x="65" y="148" width="86" height="17" uuid="d2abfd0a-1db4-4cf7-8ba8-68826feb72ae"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-4" x="0" y="148" width="65" height="17" uuid="7905e261-f520-467c-a5de-8cacd38f8df8"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{From}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="96" width="256" height="14" uuid="22159c5e-23e5-474a-8140-048e0accd2f7"/>
 				<textElement>
@@ -268,6 +216,13 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="148" width="535" height="16" uuid="a6db46d4-d32e-4522-ad69-4e6eafca81ec"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -278,7 +233,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 	</columnHeader>
 	<detail>
 		<band height="17" splitType="Prevent">
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="">
 				<reportElement key="textField" x="137" y="0" width="132" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="ed0852bc-44dc-48e2-9bfc-32f7db29b6e3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -290,9 +245,9 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{NUMBER} != null ? $F{NUMBER} : 0L]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd EEEEE" isBlankWhenNull="false">
+			<textField pattern="dd EEEEE" isBlankWhenNull="true">
 				<reportElement key="staticText" positionType="Float" x="40" y="0" width="97" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="ce63b140-7075-4335-8606-74783f031645"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,7 +296,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 	</pageFooter>
 	<lastPageFooter>
 		<band height="58" splitType="Stretch">
-			<textField evaluationTime="Group" evaluationGroup="MONTH" pattern="" isBlankWhenNull="false">
+			<textField evaluationTime="Group" evaluationGroup="MONTH" pattern="">
 				<reportElement key="textField-2" x="137" y="13" width="132" height="23" forecolor="#000066" backcolor="#FFFFFF" uuid="8a7d01e5-b27e-4e2e-b357-54df4bbabca1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -353,7 +308,7 @@ GROUP BY DATE(PAT_TIMESTAMP)]]>
 					<font fontName="DejaVu Sans" size="16" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL} != null ? $V{TOTAL} : 0L]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-3" x="5" y="13" width="132" height="23" forecolor="#000066" backcolor="#FFFFFF" uuid="2ed259ed-a145-4527-a919-169454641c01"/>

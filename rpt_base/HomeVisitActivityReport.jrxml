@@ -89,12 +89,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="128" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $P{PeriodLabel}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + java.util.Objects.toString($P{PeriodLabel}, "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="4d680b30-d206-474d-ae3b-c3a743799afd"/>

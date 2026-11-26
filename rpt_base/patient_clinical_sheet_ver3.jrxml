@@ -459,7 +459,7 @@ ORDER BY DATE DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Report.from}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-35" x="313" y="154" width="98" height="18" uuid="2388479c-c2d5-4c85-8160-9e4e5714ce0a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -472,7 +472,7 @@ ORDER BY DATE DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Date_from}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-36" x="437" y="154" width="98" height="18" uuid="7a3953c2-9929-40f2-a720-39f01fb5a080"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -552,7 +552,7 @@ ORDER BY DATE DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="ScaleFont" isBlankWhenNull="false">
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
 				<reportElement key="textField-2" x="0" y="8" width="70" height="13" uuid="292fe642-de0a-4b47-ac03-8e0a5a2397b8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

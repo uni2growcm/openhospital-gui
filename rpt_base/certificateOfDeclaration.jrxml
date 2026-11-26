@@ -163,7 +163,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{autor}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="130" y="0" width="400" height="25" uuid="6ffe19f3-2643-4c03-b2ba-634c7d9010b1"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
@@ -205,7 +205,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{birthcertificatenum}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="190" y="60" width="200" height="25" uuid="86a2bfeb-2809-4cf5-a7cf-957e10f04016"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
@@ -219,19 +219,19 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{id}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="190" y="90" width="200" height="25" uuid="387a3360-6498-4353-92ea-d4aec8fb9b16"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{NationalIdNumber}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="120" width="535" height="25" uuid="42e9cdd4-607f-4c46-a011-691321e40e59"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{iborn} + " " + $P{Hospital}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{iborn} + " " + java.util.Objects.toString($P{Hospital}, "")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="150" width="120" height="25" uuid="19c737a1-52da-4fed-9ca4-c64d71bcd917"/>
@@ -240,7 +240,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{dateborn}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="130" y="150" width="150" height="25" uuid="b8f302b6-5d9b-42ea-a7f1-92ea8edcf4e1"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
@@ -268,7 +268,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infaith}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="300" width="535" height="25" uuid="990d1beb-8647-4447-9453-8d86b60631ad"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>

@@ -252,9 +252,9 @@ WHERE PAT_ID = $P{patientID}]]>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAT_FNAME} + " " + $F{PAT_SNAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{PAT_FNAME}, "") + " " + java.util.Objects.toString($F{PAT_SNAME}, "")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-2" x="80" y="5" width="53" height="14" uuid="8c6f2846-e828-46f6-9bc5-396f73e71c76"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

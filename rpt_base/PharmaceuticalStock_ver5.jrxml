@@ -110,7 +110,7 @@ ORDER BY $P!{sortBy}]]>
 		<groupExpression><![CDATA[$F{MDSRT_DESC}]]></groupExpression>
 		<groupHeader>
 			<band height="18" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-27" mode="Opaque" x="0" y="0" width="140" height="18" forecolor="#FFFFFF" backcolor="#000000" uuid="e7a85a01-3373-4615-a4b3-6b403ea274e3"/>
 					<box leftPadding="2">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -170,7 +170,7 @@ ORDER BY $P!{sortBy}]]>
 		</groupHeader>
 		<groupFooter>
 			<band height="22" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-35" x="205" y="2" width="310" height="18" uuid="95791e92-fadd-4276-af5b-0d6754aba450"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -181,7 +181,7 @@ ORDER BY $P!{sortBy}]]>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($R{Value} != null ? $R{Value} : "Valeur") + " " + $F{MDSRT_DESC}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($R{Value} != null ? $R{Value} : "Valeur") + " " + java.util.Objects.toString($F{MDSRT_DESC}, "")]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="false">
 					<reportElement key="textField-groupqty" x="515" y="2" width="65" height="18" uuid="7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"/>
@@ -236,7 +236,7 @@ ORDER BY $P!{sortBy}]]>
 				<line>
 					<reportElement key="line-1" x="0" y="0" width="782" height="1" uuid="e9c68180-afe8-44e9-9706-8ade41f53a78"/>
 				</line>
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-34" x="205" y="1" width="255" height="18" uuid="b72454b8-2e7b-42d5-95c6-203989b58d9f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -249,7 +249,7 @@ ORDER BY $P!{sortBy}]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="false">
+				<textField pattern="#,##0">
 					<reportElement key="textField-10" style="UnderCriticalLevel" x="460" y="1" width="55" height="18" uuid="8ce60762-e2e6-4bbd-9eda-6d72c7538275">
 						<printWhenExpression><![CDATA[new Boolean($F{MDSR_MIN_STOCK_QTI}.compareTo( new Float(0) ) > 0)]]></printWhenExpression>
 					</reportElement>
@@ -262,9 +262,9 @@ ORDER BY $P!{sortBy}]]>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI} != null ? $F{MDSR_MIN_STOCK_QTI} : "N/A"]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="false">
+				<textField pattern="#,##0">
 					<reportElement key="textField-32" style="UnderCriticalLevel" x="515" y="1" width="65" height="18" uuid="69f80ad1-a11a-44a0-b58c-d7a2e98d842c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -275,7 +275,7 @@ ORDER BY $P!{sortBy}]]>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{MEDICAL_SUM}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{MEDICAL_SUM} != null ? $V{MEDICAL_SUM} : 0d]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-medavgcost" style="UnderCriticalLevel" x="580" y="1" width="95" height="18" uuid="d4e5f6a7-89b0-1234-c5d6-e7f8a9b0c1d2"/>
@@ -425,7 +425,7 @@ ORDER BY $P!{sortBy}]]>
 	<detail>
 		<band height="18" splitType="Prevent">
 			<printWhenExpression><![CDATA[new Boolean ($F{STOCK}.doubleValue() > 0 )]]></printWhenExpression>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="50" height="18" uuid="2243bdcd-3f72-4cca-acb6-3d31488262e7"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -464,7 +464,7 @@ ORDER BY $P!{sortBy}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LT_DUE_DATE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="205" y="0" width="255" height="18" uuid="a92081d6-7046-48a7-b99e-8f0e010837cf"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -477,7 +477,7 @@ ORDER BY $P!{sortBy}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-9" x="515" y="0" width="65" height="18" uuid="160378db-013c-4c8c-b057-218febcbc794"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -488,9 +488,9 @@ ORDER BY $P!{sortBy}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{STOCK}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{STOCK} != null ? $F{STOCK} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-avgcost" x="580" y="0" width="95" height="18" uuid="e5f6a7b8-9012-3456-789a-bcdef0123456"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -501,7 +501,7 @@ ORDER BY $P!{sortBy}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{AVG_COST}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AVG_COST} != null ? $F{AVG_COST} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="675" y="0" width="107" height="18" uuid="f5e0c203-ed3c-498e-8137-b037bee6304b"/>

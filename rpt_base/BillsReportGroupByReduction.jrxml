@@ -146,7 +146,7 @@ ORDER BY
 		<groupExpression><![CDATA[$F{RP_DESCRIPTION}]]></groupExpression>
 		<groupHeader>
 			<band height="31" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField" mode="Transparent" x="0" y="7" width="782" height="18" backcolor="#FFFFFF" uuid="ddaf8a8b-52ed-4b5c-b49d-1baf050f90eb"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
@@ -157,7 +157,7 @@ ORDER BY
 		</groupHeader>
 		<groupFooter>
 			<band height="31" splitType="Prevent">
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-32" x="555" y="0" width="103" height="25" uuid="588543bc-37c9-4434-885e-f105319acada"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,9 +168,9 @@ ORDER BY
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{BALANCEGROUP}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{BALANCEGROUP} != null ? $V{BALANCEGROUP} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-33" x="259" y="0" width="91" height="25" uuid="0c82b98a-8fb1-457a-bdc5-1c446bf14a5a"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -181,9 +181,9 @@ ORDER BY
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTALAMOUNTGROUP}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTALAMOUNTGROUP} != null ? $V{TOTALAMOUNTGROUP} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-34" x="440" y="0" width="115" height="25" uuid="9f55ac05-b6b7-4ec9-8398-b625f494013f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -194,7 +194,7 @@ ORDER BY
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTALREFUNDEDGROUP}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTALREFUNDEDGROUP} != null ? $V{TOTALREFUNDEDGROUP} : 0d]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
 					<reportElement key="textField-45" x="0" y="0" width="259" height="25" uuid="6be0e152-6fc2-4c66-8c4b-65ce4d135294"/>
@@ -203,7 +203,7 @@ ORDER BY
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Totals}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-56" x="350" y="0" width="90" height="25" uuid="a64fa79d-dea0-4f6f-bbc3-24b95a923a22"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -214,7 +214,7 @@ ORDER BY
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{PAIDGROUP}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{PAIDGROUP} != null ? $V{PAIDGROUP} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -223,7 +223,7 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="128" splitType="Stretch">
+		<band height="150" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="a31d7eac-18b5-4bb2-b5fc-e9888ed61701"/>
 				<textElement>
@@ -313,12 +313,19 @@ ORDER BY
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="7a557689-4792-42c7-8430-16e814c36d1d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-35" x="0" y="52" width="782" height="22" uuid="2a21d9d5-9194-457b-9258-9f3f879ed056" mode="Transparent"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Title} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " " + $R{To}+ " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -388,7 +395,7 @@ ORDER BY
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="32" height="18" uuid="9a5e0576-654b-4f2a-8d1f-d4dadf2ee4c5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -401,7 +408,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLL_ID}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="103" y="0" width="156" height="18" uuid="5dc3852d-abf5-4d74-bfd5-104d01608b4a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -411,7 +418,7 @@ ORDER BY
 				</box>
 				<textFieldExpression><![CDATA[$F{BLL_PAT_NAME}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yy" isBlankWhenNull="true">
 				<reportElement key="textField-24" x="32" y="0" width="71" height="18" uuid="26c486c2-a0ca-4869-bf4c-bbbed2bd53bc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -422,7 +429,7 @@ ORDER BY
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{BLL_DATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-25" x="259" y="0" width="91" height="18" uuid="6458d0fa-38db-4e64-a970-6e558e406d7d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -437,7 +444,7 @@ ORDER BY
 //"(" + $F{BLL_AMOUNT} + ")")
 $F{BLL_AMOUNT}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yy" isBlankWhenNull="true">
 				<reportElement key="textField-26" x="658" y="0" width="123" height="18" uuid="7347f333-9880-4d60-8ca4-18279df55c1a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -448,7 +455,7 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{BLL_UPDATE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-27" x="555" y="0" width="103" height="18" uuid="292b721d-f132-49c7-aa5a-09a6f8b91123"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -516,7 +523,7 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 	</pageFooter>
 	<summary>
 		<band height="25" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-11" x="555" y="0" width="103" height="25" uuid="d416fe37-128f-4623-9170-a9dd576aa4e4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -527,9 +534,9 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{BALANCE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{BALANCE} != null ? $V{BALANCE} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-28" x="259" y="0" width="91" height="25" uuid="ab9d8068-8fcb-4110-a5c8-52a98d3e12e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -540,9 +547,9 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTALAMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTALAMOUNT} != null ? $V{TOTALAMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-30" x="440" y="0" width="115" height="25" uuid="627c93c7-e57e-4d04-8d20-e86cc1470469"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -553,7 +560,7 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTALREFUNDED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTALREFUNDED} != null ? $V{TOTALREFUNDED} : 0d]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-37" x="0" y="0" width="259" height="25" uuid="f344015c-4190-46ba-b12b-8ce21a1e145c"/>
@@ -562,7 +569,7 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Totals}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-58" x="350" y="0" width="90" height="25" uuid="aa1b46eb-d110-4811-966b-d8ece8facaaa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -573,7 +580,7 @@ $F{BLL_AMOUNT}]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

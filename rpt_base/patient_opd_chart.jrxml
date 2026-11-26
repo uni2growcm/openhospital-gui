@@ -184,7 +184,7 @@ SELECT "ThirdDiagnosis" AS FIELD, CONCAT((SELECT DIS_DESC FROM OH_DISEASE WHERE 
 	</columnHeader>
 	<detail>
 		<band height="19" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-29" positionType="Float" x="5" y="5" width="92" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="932f9685-c959-4ac7-9787-12afcd6292ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

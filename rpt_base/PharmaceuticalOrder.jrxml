@@ -120,7 +120,7 @@ ORDER BY MDSR_DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy h.mm a" isBlankWhenNull="true">
 				<reportElement key="textField-22" x="44" y="130" width="219" height="20" uuid="21827d5c-6d4c-4061-93be-22b1df9abe72"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,7 +270,7 @@ ORDER BY MDSR_DESC]]>
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="52" height="18" uuid="17bce607-df4c-4961-93aa-595766584a90"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +283,7 @@ ORDER BY MDSR_DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MDSR_CODE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="57" y="0" width="183" height="18" uuid="225ca2e5-dad1-4dcd-a006-9ab38ba97d4b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -296,7 +296,7 @@ ORDER BY MDSR_DESC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{MDSR_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0" isBlankWhenNull="false">
+			<textField pattern="###0">
 				<reportElement key="textField-9" x="245" y="0" width="71" height="18" uuid="57233195-5b9c-4b04-8b0c-1a80ba85f78d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -307,9 +307,9 @@ ORDER BY MDSR_DESC]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{QTY} != null ? $F{QTY} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0" isBlankWhenNull="false">
+			<textField pattern="###0">
 				<reportElement key="textField-10" x="321" y="0" width="88" height="18" uuid="f8353135-1c47-466d-939d-7428bb8caf84"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -320,7 +320,7 @@ ORDER BY MDSR_DESC]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{MDSR_MIN_STOCK_QTI} != null ? $F{MDSR_MIN_STOCK_QTI} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="414" y="0" width="57" height="18" uuid="39da8bdb-6324-4d66-a9d6-ade91366f21a"/>

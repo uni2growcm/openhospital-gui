@@ -140,7 +140,7 @@ ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
 		<groupExpression><![CDATA[$F{BLI_ITEM_GROUP}]]></groupExpression>
 		<groupHeader>
 			<band height="18" splitType="Prevent">
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
 					<reportElement mode="Opaque" x="0" y="2" width="782" height="15" forecolor="#FFFFFF" backcolor="#000099" key="textField-group" uuid="c0040004-0000-0000-0000-000000000010"/>
 					<box leftPadding="5"/>
 					<textElement verticalAlignment="Middle">
@@ -217,12 +217,12 @@ ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="128" width="782" height="16" uuid="c0040004-0000-0000-0000-000000000019"/>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $P{PeriodLabel} + "   -   " + $R{label_service} + " " + $P{ward_name} + "   -   " + $R{label_statut} + " " + $P{status_label}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label_periode} + " " + java.util.Objects.toString($P{PeriodLabel}, "") + "   -   " + $R{label_service} + " " + java.util.Objects.toString($P{ward_name}, "") + "   -   " + $R{label_statut} + " " + java.util.Objects.toString($P{status_label}, "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="380" height="14" uuid="8ec61582-58ed-4b35-b222-92d79a5c282f"/>

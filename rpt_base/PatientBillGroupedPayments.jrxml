@@ -38,7 +38,7 @@ WHERE $X{IN ,BLP_ID_BILL, collectionbillsId } ORDER BY BLP_DATE ASC]]>
 	</columnFooter>
 	<pageFooter>
 		<band height="50" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" x="466" y="7" width="67" height="19" forecolor="#000000" backcolor="#FFFFFF" uuid="c13946cf-c552-4792-adc6-064a718b6425"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -49,7 +49,7 @@ WHERE $X{IN ,BLP_ID_BILL, collectionbillsId } ORDER BY BLP_DATE ASC]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLP_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLP_AMOUNT} != null ? $F{BLP_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-3" x="341" y="26" width="118" height="19" uuid="a2028be8-199f-4863-aca8-6332c2291a0e"/>
@@ -65,12 +65,12 @@ WHERE $X{IN ,BLP_ID_BILL, collectionbillsId } ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Paid}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-8" x="466" y="26" width="67" height="19" uuid="f19e1538-9b33-4285-a2f5-8814b55be422"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{totalToPaid}.subtract(new BigDecimal($V{PAID}.intValue()))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{totalToPaid} != null ? $P{totalToPaid}.subtract(java.math.BigDecimal.valueOf($V{PAID} != null ? $V{PAID} : 0d)) : "N/A"]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement key="line-1" mode="Transparent" x="3" y="1" width="531" height="1" uuid="5364321e-ad4d-44ba-94d3-d3b1b6eb63a7"/>

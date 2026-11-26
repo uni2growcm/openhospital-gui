@@ -197,7 +197,7 @@
 	</title>
 	<pageHeader>
 		<band height="117" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="0" y="0" width="242" height="31" uuid="27db371c-f24b-45bb-a529-a02005486925"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,9 +208,9 @@
 				<textElement>
 					<font fontName="DejaVu Sans" size="18"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Bill} + " " + $P{billID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Bill} + " " + java.util.Objects.toString($P{billID}, "")]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-17" x="80" y="31" width="455" height="18" uuid="8aba0a07-df4b-484a-b856-e2b7253cfa17"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -221,7 +221,7 @@
 				<textElement verticalAlignment="Bottom">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLL_ID_PAT} + " - " + $F{BLL_PAT_NAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{BLL_ID_PAT}, "") + " - " + java.util.Objects.toString($F{BLL_PAT_NAME}, "")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-8" x="0" y="31" width="70" height="18" uuid="605abf8b-680b-45d9-a191-6bd93a63d047"/>
@@ -263,7 +263,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-23" x="80" y="50" width="162" height="18" uuid="cf293076-ebac-47f8-b263-49db554f84fe"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +364,7 @@
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="0" y="0" width="49" height="18" uuid="a28a8ecc-483e-4cdd-8a3a-6db7de182f27"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -377,7 +377,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ID_PRICE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="54" y="0" width="236" height="18" uuid="8f165792-9bc1-42f4-b006-8f3a15488799"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -390,7 +390,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-9" x="294" y="0" width="71" height="18" uuid="6da65652-1e4a-4cab-82ab-e44b2443529c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -401,9 +401,9 @@
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLI_ITEM_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLI_ITEM_AMOUNT} != null ? $F{BLI_ITEM_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField-10" x="368" y="0" width="88" height="18" uuid="b57e1c01-f189-4368-a963-9d6ae8228a1f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -414,9 +414,9 @@
 				<textElement textAlignment="Center">
 					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{BLI_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{BLI_QTY} != null ? $F{BLI_QTY} : 0]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-13" x="460" y="0" width="75" height="18" uuid="c5b76666-22a4-499b-8012-2e65b5cdcff3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -427,7 +427,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_ITEM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_ITEM} != null ? $V{TOTAL_ITEM} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -477,7 +477,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}+":"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-11" x="460" y="0" width="75" height="25" uuid="f14a0375-8ced-48b0-bb28-07f9da8caeca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -488,7 +488,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_BILL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_BILL} != null ? $V{TOTAL_BILL} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-payments" x="0" y="30" width="535" height="250" uuid="8528524f-1368-4760-b161-da2a1b763eca"/>

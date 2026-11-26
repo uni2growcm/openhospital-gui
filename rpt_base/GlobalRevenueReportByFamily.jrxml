@@ -75,7 +75,7 @@ $R{famille_autre}]]></variableExpression>
 		<groupExpression><![CDATA[$V{FAMILY_LABEL}]]></groupExpression>
 		<groupHeader>
 			<band height="32" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-family-header" mode="Opaque" x="0" y="0" width="535" height="32" backcolor="#CCCCFF" uuid="a1000002-1000-1000-1000-000000000001"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -87,13 +87,13 @@ $R{famille_autre}]]></variableExpression>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="SansSerif" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label_famille} + " " + $V{FAMILY_LABEL}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{label_famille} + " " + java.util.Objects.toString($V{FAMILY_LABEL}, "")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="30" splitType="Prevent">
-				<textField evaluationTime="Group" evaluationGroup="Family Group" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="Family Group" isBlankWhenNull="true">
 					<reportElement key="textField-family-footer-label" mode="Opaque" x="0" y="0" width="335" height="30" backcolor="#CCCCFF" uuid="a1000003-1000-1000-1000-000000000001"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -105,9 +105,9 @@ $R{famille_autre}]]></variableExpression>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{FAMILY_LABEL} + " - " + $R{label_total}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[java.util.Objects.toString($V{FAMILY_LABEL}, "") + " - " + $R{label_total}]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="Family Group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField evaluationTime="Group" evaluationGroup="Family Group" pattern="#,##0.00">
 					<reportElement key="textField-family-footer-qty" mode="Opaque" x="335" y="0" width="100" height="30" backcolor="#CCCCFF" uuid="a1000003-1000-1000-1000-000000000002"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -119,9 +119,9 @@ $R{famille_autre}]]></variableExpression>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTAL_QTY_FAMILY}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTAL_QTY_FAMILY} != null ? $V{TOTAL_QTY_FAMILY} : 0d]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="Family Group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField evaluationTime="Group" evaluationGroup="Family Group" pattern="#,##0.00">
 					<reportElement key="textField-family-footer-amount" mode="Opaque" x="435" y="0" width="100" height="30" backcolor="#CCCCFF" uuid="a1000003-1000-1000-1000-000000000003"/>
 					<box>
 						<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,7 +133,7 @@ $R{famille_autre}]]></variableExpression>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT_FAMILY}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT_FAMILY} != null ? $V{TOTAL_AMOUNT_FAMILY} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -198,15 +198,6 @@ $R{famille_autre}]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement x="0" y="128" width="535" height="16" uuid="b1000001-0000-0000-0000-000000000008"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + $R{label_du} + " " +
-(new SimpleDateFormat("dd/MM/yy").format((new SimpleDateFormat("yyyy-MM-dd").parse($P{fromdate})))) + " " + $R{label_au} + " " +
-(new SimpleDateFormat("dd/MM/yy").format((new SimpleDateFormat("yyyy-MM-dd").parse($P{todate}))))]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="dc5b8116-0977-4bc2-bfc7-b042ea19cf85"/>
 				<textElement>
@@ -248,6 +239,13 @@ $R{famille_autre}]]></variableExpression>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="5cc8c139-6a31-4541-91c8-2e52bd02143a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{fromdate})) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($P{todate})) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -312,7 +310,7 @@ $R{famille_autre}]]></variableExpression>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-desc" mode="Opaque" x="0" y="0" width="235" height="20" uuid="a1000007-1000-1000-1000-000000000001"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -326,7 +324,7 @@ $R{famille_autre}]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-price" mode="Opaque" x="235" y="0" width="100" height="20" uuid="a1000007-1000-1000-1000-000000000002"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -338,7 +336,7 @@ $R{famille_autre}]]></variableExpression>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{TOTAL_QTY_ITEM} == 0 ? 0.0 : ($F{TOTAL_AMOUNT_ITEM} / $F{TOTAL_QTY_ITEM})]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-qty" mode="Opaque" x="335" y="0" width="100" height="20" uuid="a1000007-1000-1000-1000-000000000003"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -348,9 +346,9 @@ $R{famille_autre}]]></variableExpression>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{TOTAL_QTY_ITEM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{TOTAL_QTY_ITEM} != null ? $F{TOTAL_QTY_ITEM} : 0L]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-amount" mode="Opaque" x="435" y="0" width="100" height="20" uuid="a1000007-1000-1000-1000-000000000004"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -360,7 +358,7 @@ $R{famille_autre}]]></variableExpression>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{TOTAL_AMOUNT_ITEM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{TOTAL_AMOUNT_ITEM} != null ? $F{TOTAL_AMOUNT_ITEM} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -411,7 +409,7 @@ $R{famille_autre}]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{label_total}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField evaluationTime="Report" pattern="#,##0.00">
 				<reportElement key="textField-total-qty" mode="Opaque" x="335" y="0" width="100" height="27" backcolor="#CCCCFF" uuid="a1000009-1000-1000-1000-000000000002"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -423,9 +421,9 @@ $R{famille_autre}]]></variableExpression>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_QTY} != null ? $V{TOTAL_QTY} : 0d]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField evaluationTime="Report" pattern="#,##0.00">
 				<reportElement key="textField-total-amount" mode="Opaque" x="435" y="0" width="100" height="27" backcolor="#CCCCFF" uuid="a1000009-1000-1000-1000-000000000003"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
@@ -437,7 +435,7 @@ $R{famille_autre}]]></variableExpression>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL_AMOUNT} != null ? $V{TOTAL_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

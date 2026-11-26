@@ -34,7 +34,7 @@
 		<groupExpression><![CDATA[$F{group}]]></groupExpression>
 		<groupHeader>
 			<band height="13" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-11" x="0" y="0" width="52" height="13" uuid="279290d9-6418-4506-82eb-c625702df98b"/>
 					<textElement>
 						<font size="10"/>
@@ -153,12 +153,12 @@
 	</title>
 	<pageHeader>
 		<band height="32" splitType="Stretch">
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-15" x="0" y="0" width="535" height="21" uuid="0d617fd3-f095-4f6b-9d1d-83807ad8fbe0"/>
 				<textElement verticalAlignment="Middle">
 					<font size="16"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{list} + " (" + $F{currency} + ")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[java.util.Objects.toString($F{list}, "") + " (" + java.util.Objects.toString($F{currency}, "") + ")"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -167,19 +167,19 @@
 	</columnHeader>
 	<detail>
 		<band height="11" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="13" y="0" width="197" height="11" uuid="303aa019-9966-4769-b025-fa7bf15dc36e"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desc}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField-13" x="210" y="0" width="50" height="11" uuid="d4d3844f-709b-4334-9dd1-f1abf2813421"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{price}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{price} != null ? $F{price} : "N/A"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

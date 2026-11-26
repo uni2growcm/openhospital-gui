@@ -49,7 +49,7 @@ ORDER BY lab.LAB_DATE]]>
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="163" splitType="Stretch">
+		<band height="153" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="8043d165-472e-4cb9-b6d7-76e3baceeeee"/>
 				<textElement>
@@ -105,19 +105,6 @@ ORDER BY lab.LAB_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="160" y="133" width="535" height="16" uuid="d0000001-0000-0000-0000-000000000017"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) + " - " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement x="0" y="158" width="535" height="1" uuid="d000000a-0000-0000-0000-000000000004"/>
-				<graphicElement>
-					<pen lineWidth="1.0"/>
-				</graphicElement>
-			</line>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="81" width="380" height="14" uuid="83bd40b7-a3e5-4c91-8080-a779c59368d3"/>
 				<textElement>
@@ -159,6 +146,13 @@ ORDER BY lab.LAB_DATE]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="133" width="782" height="16" uuid="fd03c58a-b1b3-4551-87a0-bde2e72f4e11"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -336,7 +330,7 @@ ORDER BY lab.LAB_DATE]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PRESCRIBER} != null ? $F{PRESCRIBER} : ""]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="705" y="0" width="77" height="18" isPrintWhenDetailOverflows="true" uuid="9c0d1e2f-3a4b-4c5d-6e7f-8a9b0c1d2e3f"/>
 				<box>
 					<topPen lineWidth="0.5"/>

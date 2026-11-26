@@ -210,7 +210,7 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 		</groupHeader>
 		<groupFooter>
 			<band height="38" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-25" x="3" y="9" width="205" height="20" uuid="6a97cd15-f9d8-45a4-9b69-c1b9823b32a9"/>
 					<textElement verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -221,33 +221,33 @@ $F{BLI_ITEM_GROUP}.equals("EXA")?$R{exams}:
 $F{BLI_ITEM_GROUP}.equals("OPE")?$R{operation}:
 $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-26" x="267" y="9" width="98" height="20" uuid="a3f3f265-10a9-4a8c-b7ff-e8558eef01a7"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_REFUNDED_NB}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_REFUNDED_NB} != null ? $V{GRP_SUBTOTAL_REFUNDED_NB} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-27" x="208" y="9" width="59" height="20" uuid="e7affec2-039c-4f97-97b9-85cb97212ff0"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_NB}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_NB} != null ? $V{GRP_SUBTOTAL_NB} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-28" x="365" y="9" width="82" height="20" uuid="dc07ceca-9c09-40d5-88a0-01ceed93a060"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_REFUNDED_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_REFUNDED_AMOUNT} != null ? $V{GRP_SUBTOTAL_REFUNDED_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-29" x="448" y="9" width="87" height="20" uuid="0c3dd7dd-1f36-4398-ba79-64277574f1c4"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{GRP_SUBTOTAL_AMOUNT} != null ? $V{GRP_SUBTOTAL_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -267,40 +267,40 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 		</groupHeader>
 		<groupFooter>
 			<band height="36" splitType="Prevent">
-				<textField isBlankWhenNull="false">
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-1" x="3" y="9" width="205" height="20" uuid="133d3c58-7d0e-4422-a4d9-e412ee2116b9"/>
 					<textElement verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{BLI_ITEM_TYPE} == null || $F{BLI_ITEM_TYPE}.isEmpty() ? "" : $R{total} + " " + $F{BLI_ITEM_TYPE}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField" x="208" y="9" width="59" height="20" uuid="bcd9daf7-2df6-4b14-ac2e-7c2b087a331e"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_NB}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_NB} != null ? $V{TYPE_TOTAL_NB} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField" x="448" y="9" width="87" height="20" uuid="be941701-74cf-4bcc-b711-df968fd4e110"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_AMOUNT} != null ? $V{TYPE_TOTAL_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-20" x="267" y="9" width="98" height="20" uuid="09be04ee-82ef-494a-a091-c5b04e8f6cf2"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_REFUNDED_NB}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_REFUNDED_NB} != null ? $V{TYPE_TOTAL_REFUNDED_NB} : 0d]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<textField pattern="#,##0.00">
 					<reportElement key="textField-21" x="365" y="9" width="82" height="20" uuid="c22362d0-a546-4c52-8660-9d988878fa46"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_REFUNDED_AMOUNT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{TYPE_TOTAL_REFUNDED_AMOUNT} != null ? $V{TYPE_TOTAL_REFUNDED_AMOUNT} : 0d]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -365,13 +365,6 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="128" width="535" height="16" uuid="c0000001-0000-0000-0000-000000000017"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{PeriodLabel} == null || $P{PeriodLabel}.trim().isEmpty() ? "" : $R{label_periode} + " " + $P{PeriodLabel}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="76" width="256" height="14" uuid="03adf448-d23b-4e99-8735-63ee21e477c0"/>
 				<textElement>
@@ -413,6 +406,13 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="128" width="535" height="16" uuid="8ef3c4e9-54c5-464d-b8e4-023632cbfd41"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -424,25 +424,25 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 				<reportElement key="textField" x="3" y="2" width="205" height="20" uuid="000e5d14-8b9a-4939-8ed1-fb5a78ff6d5d"/>
 				<textFieldExpression><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" x="209" y="1" width="58" height="20" uuid="1af9ca60-e8e8-4b09-a893-06aa949dba3c"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{QTY} != null ? $F{QTY} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" x="448" y="1" width="85" height="20" uuid="874c1bfe-d66d-4860-800c-d5528141df7f"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AMOUNT} != null ? $F{AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-18" x="267" y="1" width="98" height="20" uuid="3e03d529-542b-4551-8851-367d95436bbe"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{REFUNDED_QTY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{REFUNDED_QTY} != null ? $F{REFUNDED_QTY} : java.math.BigDecimal.ZERO]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-19" x="365" y="1" width="83" height="20" uuid="99f63f28-9d74-45e9-becb-838a5ca29b4f"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{REFUNDED_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{REFUNDED_AMOUNT} != null ? $F{REFUNDED_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -479,19 +479,19 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 	</pageFooter>
 	<summary>
 		<band height="30" splitType="Stretch">
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField" mode="Opaque" x="210" y="3" width="59" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="986629a1-ed6e-4cb3-9677-e25d3e21fc20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GRP_TOTAL_NB}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{GRP_TOTAL_NB} != null ? $V{GRP_TOTAL_NB} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-2" mode="Opaque" x="271" y="3" width="95" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="87f622d2-4dc3-4f54-9ec4-d772b0213a14"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GRP_TOTAL_REFUNDED_NB}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{GRP_TOTAL_REFUNDED_NB} != null ? $V{GRP_TOTAL_REFUNDED_NB} : 0d]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-10" mode="Opaque" x="0" y="3" width="208" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="40dd21b9-515d-4c98-9dbe-cd377609e9aa"/>
@@ -501,19 +501,19 @@ $F{BLI_ITEM_GROUP}.equals("OTH")?$R{other}:"")]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-22" mode="Opaque" x="368" y="3" width="79" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="b0153e8e-72cf-4bcc-873c-56d426e0ca46"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GRP_TOTAL_REFUNDED_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{GRP_TOTAL_REFUNDED_AMOUNT} != null ? $V{GRP_TOTAL_REFUNDED_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-23" mode="Opaque" x="448" y="3" width="87" height="23" forecolor="#FFFFFF" backcolor="#0000FF" uuid="31262708-fdea-4ac8-8fab-d654fbaf0582"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GRP_TOTAL_AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{GRP_TOTAL_AMOUNT} != null ? $V{GRP_TOTAL_AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

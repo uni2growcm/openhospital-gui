@@ -234,7 +234,7 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="150" splitType="Stretch">
+		<band height="152" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="434" height="16" uuid="12d0c529-cc83-41c0-8a0d-bd0490a967ff"/>
 				<textElement>
@@ -291,21 +291,6 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="132" width="940" height="14" uuid="6729f591-9fa6-4e85-b17b-8ac40d9fd751"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode}
-                    + " "
-                    + ($P{fromdate} != null
-                        ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate})
-                        : "")
-                    + " - "
-                    + ($P{todate} != null
-                        ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate})
-                        : "")]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="80" width="459" height="14" uuid="8a368ce8-bdd7-4d3e-a807-be1c6db024c7"/>
 				<textElement>
 					<font size="9"/>
@@ -346,6 +331,13 @@ ORDER BY
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="132" width="940" height="16" uuid="fc67cace-3bb2-4395-9778-8ccc97e5a2ab"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -525,42 +517,42 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="35" width="210" height="15" uuid="e310ba76-968e-45cc-84c7-3c4de72f294e"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_total_patients} + " " + $V{TOTAL_PATIENTS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_total_patients} + " " + java.util.Objects.toString($V{TOTAL_PATIENTS}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="230" y="35" width="190" height="15" uuid="c1d040b4-dde2-4108-9702-fd2ec96acc61"/>
-				<textFieldExpression><![CDATA[$R{summary_in_treatment} + " " + $V{TOTAL_IN_TREATMENT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_in_treatment} + " " + java.util.Objects.toString($V{TOTAL_IN_TREATMENT}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="440" y="35" width="170" height="15" uuid="e0408c67-a593-4a3e-b608-f9fc2eb4e735"/>
-				<textFieldExpression><![CDATA[$R{summary_cured} + " " + $V{TOTAL_CURED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_cured} + " " + java.util.Objects.toString($V{TOTAL_CURED}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="630" y="35" width="190" height="15" uuid="80a09766-eacf-4381-b2a2-d693a6614757"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + $V{TOTAL_VISITS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_total_visits} + " " + java.util.Objects.toString($V{TOTAL_VISITS}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="58" width="210" height="15" uuid="cf2ad138-29c6-4519-b13c-508c8aecf276"/>
-				<textFieldExpression><![CDATA[$R{summary_deceased} + " " + $V{TOTAL_DECEASED}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_deceased} + " " + java.util.Objects.toString($V{TOTAL_DECEASED}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="230" y="58" width="210" height="15" uuid="073e0834-9252-49fa-bb6e-b1e20276272e"/>
-				<textFieldExpression><![CDATA[$R{summary_lost} + " " + $V{TOTAL_LOST}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_lost} + " " + java.util.Objects.toString($V{TOTAL_LOST}, "0")]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="440" y="58" width="210" height="15" uuid="03bdb99a-7593-47bb-9abc-3e1a310c1a22"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{summary_total_contacts} + " " + $V{TOTAL_CONTACTS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{summary_total_contacts} + " " + java.util.Objects.toString($V{TOTAL_CONTACTS}, "0")]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

@@ -147,13 +147,6 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="130" width="782" height="16" uuid="c3000001-0001-0001-0001-000000000017"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="78" width="380" height="14" uuid="0eec1e1f-c9b4-464f-9ec1-4928741090ff"/>
 				<textElement>
@@ -195,6 +188,13 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="7f93e1c8-fda0-40cb-91a5-194ea4bb6b4d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -551,28 +551,28 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_title}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="32" width="434" height="14" uuid="c3000001-0001-0001-0001-000000000403"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_total_pregnancies} + " " + ($V{TOTAL_COUNT} != null ? $V{TOTAL_COUNT} : 0)]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="48" width="434" height="14" uuid="c3000001-0001-0001-0001-000000000404"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_ongoing} + " " + ($V{COUNT_ONGOING} != null ? $V{COUNT_ONGOING} : 0) + "    |    " + $R{summary_completed} + " " + ($V{COUNT_COMPLETED} != null ? $V{COUNT_COMPLETED} : 0) + "    |    " + $R{summary_terminated} + " " + ($V{COUNT_TERMINATED} != null ? $V{COUNT_TERMINATED} : 0)]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="64" width="434" height="14" uuid="c3000001-0001-0001-0001-000000000405"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{summary_risk_low} + " " + ($V{COUNT_RISK_LOW} != null ? $V{COUNT_RISK_LOW} : 0) + "    |    " + $R{summary_risk_medium} + " " + ($V{COUNT_RISK_MEDIUM} != null ? $V{COUNT_RISK_MEDIUM} : 0) + "    |    " + $R{summary_risk_high} + " " + ($V{COUNT_RISK_HIGH} != null ? $V{COUNT_RISK_HIGH} : 0)]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="80" width="434" height="14" uuid="c3000001-0001-0001-0001-000000000406"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
@@ -602,7 +602,7 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 		</band>
 	</summary>
 	<noData>
-		<band height="192" splitType="Stretch">
+		<band height="174" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="355" height="16" uuid="5693bff9-7f54-4569-90bc-f7d08b29064d"/>
 				<textElement>
@@ -658,13 +658,6 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{titre_rapport}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="130" width="782" height="16" uuid="c3000001-0001-0001-0001-000000000517"/>
-				<textElement textAlignment="Center">
-					<font size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label_periode} + " " + ($P{fromdate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="78" width="380" height="14" uuid="f0acd93b-b264-4edf-9c4d-9edd15305b23"/>
 				<textElement>
@@ -706,8 +699,15 @@ ORDER BY pr.PRG_DATE ASC, pr.PRG_ID ASC]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="130" width="782" height="16" uuid="2ed22ed0-1b08-463f-a48d-3e5bb49dd04a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 			<textField>
-				<reportElement x="0" y="168" width="782" height="20" uuid="c3000001-0001-0001-0001-000000000530"/>
+				<reportElement x="0" y="150" width="782" height="20" uuid="c3000001-0001-0001-0001-000000000530"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="11" isItalic="true"/>
 				</textElement>

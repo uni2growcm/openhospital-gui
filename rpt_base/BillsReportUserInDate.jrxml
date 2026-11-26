@@ -91,7 +91,7 @@ GROUP BY BLP_USR_ID_A]]>
 				</reportElement>
 				<imageExpression><![CDATA[$P{HOSPITAL_LOGO}]]></imageExpression>
 			</image>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-22" x="83" y="52" width="128" height="21" uuid="9705c451-a6bc-48f4-92a6-4a09e25a0d9d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -117,7 +117,7 @@ GROUP BY BLP_USR_ID_A]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-23" x="83" y="94" width="128" height="21" uuid="7a45fd7b-2f18-4895-8b83-f9fe7905cd30"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,7 +220,7 @@ GROUP BY BLP_USR_ID_A]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.00">
 				<reportElement key="textField-24" x="83" y="0" width="128" height="25" uuid="83ff7762-1695-4720-b43c-f178e7d0dc68"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -231,7 +231,7 @@ GROUP BY BLP_USR_ID_A]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{AMOUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AMOUNT} != null ? $F{AMOUNT} : 0d]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

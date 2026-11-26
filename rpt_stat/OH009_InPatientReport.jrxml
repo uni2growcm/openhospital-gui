@@ -77,7 +77,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="169" splitType="Stretch">
+		<band height="168" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="500" height="16" uuid="65f6dbfb-2993-485c-b019-f65043957a8c"/>
 				<textElement>
@@ -133,64 +133,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jTitle}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-8" x="51" y="148" width="64" height="17" uuid="8f3f30c9-3c5c-42aa-af2d-fbdad5c3a9d6"/>
-				<box>
-					<pen lineColor="#706C6C"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fromdate}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-1" x="0" y="148" width="50" height="17" uuid="616d1d2a-a8bd-469d-9799-4068194b55ad"/>
-				<box>
-					<pen lineColor="#706C6C"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{From}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-2" x="116" y="148" width="30" height="17" uuid="e9b01978-74f2-4262-89df-1f3575c944ae">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<box>
-					<pen lineColor="#706C6C"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{To}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-9" x="147" y="148" width="64" height="17" uuid="72121f1c-0ee1-4231-9e78-c2da8c42596d"/>
-				<box>
-					<pen lineColor="#706C6C"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{todate}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="96" width="525" height="14" uuid="4ab456a1-2b46-4d5c-bb4d-70b10682041c"/>
 				<textElement>
@@ -232,6 +174,13 @@
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="148" width="1073" height="16" uuid="bba5d29e-0b43-42a2-a329-63d50dfd6d7c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.period") + " " + ($P{fromdate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fromdate}) : "") + " - " + ($P{todate} != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{todate}) : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -417,7 +366,7 @@
 	</columnHeader>
 	<detail>
 		<band height="18" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="50" height="18" uuid="675d7f82-6d03-416b-aa27-92d09b19d153"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -431,7 +380,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ADM_YPROG}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="221" y="0" width="78" height="18" uuid="d61b1b40-ad3b-4ca2-8a76-a878750b810e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -447,7 +396,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_CITY}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="299" y="0" width="78" height="18" uuid="c1e7c047-b8cd-4025-90f1-5b2c63a6da44">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -463,7 +412,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_ADDR}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="98" y="0" width="40" height="18" uuid="6ed59e8a-dba5-4d16-a350-93195a45e5bf">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -479,7 +428,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{PAT_SEX}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField" x="138" y="0" width="40" height="18" uuid="bd7600ee-f16b-4039-b0a6-70dbf22fbe06">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -493,9 +442,9 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{PAT_AGE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{PAT_AGE} != null ? $F{PAT_AGE} : "N/A"]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField" x="377" y="0" width="80" height="18" uuid="4913bb77-b111-4325-87be-ff4c778a32b2"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -509,7 +458,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE_ADM}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="457" y="0" width="87" height="18" uuid="9dd25cd6-3029-4caa-a99e-3da3ec59f9a3"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -523,7 +472,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{WARD}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField" x="544" y="0" width="80" height="18" uuid="c69379ed-5958-4063-adfa-8d5ae10c0eb3"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -537,7 +486,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DATE_DIS}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="624" y="0" width="43" height="18" uuid="45de347d-553f-4c30-97de-6e09c7d762cf"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -551,7 +500,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ADM_OUT_DIS_ID_A}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="667" y="0" width="270" height="18" uuid="c56d4a64-16f4-4c0d-af00-1240e115b344"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -565,7 +514,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{DISEASE}.indexOf( " - " ) > -1 ? $F{DISEASE}.split( " - " )[1] : $F{DISEASE}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="937" y="0" width="86" height="18" uuid="c4ea301e-4ac4-4a30-abbc-598b436fdf0f"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -579,7 +528,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{OUTCOME}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField>
 				<reportElement key="textField" x="1023" y="0" width="50" height="18" uuid="dc4308c6-1720-44cb-830f-21b8c5c34841"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -591,7 +540,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{LOS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{LOS} != null ? $F{LOS} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-12" x="178" y="0" width="43" height="18" uuid="8cba4c6e-ae02-4e0f-91d2-c1857d531a95">
@@ -611,7 +560,7 @@
 null :
 $F{DAYS}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-13" x="50" y="0" width="48" height="18" uuid="ec91d6b0-2d02-4235-b200-97aad3f45334"/>
 				<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0">
 					<pen lineColor="#706C6C"/>
@@ -690,7 +639,7 @@ $F{DAYS}]]></textFieldExpression>
 	<summary>
 		<band height="122" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-19" x="147" y="70" width="94" height="21" uuid="0459844f-78c7-4494-899d-311a399a6c10"/>
 				<box>
 					<pen lineColor="#706C6C"/>
@@ -702,9 +651,9 @@ $F{DAYS}]]></textFieldExpression>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{TOTAL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{TOTAL} != null ? $V{TOTAL} : 0L]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="false">
+			<textField pattern="#,##0">
 				<reportElement key="textField-23" x="147" y="91" width="94" height="21" uuid="904235b0-bcc7-4d41-8e1e-d174e918d9cc"/>
 				<box>
 					<pen lineColor="#706C6C"/>
@@ -716,7 +665,7 @@ $F{DAYS}]]></textFieldExpression>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{AVGLOS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{AVGLOS} != null ? $V{AVGLOS} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="staticText-24" x="0" y="70" width="147" height="21" uuid="7fcdf392-5667-4523-a295-6c1dc46c5e4d">

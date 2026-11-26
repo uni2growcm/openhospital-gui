@@ -63,7 +63,7 @@ order by category]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="183" splitType="Stretch">
+		<band height="175" splitType="Stretch">
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_country_fr" x="0" y="0" width="231" height="16" uuid="3a75b1d9-0217-4441-895c-6eb061d41d37"/>
 				<textElement>
@@ -120,7 +120,7 @@ order by category]]>
 				<textFieldExpression><![CDATA[$R{Hmis105.Health.Unit.Outpatient.Monthly.Report}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="staticText-3" x="0" y="164" width="535" height="15" uuid="d58d07c2-6de7-4471-ba85-aa955c0967c5"/>
+				<reportElement key="staticText-3" x="0" y="156" width="535" height="15" uuid="d58d07c2-6de7-4471-ba85-aa955c0967c5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -131,58 +131,6 @@ order by category]]>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{1.Outpatient.Attendance}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="462" y="150" width="73" height="14" uuid="dedafaa0-0a24-4048-ae64-6f26eb338aca"/>
-				<box leftPadding="2">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{year}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-2" x="462" y="136" width="73" height="14" uuid="19fe33de-4ac6-42fa-a3fa-d79bbb8b2572"/>
-				<box leftPadding="2">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{month}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-19" mode="Transparent" x="393" y="136" width="69" height="14" uuid="5fd1a738-585d-4b1f-a0e4-c88cfb47ba3c"/>
-				<box leftPadding="2" rightPadding="2">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="11" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Month}+":"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="staticText-20" mode="Transparent" x="393" y="150" width="69" height="14" uuid="bddd8392-82e4-4402-a978-9a09e1787f26"/>
-				<box leftPadding="2" rightPadding="2">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="11" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Year}+":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="header_district" x="0" y="84" width="256" height="14" uuid="e162a1dd-15be-4850-9a4d-fd1a869e0da6"/>
@@ -225,6 +173,13 @@ order by category]]>
 					<pen lineWidth="1.0"/>
 				</graphicElement>
 			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement key="header_period" x="0" y="136" width="535" height="16" uuid="16f4a24d-21fb-4d6e-aac2-ebb6357b606f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{HEADER_BUNDLE}.getString("header.month") + " " + ($P{month} != null && !$P{month}.trim().isEmpty() ? $P{HEADER_BUNDLE}.getString("header.month." + Integer.parseInt($P{month}.trim())) + " " : "") + ($P{year} != null ? $P{year} : "")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -245,7 +200,7 @@ order by category]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Category}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement key="staticText-5" x="241" y="0" width="90" height="11" uuid="383eaecd-c48f-47c9-aa42-69cd40ece978"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -258,7 +213,7 @@ order by category]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Under.Five.Years.Older}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement key="staticText-6" x="354" y="0" width="90" height="11" uuid="a5f7eebc-6f15-4892-b348-232b896fece9"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
@@ -327,7 +282,7 @@ order by category]]>
 	</columnHeader>
 	<detail>
 		<band height="11" splitType="Prevent">
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField" x="0" y="0" width="241" height="11" uuid="a143cddb-ad62-4748-bb77-5bb5fbdb3bff"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
