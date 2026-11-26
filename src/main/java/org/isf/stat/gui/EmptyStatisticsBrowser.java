@@ -367,10 +367,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                 MessageBundle.getMessage("angal.stat.edema"),
                 edemaCombo = new JComboBox<>(new String[]{
                         MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.stat.edema.none"),
-                        MessageBundle.getMessage("angal.stat.edema.mild"),
-                        MessageBundle.getMessage("angal.stat.edema.moderate"),
-                        MessageBundle.getMessage("angal.stat.edema.severe")
+                        MessageBundle.getMessage("angal.maternity.edema.none"),
+                        MessageBundle.getMessage("angal.maternity.edema.mild"),
+                        MessageBundle.getMessage("angal.maternity.edema.moderate"),
+                        MessageBundle.getMessage("angal.maternity.edema.severe")
                 })
         );
         gridPanel.add(edemaPanel);
@@ -379,10 +379,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
                 MessageBundle.getMessage("angal.stat.fetal.presentation"),
                 fetalPresentationCombo = new JComboBox<>(new String[]{
                         MessageBundle.getMessage("angal.stat.all"),
-                        MessageBundle.getMessage("angal.stat.fetalpresentation.cephalic"),
-                        MessageBundle.getMessage("angal.stat.fetalpresentation.breech"),
-                        MessageBundle.getMessage("angal.stat.fetalpresentation.transverse"),
-                        MessageBundle.getMessage("angal.stat.fetalpresentation.other")
+                        MessageBundle.getMessage("angal.maternity.presentation.cephalic"),
+                        MessageBundle.getMessage("angal.maternity.presentation.breech"),
+                        MessageBundle.getMessage("angal.maternity.presentation.transverse"),
+                        MessageBundle.getMessage("angal.maternity.presentation.other")
                 })
         );
         gridPanel.add(presentationPanel);
@@ -574,7 +574,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
         panel.add(getDiseasesAndDischargeTypesPanel());
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(getParametersPanel());
-
         return panel;
     }
 
@@ -1196,14 +1195,6 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private JButton getFilterResetButton() {
         if (filterResetBtn != null) {
-            visitTypeCombo.setSelectedItem(null);
-            visitCountCombo.setSelectedIndex(0);
-            maternalWeightCombo.setSelectedIndex(0);
-            urineProteinCombo.setSelectedIndex(0);
-            edemaCombo.setSelectedIndex(0);
-            fetalPresentationCombo.setSelectedIndex(0);
-            systolicBpCombo.setSelectedIndex(0);
-            diastolicBpCombo.setSelectedIndex(0);
             return filterResetBtn;
         }
 
@@ -1392,21 +1383,14 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
     }
 
     public void initializePaginationCombo() {
-        int j = 0;
         paginationCombo.removeAllItems();
 
-        for (int i = 0; i < resultCount / _items_per_page; i++) {
-            j = i + 1;
-            paginationCombo.addItem(j);
+        int totalPages = (int) Math.ceil((double) resultCount / _items_per_page);
+        for (int page = 1; page <= totalPages; page++) {
+            paginationCombo.addItem(page);
         }
 
-        if (j * _items_per_page < resultCount) {
-            paginationCombo.addItem(j + 1);
-            paginationLabel.setText("/" + (resultCount / _items_per_page + 1) + " " + MessageBundle.getMessage("angal.stat.pages"));
-        } else {
-            paginationLabel.setText("/" + (j == 0 ? 0 : resultCount / _items_per_page) + " " + MessageBundle.getMessage("angal.stat.pages"));
-        }
-
+        paginationLabel.setText("/" + totalPages + " " + MessageBundle.getMessage("angal.stat.pages"));
         setPaginationButtons();
     }
 
@@ -1649,8 +1633,10 @@ public class EmptyStatisticsBrowser extends ModalJFrame {
 
     private String getSelectedVisitType() {
         Object selected = visitTypeCombo.getSelectedItem();
-        if (selected == null) return null;
-        return ((Typology) selected).getCode();
+        if (selected instanceof Typology) {
+            return ((Typology) selected).getCode();
+        }
+        return null;
     }
 
     private String getSelectedMaternalWeight() {
