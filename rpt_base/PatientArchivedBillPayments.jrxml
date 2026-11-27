@@ -9,6 +9,7 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="billID" class="java.lang.String"/>
+	<parameter name="cashierName" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT BLP_DATE, BLP_AMOUNT FROM oh_archived_billpayments
 WHERE BLP_ID_BILL = $P{billID} ORDER BY BLP_DATE ASC]]>
@@ -110,7 +111,7 @@ WHERE BLP_ID_BILL = $P{billID} ORDER BY BLP_DATE ASC]]>
 		</band>
 	</detail>
 	<columnFooter>
-		<band height="25" splitType="Stretch">
+		<band height="90" splitType="Stretch">
 			<textField>
 				<reportElement key="staticText-4" x="388" y="0" width="72" height="25" uuid="c16c36e5-c45e-47ea-bcbe-e86e526a402f"/>
 				<box>
@@ -137,6 +138,23 @@ WHERE BLP_ID_BILL = $P{billID} ORDER BY BLP_DATE ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAID} != null ? $V{PAID} : 0d]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="300" y="55" width="235" height="18" uuid="a1b2c3d4-1111-4222-8333-944455556666"/>
+				<box>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{cashierName}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="300" y="76" width="235" height="14" uuid="a1b2c3d4-2222-4333-8444-955566667777"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="9" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Signature]]></text>
+			</staticText>
 		</band>
 	</columnFooter>
 	<pageFooter>

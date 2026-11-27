@@ -204,7 +204,7 @@ WHERE BLL_ID = $P{billID}]]>
 				<textElement>
 					<font fontName="DejaVu Sans" size="18"/>
 				</textElement>
-				<textFieldExpression><![CDATA["BILL N. " + java.util.Objects.toString($P{billID}, "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Bill} + " " + java.util.Objects.toString($P{billID}, "")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="EEEEE dd MMMMM yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="80" y="50" width="455" height="18" uuid="9201414a-05b6-4a3a-8787-214a0309cd7c"/>
@@ -485,6 +485,9 @@ WHERE BLL_ID = $P{billID}]]>
 				<reportElement key="subreport-1" x="0" y="63" width="535" height="245" uuid="8528524f-1368-4760-b161-da2a1b763eca"/>
 				<subreportParameter name="billID">
 					<subreportParameterExpression><![CDATA[$P{billID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="cashierName">
+					<subreportParameterExpression><![CDATA[$F{BLP_USR_ID_A}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "PatientArchivedBillPayments.jasper"]]></subreportExpression>

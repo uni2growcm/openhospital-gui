@@ -84,7 +84,6 @@ public class HomeVisitEdit extends ModalJFrame {
     private JTextField addressField;
     private JTextField contactPhoneField;
     private GoodDateTimeSpinnerChooser nextVisitDateChooser;
-    private JComboBox<HomeVisitStatus> statusCombo;
 
     private Patient selectedPatient;
 
@@ -279,16 +278,6 @@ public class HomeVisitEdit extends ModalJFrame {
         if (homeVisit != null && homeVisit.getId() != 0) {
 
             gbc.gridx = 0;
-            gbc.gridy = 9;
-            gbc.gridwidth = 1;
-            mainPanel.add(new JLabel(MessageBundle.getMessage("angal.homevisit.status.col")), gbc);
-
-            gbc.gridx = 1;
-            gbc.gridwidth = 4;
-            statusCombo = new JComboBox<>(HomeVisitStatus.values());
-            mainPanel.add(statusCombo, gbc);
-
-            gbc.gridx = 0;
             gbc.gridy = 10;
             gbc.gridwidth = 1;
             JLabel cancellationLabel = new JLabel(MessageBundle.getMessage("angal.homevisit.cancellationreason.col"));
@@ -409,10 +398,6 @@ public class HomeVisitEdit extends ModalJFrame {
         if (homeVisit.getNextVisitDate() != null) {
             nextVisitDateChooser.setDateTime(homeVisit.getNextVisitDate());
         }
-        if (statusCombo != null) {
-            statusCombo.setSelectedItem(homeVisit.getStatus());
-            statusCombo.setEnabled(homeVisit.getStatus() == HomeVisitStatus.PLANNED);
-        }
 
         if (homeVisit.getStatus() == HomeVisitStatus.CANCELLED && cancellationReasonArea != null) {
             cancellationReasonArea.setText(
@@ -477,9 +462,7 @@ public class HomeVisitEdit extends ModalJFrame {
         homeVisit.setObservations(observationsArea.getText().trim());
         homeVisit.setNextVisitDate(nextVisitDateChooser.getLocalDateTime());
 
-        if (!isNew && statusCombo != null) {
-            homeVisit.setStatus((HomeVisitStatus) statusCombo.getSelectedItem());
-        } else {
+        if (isNew) {
             homeVisit.setStatus(HomeVisitStatus.PLANNED);
         }
 

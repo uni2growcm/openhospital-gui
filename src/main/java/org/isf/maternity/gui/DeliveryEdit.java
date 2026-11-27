@@ -40,6 +40,7 @@ import javax.swing.table.TableCellEditor;
 
 import org.isf.generaldata.MessageBundle;
 import org.isf.maternity.manager.NewBornBrowserManager;
+import org.isf.maternity.manager.PregnancyBrowserManager;
 import org.isf.maternity.manager.PregnancyDeliveryBrowserManager;
 import org.isf.maternity.model.CryTime;
 import org.isf.maternity.model.DeliveryMode;
@@ -49,6 +50,7 @@ import org.isf.maternity.model.Newborn;
 import org.isf.maternity.model.PerinealIntegrity;
 import org.isf.maternity.model.Pregnancy;
 import org.isf.maternity.model.PregnancyDelivery;
+import org.isf.maternity.model.PregnancyStatus;
 import org.isf.menu.manager.Context;
 import org.isf.patient.manager.PatientBrowserManager;
 import org.isf.patient.model.Patient;
@@ -65,6 +67,7 @@ public class DeliveryEdit extends ModalJFrame {
     private final Pregnancy pregnancy;
     private PregnancyDelivery delivery;
     private final PregnancyDeliveryBrowserManager deliveryManager = Context.getApplicationContext().getBean(PregnancyDeliveryBrowserManager.class);
+    private final PregnancyBrowserManager pregnancyManager = Context.getApplicationContext().getBean(PregnancyBrowserManager.class);
     private final NewBornBrowserManager newbornManager = Context.getApplicationContext().getBean(NewBornBrowserManager.class);
     private final PatientBrowserManager patientManager = Context.getApplicationContext().getBean(PatientBrowserManager.class);
 
@@ -465,6 +468,10 @@ public class DeliveryEdit extends ModalJFrame {
                 deliveryManager.newDelivery(delivery);
             } else {
                 deliveryManager.updateDelivery(delivery);
+            }
+
+            if (pregnancy != null && pregnancy.getId() != null) {
+                pregnancyManager.closePregnancy(pregnancy.getId(), PregnancyStatus.COMPLETED);
             }
 
             boolean newbornsSuccess = isNew ? saveNewborns() : updateNewborns();

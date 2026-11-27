@@ -122,6 +122,29 @@ public class TuberculosisContactEdit extends JDialog {
         }
     }
 
+    private String getRelationshipLabel(Typology typology) {
+        if (typology == null) {
+            return "";
+        }
+        String code = typology.getCode();
+        if ("TB_CONTACT_HOUSEHOLD".equals(code)) {
+            return MessageBundle.getMessage("angal.tb.contact.relationship.household");
+        }
+        if ("TB_CONTACT_FAMILY".equals(code)) {
+            return MessageBundle.getMessage("angal.tb.contact.relationship.family");
+        }
+        if ("TB_CONTACT_FRIEND".equals(code)) {
+            return MessageBundle.getMessage("angal.tb.contact.relationship.friend");
+        }
+        if ("TB_CONTACT_COWORKER".equals(code)) {
+            return MessageBundle.getMessage("angal.tb.contact.relationship.coworker");
+        }
+        if ("TB_CONTACT_HEALTHWRK".equals(code)) {
+            return MessageBundle.getMessage("angal.tb.contact.relationship.healthwrk");
+        }
+        return typology.getDescription();
+    }
+
     private void initialize() {
         setLayout(new BorderLayout());
         if (insert) {
@@ -252,7 +275,7 @@ public class TuberculosisContactEdit extends JDialog {
                                                           boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof Typology typology) {
                     return super.getListCellRendererComponent(list,
-                            typology.getDescription(), index, isSelected, cellHasFocus);
+                            getRelationshipLabel(typology), index, isSelected, cellHasFocus);
                 }
                 return super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
             }
