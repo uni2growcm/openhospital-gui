@@ -1359,6 +1359,10 @@ public class PatientExaminationEdit extends ModalJFrame {
 			jButtonPrint = new JButton(MessageBundle.getMessage("angal.common.print.btn"));
 			jButtonPrint.setMnemonic(MessageBundle.getMnemonic("angal.common.print.btn.key"));
 			jButtonPrint.addActionListener(actionEvent -> {
+				if (jTableSummary.getRowCount() == 0) {
+					MessageDialog.error(this, "angal.examination.noexaminationtoprint.msg");
+					return;
+				}
 				int selectedrow = jTableSummary.getSelectedRow();
 				if (selectedrow < 0) {
 					selectedrow = 0;
@@ -2025,6 +2029,9 @@ public class PatientExaminationEdit extends ModalJFrame {
 		 */
 		@Override
 		public Object getValueAt(int r, int c) {
+			if (r < 0 || r >= patexList.size()) {
+				return null;
+			}
 			PatientExamination patientExamination = patexList.get(r);
 			if (c == -1) {
 				return patientExamination;

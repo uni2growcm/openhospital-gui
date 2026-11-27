@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -162,8 +163,8 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private JTable jTable;
 	private OpdBrowsingModel model;
 	private List<Disease> diseasesAll;
-	private int[] pColumnWidth = {50, 80, 100, 130, 70, 150, 30, 30, 195, 195, 50, 50};
-	private boolean[] columnResizable = { false, false, false, false, false, true, false, false, true, true, false, false };
+	private int[] pColumnWidth = {50, 80, 100, 130, 70, 150, 30, 30, 195, 195, 110, 180};
+	private boolean[] columnResizable = { false, false, false, false, false, true, false, false, true, true, true, true };
 	private boolean[] columnsVisible = { true, true, GeneralData.OPDEXTENDED, true, GeneralData.OPDEXTENDED, GeneralData.OPDEXTENDED, true, true, true, true, true, !isSingleUser };
 	private int[] columnsAlignment = { SwingConstants.LEFT, SwingConstants.LEFT, SwingConstants.LEFT, SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.LEFT, SwingConstants.CENTER, SwingConstants.CENTER, SwingConstants.LEFT, SwingConstants.LEFT, SwingConstants.LEFT, SwingConstants.LEFT };
 	private boolean[] columnsBold = { true, true, false, false, true, false, false, false, false, false, false, false };
@@ -213,11 +214,13 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 			model = new OpdBrowsingModel();
 			jTable = new JTable(model);
 			jTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			TableColumnModel columnModel = jTable.getColumnModel();
 			DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
 			cellRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				columnModel.getColumn(i).setMinWidth(pColumnWidth[i]);
+				columnModel.getColumn(i).setPreferredWidth(pColumnWidth[i]);
 				columnModel.getColumn(i).setCellRenderer(new AlignmentCellRenderer());
 				if (!columnResizable[i]) {
 					columnModel.getColumn(i).setMaxWidth(pColumnWidth[i]);
@@ -442,6 +445,7 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 		TableColumnModel columnModel = jTable.getColumnModel();
 		for (int i = 0; i < model.getColumnCount(); i++) {
 			columnModel.getColumn(i).setMinWidth(pColumnWidth[i]);
+			columnModel.getColumn(i).setPreferredWidth(pColumnWidth[i]);
 			columnModel.getColumn(i).setCellRenderer(new AlignmentCellRenderer());
 			if (!columnResizable[i]) {
 				columnModel.getColumn(i).setMaxWidth(pColumnWidth[i]);
@@ -586,7 +590,9 @@ public class OpdBrowser extends ModalJFrame implements OpdEdit.SurgeryListener, 
 	private void initialize() {
 		this.setTitle(MessageBundle.getMessage("angal.opd.opdoutpatientdepartment.title"));
 		this.setContentPane(getJContainPanel());
-		this.setMinimumSize(new Dimension(400 + getJTableWidth(), 700));
+		this.setMinimumSize(new Dimension(800, 700));
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		setSize((int) (screen.width * 0.9), (int) (screen.height * 0.9));
 		rowCounter.setText(rowCounterText + pSur.size());
 		applyFilter();
 		validate();
