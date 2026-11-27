@@ -73,6 +73,7 @@ public class UserEdit extends JDialog {
 	private JCheckBox accountLocked;
 	private JCheckBox isDeletedCheck;
 	private JTextField guarantorQuotaTextField;
+	private JTextField phoneTextField;
 	/**
 	 * This is the default constructor; we pass the arraylist and the selectedrow because we need to update them
 	 */
@@ -154,6 +155,8 @@ public class UserEdit extends JDialog {
 			}
 			dataPanel.add(new JLabel(MessageBundle.getMessage("angal.userbrowser.description.label")));
 			dataPanel.add(getDescriptionTextField());
+			dataPanel.add(new JLabel(MessageBundle.getMessage("angal.userbrowser.phone.label")));
+			dataPanel.add(getPhoneTextField());
 			if (!insert) {
 				dataPanel.add(new JLabel(MessageBundle.getMessage("angal.userbrowser.locked.label")));
 				accountLocked = new JCheckBox();
@@ -240,6 +243,8 @@ public class UserEdit extends JDialog {
 
 				user.setUserName(userName);
 				user.setDesc(descriptionTextField.getText());
+				String phone = phoneTextField.getText().trim();
+				user.setPhone(phone.isEmpty() ? null : phone);
 				user.setDeleted(isDeletedCheck.isSelected());
 				if (isGuarantorQuotaEditable()) {
 					user.setGuarantorQuota(guarantorQuota);
@@ -341,6 +346,20 @@ public class UserEdit extends JDialog {
 			descriptionTextField.setColumns(25);
 		}
 		return descriptionTextField;
+	}
+	/**
+	 * This method initializes phoneTextField
+	 * @return javax.swing.JTextField
+	 */
+	private JTextField getPhoneTextField() {
+		if (phoneTextField == null) {
+			phoneTextField = new JTextField();
+			if (!insert && user.getPhone() != null) {
+				phoneTextField.setText(user.getPhone());
+			}
+			phoneTextField.setColumns(20);
+		}
+		return phoneTextField;
 	}
 	/**
 	 * The guarantor quota is set per user only when guarantors are enabled and the single quota is disabled

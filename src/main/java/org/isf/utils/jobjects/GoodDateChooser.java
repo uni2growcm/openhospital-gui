@@ -120,6 +120,16 @@ public class GoodDateChooser extends Panel {
 		datePicker.getSettings().setDateRangeLimits(LocalDate.of(999, 12, 31), maxDate);
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		if (datePicker != null) {
+			datePicker.setEnabled(enabled);
+			datePicker.getComponentDateTextField().setEnabled(enabled);
+			datePicker.getComponentToggleCalendarButton().setEnabled(enabled);
+		}
+	}
+
 	public LocalDateTime getDateStartOfDay() {
 		LocalDate localDate = getDate();
 		return localDate != null ? localDate.atStartOfDay().truncatedTo(ChronoUnit.SECONDS) : null;

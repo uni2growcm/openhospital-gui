@@ -167,15 +167,9 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 	private List<Ward> wardList;
 	private JLabel rowCounter;
 	private List<AdmittedPatient> pPatient = new ArrayList<>();
-	private String[] pColumns = { MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.name.txt").toUpperCase(), MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
-			MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.country.txt").toUpperCase(),
-			MessageBundle.getMessage("angal.common.blama.txt").toUpperCase()};
-	private int[] pColumnWidth = { 100, 200, 80, 50, 150, 100, 120, 130 };
-	private boolean[] pColumnResizable = { false, false, false, false, true, false, false, true };
+	private String[] pColumns = buildColumns();
+	private int[] pColumnWidth = buildColumnWidths();
+	private boolean[] pColumnResizable = buildColumnResizable();
 	private AdmittedPatient patient;
 	private JTable table;
 	private AdmittedPatientBrowser myFrame;
@@ -791,6 +785,41 @@ public class AdmittedPatientBrowser extends ModalJFrame implements PatientInsert
 
 		calendarPanel.setVisible(GeneralData.ENHANCEDSEARCH);
 		return calendarPanel;
+	}
+
+	private static String[] buildColumns() {
+		List<String> columns = new ArrayList<>(List.of(
+				MessageBundle.getMessage("angal.common.code.txt").toUpperCase(),
+				MessageBundle.getMessage("angal.common.name.txt").toUpperCase(),
+				MessageBundle.getMessage("angal.common.age.txt").toUpperCase(),
+				MessageBundle.getMessage("angal.common.sex.txt").toUpperCase(),
+				MessageBundle.getMessage("angal.admission.cityaddresstelephonenote.col").toUpperCase(),
+				MessageBundle.getMessage("angal.common.ward.txt").toUpperCase(),
+				MessageBundle.getMessage("angal.common.country.txt").toUpperCase()));
+		if (GeneralData.BLAMAFIELDENABLED) {
+			columns.add(MessageBundle.getMessage("angal.common.blama.txt").toUpperCase());
+		}
+		return columns.toArray(new String[0]);
+	}
+
+	private static int[] buildColumnWidths() {
+		List<Integer> widths = new ArrayList<>(List.of(100, 200, 80, 50, 150, 100, 120));
+		if (GeneralData.BLAMAFIELDENABLED) {
+			widths.add(130);
+		}
+		return widths.stream().mapToInt(Integer::intValue).toArray();
+	}
+
+	private static boolean[] buildColumnResizable() {
+		List<Boolean> resizable = new ArrayList<>(List.of(false, false, false, false, true, false, false));
+		if (GeneralData.BLAMAFIELDENABLED) {
+			resizable.add(true);
+		}
+		boolean[] result = new boolean[resizable.size()];
+		for (int i = 0; i < resizable.size(); i++) {
+			result[i] = resizable.get(i);
+		}
+		return result;
 	}
 
 	private JScrollPane getScrollPane() {

@@ -621,6 +621,7 @@ public class MaternityPregnancyEdit extends JDialog implements SelectionListener
                 date = pregnancy.getEddLmp().toLocalDate();
             }
             eddLmpDateField = new GoodDateChooser(date);
+            eddLmpDateField.setEnabled(false);
         }
         return eddLmpDateField;
     }

@@ -23,6 +23,8 @@ package org.isf.menu.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -30,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -38,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -58,6 +63,8 @@ import org.isf.utils.exception.OHServiceException;
 import org.isf.utils.exception.gui.OHServiceExceptionUtil;
 import org.isf.utils.jobjects.MessageDialog;
 import org.isf.utils.jobjects.ModalJFrame;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 public class UserBrowsing extends ModalJFrame implements UserListener {
 
@@ -65,21 +72,31 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 	private static final String ALL_STR = MessageBundle.getMessage("angal.common.all.txt").toUpperCase();
 	private final JComboBox<UserGroup> userGroupFilter;
 	private static final boolean SHOW_GUARANTOR_QUOTA = GeneralData.ALLOWBILLGUARANTOR;
-	private static final int GUARANTOR_QUOTA_COLUMN = 5;
-	private static final int GUARANTOR_USED_QUOTA_COLUMN = 6;
+	private static final int PHONE_COLUMN = 1;
+	private static final int GUARANTOR_QUOTA_COLUMN = 6;
+	private static final int GUARANTOR_USED_QUOTA_COLUMN = 7;
 	private final String[] pColumns = buildColumns();
-	private final int[] pColumnWidth = { 70, 70, 150, 20, 20, 60, 60 };
+	private final int[] pColumnWidth = { 70, 110, 70, 150, 20, 20, 60, 60 };
 	private Map<String, Double> guarantorsUsedQuota = new HashMap<>();
 	private final DecimalFormat quotaFormat = new DecimalFormat("#,##0.##");
 	private final JTable table;
+	private final JTextField searchField;
+	private final JButton prevButton;
+	private final JButton nextButton;
+	private final JComboBox<Integer> pageCombo;
+	private final JLabel pageLabel;
+	private final JLabel elementsLabel;
+	private boolean updatingPageCombo;
 	private final UserBrowsing myFrame;
 	private final UserBrowsingManager userBrowsingManager = Context.getApplicationContext().getBean(UserBrowsingManager.class);
 	private final BillBrowserManager billBrowserManager = Context.getApplicationContext().getBean(BillBrowserManager.class);
 	private int selectedrow;
-	private List<User> userList;
+	private List<User> userList = new ArrayList<>();
 	private User user;
 	private DefaultTableModel model;
-	private String pSelection;
+	private int currentPage;
+	private int totalPages;
+	private long totalRecords;
 
 	public UserBrowsing() {
 
@@ -103,9 +120,6 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 		JPanel buttonPanel = new JPanel();
 
-		JLabel selectlabel = new JLabel(MessageBundle.getMessage("angal.userbrowser.selectgroup.label"));
-		buttonPanel.add(selectlabel);
-
 		userGroupFilter = new JComboBox<>();
 		userGroupFilter.addItem(new UserGroup(ALL_STR, ALL_STR));
 		List<UserGroup> group = null;
@@ -120,16 +134,51 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 			}
 		}
 		userGroupFilter.addActionListener(actionEvent -> {
-			pSelection = userGroupFilter.getSelectedItem().toString();
-			if (pSelection.compareTo(ALL_STR) == 0) {
-				model = new UserBrowserModel();
-			} else {
-				model = new UserBrowserModel(pSelection);
-			}
-			model.fireTableDataChanged();
-			table.updateUI();
+			currentPage = 0;
+			loadUsers();
 		});
-		buttonPanel.add(userGroupFilter);
+
+		JPanel groupPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		groupPanel.add(new JLabel(MessageBundle.getMessage("angal.userbrowser.selectgroup.label")));
+		groupPanel.add(userGroupFilter);
+
+		JPanel filterPanel = new JPanel();
+		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+		filterPanel.setBorder(BorderFactory.createTitledBorder(MessageBundle.getMessage("angal.common.filter.label")));
+		filterPanel.setMinimumSize(new Dimension(180, 100));
+		filterPanel.setPreferredSize(new Dimension(220, 120));
+		filterPanel.add(groupPanel);
+		add(filterPanel, BorderLayout.WEST);
+
+		searchField = new JTextField(20);
+		searchField.addActionListener(actionEvent -> {
+			currentPage = 0;
+			loadUsers();
+		});
+
+		JButton searchButton = new JButton(MessageBundle.getMessage("angal.common.search.btn"));
+		searchButton.addActionListener(actionEvent -> {
+			currentPage = 0;
+			loadUsers();
+		});
+
+		JButton resetButton = new JButton(MessageBundle.getMessage("angal.common.reset.btn"));
+		resetButton.addActionListener(actionEvent -> {
+			searchField.setText("");
+			userGroupFilter.setSelectedIndex(0);
+			currentPage = 0;
+			loadUsers();
+		});
+
+		JPanel resetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		resetPanel.add(resetButton);
+		filterPanel.add(resetPanel);
+
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		topPanel.add(new JLabel(MessageBundle.getMessage("angal.userbrowser.search.label")));
+		topPanel.add(searchField);
+		topPanel.add(searchButton);
+		add(topPanel, BorderLayout.NORTH);
 
 		JButton buttonNew = new JButton(MessageBundle.getMessage("angal.common.new.btn"));
 		buttonNew.setMnemonic(MessageBundle.getMnemonic("angal.common.new.btn.key"));
@@ -271,9 +320,7 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 				try {
 					if (answer == JOptionPane.YES_OPTION) {
 						userBrowsingManager.deleteUser(selectedUser);
-						userList.remove(table.getSelectedRow());
-						model.fireTableDataChanged();
-						table.updateUI();
+						loadUsers();
 					}
 				} catch (OHDataIntegrityViolationException ex) {
 					try {
@@ -285,8 +332,7 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 							if (answer == JOptionPane.YES_OPTION) {
 								selectedUser.setDeleted(true);
 								userBrowsingManager.updateUser(selectedUser);
-								model.fireTableDataChanged();
-								table.updateUI();
+								loadUsers();
 							}
 						}
 					} catch (OHServiceException e) {
@@ -305,7 +351,48 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 		buttonClose.addActionListener(actionEvent -> dispose());
 		buttonPanel.add(buttonClose);
 
-		add(buttonPanel, BorderLayout.SOUTH);
+		prevButton = new JButton("<");
+		prevButton.addActionListener(actionEvent -> {
+			if (currentPage > 0) {
+				currentPage--;
+				loadUsers();
+			}
+		});
+		nextButton = new JButton(">");
+		nextButton.addActionListener(actionEvent -> {
+			if (currentPage + 1 < totalPages) {
+				currentPage++;
+				loadUsers();
+			}
+		});
+		pageCombo = new JComboBox<>();
+		pageCombo.setPreferredSize(new Dimension(80, 25));
+		pageCombo.addActionListener(actionEvent -> {
+			if (!updatingPageCombo && pageCombo.getSelectedItem() != null) {
+				int selected = (Integer) pageCombo.getSelectedItem() - 1;
+				if (selected != currentPage) {
+					currentPage = selected;
+					loadUsers();
+				}
+			}
+		});
+		pageLabel = new JLabel();
+		elementsLabel = new JLabel();
+
+		JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+		paginationPanel.setBorder(BorderFactory.createEtchedBorder());
+		paginationPanel.add(prevButton);
+		paginationPanel.add(pageCombo);
+		paginationPanel.add(pageLabel);
+		paginationPanel.add(nextButton);
+		paginationPanel.add(elementsLabel);
+
+		JPanel southPanel = new JPanel(new BorderLayout());
+		southPanel.add(paginationPanel, BorderLayout.NORTH);
+		southPanel.add(buttonPanel, BorderLayout.SOUTH);
+		add(southPanel, BorderLayout.SOUTH);
+
+		loadUsers();
 
 		pack();
 		setLocationRelativeTo(null);
@@ -314,10 +401,8 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 	@Override
 	public void userInserted(AWTEvent e) {
-		User u = (User) e.getSource();
-		userList.add(0, u);
-		((UserBrowserModel) table.getModel()).fireTableDataChanged();
-		table.updateUI();
+		currentPage = 0;
+		loadUsers();
 		if (table.getRowCount() > 0) {
 			table.setRowSelectionInterval(0, 0);
 		}
@@ -325,17 +410,59 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 	@Override
 	public void userUpdated(AWTEvent e) {
-		userList.set(selectedrow, user);
-		((UserBrowserModel) table.getModel()).fireTableDataChanged();
-		table.updateUI();
-		if ((table.getRowCount() > 0) && (selectedrow > -1)) {
+		loadUsers();
+		if ((table.getRowCount() > 0) && (selectedrow > -1) && (selectedrow < table.getRowCount())) {
 			table.setRowSelectionInterval(selectedrow, selectedrow);
 		}
+	}
+
+	private void loadUsers() {
+		try {
+			UserGroup selectedGroup = (UserGroup) userGroupFilter.getSelectedItem();
+			String groupCode = (selectedGroup == null || ALL_STR.equalsIgnoreCase(selectedGroup.getCode())) ? null : selectedGroup.getCode();
+			String search = searchField.getText().trim();
+			Page<User> page = userBrowsingManager.getUsersPageable(groupCode, search.isEmpty() ? null : search,
+					PageRequest.of(currentPage, GeneralData.PAGINATIONPAGESIZE));
+			userList = page.getContent();
+			totalPages = page.getTotalPages();
+			totalRecords = page.getTotalElements();
+			if (currentPage > 0 && currentPage >= totalPages) {
+				currentPage = Math.max(totalPages - 1, 0);
+				loadUsers();
+				return;
+			}
+		} catch (OHServiceException e) {
+			OHServiceExceptionUtil.showMessages(e);
+			userList = new ArrayList<>();
+			totalPages = 0;
+			totalRecords = 0;
+		}
+		loadGuarantorsUsedQuota();
+		model.fireTableDataChanged();
+		table.updateUI();
+		updatePagination();
+	}
+
+	private void updatePagination() {
+		updatingPageCombo = true;
+		pageCombo.removeAllItems();
+		for (int i = 1; i <= totalPages; i++) {
+			pageCombo.addItem(i);
+		}
+		if (totalPages > 0) {
+			pageCombo.setSelectedItem(currentPage + 1);
+		}
+		updatingPageCombo = false;
+		pageLabel.setText("/ " + totalPages + " " + MessageBundle.getMessage("angal.common.pages.txt"));
+		elementsLabel.setText(MessageBundle.formatMessage("angal.userbrowser.users.found.fmt", totalRecords));
+		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(currentPage + 1 < totalPages);
 	}
 
 	private static String[] buildColumns() {
 		List<String> columns = new ArrayList<>(List.of(
 			MessageBundle.getMessage("angal.userbrowser.user.col").toUpperCase(),
+			MessageBundle.getMessage("angal.userbrowser.phone.col").toUpperCase(),
 			MessageBundle.getMessage("angal.common.group.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.common.description.txt").toUpperCase(),
 			MessageBundle.getMessage("angal.userbrowser.locked.col").toUpperCase(),
@@ -386,27 +513,12 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 
 		private static final long serialVersionUID = 1L;
 
-		public UserBrowserModel(String s) {
-			try {
-				userList = userBrowsingManager.getUser(s);
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-			loadGuarantorsUsedQuota();
-		}
-
 		public UserBrowserModel() {
-			try {
-				userList = userBrowsingManager.getUser();
-			} catch (OHServiceException e) {
-				OHServiceExceptionUtil.showMessages(e);
-			}
-			loadGuarantorsUsedQuota();
 		}
 
 		@Override
 		public Class getColumnClass(int column) {
-			return (column == 3 || column == 4) ? Boolean.class : String.class;
+			return (column == 4 || column == 5) ? Boolean.class : String.class;
 		}
 
 		@Override
@@ -433,13 +545,15 @@ public class UserBrowsing extends ModalJFrame implements UserListener {
 				return userList.get(r).getUserName();
 			} else if (c == -1) {
 				return userList.get(r);
-			} else if (c == 1) {
-				return userList.get(r).getUserGroupName();
+			} else if (c == PHONE_COLUMN) {
+				return userList.get(r).getPhone() != null ? userList.get(r).getPhone() : "";
 			} else if (c == 2) {
-				return userList.get(r).getDesc();
+				return userList.get(r).getUserGroupName();
 			} else if (c == 3) {
-				return userList.get(r).isAccountLocked();
+				return userList.get(r).getDesc();
 			} else if (c == 4) {
+				return userList.get(r).isAccountLocked();
+			} else if (c == 5) {
 				return userList.get(r).isDeleted();
 			} else if (c == GUARANTOR_QUOTA_COLUMN) {
 				return getGuarantorQuotaText(userList.get(r));

@@ -3254,7 +3254,9 @@ public class PatientInsertExtended extends JDialog {
 			JLabel jBlamaLabel = new JLabel(MessageBundle.getMessage("angal.patient.blama"));
 			jBlamaPanel = new JPanel();
 			jBlamaPanel.setLayout(new BorderLayout());
-			jBlamaPanel.add(jBlamaLabel, BorderLayout.WEST);
+			JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
+			labelPanel.add(jBlamaLabel);
+			jBlamaPanel.add(labelPanel, BorderLayout.WEST);
 			jBlamaPanel.add(getJBlamaFieldPanel(), BorderLayout.EAST);
 		}
 		return jBlamaPanel;
@@ -3267,7 +3269,7 @@ public class PatientInsertExtended extends JDialog {
 				jBlamaTextField.setText(patient.getBlama());
 			}
 		}
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, VGAP));
 		panel.add(jBlamaTextField);
 		return panel;
 	}
